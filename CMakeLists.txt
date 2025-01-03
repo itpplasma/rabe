@@ -5,6 +5,6 @@ enable_language(C Fortran)
 
 set(CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 include(${CMAKE_DIR}/compiler.cmake)
-include(sources.cmake)
+include(${CMAKE_DIR}/sources.cmake)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
