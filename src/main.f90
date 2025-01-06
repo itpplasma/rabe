@@ -1,14 +1,22 @@
 program redl
+    use, intrinsic :: iso_fortran_env, only: dp => real64
+    use read_file, only: read_field_file, read_boozer_file
 
-    call printer()
+    call printer(read_boozer_file, "test.bc")
 
     contains
 
-        subroutine printer()
-            character(len=20) :: message
+        subroutine printer(reader, field_file)
+            procedure(read_field_file)  :: reader
+            character(len=*) :: field_file
 
-            message = "Starting redl!"
+            character(len=20) :: message
+            real(dp) :: B 
+
+            message = "Starting rabe!"
             print *, message
+            call reader(field_file, B)
+            print *, B
         end subroutine printer
 
 end program redl

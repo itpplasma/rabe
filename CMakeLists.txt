@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(redl)
+project(rabe)
 enable_language(C Fortran)
 
 set(CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
