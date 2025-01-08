@@ -1,17 +1,19 @@
-BUILD_DIR := build
-BUILD_NINJA := $(BUILD_DIR)/build.ninja
+GENERATOR ?= Ninja
 
-.PHONY: all ninja test install clean
-all: ninja
+.PHONY: all build test install clean
+all: build
 
-$(BUILD_NINJA):
-	cmake --preset default -DCMAKE_COLOR_DIAGNOSTICS=ON
+build/CMakeCache.txt:
+	cmake -S . -B build -G $(GENERATOR)
 
-ninja: $(BUILD_NINJA)
-	cmake --build --preset default
+build: build/CMakeCache.txt
+	cmake --build build
 
-test: ninja
-	cd $(BUILD_DIR) && ctest
+install: build
+	cmake --install build
+
+test: build
+	ctest --test-dir build/tests --output-on-failure
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
