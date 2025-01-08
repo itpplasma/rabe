@@ -1,6 +1,9 @@
 module find_extrema
 use, intrinsic :: iso_fortran_env, only: dp => real64
 
+implicit none
+
+
 abstract interface
 subroutine func1d(x, value)
     use, intrinsic :: iso_fortran_env, only: dp => real64
@@ -9,7 +12,9 @@ subroutine func1d(x, value)
 end subroutine func1d
 end interface
 
+
 contains
+
 
 function find_global_extrema(func, interval, n_steps_in) result(extrema)
     procedure(func1d) :: func

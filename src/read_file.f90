@@ -1,6 +1,8 @@
 module read_file
 use, intrinsic :: iso_fortran_env, only: dp => real64
 
+implicit none
+
 
 abstract interface
 subroutine read_field_file(file_name, B)

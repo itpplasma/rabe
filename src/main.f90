@@ -2,9 +2,14 @@ program rabe
 use, intrinsic :: iso_fortran_env, only: dp => real64
 use read_file, only: read_field_file, read_boozer_file
 
+implicit none
+
+
 call printer(read_boozer_file, "test.bc")
 
+
 contains
+
 
 subroutine printer(reader, field_file)
     procedure(read_field_file)  :: reader
