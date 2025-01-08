@@ -35,7 +35,7 @@ function find_global_extrema(func, interval, n_steps_in) result(extrema)
     call linspace(interval(1), interval(2), n_steps, x)
     call func(x, value)
     extrema(1) = minval(value)
-    extrema(2) = minval(value)
+    extrema(2) = maxval(value)
 end function find_global_extrema
 
 subroutine linspace(a, b, n, x)

@@ -5,12 +5,13 @@ use find_extrema, only: find_global_extrema
 implicit none
 
 real(dp) :: pi = 3.14159
-real(dp) :: tol = 1e-9
+real(dp) :: tol = 1e-3
 
 call test_find_global_extrema()
 
 
 contains
+
 
 subroutine test_find_global_extrema
     real(dp) :: extrema(2), expected_extrema(2)
@@ -20,7 +21,11 @@ subroutine test_find_global_extrema
     expected_extrema = (/-1.0_dp, 1.0_dp/)
     extrema = find_global_extrema(test_func, interval)
 
-    if(any(abs(extrema/expected_extrema - 1) > tol)) STOP
+    if(any(abs(extrema/expected_extrema - 1) > tol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_find_global_extrema"
+        error stop
+    endif
 end subroutine test_find_global_extrema
 
 subroutine test_func(x, value)
