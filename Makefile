@@ -13,7 +13,7 @@ install: build
 	cmake --install build
 
 test: build
-	ctest --test-dir build/tests --output-on-failure
+	ctest --test-dir build/test --output-on-failure
 
 clean:
 	rm -rf build

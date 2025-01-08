@@ -16,4 +16,4 @@ add_executable(${PROJECT_NAME} src/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
 
 enable_testing()
-add_subdirectory(tests)
+add_subdirectory(test)
