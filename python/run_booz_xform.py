@@ -1,6 +1,6 @@
-# from simsopt.mhd.vmec import Vmec
-# from simsopt.mhd.boozer import Boozer
-# %%
+import numpy as np
+
+
 def write_stellarator_symmetric_bc_file(
     filename: str,
     rmnc: list,
@@ -13,7 +13,6 @@ def write_stellarator_symmetric_bc_file(
     iota: list,
     b_covar_pol: list,
     b_covar_tor: list,
-    vp: list,
     nfp: int,
     edge_toroidal_flux: float,
     minor_radius: float,
@@ -23,6 +22,7 @@ def write_stellarator_symmetric_bc_file(
     from libneo import write_boozer_head, append_boozer_block_head, append_boozer_block
 
     n_surf = len(s_tor)
+    dummy = 0.0
 
     write_boozer_head(
         filename,
@@ -42,43 +42,46 @@ def write_stellarator_symmetric_bc_file(
         vmn = np.array([complex(0, x) for x in vmns[i]])
         bmn = np.array([complex(x, 0) for x in bmnc[i]])
         append_boozer_block_head(
-            filename, s_tor[i], iota[i], b_covar_tor[i], b_covar_pol[i], 0, vp[i], nfp
+            filename,
+            s_tor[i],
+            iota[i],
+            b_covar_tor[i],
+            b_covar_pol[i],
+            dummy,
+            dummy,
+            nfp,
         )
         append_boozer_block(filename, m, n, rmn, zmn, vmn, bmn, nfp)
 
 
 if __name__ == "__main__":
-    # import sys
+    import sys
+    from simsopt.mhd.vmec import Vmec
+    from simsopt.mhd.boozer import Boozer
 
-    # vmec_file = sys.argv[1]
-    # boozer = Boozer(Vmec(vmec_file))
-    import numpy as np
 
-    dummy_file = "dummy.bc"
-    s_tor = np.linspace(0.1, 0.9, 3)
-    m_max = 3
-    dummy_int = 1
-    dummy_float = 1.0
-    dummy_int_list = [dummy_int] * m_max
-    dummy_float_list = [dummy_float] * len(s_tor)
-    dummy_list_list = [[dummy_float] * m_max] * len(s_tor)
-    dummy_int_array = np.array(dummy_int_list)
-    dummy_float_array = np.array(dummy_float)
+    vmec_file = sys.argv[1]
+    output_file = "booz_xform_field.bc"
+
+    vmec = Vmec(vmec_file)
+    boozer = Boozer(vmec)
+    boozer.register(vmec.s_half_grid)
+    boozer.run()
+
     write_stellarator_symmetric_bc_file(
-        filename=dummy_file,
-        rmnc=dummy_list_list,
-        zmns=dummy_list_list,
-        vmns=dummy_list_list,
-        bmnc=dummy_list_list,
-        m=dummy_int_array,
-        n=dummy_int_array,
-        s_tor=s_tor,
-        iota=dummy_float_list,
-        b_covar_pol=dummy_float_list,
-        b_covar_tor=dummy_float_list,
-        vp=dummy_float_list,
-        nfp=dummy_int,
-        edge_toroidal_flux=dummy_float,
-        minor_radius=dummy_float,
-        major_radius=dummy_float,
+        filename=output_file,
+        rmnc=boozer.bx.rmnc_b.T,
+        zmns=boozer.bx.zmns_b.T,
+        vmns=-boozer.bx.numns_b.T * boozer.bx.nfp / (2 * np.pi),
+        bmnc=boozer.bx.bmnc_b.T,
+        m=boozer.bx.xm_b,
+        n=-boozer.bx.xn_b,
+        s_tor=boozer.bx.s_b,
+        iota=boozer.bx.iota,
+        b_covar_pol=boozer.bx.bsubumnc[:, 0],
+        b_covar_tor=boozer.bx.bsubvmnc[:, 0],
+        nfp=boozer.bx.nfp,
+        edge_toroidal_flux=vmec.wout.phi[-1],
+        minor_radius=vmec.wout.Aminor_p,
+        major_radius=vmec.wout.Rmajor_p,
     )
