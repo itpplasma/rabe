@@ -1,6 +1,6 @@
 VMEC_FILE = ../external/simsopt/tests/test_files/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc
 
-.PHONY: all clean
+.PHONY: all comparison clean
 all: field.bc booz_xform_field.bc
 
 field.bc: $(VMEC_FILE)
@@ -8,6 +8,9 @@ field.bc: $(VMEC_FILE)
 
 booz_xform_field.bc: $(VMEC_FILE)
 	python run_booz_xform.py $(VMEC_FILE)
+
+comparison: field.bc booz_xform_field.bc
+	python compare_modes.py
 
 clean:
 	rm *.bc
