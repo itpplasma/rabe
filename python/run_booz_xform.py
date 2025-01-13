@@ -29,7 +29,7 @@ def write_stellarator_symmetric_bc_file(
         "",
         0,
         np.max(m),
-        np.max(n)//nfp,
+        np.max(n) // nfp,
         n_surf,
         nfp,
         edge_toroidal_flux,
@@ -58,7 +58,6 @@ if __name__ == "__main__":
     import sys
     from simsopt.mhd.vmec import Vmec
     from simsopt.mhd.boozer import Boozer
-
 
     vmec_file = sys.argv[1]
     output_file = "booz_xform_field.bc"
