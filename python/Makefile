@@ -6,5 +6,8 @@ all: field.bc booz_xform_field.bc
 field.bc: $(VMEC_FILE)
 	python run_vmec2boozer.py $(VMEC_FILE)
 
+booz_xform_field.bc: $(VMEC_FILE)
+	python run_booz_xform.py $(VMEC_FILE)
+
 clean:
 	rm *.bc
