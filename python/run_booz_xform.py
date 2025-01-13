@@ -3,16 +3,16 @@ import numpy as np
 
 def write_stellarator_symmetric_bc_file(
     filename: str,
-    rmnc: list,
-    zmns: list,
-    vmns: list,
-    bmnc: list,
-    m: list,
-    n: list,
-    s_tor: list,
-    iota: list,
-    b_covar_pol: list,
-    b_covar_tor: list,
+    rmnc: np.array,
+    zmns: np.array,
+    vmns: np.array,
+    bmnc: np.array,
+    m: np.array,
+    n: np.array,
+    s_tor: np.array,
+    iota: np.array,
+    b_covar_pol: np.array,
+    b_covar_tor: np.array,
     nfp: int,
     edge_toroidal_flux: float,
     minor_radius: float,
@@ -29,7 +29,7 @@ def write_stellarator_symmetric_bc_file(
         "",
         0,
         np.max(m),
-        np.max(n),
+        np.max(n)//nfp,
         n_surf,
         nfp,
         edge_toroidal_flux,
@@ -38,8 +38,8 @@ def write_stellarator_symmetric_bc_file(
     )
     for i in range(n_surf):
         rmn = np.array([complex(x, 0) for x in rmnc[i]])
-        zmn = np.array([complex(0, x) for x in zmns[i]])
-        vmn = np.array([complex(0, x) for x in vmns[i]])
+        zmn = np.array([complex(0, -x) for x in zmns[i]])
+        vmn = np.array([complex(0, -x) for x in vmns[i]])
         bmn = np.array([complex(x, 0) for x in bmnc[i]])
         append_boozer_block_head(
             filename,
