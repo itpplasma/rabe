@@ -18,7 +18,6 @@ def write_stellarator_symmetric_bc_file(
     minor_radius: float,
     major_radius: float,
 ):
-
     from libneo import write_boozer_head, append_boozer_block_head, append_boozer_block
 
     n_surf = len(s_tor)
