@@ -9,6 +9,9 @@ field.bc: $(VMEC_FILE)
 booz_xform_field.bc: $(VMEC_FILE)
 	python make_bc_from_booz_xform.py $(VMEC_FILE)
 
+quasi_symmetric.bc: $(VMEC_FILE)
+	python make_quasi_symmetric_bc.py $(VMEC_FILE) 0
+
 comparison: field.bc booz_xform_field.bc
 	python compare_modes.py
 
