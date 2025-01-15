@@ -7,7 +7,7 @@ field.bc: $(VMEC_FILE)
 	python run_vmec2boozer.py $(VMEC_FILE)
 
 booz_xform_field.bc: $(VMEC_FILE)
-	python run_booz_xform.py $(VMEC_FILE)
+	python make_bc_from_booz_xform.py $(VMEC_FILE)
 
 comparison: field.bc booz_xform_field.bc
 	python compare_modes.py
