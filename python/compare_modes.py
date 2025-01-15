@@ -73,11 +73,11 @@ def compare_coefs(modes_1, modes_2, ms, ns):
 if __name__ == "__main__":
     ms = [0, 1, 3]
     ns = [0, 1, 3]
-    bc_file_1 = "booz_xform_field.bc"
+    bc_file_1 = "field.bc"
     get_mode_idx_1 = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max + n) + (n_max + 1)
     )
-    bc_file_2 = "field.bc"
+    bc_file_2 = "booz_xform_field.bc"
     get_mode_idx_2 = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max - n) + (n_max + 1)
     )
