@@ -4,7 +4,6 @@ from rabe.write_bc import write_stellarator_bc_file
 
 if __name__ == "__main__":
     import sys
-    import os
     from simsopt.mhd.vmec import Vmec
     from simsopt.mhd.boozer import Boozer
 

@@ -26,5 +26,8 @@ $(OUTPUT_DIR)/booz_xform_field.bc: $(VMEC_FILE) $(OUTPUT_DIR)
 comparison: $(OUTPUT_DIR)/field.bc $(OUTPUT_DIR)/booz_xform_field.bc
 	python compare_modes.py $(OUTPUT_DIR)
 
+test:
+	pytest test
+
 clean:
 	rm *.bc
