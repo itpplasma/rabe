@@ -4,3 +4,4 @@ external/
 *.mod
 *.egg-info
 *__pycache__
+**/output/

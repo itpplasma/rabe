@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from simsopt.mhd.vmec import Vmec
 from simsopt.mhd.boozer import Boozer, Quasisymmetry
 
@@ -8,8 +9,9 @@ from rabe.boozer_modes import read_modes_bc, split_off_symmetric_modes
 def test_split_off_symmetric_modes():
     s_tor_idx = 24
     helicity_n = 1
+    output_dir = "output"
 
-    bc_file = "booz_xform_field.bc"
+    bc_file = os.path.join(output_dir, "booz_xform_field.bc")
     get_mode_idx = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max - n) + (n_max + 1)
     )
@@ -19,9 +21,8 @@ def test_split_off_symmetric_modes():
     s_tors = sym_bmnc.rho_tor**2
     s_tor = s_tors[s_tor_idx]
 
-    vmec_file = (
-        "../external/simsopt/tests/test_files/"
-        + "wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    vmec_file = os.path.join(
+        output_dir, "wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
     )
     vmec = Vmec(vmec_file)
     boozer = Boozer(vmec)
