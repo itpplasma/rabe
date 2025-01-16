@@ -19,7 +19,7 @@ $(VMEC_FILE): $(EXTERNAL_FILE) $(OUTPUT_DIR)
 	cp $< $@
 
 $(OUTPUT_DIR)/quasi_symmetric.bc: $(VMEC_FILE) $(OUTPUT_DIR)
-	python make_quasi_symmetric_bc.py $< 0 $@
+	python make_quasi_symmetric_bc.py $< -1 $@
 
 $(OUTPUT_DIR)/field.bc: $(VMEC_FILE) $(OUTPUT_DIR)
 	python run_vmec2boozer.py $< $@
@@ -30,7 +30,7 @@ $(OUTPUT_DIR)/booz_xform_field.bc: $(VMEC_FILE) $(OUTPUT_DIR)
 comparison: $(OUTPUT_DIR)/field.bc $(OUTPUT_DIR)/booz_xform_field.bc
 	python compare_modes.py $(OUTPUT_DIR)
 
-test: booz_xform_field.bc $(VMEC_FILE)
+test: booz_xform_field.bc quasi_symmetric.bc $(VMEC_FILE)
 	pytest test
 
 clean:
