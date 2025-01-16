@@ -1,5 +1,5 @@
 import numpy as np
-from make_bc_from_booz_xform import write_stellarator_symmetric_bc_file
+from rabe.write_bc import write_stellarator_bc_file
 
 
 if __name__ == "__main__":
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         if m * helicity_n * nfp != n:
             quasi_symmetric_bmnc_b[mode, :] = 0.0
 
-    write_stellarator_symmetric_bc_file(
+    write_stellarator_bc_file(
         filename=output_file,
         rmnc=boozer.bx.rmnc_b.T,
         zmns=boozer.bx.zmns_b.T,
