@@ -4,18 +4,19 @@ from rabe.write_bc import write_stellarator_bc_file
 
 if __name__ == "__main__":
     import sys
+    import os
     from simsopt.mhd.vmec import Vmec
     from simsopt.mhd.boozer import Boozer
 
     vmec_file = sys.argv[1]
-    output_file = "quasi_symmetric.bc"
+    helicity_n = int(sys.argv[2])
+    output_file = sys.argv[3]
 
     vmec = Vmec(vmec_file)
     boozer = Boozer(vmec)
     boozer.register(vmec.s_half_grid)
     boozer.run()
 
-    helicity_n = int(sys.argv[2])
     nfp = boozer.bx.nfp
     quasi_symmetric_bmnc_b = np.copy(boozer.bx.bmnc_b)
     for mode in range(len(quasi_symmetric_bmnc_b)):

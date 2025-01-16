@@ -7,7 +7,7 @@ if __name__ == "__main__":
     from simsopt.mhd.boozer import Boozer
 
     vmec_file = sys.argv[1]
-    output_file = "booz_xform_field.bc"
+    output_file = sys.argv[2]
 
     vmec = Vmec(vmec_file)
     boozer = Boozer(vmec)

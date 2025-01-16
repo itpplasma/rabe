@@ -38,16 +38,24 @@ def compare_coefs(modes_1, modes_2, ms, ns):
 
 
 if __name__ == "__main__":
+    import sys
+    import os
+
+    output_dir = sys.argv[1]
+
     ms = [0, 1, 3]
     ns = [0, 1, 3]
-    bc_file_1 = "field.bc"
+
+    bc_file_1 = os.path.join(output_dir, "field.bc")
     get_mode_idx_1 = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max + n) + (n_max + 1)
     )
-    bc_file_2 = "booz_xform_field.bc"
+
+    bc_file_2 = os.path.join(output_dir, "booz_xform_field.bc")
     get_mode_idx_2 = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max - n) + (n_max + 1)
     )
+
     rmnc_1, zmns_1, vmns_1, bmnc_1 = read_modes_bc(bc_file_1, get_mode_idx_1)
     rmnc_2, zmns_2, vmns_2, bmnc_2 = read_modes_bc(bc_file_2, get_mode_idx_2)
     compare_coefs(rmnc_1, rmnc_2, ms, ns)
