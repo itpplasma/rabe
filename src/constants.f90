@@ -3,5 +3,5 @@ module constants
 
     implicit none
 
-    real(dp) :: pi = 3.14159
+    real(dp), parameter :: pi = 3.14159
 end module constants
