@@ -8,6 +8,7 @@ include(${CMAKE_DIR}/compiler.cmake)
 
 set(SOURCES
     src/read_file.f90
+    src/constants.f90
     src/find_extrema.f90
 )
 add_library(rabe_lib ${SOURCES})
