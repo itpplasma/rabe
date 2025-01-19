@@ -16,7 +16,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
  " -Wextra "
  " -Warray-temporaries "
  " -Wconversion "
- " -fimplict-none "
+ " -fimplicit-none "
  " -Wno-unused-variable -Wno-unused-dummy-argument -Wno-unused-label "
  " -Wshadow "
   )
