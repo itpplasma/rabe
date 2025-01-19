@@ -3,11 +3,18 @@ module read_file
 
     implicit none
 
+    type :: modes
+        real(dp), dimension(:), allocatable :: s_tor
+        integer, dimension(:), allocatable :: m, n
+        real(dp), dimension(:, :), allocatable :: coef
+    end type modes
+
     abstract interface
         subroutine read_field_file(file_name, B)
             use, intrinsic :: iso_fortran_env, only: dp => real64
+            import modes
             character(len=256), intent(in) :: file_name
-            real(dp), intent(out) :: B
+            type(modes), intent(out) :: B
         end subroutine read_field_file
     end interface
 
@@ -17,7 +24,7 @@ contains
         use constants, only: pi
 
         character(len=*), intent(in) :: file_name
-        real(dp), intent(out) :: B
+        type(modes), intent(out) :: B
 
         integer :: m_max, n_max, n_s, nfp
         integer :: num_pol_modes, num_tor_modes, num_modes
@@ -27,7 +34,7 @@ contains
         integer, dimension(:), allocatable :: m, n
         real(dp), dimension(:), allocatable :: s_tor, iota, curr_pol, curr_tor
         real(dp), dimension(:), allocatable :: dp_ds, sqrtg_00
-        real(dp), dimension(:, :), allocatable :: rmnc, zmns, vmns, bmnc
+        real(dp), dimension(:, :), allocatable :: rmnc, zmns, vmns
         character(len=256) :: dummy
         integer :: extra_count, i, j
         logical :: extra_zero
@@ -35,7 +42,7 @@ contains
 
         open (newunit=file_unit, file=file_name)
         call skip_lines(file_unit, 5)
-    read (file_unit,"(I6, I6, I6, I6, F8.8)", iostat=ios) m_max, n_max, n_s, nfp, tor_flux_separatrix
+        read (file_unit,"(I6, I6, I6, I6, F8.8)", iostat=ios) m_max, n_max, n_s, nfp, tor_flux_separatrix
         num_pol_modes = m_max + 1
         num_tor_modes = 2*n_max + 1
         num_modes = num_pol_modes*num_tor_modes
@@ -43,10 +50,13 @@ contains
         allocate (m(num_modes), n(num_modes), stat=i_alloc)
         if (i_alloc /= 0) stop 'Allocation for integer arrays failed!'
 
-    allocate(s_tor(n_s), iota(n_s), curr_pol(n_s), curr_tor(n_s), dp_ds(n_s), sqrtg_00(n_s), stat = i_alloc)
+        allocate(s_tor(n_s), iota(n_s), curr_pol(n_s), curr_tor(n_s), dp_ds(n_s), sqrtg_00(n_s), stat = i_alloc)
         if (i_alloc /= 0) stop 'Allocation for real arrays failed!'
 
-    allocate(rmnc(n_s,num_modes), zmns(n_s,num_modes), vmns(n_s,num_modes), bmnc(n_s,num_modes), stat = i_alloc)
+        allocate (B % m(num_modes), B % n(num_modes), stat=i_alloc)
+        allocate (B % s_tor(n_s))
+        allocate(rmnc(n_s,num_modes), zmns(n_s,num_modes), vmns(n_s,num_modes), B%coef(n_s,num_modes), stat = i_alloc)
+
         if (i_alloc /= 0) stop 'Allocation for fourier arrays (1) failed!'
         do i = 1, n_s
             read (file_unit, *) dummy
@@ -71,35 +81,24 @@ contains
                     rmnc(i, j) = 0.0d0
                     zmns(i, j) = 0.0d0
                     vmns(i, j) = 0.0d0
-                    bmnc(i, j) = 0.0d0
+                    B % coef(i, j) = 0.0d0
                 else
                     read (file_unit, *) m(j), n(j), &
                         rmnc(i, j), zmns(i, j), vmns(i, j), &
-                        bmnc(i, j)
+                        B % coef(i, j)
                 end if
             end do
         end do
 
-        !**********************************************************
-        ! Change from Gernot Kapper - 02.12.2015
-        ! This corrects the direction of the poloidal current to
-        ! match the Boozer file w7x-m24li.bc
-        !**********************************************************
-        ! curr_pol = - curr_pol * 2.d-7 * nfp   ! ? -   ! Before patch
-        curr_pol = curr_pol*2.d-7*nfp               ! After patch
-
-        !**********************************************************
-        ! Patch from Gernot Kapper - 20.11.2014
-        ! See mail from Winfried Kernbichler archived at
-        ! /proj/plasma/doCUMENTS/Neo2/Archive/
-        !**********************************************************
-        ! curr_tor = curr_tor * 2.d-7 * nfp   ! Henning   ! Before patch
-        curr_tor = -curr_tor*2.d-7         ! Henning   ! After patch
-
+        curr_pol = curr_pol*2.d-7*nfp
+        curr_tor = -curr_tor*2.d-7
         n_max = n_max*nfp
         n = n*nfp
         m = m
         psi_tor_separatrix = abs(tor_flux_separatrix)/2.0_dp*pi
+        B % m = m
+        B % n = n
+        B % s_tor = s_tor
     end subroutine read_boozer_file
 
     subroutine skip_lines(file_unit, n_lines)
