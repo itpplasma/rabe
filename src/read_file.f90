@@ -16,7 +16,7 @@ contains
     subroutine read_boozer_file(file_name, B)
         use constants, only: pi
 
-        character(len=256), intent(in) :: file_name
+        character(len=*), intent(in) :: file_name
         real(dp), intent(out) :: B
 
         integer :: m_max, n_max, n_s, nfp
