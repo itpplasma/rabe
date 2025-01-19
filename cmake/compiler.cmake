@@ -5,14 +5,18 @@ elseif (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
   message(STATUS "Setting Intel flags.")
   set(CMAKE_Fortran_FLAGS_RELEASE " -O2 -cpp -mkl -heap-arrays -stand f08")
 endif()
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   set(MY_DEBUG_FLAG_LIST
   " -O0 -cpp -g"
- " -ffpe-summary=invalid,zero,overflow "
+ " -ffpe-summary=invalid,zero,overflow,underflow "
  " -fcheck=all "
  " -fbacktrace "
+ " -finit-real=nan"
  " -Wall "
+ " -Wextra "
+ " -Warray-temporaries "
+ " -Wconversion "
+ " -fimplict-none "
  " -Wno-unused-variable -Wno-unused-dummy-argument -Wno-unused-label "
  " -Wshadow "
   )
