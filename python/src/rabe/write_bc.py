@@ -18,7 +18,11 @@ def write_stellarator_bc_file(
     minor_radius: float,
     major_radius: float,
 ):
-    from libneo import write_boozer_head, append_boozer_block_head, append_boozer_block
+    from libneo import (
+        write_boozer_head,
+        append_boozer_block_head,
+        append_boozer_block_stellerator_symmetry,
+    )
 
     n_surf = len(s_tor)
     dummy = 0.0
@@ -36,10 +40,6 @@ def write_stellarator_bc_file(
         major_radius,
     )
     for i in range(n_surf):
-        rmn = np.array([complex(x, 0) for x in rmnc[i]])
-        zmn = np.array([complex(0, -x) for x in zmns[i]])
-        vmn = np.array([complex(0, -x) for x in vmns[i]])
-        bmn = np.array([complex(x, 0) for x in bmnc[i]])
         append_boozer_block_head(
             filename,
             s_tor[i],
@@ -50,4 +50,6 @@ def write_stellarator_bc_file(
             dummy,
             nfp,
         )
-        append_boozer_block(filename, m, n, rmn, zmn, vmn, bmn, nfp)
+        append_boozer_block_stellerator_symmetry(
+            filename, m, n, rmnc[i], zmns[i], vmns[i], bmnc[i], nfp
+        )
