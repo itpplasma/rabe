@@ -1,14 +1,15 @@
 import numpy as np
-from numba import jit, prange
-from numba import int64, float64
-from numba.experimental import jitclass
 
-fourier_spec = [
-    ("m", int64[:]),
-    ("n", int64[:]),
-    ("fmnc", float64[:]),
-    ("fmns", float64[:]),
-]
+# from numba import jit, prange
+# from numba import int64, float64
+# from numba.experimental import jitclass
+
+# fourier_spec = [
+#     ("m", int64[:]),
+#     ("n", int64[:]),
+#     ("fmnc", float64[:]),
+#     ("fmns", float64[:]),
+# ]
 
 
 # @jitclass(fourier_spec)
@@ -18,19 +19,19 @@ class FourierSeries:
     """
 
     def __init__(self, m, n, fmnc, fmns):
-        self.m = m
-        self.n = n
-        self.fmnc = fmnc
-        self.fmns = fmns
+        self.m = np.array(m, dtype=np.float64)
+        self.n = np.array(n, dtype=np.float64)
+        self.fmnc = np.array(fmnc, dtype=np.float64)
+        self.fmns = np.array(fmns, dtype=np.float64)
 
 
 # @jit(nopython=True)
 def evaluate(fourier: FourierSeries, theta, phi):
-    f = np.zeros_like(theta)
-    for i in range(0, len(fourier.m)):
+    f = np.zeros_like(theta, dtype=np.float64)
+    for i, _ in enumerate(fourier.m):
         fmnc = fourier.fmnc[i]
         fmns = fourier.fmns[i]
         m = fourier.m[i]
         n = fourier.n[i]
-        f += fmnc * np.cos(m * theta + n * phi) + fmns * np.sin(m * theta + n * phi)
+        f += fmnc * np.cos(m * theta - n * phi) + fmns * np.sin(m * theta - n * phi)
     return f

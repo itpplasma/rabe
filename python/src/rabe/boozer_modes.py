@@ -86,7 +86,7 @@ def get_xyz_surface(
         np.zeros(len(bmnc.m[idx_surface])),
     )
 
-    theta = np.linspace(0, np.pi, 200)
+    theta = np.linspace(0, 2 * np.pi, 200)
     phi_b = np.linspace(0, 2 * np.pi, 200)
     theta, phi_b = np.meshgrid(theta, phi_b)
 
