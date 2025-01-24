@@ -12,10 +12,28 @@ if __name__ == "__main__":
     print("For Landreman VMEC")
     get_vmec_theta_orientation(vmec)
 
-    par_bc_file = "output/quasi_symmetric.bc"
+    par_bc_file = "python/output/quasi_symmetric.bc"
     get_mode_idx_par = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max + n) + (n_max + 1)
     )
-    rmnc, zmns, _, _ = read_modes_bc(par_bc_file, get_mode_idx=get_mode_idx_par)
+    rmnc, zmns, vmns, bmnc = read_modes_bc(par_bc_file, get_mode_idx=get_mode_idx_par)
     print("For Landreman bc file")
     get_bc_theta_orientation(rmnc, zmns)
+
+    from rabe.boozer_modes import get_xyz_surface
+    import matplotlib.pyplot as plt
+
+    x, y, z, B = get_xyz_surface(rmnc, zmns, vmns, bmnc, 4)
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection="3d")
+    norm = plt.Normalize(B.min(), B.max())
+    colors = plt.cm.viridis(norm(B))
+    surface = ax.plot_surface(x, y, z, facecolors=colors, edgecolor="none")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    plt.axis("equal")
+    mappable = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+    mappable.set_array(B)
+    fig.colorbar(mappable, ax=ax, shrink=0.5, aspect=10)
+    plt.show()
