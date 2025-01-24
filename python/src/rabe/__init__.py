@@ -3,3 +3,4 @@ from .coordinate_orientations import (
     get_bc_theta_orientation,
     get_vmec_theta_orientation,
 )
+from .fourier_series import FourierSeries, evaluate
