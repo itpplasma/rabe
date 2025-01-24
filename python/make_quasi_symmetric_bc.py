@@ -31,7 +31,7 @@ if __name__ == "__main__":
         vmns=-boozer.bx.numns_b.T * boozer.bx.nfp / (2 * np.pi),
         bmnc=quasi_symmetric_bmnc_b.T,
         m=boozer.bx.xm_b,
-        n=-boozer.bx.xn_b,
+        n=boozer.bx.xn_b,
         s_tor=boozer.bx.s_b,
         iota=boozer.bx.iota,
         b_covar_pol=boozer.bx.bsubumnc[0, :],

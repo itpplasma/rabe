@@ -3,35 +3,37 @@ import matplotlib.pyplot as plt
 from rabe.boozer_modes import read_modes_bc
 
 
-def compare_coefs(modes_1, modes_2, ms, ns):
+def compare_coefs(modes_par, modes_ql, ms, ns):
     _, ax = plt.subplots(nrows=len(ns), ncols=len(ms), figsize=(20, 12))
     for idx_m in range(len(ms)):
         for idx_n in range(len(ns)):
             m = ms[idx_m]
             n = ns[idx_n]
-            mode_idx1 = modes_1.get_mode_idx(m, n)
-            mode_idx2 = modes_2.get_mode_idx(m, n)
-            if m == 0:
-                mode_idx2 = mode_idx1
-            modenumber_1 = (
+            mode_par = modes_par.get_mode_idx(m, -n)
+            mode_ql = modes_ql.get_mode_idx(m, n)
+            if m == 0 and n < 0:
+                continue
+            elif m == 0 and n >= 0:
+                mode_par = mode_ql
+            modenumber_par = (
                 " ("
-                + str(modes_1.m[0][mode_idx1])
+                + str(modes_par.m[0][mode_par])
                 + ","
-                + str(modes_1.n[0][mode_idx1])
+                + str(modes_par.n[0][mode_par])
                 + ")"
             )
-            modenumber_2 = (
+            modenumber_ql = (
                 " ("
-                + str(modes_2.m[0][mode_idx2])
+                + str(modes_ql.m[0][mode_ql])
                 + ","
-                + str(modes_2.n[0][mode_idx2])
+                + str(modes_ql.n[0][mode_ql])
                 + ")"
             )
-            modenumbers = modenumber_1 + " / " + modenumber_2
+            modenumbers = "par:" + modenumber_par + " / ql:" + modenumber_ql
             ax[idx_n, idx_m].plot(
-                modes_1.rho_tor, modes_1.coefs[:, mode_idx1], "b-", label=modenumbers
+                modes_par.rho_tor, modes_par.coefs[:, mode_par], "b-", label=modenumbers
             )
-            ax[idx_n, idx_m].plot(modes_2.rho_tor, modes_2.coefs[:, mode_idx2], "b--")
+            ax[idx_n, idx_m].plot(modes_ql.rho_tor, modes_ql.coefs[:, mode_ql], "b--")
             ax[idx_n, idx_m].set_xlabel(r"$\rho_\mathrm{tor}$")
             ax[idx_n, idx_m].set_ylabel(r"coef")
             ax[idx_n, idx_m].legend()
@@ -44,22 +46,24 @@ if __name__ == "__main__":
     output_dir = sys.argv[1]
 
     ms = [0, 1, 3]
-    ns = [0, 1, 3]
+    ns = [-3, -1, 0, 1, 3]
 
-    bc_file_1 = os.path.join(output_dir, "field.bc")
-    get_mode_idx_1 = lambda m, n, n_max: (
+    bc_file_par = os.path.join(output_dir, "booz_xform_field.bc")
+    get_mode_idx_par = lambda m, n, n_max: (
         (2 * n_max + 1) * (m - 1) + (n_max + n) + (n_max + 1)
     )
 
-    bc_file_2 = os.path.join(output_dir, "booz_xform_field.bc")
-    get_mode_idx_2 = lambda m, n, n_max: (
-        (2 * n_max + 1) * (m - 1) + (n_max - n) + (n_max + 1)
+    bc_file_ql = os.path.join(output_dir, "field.bc")
+    get_mode_idx_ql = lambda m, n, n_max: (
+        (2 * n_max + 1) * (m - 1) + (n_max + n) + (n_max + 1)
     )
 
-    rmnc_1, zmns_1, vmns_1, bmnc_1 = read_modes_bc(bc_file_1, get_mode_idx_1)
-    rmnc_2, zmns_2, vmns_2, bmnc_2 = read_modes_bc(bc_file_2, get_mode_idx_2)
-    compare_coefs(rmnc_1, rmnc_2, ms, ns)
-    compare_coefs(zmns_1, zmns_2, ms, ns)
-    compare_coefs(vmns_1, vmns_2, ms, ns)
-    compare_coefs(bmnc_1, bmnc_2, ms, ns)
+    rmnc_par, zmns_par, vmns_par, bmnc_par = read_modes_bc(
+        bc_file_par, get_mode_idx_par
+    )
+    rmnc_ql, zmns_ql, vmns_ql, bmnc_ql = read_modes_bc(bc_file_ql, get_mode_idx_ql)
+    compare_coefs(rmnc_par, rmnc_ql, ms, ns)
+    compare_coefs(zmns_par, zmns_ql, ms, ns)
+    compare_coefs(vmns_par, vmns_ql, ms, ns)
+    compare_coefs(bmnc_par, bmnc_ql, ms, ns)
     plt.show()
