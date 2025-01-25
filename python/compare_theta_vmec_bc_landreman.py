@@ -7,10 +7,10 @@ if __name__ == "__main__":
         get_vmec_theta_orientation,
     )
 
-    vmec_file = "output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
-    vmec = Vmec(vmec_file)
-    print("For Landreman VMEC")
-    get_vmec_theta_orientation(vmec)
+    # vmec_file = "python/output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    # vmec = Vmec(vmec_file)
+    # print("For Landreman VMEC")
+    # get_vmec_theta_orientation(vmec)
 
     par_bc_file = "python/output/quasi_symmetric.bc"
     get_mode_idx_par = lambda m, n, n_max: (
@@ -21,6 +21,7 @@ if __name__ == "__main__":
     get_bc_theta_orientation(rmnc, zmns)
 
     from rabe.boozer_modes import get_xyz_surface
+    from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
     x, y, z, B = get_xyz_surface(rmnc, zmns, vmns, bmnc, 4)
