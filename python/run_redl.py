@@ -7,9 +7,8 @@ from simsopt.mhd.boozer import Boozer
 from simsopt.mhd.profiles import ProfilePolynomial
 from simsopt.mhd.bootstrap import j_dot_B_Redl, RedlGeomBoozer
 
-TEST_DIR = "../external/simsopt/tests/test_files/"
 filename = os.path.join(
-    TEST_DIR, "wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    "python/output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
 )
 
 ne = ProfilePolynomial(4.0e20 * np.array([1]))
