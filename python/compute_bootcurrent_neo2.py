@@ -24,15 +24,15 @@ neo2par_output = "output"
 D_neo2par = get_D_coef_neo2par(neo2par_output, Te_spline(s_tor), m=9.1e-28, Z=-1)
 
 with h5py.File(os.path.join(neo2par_output, "fulltransp.h5")) as output:
-    dr_ds = output["avnabpsi"][()]
+    ds_dr = output["avnabpsi"][()]
 
 Te = Te_spline(s_tor)
 dTe_ds = Te_spline.dfds(s_tor)
-dTe_dr = dTe_ds * 1 / dr_ds
+dTe_dr = dTe_ds * ds_dr
 
 ne = ne_spline(s_tor)
 dne_ds = ne_spline.dfds(s_tor)
-dne_dr = dne_ds * 1 / dr_ds
+dne_dr = dne_ds * ds_dr
 
 A_1 = 1 / ne * dne_dr - 3 / 2 * 1 / Te * dTe_dr
 A_2 = 1 / Te * dTe_dr
