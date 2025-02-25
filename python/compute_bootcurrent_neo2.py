@@ -9,8 +9,8 @@ from neo2par import get_D_coef_neo2par
 s_tor = 0.5
 
 c = 3e10
-e = 1.6e-19
-EV2ERG = e * 1e7
+e = -4.8e-10
+EV2ERG = 1.6e-12
 GAUSS2TESLA = 1e-4
 STATA2AMPERE = 3e-9
 STATA_GAUSS2AMPERE_TESLA = STATA2AMPERE * GAUSS2TESLA
