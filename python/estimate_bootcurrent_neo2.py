@@ -17,19 +17,24 @@ CM3_TO_M3 = 1e-6
 
 if len(sys.argv) >= 2:
     neo2_ouput = os.path.join(sys.argv[1], "efinal.h5")
+    neo2_transport = os.path.join(sys.argv[1], "fulltransp.h5")
 else:
     neo2_ouput = "output/efinal.h5"
+    neo2_transport = "output/fulltransp.h5"
 
-neo2_ouput = "output/efinal.h5"
+neo2_ouput = "output/efinal.h5_lorentz"
+neo2_transport = "output/fulltransp.h5_lorentz"
 
 with h5py.File(neo2_ouput) as output:
     boot_coef = output["alambda_bb"][()]
+with h5py.File(neo2_transport) as output:
+    dr_ds = 1 / output["avnabpsi"][()]
 
 ne_spline = ProfilePolynomial(4.0e20 * CM3_TO_M3 * np.array([1]))
 Te_spline = ProfilePolynomial(12.0e3 * np.array([1, -1]))
 
 dTe_ds = Te_spline.dfds(s_tor)
-dTe_dr = dTe_ds * 1 / plasma_radius * EV2ERG
+dTe_dr = dTe_ds * 1 / dr_ds * EV2ERG
 
 ne = ne_spline(s_tor)
 
