@@ -29,7 +29,7 @@ I = geom_data.I
 iota = geom_data.iota
 
 # for stor = 0.5
-dr_ds_cgs = 1 / 0.00774091
+dr_ds_cgs = 1 / np.array([0.00593033, 0.00774091, 0.00774091])
 dr_ds_SI = dr_ds_cgs * 1e-2
 psi_SI = 4.186388e01 / 2 * np.pi
 dr_dpsi_SI = dr_ds_SI / psi_SI
