@@ -23,21 +23,6 @@ boozer = Boozer(vmec, mpol=16, ntor=16)
 geom = RedlGeomBoozer(boozer, surfaces, helicity_n)
 jdotB, details = j_dot_B_Redl(ne, Te, Ti, Zeff, geom=geom, plot=False)
 
-geom_data = geom()
-G = geom_data.G
-I = geom_data.I
-iota = geom_data.iota
-
-# for stor = 0.5
-dr_ds_cgs = 1 / np.array([0.00593033, 0.00774091, 0.00774091])
-dr_ds_SI = dr_ds_cgs * 1e-2
-psi_SI = 4.186388e01 / 2 * np.pi
-dr_dpsi_SI = dr_ds_SI / psi_SI
-
-conversion_fac = -(G + helicity_n * I) / (iota - helicity_n) * 1 / 2 * dr_dpsi_SI
-gamma_31 = conversion_fac * details.L31
-gamma_32 = conversion_fac * (details.L32 + 5 / 2 * details.L31)
-
 import matplotlib.pyplot as plt
 
 plt.scatter(surfaces, jdotB, label="Redl, f_t from Boozer")
@@ -53,6 +38,4 @@ for idx in range(len(surfaces)):
     print("L32 = ", details.L32[idx])
     print("L34 = ", details.L34[idx])
     print("alpha = ", details.alpha[idx])
-    print("gamma_31 = ", gamma_31[idx])
-    print("gamma_32 = ", gamma_32[idx])
     print("<j dot B> = ", jdotB[idx])
