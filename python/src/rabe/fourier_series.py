@@ -27,7 +27,10 @@ class FourierSeries:
 
 # @jit(nopython=True)
 def evaluate(fourier: FourierSeries, theta, phi):
-    f = np.zeros_like(theta, dtype=np.float64)
+    if not (np.shape(theta) == ()):
+        f = np.zeros_like(theta, dtype=np.float64)
+    else:
+        f = np.zeros_like(phi, dtype=np.float64)
     for i, _ in enumerate(fourier.m):
         fmnc = fourier.fmnc[i]
         fmns = fourier.fmns[i]

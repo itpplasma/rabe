@@ -143,3 +143,29 @@ def get_theta_phi_surface(
     # interval [0, 2pi/nfp].
 
     return theta, phi_boozer, surface_B
+
+
+def get_axis_projection(rmnc: Modes, zmns: Modes, nfp: int, n_phi: int = 100):
+    from .fourier_series import FourierSeries, evaluate
+
+    idx_surface = 0
+    fourier_r = FourierSeries(
+        rmnc.m[idx_surface],
+        nfp * rmnc.n[idx_surface],
+        rmnc.coefs[idx_surface],
+        np.zeros(len(rmnc.m[idx_surface])),
+    )
+    fourier_z = FourierSeries(
+        zmns.m[idx_surface],
+        nfp * zmns.n[idx_surface],
+        np.zeros(len(zmns.m[idx_surface])),
+        zmns.coefs[idx_surface],
+    )
+
+    theta = 0.0
+    phi_boozer = np.linspace(0, 2 * np.pi / nfp / 2, n_phi)
+
+    R = evaluate(fourier_r, theta, phi_boozer)
+    z = evaluate(fourier_z, theta, phi_boozer)
+
+    return phi_boozer, R, z

@@ -12,7 +12,11 @@ if __name__ == "__main__":
     print("For Landreman bc file")
     get_bc_theta_orientation(rmnc, zmns)
 
-    from rabe.boozer_modes import get_xyz_surface, get_theta_phi_surface
+    from rabe.boozer_modes import (
+        get_xyz_surface,
+        get_theta_phi_surface,
+        get_axis_projection,
+    )
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
@@ -41,4 +45,14 @@ if __name__ == "__main__":
     mappable = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
     mappable.set_array(B)
     fig.colorbar(mappable, ax=ax, shrink=0.5, aspect=10)
+    plt.show()
+
+    phi_boozer, R, z = get_axis_projection(rmnc, zmns, nfp=4)
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    ax.plot(R, z, "r.", label="approx. magnetic axis")
+    ax.set_xlabel("R")
+    ax.set_ylabel("z")
+    plt.axis("equal")
+    plt.legend()
     plt.show()
