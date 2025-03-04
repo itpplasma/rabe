@@ -15,7 +15,7 @@ vmec_file = os.path.join(
 
 neo2_file = os.path.join("output/quasi_symmetric.out")
 
-psi_SI = 4.186388e01 / 2 * np.pi  # toroidal magnetic flux at separatrix
+psi_SI = 4.186388e01 / (2 * np.pi)  # toroidal magnetic flux at separatrix
 
 ne = ProfilePolynomial(4.0e20 * np.array([1]))
 Te = ProfilePolynomial(12.0e3 * np.array([1, -1]))
