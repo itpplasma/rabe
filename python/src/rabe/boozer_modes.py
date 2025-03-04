@@ -86,8 +86,8 @@ def get_xyz_surface(
         np.zeros(len(bmnc.m[idx_surface])),
     )
 
-    theta = np.linspace(0, 2 * np.pi, 200)
-    phi_b = np.linspace(0, 2 * np.pi / nfp, 100)
+    theta = np.linspace(0, 2 * np.pi, n_theta)
+    phi_b = np.linspace(0, 2 * np.pi / nfp, n_phi)
     theta, phi_b = np.meshgrid(theta, phi_b)
 
     surface_R = evaluate(fourier_r, theta, phi_b)
@@ -109,15 +109,15 @@ def get_xyz_surface(
     #
     # with v, the normalized transformation function
 
-    # phi_full = phi.copy()
-    # for i in range(nfp-1):
-    #     phi_full = np.concatenate((phi_full, phi+2*np.pi*(i+1)/nfp), axis=0)
+    phi_full = phi.copy()
+    for i in range(nfp - 1):
+        phi_full = np.concatenate((phi_full, phi + 2 * np.pi * (i + 1) / nfp), axis=0)
 
-    # surface_R = np.tile(surface_R, (nfp, 1))
-    # surface_z = np.tile(surface_z, (nfp, 1))
-    # surface_B = np.tile(surface_B, (nfp, 1))
+    surface_R = np.tile(surface_R, (nfp, 1))
+    surface_z = np.tile(surface_z, (nfp, 1))
+    surface_B = np.tile(surface_B, (nfp, 1))
 
-    surface_x = surface_R * np.cos(phi)
-    surface_y = surface_R * np.sin(phi)
+    surface_x = surface_R * np.cos(phi_full)
+    surface_y = surface_R * np.sin(phi_full)
 
     return surface_x, surface_y, surface_z, surface_B
