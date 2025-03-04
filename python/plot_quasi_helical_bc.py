@@ -12,7 +12,7 @@ if __name__ == "__main__":
     print("For Landreman bc file")
     get_bc_theta_orientation(rmnc, zmns)
 
-    from rabe.boozer_modes import get_xyz_surface
+    from rabe.boozer_modes import get_xyz_surface, get_theta_phi_surface
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
@@ -26,6 +26,18 @@ if __name__ == "__main__":
     ax.set_ylabel("y")
     ax.set_zlabel("z")
     plt.axis("equal")
+    mappable = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+    mappable.set_array(B)
+    fig.colorbar(mappable, ax=ax, shrink=0.5, aspect=10)
+
+    theta, phi_boozer, B = get_theta_phi_surface(bmnc, 4)
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    norm = plt.Normalize(B.min(), B.max())
+    colors = plt.cm.viridis(norm(B))
+    surface = ax.contour(phi_boozer, theta, B)
+    ax.set_ylabel(r"$\theta_\mathrm{B}$")
+    ax.set_xlabel(r"$\varphi_\mathrm{B}$")
     mappable = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
     mappable.set_array(B)
     fig.colorbar(mappable, ax=ax, shrink=0.5, aspect=10)

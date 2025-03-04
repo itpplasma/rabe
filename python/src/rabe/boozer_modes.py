@@ -79,6 +79,54 @@ def get_xyz_surface(
         np.zeros(len(vmns.m[idx_surface])),
         vmns.coefs[idx_surface],
     )
+
+    theta, phi_boozer, surface_B = get_theta_phi_surface(
+        bmnc=bmnc, nfp=nfp, n_theta=n_theta, n_phi=n_phi, idx_surface=idx_surface
+    )
+
+    surface_R = evaluate(fourier_r, theta, phi_boozer)
+    surface_z = evaluate(fourier_z, theta, phi_boozer)
+    phi = phi_boozer + (2 * np.pi) / nfp * evaluate(fourier_v, theta, phi_boozer)
+    # The coefficients are not given in terms of phi, but phi_boozer. However,
+    # to get the cartesian coordinates from the simple sin/cos relation with R,
+    # phi has to be used.
+    #
+    # The calculation of R, z is done using phi_boozer and then we take these phi_boozer
+    # values and transform them into phi values using the (back)transformation
+    #
+    # phi_boozer + p(s,theta_boozer,phi_boozer) = phi
+    #
+    # where
+    #
+    # p = 2*pi/nfp * v
+    #
+    # with v, the normalized transformation function
+
+    phi_fullperiod = phi.copy()
+    for i in range(nfp - 1):
+        phi_fullperiod = np.concatenate(
+            (phi_fullperiod, phi + 2 * np.pi * (i + 1) / nfp), axis=0
+        )
+
+    surface_R = np.tile(surface_R, (nfp, 1))
+    surface_z = np.tile(surface_z, (nfp, 1))
+    surface_B = np.tile(surface_B, (nfp, 1))
+
+    surface_x = surface_R * np.cos(phi_fullperiod)
+    surface_y = surface_R * np.sin(phi_fullperiod)
+
+    return surface_x, surface_y, surface_z, surface_B
+
+
+def get_theta_phi_surface(
+    bmnc: Modes,
+    nfp: int,
+    n_theta: int = 100,
+    n_phi: int = 100,
+    idx_surface: int = -1,
+):
+    from .fourier_series import FourierSeries, evaluate
+
     fourier_b = FourierSeries(
         bmnc.m[idx_surface],
         nfp * bmnc.n[idx_surface],
@@ -87,37 +135,11 @@ def get_xyz_surface(
     )
 
     theta = np.linspace(0, 2 * np.pi, n_theta)
-    phi_b = np.linspace(0, 2 * np.pi / nfp, n_phi)
-    theta, phi_b = np.meshgrid(theta, phi_b)
+    phi_boozer = np.linspace(0, 2 * np.pi / nfp, n_phi)
+    theta, phi_boozer = np.meshgrid(theta, phi_boozer)
 
-    surface_R = evaluate(fourier_r, theta, phi_b)
-    surface_z = evaluate(fourier_z, theta, phi_b)
-    surface_B = evaluate(fourier_b, theta, phi_b)
-    phi = phi_b + (2 * np.pi) / nfp * evaluate(fourier_v, theta, phi_b)
-    # The coefficients are not given in terms of phi, but phi_B. However,
-    # to get the cartesian coordinates from the simple sin/cos relation with R,
-    # phi has to be used.
-    #
-    # The calculation of R, z is done using phi_B and then we take these phi_B
-    # values and transform them into phi values using the (back)transformation
-    #
-    # phi_B + p(s,theta_B,phi_B) = phi
-    #
-    # where
-    #
-    # p = 2*pi/nfp * v
-    #
-    # with v, the normalized transformation function
+    surface_B = evaluate(fourier_b, theta, phi_boozer)
+    # The coefficients are not given in terms of phi, but phi_boozer on the
+    # interval [0, 2pi/nfp].
 
-    phi_full = phi.copy()
-    for i in range(nfp - 1):
-        phi_full = np.concatenate((phi_full, phi + 2 * np.pi * (i + 1) / nfp), axis=0)
-
-    surface_R = np.tile(surface_R, (nfp, 1))
-    surface_z = np.tile(surface_z, (nfp, 1))
-    surface_B = np.tile(surface_B, (nfp, 1))
-
-    surface_x = surface_R * np.cos(phi_full)
-    surface_y = surface_R * np.sin(phi_full)
-
-    return surface_x, surface_y, surface_z, surface_B
+    return theta, phi_boozer, surface_B
