@@ -10,17 +10,17 @@ from simsopt.mhd.bootstrap import j_dot_B_Redl, RedlGeomBoozer
 import h5py
 
 vmec_file = os.path.join(
-    "python/output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    "output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
 )
 
-neo2_file = os.path.join("python/output/quasi_symmetric.out")
+neo2_file = os.path.join("output/quasi_symmetric.out")
 
 psi_SI = 4.186388e01 / 2 * np.pi  # toroidal magnetic flux at separatrix
 
 ne = ProfilePolynomial(4.0e20 * np.array([1]))
 Te = ProfilePolynomial(12.0e3 * np.array([1, -1]))
 Ti = ProfilePolynomial(6.0e3 * np.array([1]))
-surfaces = np.linspace(0.1, 0.7, 13)
+surfaces = np.linspace(0.1, 0.9, 17)
 Zeff = 1
 helicity_n = -1
 
@@ -84,6 +84,7 @@ for stor in boozer_s:
 
 import matplotlib.pyplot as plt
 
+plt.figure()
 plt.plot(stors, gamma31_redl, "xr", label="Redl, gamma31")
 plt.errorbar(
     stors,
@@ -108,6 +109,15 @@ plt.errorbar(
 )
 plt.xlabel("stor [1]")
 plt.ylabel("gamma [1]")
+plt.title("comparison dimensional bootstrap coefs")
+plt.legend(loc=0)
+plt.show()
+
+plt.figure()
+plt.plot(stors, np.array(gamma31_redl) / np.array(gamma31_neo2), "or", label="gamma31")
+plt.plot(stors, np.array(gamma32_redl) / np.array(gamma32_neo2), "ob", label="gamma32")
+plt.xlabel("stor [1]")
+plt.ylabel("ratio [1]")
 plt.title("comparison dimensional bootstrap coefs")
 plt.legend(loc=0)
 plt.show()
