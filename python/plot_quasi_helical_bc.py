@@ -45,7 +45,6 @@ if __name__ == "__main__":
     mappable = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
     mappable.set_array(B)
     fig.colorbar(mappable, ax=ax, shrink=0.5, aspect=10)
-    plt.show()
 
     phi_boozer, R, z = get_axis_projection(rmnc, zmns, nfp=4)
     fig = plt.figure(figsize=(8, 6))

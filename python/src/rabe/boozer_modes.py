@@ -62,22 +62,22 @@ def get_xyz_surface(
     from .fourier_series import FourierSeries, evaluate
 
     fourier_r = FourierSeries(
-        rmnc.m[idx_surface],
-        nfp * rmnc.n[idx_surface],
-        rmnc.coefs[idx_surface],
-        np.zeros(len(rmnc.m[idx_surface])),
+        list(rmnc.m[idx_surface]),
+        list(nfp * rmnc.n[idx_surface]),
+        list(rmnc.coefs[idx_surface]),
+        list(np.zeros(len(rmnc.m[idx_surface]))),
     )
     fourier_z = FourierSeries(
-        zmns.m[idx_surface],
-        nfp * zmns.n[idx_surface],
-        np.zeros(len(zmns.m[idx_surface])),
-        zmns.coefs[idx_surface],
+        list(zmns.m[idx_surface].tolist()),
+        list(nfp * zmns.n[idx_surface]),
+        list(np.zeros(len(zmns.m[idx_surface]))),
+        list(zmns.coefs[idx_surface]),
     )
     fourier_v = FourierSeries(
-        vmns.m[idx_surface],
-        nfp * vmns.n[idx_surface],
-        np.zeros(len(vmns.m[idx_surface])),
-        vmns.coefs[idx_surface],
+        list(vmns.m[idx_surface]),
+        list(nfp * vmns.n[idx_surface]),
+        list(np.zeros(len(vmns.m[idx_surface]))),
+        list(vmns.coefs[idx_surface]),
     )
 
     theta, phi_boozer, surface_B = get_theta_phi_surface(
@@ -128,14 +128,14 @@ def get_theta_phi_surface(
     from .fourier_series import FourierSeries, evaluate
 
     fourier_b = FourierSeries(
-        bmnc.m[idx_surface],
-        nfp * bmnc.n[idx_surface],
-        bmnc.coefs[idx_surface],
-        np.zeros(len(bmnc.m[idx_surface])),
+        list(bmnc.m[idx_surface]),
+        list(nfp * bmnc.n[idx_surface]),
+        list(bmnc.coefs[idx_surface]),
+        list(np.zeros(len(bmnc.m[idx_surface]))),
     )
 
-    theta = np.linspace(0, 2 * np.pi, n_theta)
-    phi_boozer = np.linspace(0, 2 * np.pi / nfp, n_phi)
+    theta = np.linspace(0.0, 2 * np.pi, n_theta)
+    phi_boozer = np.linspace(0.0, 2 * np.pi / nfp, n_phi)
     theta, phi_boozer = np.meshgrid(theta, phi_boozer)
 
     surface_B = evaluate(fourier_b, theta, phi_boozer)
@@ -150,16 +150,16 @@ def get_axis_projection(rmnc: Modes, zmns: Modes, nfp: int, n_phi: int = 100):
 
     idx_surface = 0
     fourier_r = FourierSeries(
-        rmnc.m[idx_surface],
-        nfp * rmnc.n[idx_surface],
-        rmnc.coefs[idx_surface],
-        np.zeros(len(rmnc.m[idx_surface])),
+        list(rmnc.m[idx_surface]),
+        list(nfp * rmnc.n[idx_surface]),
+        list(rmnc.coefs[idx_surface]),
+        list(np.zeros(len(rmnc.m[idx_surface]))),
     )
     fourier_z = FourierSeries(
-        zmns.m[idx_surface],
-        nfp * zmns.n[idx_surface],
-        np.zeros(len(zmns.m[idx_surface])),
-        zmns.coefs[idx_surface],
+        list(zmns.m[idx_surface]),
+        list(nfp * zmns.n[idx_surface]),
+        list(np.zeros(len(zmns.m[idx_surface]))),
+        list(zmns.coefs[idx_surface]),
     )
 
     theta = 0.0
