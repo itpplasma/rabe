@@ -15,7 +15,6 @@ vmec_file = os.path.join("output/wout_axisymmetric.nc")
 neo2_file = os.path.join("output/axisymmetric_collisionality_scan.out")
 bc_filename = os.path.join("output/axisymmetric.bc")
 
-
 s_tor_vmec = [0.01, 0.02]
 helicity_n = 0
 eps = 1e-8
