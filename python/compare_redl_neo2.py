@@ -48,17 +48,18 @@ gamma31_std_neo2 = np.zeros_like(boozer_s)
 gamma32_neo2 = np.zeros_like(boozer_s)
 gamma32_std_neo2 = np.zeros_like(boozer_s)
 
-for idx in range(boozer_s):
+for idx in range(len(boozer_s)):
+
     (
         gamma31_neo2[idx],
         gamma31_std_neo2[idx],
         gamma32_neo2[idx],
         gamma32_std_neo2[idx],
     ) = get_average_gamma_coefs(gamma_out[idx])
+
     gamma31_redl[idx], gamma32_redl[idx] = convert_landreman_to_gamma_coefs(
         L31[idx], L32[idx], G[idx], I[idx], iota[idx], helicity_n, dpsi_dr[idx]
     )
-
 
 # %%
 import matplotlib.pyplot as plt
