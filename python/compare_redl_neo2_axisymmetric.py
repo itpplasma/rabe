@@ -13,20 +13,21 @@ from rabe.gamma_coef import get_average_gamma_coefs, convert_landreman_to_gamma_
 
 vmec_file = os.path.join("output/wout_axisymmetric.nc")
 
-neo2_file = os.path.join("output/axisymmetric.out")
-
-with h5py.File(neo2_file, "r") as h5_file:
-    boozer_s = h5_file["boozer_s"][()]
-    ds_dr = h5_file["avnabpsi"][()]
-    gamma_out = h5_file["gamma_out"][()]
-
+neo2_file = os.path.join("output/axisymmetric_full_operator.out")
 
 ne = ProfilePolynomial(4.0e20 * np.array([1]))
 Te = ProfilePolynomial(12.0e3 * np.array([1, -1]))
 Ti = ProfilePolynomial(6.0e3 * np.array([1]))
 
 Zeff = 1
-helicity_n = -0
+helicity_n = 0
+
+# %%
+
+with h5py.File(neo2_file, "r") as h5_file:
+    boozer_s = h5_file["boozer_s"][()]
+    ds_dr = h5_file["avnabpsi"][()] * 1e2  # 1/cm -> 1/m
+    gamma_out = h5_file["gamma_out"][()]
 
 vmec = Vmec(vmec_file)
 boozer = Boozer(vmec, mpol=16, ntor=16)
@@ -91,7 +92,6 @@ plt.xlabel("stor [1]")
 plt.ylabel("gamma [1]")
 plt.title("comparison dimensional bootstrap coefs")
 plt.legend(loc=0)
-plt.show()
 
 plt.figure()
 plt.plot(
