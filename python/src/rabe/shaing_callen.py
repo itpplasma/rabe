@@ -32,7 +32,7 @@ def shaing_callen_bootstrap(
     Bphi = Bphi_spl(stor)
     integral, _ = quad(integrand, 0, 1)
     avnabpsi_cgs = avnabpsi * 1e8
-    lambda_bB_analytic = -(3 / 4 * integral - 1) * Bphi / (avnabpsi_cgs * iota)
+    lambda_bB_analytic = -(3 / 4 * integral - 1) * Bphi / (np.abs(avnabpsi_cgs) * iota)
 
     return lambda_bB_analytic
 
