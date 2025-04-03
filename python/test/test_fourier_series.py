@@ -8,7 +8,7 @@ def test_fourier_series_against_analytic():
     n = [0, 1, -1, 0, 1]
     fmnc = [1.0, 0.0, 0.0, 0.0, 1.0]
     fmns = [0.0, 1.0, 0.0, 1.0, 0.0]
-    angles = [[0, 0], [np.pi, 0], [0, np.pi / 2], [np.pi / 2, np.pi / 2]]
+    angles = [[0.0, 0.0], [np.pi, 0.0], [0.0, np.pi / 2], [np.pi / 2, np.pi / 2]]
     f_check = [2.0, 0.0, 0.0, 2.0]
 
     fourier = FourierSeries(m, n, fmnc, fmns)
