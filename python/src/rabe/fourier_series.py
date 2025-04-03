@@ -28,7 +28,7 @@ class FourierSeries:
 @jit(nopython=True)
 def evaluate(fourier: FourierSeries, theta, phi):
     if not (np.shape(theta) == np.shape(phi)):
-        ValueError("theta and phi need to be the same shape")
+        raise ValueError("theta and phi need to be the same shape")
     f = np.zeros_like(theta)
     for i, _ in enumerate(fourier.m):
         fmnc = fourier.fmnc[i]
