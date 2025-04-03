@@ -2,7 +2,7 @@ EXTERNAL_FILE = ../../external/simsopt/tests/test_files/wout_LandremanPaul2021_Q
 OUTPUT_DIR = output
 VMEC_FILE = $(OUTPUT_DIR)/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc
 
-.PHONY: all clean quasi_axisymmetric.bc
+.PHONY: all clean quasi_axisymmetric.bc plot
 all: quasi_axisymmetric.bc
 
 #Alias
