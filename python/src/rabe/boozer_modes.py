@@ -162,10 +162,9 @@ def get_axis_projection(rmnc: Modes, zmns: Modes, nfp: int, n_phi: int = 100):
         list(zmns.coefs[idx_surface]),
     )
 
-    theta = 0.0
     phi_boozer = np.linspace(0, 2 * np.pi / nfp / 2, n_phi)
-
+    theta = np.zeros_like(phi_boozer)
     R = evaluate(fourier_r, theta, phi_boozer)
-    z = evaluate(fourier_z, theta, phi_boozer)
+    Z = evaluate(fourier_z, theta, phi_boozer)
 
-    return phi_boozer, R, z
+    return phi_boozer, R, Z
