@@ -2,7 +2,6 @@
 if __name__ == "__main__":
     from simsopt.mhd.vmec import Vmec
     from rabe.boozer_modes import read_modes_bc
-    from rabe.coordinate_orientations import get_bc_theta_orientation
 
     nfp = 4
     par_bc_file = "output/quasi_helicalsymmetric.bc"
