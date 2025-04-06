@@ -30,14 +30,14 @@ with h5py.File(neo2_file, "r") as h5_file:
     lambda_bB_neo2output = h5_file["alambda_bb"][()]
 
 geom_data = geom()
-psi_SI = geom_data.psi_edge
-avnabpsi_cgs = avnabs[0] * psi_SI
+psi_SI_rhs = geom_data.psi_edge
+avnabAphi_cgs = avnabs[0] * psi_SI_rhs
 
 iota = geom_data.iota[0]
 b_0 = geom_data.Bmax[0]
 
 lambda_bB_analytic = shaing_callen_bootstrap(
-    bc_filename, s_tor_neo2[0], iota, b_0, avnabpsi_cgs
+    bc_filename, s_tor_neo2[0], iota, b_0, avnabAphi_cgs
 )
 
 # %%
@@ -46,11 +46,11 @@ import matplotlib.pyplot as plt
 plt.figure()
 plt.plot(
     -kappa,
-    -lambda_bB_analytic * np.ones_like(lambda_bB_neo2output),
+    lambda_bB_analytic * np.ones_like(lambda_bB_neo2output),
     "xr",
-    label="-analytic",
+    label="analytic",
 )
-plt.plot(-kappa, lambda_bB_neo2output, "ob", label="NEO-2")
+plt.plot(-kappa, -lambda_bB_neo2output, "ob", label="-NEO-2")
 plt.xlabel("kappa")
 plt.ylabel("lambda_bB")
 plt.xscale("log")
