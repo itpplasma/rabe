@@ -10,24 +10,35 @@ from simsopt.mhd.bootstrap import RedlGeomBoozer
 
 from rabe.shaing_callen import shaing_callen_bootstrap
 
+magnetic_case = "helical"
 
-vmec_file = os.path.join("output/wout_axisymmetric.nc")
-neo2_file = os.path.join("output/axisymmetric_collisionality_scan.out")
-bc_filename = os.path.join("output/axisymmetric.bc")
-
-s_tor_vmec = [0.01, 0.02]
-helicity_n = 0
-eps = 1e-8
-
-vmec = Vmec(vmec_file)
-boozer = Boozer(vmec, mpol=16, ntor=16)
-geom = RedlGeomBoozer(boozer, s_tor_vmec, helicity_n)
+if magnetic_case == "axi":
+    vmec_file = os.path.join("output/wout_axisymmetric.nc")
+    neo2_file = os.path.join("output/axisymmetric_collisionality_scan.out")
+    bc_filename = os.path.join("output/axisymmetric.bc")
+    helicity_n = 0
+elif magnetic_case == "helical":
+    vmec_file = os.path.join(
+        "output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    )
+    neo2_file = os.path.join("output/helicalsymmetric_collisionality_scan.out")
+    bc_filename = os.path.join("output/quasi_helicalsymmetric.bc")
+    helicity_n = -1
+else:
+    raise ValueError("Unknown magnetic_case")
 
 with h5py.File(neo2_file, "r") as h5_file:
-    s_tor_neo2 = h5_file["boozer_s"][()]
+    s_tor_neo2 = h5_file["boozer_s"][()] + 0.03
     kappa = h5_file["conl_over_mfp"][()]
     avnabs = h5_file["avnabpsi"][()]
     lambda_bB_neo2output = h5_file["alambda_bb"][()]
+
+
+eps = 1e-2
+
+vmec = Vmec(vmec_file)
+boozer = Boozer(vmec, mpol=16, ntor=16)
+geom = RedlGeomBoozer(boozer, [s_tor_neo2[0], s_tor_neo2[0] + eps], helicity_n)
 
 geom_data = geom()
 psi_SI_rhs = geom_data.psi_edge
@@ -37,9 +48,8 @@ iota = geom_data.iota[0]
 b_0 = geom_data.Bmax[0]
 
 lambda_bB_analytic = shaing_callen_bootstrap(
-    bc_filename, s_tor_neo2[0], iota, b_0, avnabAphi_cgs
+    bc_filename, s_tor_neo2[0], iota, b_0, avnabAphi_cgs, N=helicity_n
 )
-
 # %%
 import matplotlib.pyplot as plt
 
