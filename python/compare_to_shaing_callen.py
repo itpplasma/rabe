@@ -28,7 +28,7 @@ else:
     raise ValueError("Unknown magnetic_case")
 
 with h5py.File(neo2_file, "r") as h5_file:
-    s_tor_neo2 = h5_file["boozer_s"][()] + 0.03
+    s_tor_neo2 = h5_file["boozer_s"][()] + 0.0005
     kappa = h5_file["conl_over_mfp"][()]
     avnabs = h5_file["avnabpsi"][()]
     lambda_bB_neo2output = h5_file["alambda_bb"][()]
@@ -46,9 +46,10 @@ avnabAphi_cgs = avnabs[0] * psi_SI_rhs
 
 iota = geom_data.iota[0]
 b_0 = geom_data.Bmax[0]
+N = helicity_n * geom_data.nfp
 
 lambda_bB_analytic = shaing_callen_bootstrap(
-    bc_filename, s_tor_neo2[0], iota, b_0, avnabAphi_cgs, N=helicity_n
+    bc_filename, s_tor_neo2[0], iota, b_0, avnabAphi_cgs, N=N
 )
 # %%
 import matplotlib.pyplot as plt
@@ -57,10 +58,10 @@ plt.figure()
 plt.plot(
     -kappa,
     lambda_bB_analytic * np.ones_like(lambda_bB_neo2output),
-    "xr",
+    "r",
     label="analytic",
 )
-plt.plot(-kappa, -lambda_bB_neo2output, "ob", label="-NEO-2")
+plt.plot(-kappa, lambda_bB_neo2output, "ob", label="NEO-2")
 plt.xlabel("kappa")
 plt.ylabel("lambda_bB")
 plt.xscale("log")

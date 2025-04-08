@@ -26,7 +26,7 @@ def shaing_callen_bootstrap(
 
     def integrand(x):
         def f(alpha):
-            # for alpha = M*theta - N*phi for M=1
+            # for alpha = M*theta - N_zeta*zeta = M*theta - N*nfp*phi for M=1
             # -> m = m_alpha * M = m_alpha
             # -> n = m_alpha * N
             # -> cos(m*theta - n*phi) = cos(m*alpha)
