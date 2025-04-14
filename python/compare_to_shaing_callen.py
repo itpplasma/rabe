@@ -26,6 +26,7 @@ elif magnetic_case == "helical":
     )
     bc_filename = os.path.join("output/quasi_helicalsymmetric.bc")
     helicity_n = -1
+    R0 = 1406
 else:
     raise ValueError("Unknown magnetic_case")
 
@@ -35,6 +36,7 @@ with h5py.File(neo2_file, "r") as h5_file:
     avnabs = h5_file["avnabpsi"][()]
     lambda_bB_neo2output = h5_file["alambda_bb"][()]
 
+nu_star = -kappa * np.pi / 2 * R0
 
 eps = 1e-2
 
@@ -58,12 +60,12 @@ import matplotlib.pyplot as plt
 
 plt.figure()
 plt.plot(
-    -kappa,
+    nu_star,
     lambda_bB_analytic * np.ones_like(lambda_bB_neo2output),
     "r",
     label="analytic",
 )
-plt.plot(-kappa, lambda_bB_neo2output, "ob", label="NEO-2")
+plt.plot(nu_star, lambda_bB_neo2output, "ob", label="NEO-2")
 plt.xlabel("kappa")
 plt.ylabel("lambda_bB")
 plt.xscale("log")
@@ -72,7 +74,7 @@ plt.show()
 
 plt.figure()
 plt.plot(
-    -kappa,
+    nu_star,
     np.array(lambda_bB_analytic) / np.array(lambda_bB_neo2output),
     "or",
     label="analytic/neo2",
