@@ -21,14 +21,16 @@ elif magnetic_case == "helical":
     vmec_file = os.path.join(
         "output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
     )
-    neo2_file = os.path.join("output/helicalsymmetric_collisionality_scan.out")
+    neo2_file = os.path.join(
+        "output/helicalsymmetric_collisionality_scan_stor_0p26.out"
+    )
     bc_filename = os.path.join("output/quasi_helicalsymmetric.bc")
     helicity_n = -1
 else:
     raise ValueError("Unknown magnetic_case")
 
 with h5py.File(neo2_file, "r") as h5_file:
-    s_tor_neo2 = h5_file["boozer_s"][()] + 0.0005
+    s_tor_neo2 = h5_file["boozer_s"][()]
     kappa = h5_file["conl_over_mfp"][()]
     avnabs = h5_file["avnabpsi"][()]
     lambda_bB_neo2output = h5_file["alambda_bb"][()]
