@@ -91,3 +91,34 @@ def get_Btheta_spline(bc_filename):
 
     Btheta_spl = interp1d(stor, Btheta_cgs, axis=0)
     return Btheta_spl
+
+
+def get_Bmax(bc_filename, stor):
+    bmnc_spl, bmns_spl, m, n = get_bmn_splines(bc_filename)
+    bmnc = bmnc_spl(stor).tolist()
+    bmns = bmns_spl(stor).tolist()
+    fourier_b = FourierSeries(m, n, bmnc, bmns)
+    func = lambda alpha: evaluate(fourier_b, theta=alpha, phi=0)
+    _, B_max = find_maximum(func, 0, 2 * np.pi)
+    return B_max
+
+
+def find_maximum(func, a, b):
+    """
+    Find the maximum of a 1D function func in the interval [a, b].
+
+    Parameters:
+        func (callable): Function to maximize.
+        a (float): Start of interval.
+        b (float): End of interval.
+
+    Returns:
+        x_max (float): Point where maximum occurs.
+        f_max (float): Maximum value.
+    """
+    from scipy.optimize import minimize_scalar
+
+    result = minimize_scalar(lambda x: -func(x), bounds=(a, b), method="bounded")
+    x_max = result.x
+    f_max = func(x_max)
+    return x_max, f_max
