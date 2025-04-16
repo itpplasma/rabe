@@ -1,0 +1,23 @@
+name = "rabe"
+version = "0.0.0"
+license = "MIT"
+author = "Georg Grassler"
+maintainer = "georg.grassler@tugraz.at"
+copyright = "Copyright 2025, Plasma Physics at TU Graz"
+
+[dependencies]
+
+[build]
+external-modules = ["fftw3.f03"]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+module-naming = true
+
+[install]
+library = false
+
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"

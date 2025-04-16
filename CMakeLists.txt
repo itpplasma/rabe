@@ -13,7 +13,7 @@ set(SOURCES
 )
 add_library(rabe_lib ${SOURCES})
 
-add_executable(${PROJECT_NAME} src/main.f90)
+add_executable(${PROJECT_NAME} app/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
 
 enable_testing()
