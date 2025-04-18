@@ -1,5 +1,5 @@
 GENERATOR ?= Ninja
-CONFIG ?= Release
+CONFIG ?= Debug
 
 .PHONY: all build test install clean
 all: build
