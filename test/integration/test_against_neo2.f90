@@ -1,9 +1,7 @@
 program test_against_neo2
-    use, intrinsic :: iso_fortran_env, only: dp => real64
-    use neo_magfie, only: neo_magfie_a
 
     implicit none
-
+    integer, parameter :: dp = kind(1.0d0)
     real(dp) :: retol = 1e-12
 
     call test_against_neo2_field()
@@ -11,27 +9,28 @@ program test_against_neo2
 contains
 
     subroutine test_against_neo2_field
-        real(dp) :: x(3, 3)
+        use neo_field, only: neo_field_t
+
+        type(neo_field_t) :: field
+        real(dp) :: stor(3), theta(3), phi(3)
         real(dp) :: bmod, sqrtg, dB_dx(3)
         real(dp) :: bmod_neo2(3), sqrtg_neo2(3), dB_dx_neo2(3, 3)
+        character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
         integer :: idx
 
-        x(1, :) = (/0.02_dp, 1.00_dp, -1.00_dp/)
-        bmod_neo2(1) = 5.8461732541782538_dp
-        sqrtg_neo2(1) = -19930779.196453653_dp
+        stor = (/0.02_dp, 0.50_dp, 0.98_dp/)
+        theta = (/1.00_dp, -1.00_dp, 0.00_dp/)
+        phi = (/-1.00_dp, 0.00_dp, 1.00_dp/)
+
+     bmod_neo2 = (/5.8461732541782538_dp, 5.9754087905985811_dp, 5.8111625647178791_dp/)
+ sqrtg_neo2 = (/-19930779.196453653_dp, -19077980.387761779_dp, -20171657.785802342_dp/)
         dB_dx_neo2(1,:) = (/-0.92227365739728728_dp,      -0.52436170385830649_dp,       0.13109042596457662_dp/)
-
-        x(2, :) = (/0.50_dp, -1.00_dp, 0.00_dp/)
-        bmod_neo2(3) = 5.9754087905985811_dp
-        sqrtg_neo2(3) = -19077980.387761779_dp
-        dB_dx_neo2(3,:) = (/2.3191833894393170_dp,      0.42134787926653139_dp,      -0.10533696981663285_dp/)
-
-        x(3, :) = (/0.98_dp, 0.00_dp, 1.00_dp/)
-        bmod_neo2(3) = 5.8111625647178791_dp
-        sqrtg_neo2(3) = -20171657.785802342_dp
+        dB_dx_neo2(2,:) = (/2.3191833894393170_dp,      0.42134787926653139_dp,      -0.10533696981663285_dp/)
         dB_dx_neo2(3,:) = (/-1.7916431811050300_dp,      -0.45822445110624527_dp,       0.11455611277656132_dp/)
-        do idx = 1, size(x, 1)
-            call neo_magfie_a(x(idx, :), bmod, sqrtg, dB_dx)
+
+        call field%neo_field_init(bc_filename, stor(1))
+        do idx = 1, size(stor)
+            call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), bmod, sqrtg, dB_dx)
             if (abs(bmod/bmod_neo2(idx) - 1) > retol) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_against_neo2_field failed: B"
