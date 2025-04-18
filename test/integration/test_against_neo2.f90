@@ -5,7 +5,6 @@ program test_against_neo2
     real(dp) :: retol = 1e-11
     character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
 
-    !call test_neo_change_stor()
     call test_against_neo2_field()
 
 contains
@@ -60,47 +59,5 @@ contains
             end if
         end do
     end subroutine test_against_neo2_field
-
-    subroutine test_neo_change_stor
-        use neo_field, only: neo_field_t
-
-        type(neo_field_t) :: field
-        real(dp) :: stor, theta, phi
-        real(dp) :: B_mod1, sqrtg1, dB_dx1(3)
-        real(dp) :: B_mod2, sqrtg2, dB_dx2(3)
-
-        stor = 0.50_dp
-        theta = 1.00_dp
-        phi = -1.00_dp
-
-        call field%neo_field_init(bc_filename, stor)
-        call field%compute_B_sqrtg_dB_dx(theta, phi, B_mod1, sqrtg1, dB_dx1)
-        stor = 0.75_dp
-        call field%neo_change_stor(stor)
-        call field%compute_B_sqrtg_dB_dx(theta, phi, B_mod2, sqrtg2, dB_dx2)
-
-        if (abs(B_mod1/B_mod2 - 1) < retol) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_neo_change_stor failed: B did not change"
-            print *, "stor=0.50: ", B_mod1
-            print *, "stor=0.75: ", B_mod2
-            error stop
-        end if
-        if (abs(sqrtg1/sqrtg2 - 1) < retol) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_neo_change_stor failed: sqrtg did not change"
-            print *, "stor=0.50: ", sqrtg1
-            print *, "stor=0.75: ", sqrtg2
-            error stop
-        end if
-        if (any(abs(dB_dx1/dB_dx2 - 1) < retol)) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_neo_change_stor failed: dB_dx did not change"
-            print *, "stor=0.50: ", dB_dx1
-            print *, "stor=0.75: ", dB_dx2
-            error stop
-        end if
-
-    end subroutine test_neo_change_stor
 
 end program test_against_neo2
