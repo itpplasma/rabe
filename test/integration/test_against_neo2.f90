@@ -4,7 +4,7 @@ program test_against_neo2
 
     implicit none
 
-    real(dp) :: retol = 1e-12, retol_dB_dx = 1e-11
+    real(dp) :: retol = 1e-12
 
     call test_against_neo2_field()
 
@@ -17,19 +17,19 @@ contains
         integer :: idx
 
         x(1, :) = (/0.02_dp, 1.00_dp, -1.00_dp/)
-        bmod_neo2(1) = 5.8458951223088489_dp
-        sqrtg_neo2(1) = -19932756.361788746_dp
-        dB_dx_neo2(1,:) = (/-0.93545545807886743_dp, -0.52324687626235267_dp, 0.13081171906558817_dp/)
+        bmod_neo2(1) = 5.8461732541782538_dp
+        sqrtg_neo2(1) = -19930779.196453653_dp
+        dB_dx_neo2(1,:) = (/-0.92227365739728728_dp,      -0.52436170385830649_dp,       0.13109042596457662_dp/)
 
         x(2, :) = (/0.50_dp, -1.00_dp, 0.00_dp/)
-        bmod_neo2(3) = 5.9751856841370872_dp
-        sqrtg_neo2(3) = -19079482.277618125_dp
-        dB_dx_neo2(3,:) = (/2.3020250573447201_dp,       0.42393972670620234_dp,      -0.10598493167655058_dp/)
+        bmod_neo2(3) = 5.9754087905985811_dp
+        sqrtg_neo2(3) = -19077980.387761779_dp
+        dB_dx_neo2(3,:) = (/2.3191833894393170_dp,      0.42134787926653139_dp,      -0.10533696981663285_dp/)
 
         x(3, :) = (/0.98_dp, 0.00_dp, 1.00_dp/)
-        bmod_neo2(3) = 5.8109715984855734_dp
-        sqrtg_neo2(3) = -20173065.198901489_dp
-        dB_dx_neo2(3,:) = (/-1.8031078794845030_dp,      -0.45690311437961667_dp,       0.11422577859490417_dp/)
+        bmod_neo2(3) = 5.8111625647178791_dp
+        sqrtg_neo2(3) = -20171657.785802342_dp
+        dB_dx_neo2(3,:) = (/-1.7916431811050300_dp,      -0.45822445110624527_dp,       0.11455611277656132_dp/)
         do idx = 1, size(x, 1)
             call neo_magfie_a(x(idx, :), bmod, sqrtg, dB_dx)
             if (abs(bmod/bmod_neo2(idx) - 1) > retol) then
@@ -46,7 +46,7 @@ contains
                 print *, "NEO-2: ", sqrtg_neo2(idx)
                 error stop
             end if
-            if (any(abs(dB_dx/dB_dx_neo2(idx, :) - 1) > retol_dB_dx)) then
+            if (any(abs(dB_dx/dB_dx_neo2(idx, :) - 1) > retol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_against_neo2_field failed: dB_dx"
                 print *, "dB_dx: ", dB_dx
