@@ -86,7 +86,6 @@ contains
         do i = 1, ns
             do j = 1, mnmax
                 if (ixm(j) .eq. 0 .and. ixn(j) .eq. 0) then
-                    print *, bmnc(i, j)
                     b00(i) = bmnc(i, j)
                     exit
                 end if
@@ -168,8 +167,8 @@ contains
         sp_index = (/(i, i=1, ns)/)
 
         ! 1-d splines of 2-d arrays
-        ! call splinecof3_hi_driv(es, bmnc, r_mhalf, &
-        !     & a_bmnc, b_bmnc, c_bmnc, d_bmnc, sp_index, tf)
+        call splinecof3_hi_driv(es, bmnc, r_mhalf, &
+            & a_bmnc, b_bmnc, c_bmnc, d_bmnc, sp_index, tf)
 
         ! boundary types (natural spline)
         sw1 = 2
@@ -182,29 +181,10 @@ contains
         ! we use no smoothing for spline
         allocate (lambda(ns))
         lambda = 1.0d0
-        ! print*, es(1)
-        ! print*, c1, cn
-        ! print*, lambda(1)
-        ! print*, sp_index
-        ! print*, sw1, sw2
-        ! print*, m0
 
         ! 1-d splines of 1-d arrays
         call splinecof3(es, iota, c1, cn, lambda, sp_index, sw1, sw2, &
             & a_iota, b_iota, c_iota, d_iota, m0, tf)
-
-        ! maxpos = maxloc(iota)
-        ! print*, iota(maxpos(1))
-        ! maxpos   = maxloc(a_iota)
-        ! print*, a_iota(maxpos(1))
-        ! maxpos   = maxloc(b_iota)
-        ! print*, b_iota(maxpos(1))
-        ! maxpos   = maxloc(c_iota)
-        ! print*, c_iota(maxpos(1))
-        ! maxpos   = maxloc(d_iota)
-        ! print*, d_iota(maxpos(1))
-        stop
-
         call splinecof3(es, curr_tor, c1, cn, lambda, sp_index, sw1, sw2, &
             & a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, m0, tf)
         call splinecof3(es, curr_pol, c1, cn, lambda, sp_index, sw1, sw2, &
@@ -238,7 +218,7 @@ contains
         ! Open input-unit and read data
         !***********************************************************************
 
-        in_file = "test.bc"
+        in_file = "input/quasi_helical.bc"
         theta_n = 300
         phi_n = 300
         max_m_mode = 1000
