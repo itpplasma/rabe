@@ -16,8 +16,5 @@ install: build
 test: build
 	ctest --test-dir build/test --output-on-failure
 
-fpm:
-	fpm build
-
 clean:
 	rm -rf build
