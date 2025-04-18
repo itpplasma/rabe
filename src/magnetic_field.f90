@@ -167,8 +167,10 @@ contains
                 do ip = 1, phi_n
                     do it = 1, theta_n
 
-                    cosv = cosmth(it, im)*cosnph(ip, in) + sinmth(it, im)*sinnph(ip, in)
-                    sinv = sinmth(it, im)*cosnph(ip, in) - cosmth(it, im)*sinnph(ip, in)
+                        cosv = cosmth(it, im)*cosnph(ip, in) &
+                               + sinmth(it, im)*sinnph(ip, in)
+                        sinv = sinmth(it, im)*cosnph(ip, in) &
+                               - cosmth(it, im)*sinnph(ip, in)
 
                         bmod_a(it, ip) = bmod_a(it, ip) + bi*cosv
                         bb_s_a(it, ip) = bb_s_a(it, ip) + bi_s*cosv
@@ -214,12 +216,12 @@ contains
             deallocate (bb_pb_a)
 
             swd = 1
-            call spline_1d(es, &
-            & a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, swd, m0,                                        &
-            & s, curr_tor_array(k_es), curr_tor_s_array(k_es), ypp, yppp)
-            call spline_1d(es, &
-            & a_curr_pol, b_curr_pol, c_curr_pol, d_curr_pol, swd, m0,                                        &
-            & s, curr_pol_array(k_es), curr_pol_s_array(k_es), ypp, yppp)
+            call spline_1d(es, a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, &
+                           swd, m0, s, curr_tor_array(k_es), &
+                           curr_tor_s_array(k_es), ypp, yppp)
+            call spline_1d(es, a_curr_pol, b_curr_pol, c_curr_pol, d_curr_pol, &
+                           swd, m0, s, curr_pol_array(k_es), &
+                           curr_pol_s_array(k_es), ypp, yppp)
             call spline_1d(es, &
             & a_iota, b_iota, c_iota, d_iota, swd, m0, &
             & s, iota_array(k_es), iota_s_array(k_es), ypp, yppp)
@@ -264,7 +266,7 @@ contains
         call eva2d(theta_n, phi_n, theta_ind, phi_ind, theta_d, phi_d, &
                    p_spl, bb_pb)
 
-        sqrtg = psi_pr*curr_pol + iota*curr_tor/bmod**2*1d6
+        sqrtg = psi_pr*(curr_pol + iota*curr_tor)/bmod**2*1d6
 
         dB_dx(1) = bb_s
         dB_dx(3) = bb_tb

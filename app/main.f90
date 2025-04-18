@@ -3,20 +3,20 @@ program rabe
     use read_file, only: read_field_file, read_boozer_file
     use read_file, only: modes
     use neo_magfie, only: neo_magfie_a
-    use sparse_mod, only: sparse_solve_method, sparse_talk
 
     implicit none
 
     real(dp), dimension(3) :: x = (/0.5d0, 0.0d0, 0.d0/)
     real(dp) :: bmod, sqrtg, dB_dx(3)
 
-    sparse_solve_method = 3
-    sparse_talk = .true.
     call printer(read_boozer_file, "test.bc")
     call neo_magfie_a(x, bmod, sqrtg, dB_dx)
     print *, x
+    print *, "bmod"
     print *, bmod
+    print *, "sqrtg"
     print *, sqrtg
+    print *, "bder"
     print *, dB_dx
 
 contains

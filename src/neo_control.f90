@@ -1,7 +1,7 @@
 !> Control parameters from input file
 module neo_control
     use nrtype, only: dp
-    character(20) :: in_file
+    character(40) :: in_file
     integer :: theta_n
     integer :: phi_n
     integer :: s_ind_in
