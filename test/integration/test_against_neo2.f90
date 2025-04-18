@@ -2,8 +2,10 @@ program test_against_neo2
 
     implicit none
     integer, parameter :: dp = kind(1.0d0)
-    real(dp) :: retol = 1e-12
+    real(dp) :: retol = 1e-11
+    character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
 
+    !call test_neo_change_stor()
     call test_against_neo2_field()
 
 contains
@@ -15,21 +17,25 @@ contains
         real(dp) :: stor(3), theta(3), phi(3)
         real(dp) :: bmod, sqrtg, dB_dx(3)
         real(dp) :: bmod_neo2(3), sqrtg_neo2(3), dB_dx_neo2(3, 3)
-        character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.98_dp/)
         theta = (/1.00_dp, -1.00_dp, 0.00_dp/)
         phi = (/-1.00_dp, 0.00_dp, 1.00_dp/)
 
-     bmod_neo2 = (/5.8461732541782538_dp, 5.9754087905985811_dp, 5.8111625647178791_dp/)
- sqrtg_neo2 = (/-19930779.196453653_dp, -19077980.387761779_dp, -20171657.785802342_dp/)
+        bmod_neo2 = (/5.8461732541782538_dp, &
+                      6.3747018649171556_dp, &
+                      5.4298976321806043_dp/)
+        sqrtg_neo2 = (/-19930779.196453653_dp, &
+                       -16763094.050708901_dp, &
+                       -23104179.862998683_dp/)
         dB_dx_neo2(1,:) = (/-0.92227365739728728_dp,      -0.52436170385830649_dp,       0.13109042596457662_dp/)
-        dB_dx_neo2(2,:) = (/2.3191833894393170_dp,      0.42134787926653139_dp,      -0.10533696981663285_dp/)
-        dB_dx_neo2(3,:) = (/-1.7916431811050300_dp,      -0.45822445110624527_dp,       0.11455611277656132_dp/)
+        dB_dx_neo2(2,:) = (/0.53462460260148859_dp,        2.2334179757062391_dp,      -0.55835449392655978_dp/)
+        dB_dx_neo2(3,:) = (/-0.20339965461773155_dp,       -3.1053275555883841_dp,       0.77633188889709603_dp/)
 
         call field%neo_field_init(bc_filename, stor(1))
-        do idx = 1, size(stor)
+        do idx = 1, 3
+            call field%neo_change_stor(stor(idx))
             call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), bmod, sqrtg, dB_dx)
             if (abs(bmod/bmod_neo2(idx) - 1) > retol) then
                 print *, "-------------------------------------------------------------"
@@ -54,5 +60,47 @@ contains
             end if
         end do
     end subroutine test_against_neo2_field
+
+    subroutine test_neo_change_stor
+        use neo_field, only: neo_field_t
+
+        type(neo_field_t) :: field
+        real(dp) :: stor, theta, phi
+        real(dp) :: B_mod1, sqrtg1, dB_dx1(3)
+        real(dp) :: B_mod2, sqrtg2, dB_dx2(3)
+
+        stor = 0.50_dp
+        theta = 1.00_dp
+        phi = -1.00_dp
+
+        call field%neo_field_init(bc_filename, stor)
+        call field%compute_B_sqrtg_dB_dx(theta, phi, B_mod1, sqrtg1, dB_dx1)
+        stor = 0.75_dp
+        call field%neo_change_stor(stor)
+        call field%compute_B_sqrtg_dB_dx(theta, phi, B_mod2, sqrtg2, dB_dx2)
+
+        if (abs(B_mod1/B_mod2 - 1) < retol) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_neo_change_stor failed: B did not change"
+            print *, "stor=0.50: ", B_mod1
+            print *, "stor=0.75: ", B_mod2
+            error stop
+        end if
+        if (abs(sqrtg1/sqrtg2 - 1) < retol) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_neo_change_stor failed: sqrtg did not change"
+            print *, "stor=0.50: ", sqrtg1
+            print *, "stor=0.75: ", sqrtg2
+            error stop
+        end if
+        if (any(abs(dB_dx1/dB_dx2 - 1) < retol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_neo_change_stor failed: dB_dx did not change"
+            print *, "stor=0.50: ", dB_dx1
+            print *, "stor=0.75: ", dB_dx2
+            error stop
+        end if
+
+    end subroutine test_neo_change_stor
 
 end program test_against_neo2

@@ -116,17 +116,21 @@ contains
         if (magfie_spline .eq. 1 .and. magfie_newspline .eq. 1) then
             magfie_sarray_len = size(magfie_sarray)
 
+            if (allocated(bmod_spl)) deallocate (bmod_spl)
+            if (allocated(bb_s_spl)) deallocate (bb_s_spl)
+            if (allocated(bb_tb_spl)) deallocate (bb_tb_spl)
+            if (allocated(bb_pb_spl)) deallocate (bb_pb_spl)
             allocate (bmod_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_s_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_tb_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_pb_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
 
+            if (allocated(curr_tor_array)) deallocate (curr_tor_array)
+            if (allocated(curr_pol_array)) deallocate (curr_pol_array)
+            if (allocated(iota_array)) deallocate (iota_array)
             allocate (curr_tor_array(magfie_sarray_len))
-            allocate (curr_tor_s_array(magfie_sarray_len))
             allocate (curr_pol_array(magfie_sarray_len))
-            allocate (curr_pol_s_array(magfie_sarray_len))
             allocate (iota_array(magfie_sarray_len))
-            allocate (iota_s_array(magfie_sarray_len))
 
             s = magfie_sarray(k_es)
 
@@ -215,16 +219,15 @@ contains
             deallocate (bb_tb_a)
             deallocate (bb_pb_a)
 
-            swd = 1
+            swd = 0
             call spline_1d(es, a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, &
                            swd, m0, s, curr_tor_array(k_es), &
-                           curr_tor_s_array(k_es), ypp, yppp)
+                           yp, ypp, yppp)
             call spline_1d(es, a_curr_pol, b_curr_pol, c_curr_pol, d_curr_pol, &
                            swd, m0, s, curr_pol_array(k_es), &
-                           curr_pol_s_array(k_es), ypp, yppp)
-            call spline_1d(es, &
-            & a_iota, b_iota, c_iota, d_iota, swd, m0, &
-            & s, iota_array(k_es), iota_s_array(k_es), ypp, yppp)
+                           yp, ypp, yppp)
+            call spline_1d(es, a_iota, b_iota, c_iota, d_iota, &
+                           swd, m0, s, iota_array(k_es), yp, ypp, yppp)
             magfie_newspline = 0
 
             ! Minimum and Maximum in the new mode
