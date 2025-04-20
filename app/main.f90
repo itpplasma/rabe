@@ -9,7 +9,6 @@ program rabe
     real(dp), dimension(3) :: x = (/0.5d0, 0.0d0, 0.d0/)
     real(dp) :: bmod, sqrtg, dB_dx(3)
 
-    call printer(read_boozer_file, "test.bc")
     call neo_magfie_a(x, bmod, sqrtg, dB_dx)
     print *, x
     print *, "bmod"
@@ -31,10 +30,10 @@ contains
         message = "Starting rabe!"
         print *, message
         call reader(field_file, B)
-        print *, B % s_tor(1:3)
-        print *, B % coef(1:3, 1:3)
-        print *, B % m(1:3)
-        print *, B % n(1:3)
+        print *, B%s_tor(1:3)
+        print *, B%coef(1:3, 1:3)
+        print *, B%m(1:3)
+        print *, B%n(1:3)
     end subroutine printer
 
 end program rabe

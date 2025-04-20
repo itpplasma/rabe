@@ -5,7 +5,7 @@ CONFIG ?= Debug
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -G $(GENERATOR) -DCMAKE_BUILD_TYPE=$(CONFIG)
+	cmake -S . -B build -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(CONFIG)
 
 build: build/CMakeCache.txt
 	cmake --build build
