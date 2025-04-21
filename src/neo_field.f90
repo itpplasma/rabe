@@ -1,9 +1,9 @@
 module neo_field
+    use constants, only: dp
     use field_base, only: field_t
     use neo_magfie, only: neo_magfie_a
 
     implicit none
-    integer, parameter :: dp = kind(1.0d0)
 
     type, extends(field_t) :: neo_field_t
     contains

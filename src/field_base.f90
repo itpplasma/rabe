@@ -1,6 +1,6 @@
 module field_base
+    use constants, only: dp
     implicit none
-    integer, parameter :: dp = kind(1.0d0)
 
     type, abstract :: field_t
     contains

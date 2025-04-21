@@ -1,6 +1,5 @@
 module find_extrema
-    use, intrinsic :: iso_fortran_env, only: dp => real64
-
+    use constants, only: dp
     implicit none
 
     abstract interface

@@ -1,5 +1,5 @@
 module read_file
-    use, intrinsic :: iso_fortran_env, only: dp => real64
+    use constants, only: dp
 
     implicit none
 
@@ -53,8 +53,8 @@ contains
         allocate(s_tor(n_s), iota(n_s), curr_pol(n_s), curr_tor(n_s), dp_ds(n_s), sqrtg_00(n_s), stat = i_alloc)
         if (i_alloc /= 0) stop 'Allocation for real arrays failed!'
 
-        allocate (B % m(num_modes), B % n(num_modes), stat=i_alloc)
-        allocate (B % s_tor(n_s))
+        allocate (B%m(num_modes), B%n(num_modes), stat=i_alloc)
+        allocate (B%s_tor(n_s))
         allocate(rmnc(n_s,num_modes), zmns(n_s,num_modes), vmns(n_s,num_modes), B%coef(n_s,num_modes), stat = i_alloc)
 
         if (i_alloc /= 0) stop 'Allocation for fourier arrays (1) failed!'
@@ -81,11 +81,11 @@ contains
                     rmnc(i, j) = 0.0d0
                     zmns(i, j) = 0.0d0
                     vmns(i, j) = 0.0d0
-                    B % coef(i, j) = 0.0d0
+                    B%coef(i, j) = 0.0d0
                 else
                     read (file_unit, *) m(j), n(j), &
                         rmnc(i, j), zmns(i, j), vmns(i, j), &
-                        B % coef(i, j)
+                        B%coef(i, j)
                 end if
             end do
         end do
@@ -96,9 +96,9 @@ contains
         n = n*nfp
         m = m
         psi_tor_separatrix = abs(tor_flux_separatrix)/2.0_dp*pi
-        B % m = m
-        B % n = n
-        B % s_tor = s_tor
+        B%m = m
+        B%n = n
+        B%s_tor = s_tor
     end subroutine read_boozer_file
 
     subroutine skip_lines(file_unit, n_lines)
