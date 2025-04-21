@@ -4,13 +4,46 @@ module find_extrema
 
     abstract interface
         subroutine func1d(x, value)
-            use, intrinsic :: iso_fortran_env, only: dp => real64
+            use constants, only: dp
             real(dp), dimension(:), intent(in) :: x
             real(dp), dimension(:), intent(out) :: value
         end subroutine func1d
     end interface
 
 contains
+
+    subroutine find_local_maxima(func, interval, location, n_steps_in)
+        procedure(func1d) :: func
+        real(dp), intent(in) :: interval(2)
+        real(dp), dimension(:), intent(out) :: location
+        integer, intent(in), optional :: n_steps_in
+
+        integer :: n_maxima, n_steps
+        real(dp), dimension(:), allocatable :: x, value
+        integer :: current_maxima, current_location
+
+        if (present(n_steps_in)) then
+            n_steps = n_steps_in
+        else
+            n_steps = 100
+        end if
+        allocate (x(n_steps), value(n_steps))
+        call linspace(interval(1), interval(2), n_steps, x)
+        call func(x, value)
+
+        n_maxima = size(location, dim=1)
+        current_maxima = 0
+        do current_location = 2, n_steps - 1
+            if (value(current_location - 1) < value(current_location)) then
+                if (value(current_location + 1) < value(current_location)) then
+                    current_maxima = current_maxima + 1
+                    location(current_maxima) = x(current_location)
+                    if (current_maxima .ge. n_maxima) exit
+                end if
+            end if
+        end do
+
+    end subroutine find_local_maxima
 
     function find_global_extrema(func, interval, n_steps_in) result(extrema)
         procedure(func1d) :: func
