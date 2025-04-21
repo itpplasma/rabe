@@ -8,7 +8,8 @@ program rabe
   character(len=*), parameter :: bc_filename = "test/integration/input/quasi_helical.bc"
     real(dp), parameter :: iota = 1.25_dp
     real(dp), parameter :: nfp = 4.0_dp, scan_n_periods = 2.0_dp
-real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/nfp*scan_n_periods/)
+    real(dp), dimension(2), parameter :: interval = (/0.0_dp, &
+                                                      2.0_dp*pi/nfp*scan_n_periods/)
 
     type(neo_field_t) :: field
     real(dp) :: bmod, sqrtg, dB_dx(3)
