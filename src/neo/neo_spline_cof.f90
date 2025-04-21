@@ -61,7 +61,7 @@
 !>     INTEGER(I4B), PARAMETER :: VAR = 7 ... no of variables
 !>
 !> NEEDS:
-!>     solve_systems, calc_opt_lambda3
+!>     calc_opt_lambda3
 SUBROUTINE splinecof3_a(x, y, c1, cn, lambda1, indx, sw1, sw2, &
      a, b, c, d, m, f)
   !-----------------------------------------------------------------------
@@ -73,7 +73,6 @@ SUBROUTINE splinecof3_a(x, y, c1, cn, lambda1, indx, sw1, sw2, &
   !! Modifications by Andreas F. Martitsch (06.08.2014)
   !Replace standard solver from Lapack with sparse solver
   !(Bad performance for more than 1000 flux surfaces ~ (3*nsurf)^2)
-  USE solve_systems
   USE sparse_mod, ONLY : sparse_solve
   !! End Modifications by Andreas F. Martitsch (06.08.2014)
 
