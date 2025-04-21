@@ -1,3 +1,5 @@
+.venv/
+myenv/
 build/
 external/
 *.bc
