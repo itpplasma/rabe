@@ -16,6 +16,7 @@ contains
 
     subroutine neo_field_init(self, bc_filename, stor)
         use neo_magfie, only: magfie_newspline
+        use neo_control, only: in_file
 
         class(neo_field_t), intent(out) :: self
         character(*), intent(in) :: bc_filename
@@ -30,6 +31,7 @@ contains
             error stop
         end if
 
+        in_file = bc_filename
         x = (/stor, 0.0_dp, 0.0_dp/)
         call neo_magfie_a(x, dummy_1, dummy_2, dummy_3)
 

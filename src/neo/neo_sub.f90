@@ -218,7 +218,6 @@ contains
         ! Open input-unit and read data
         !***********************************************************************
 
-        in_file = "input/quasi_helical.bc"
         theta_n = 300
         phi_n = 300
         max_m_mode = 1000
