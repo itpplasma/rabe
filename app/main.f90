@@ -1,39 +1,37 @@
 program rabe
-    use, intrinsic :: iso_fortran_env, only: dp => real64
-    use read_file, only: read_field_file, read_boozer_file
-    use read_file, only: modes
-    use neo_magfie, only: neo_magfie_a
+    use constants, only: dp, pi
+    use neo_field, only: neo_field_t
+    use find_extrema, only: find_local_maxima
 
     implicit none
 
-    real(dp), dimension(3) :: x = (/0.5d0, 0.0d0, 0.d0/)
-    real(dp) :: bmod, sqrtg, dB_dx(3)
+  character(len=*), parameter :: bc_filename = "test/integration/input/quasi_helical.bc"
+    real(dp), parameter :: iota = 1.25_dp
+    real(dp), parameter :: nfp = 4.0_dp, scan_n_periods = 2.0_dp
+real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/nfp*scan_n_periods/)
 
-    call neo_magfie_a(x, bmod, sqrtg, dB_dx)
-    print *, x
-    print *, "bmod"
-    print *, bmod
-    print *, "sqrtg"
-    print *, sqrtg
-    print *, "bder"
-    print *, dB_dx
+    type(neo_field_t) :: field
+    real(dp) :: bmod, sqrtg, dB_dx(3)
+    real(dp) :: found_phi_max(2)
+
+    call field%neo_field_init(bc_filename, stor=0.5_dp)
+    call find_local_maxima(field_along_fieldline, interval, found_phi_max)
+    print *, found_phi_max
 
 contains
+    subroutine field_along_fieldline(phi, B_mod)
+        real(dp), dimension(:), intent(in) :: phi
+        real(dp), dimension(:), intent(out) :: B_mod
 
-    subroutine printer(reader, field_file)
-        procedure(read_field_file) :: reader
-        character(len=*) :: field_file
+        real(dp), dimension(size(phi, 1)) :: theta
+        real(dp) :: dummy, dummy3d(3)
+        integer :: idx
 
-        character(len=20) :: message
-        type(modes) :: B
+        theta = phi*iota
 
-        message = "Starting rabe!"
-        print *, message
-        call reader(field_file, B)
-        print *, B%s_tor(1:3)
-        print *, B%coef(1:3, 1:3)
-        print *, B%m(1:3)
-        print *, B%n(1:3)
-    end subroutine printer
+        do idx = 1, size(phi, 1)
+      call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), dummy, dummy3d)
+        end do
+    end subroutine field_along_fieldline
 
 end program rabe
