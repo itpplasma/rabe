@@ -165,7 +165,7 @@ subroutine splint_horner3_driv_s_a(svec, a, b, c, d, swd, ixm, ixn, s, theta, ph
                                    f, fp, fpp, fppp, y, ys, yt, yp)
     ! driver routine for splint_horner3
     ! y  =  y_mn  *   sin(m*theta - n*phi)
-    ! ys =  y_mn' *   sin(m*theta - n*phi)
+    ! ys =  y_mn_prime *   sin(m*theta - n*phi)
     ! yt =  y_mn  * m*cos(m*theta - n*phi)
     ! yp = -y_mn  * n*cos(m*theta - n*phi)
     !
@@ -275,7 +275,7 @@ subroutine splint_horner3_driv_c_a(svec, a, b, c, d, swd, ixm, ixn, s, theta, ph
                                    f, fp, fpp, fppp, y, ys, yt, yp)
     ! driver routine for splint_horner3
     ! y  =  y_mn  *   cos(m*theta - n*phi)
-    ! ys =  y_mn' *   cos(m*theta - n*phi)
+    ! ys =  y_mn_prime *   cos(m*theta - n*phi)
     ! yt = -y_mn  * m*sin(m*theta - n*phi)
     ! yp =  y_mn  * n*sin(m*theta - n*phi)
     !
