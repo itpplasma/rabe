@@ -45,7 +45,7 @@ contains
 
         real(dp) :: x(3), dummy_iota
 
-        x = (/0.0_dp, theta, phi/)
+        x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, B_mod, sqrtg, dB_dx, dummy_iota)
 
     end subroutine compute_B_sqrtg_dB_dx

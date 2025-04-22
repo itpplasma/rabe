@@ -19,8 +19,8 @@ contains
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.98_dp/)
-        theta = (/1.00_dp, -1.00_dp, 0.00_dp/)
-        phi = (/-1.00_dp, 0.00_dp, 1.00_dp/)
+        theta = (/-1.00_dp, 0.00_dp, 1.00_dp/)
+        phi = (/1.00_dp, -1.00_dp, 0.00_dp/)
 
         bmod_neo2 = (/5.8461732541782538_dp, &
                       6.3747018649171556_dp, &
