@@ -5,8 +5,9 @@ program rabe
 
     implicit none
 
-  character(len=*), parameter :: bc_filename = "test/integration/input/quasi_helical.bc"
-    real(dp), parameter :: iota = 1.25_dp
+    character(len=*), parameter :: bc_filename = "test/integration/input/"// &
+                                   "quasi_helical.bc"
+    real(dp), parameter :: M = 1.0_dp
     real(dp), parameter :: nfp = 4.0_dp, scan_n_periods = 2.0_dp
     real(dp), dimension(2), parameter :: interval = (/0.0_dp, &
                                                       2.0_dp*pi/nfp*scan_n_periods/)
@@ -14,12 +15,53 @@ program rabe
     type(neo_field_t) :: field
     real(dp) :: bmod, sqrtg, dB_dx(3)
     real(dp) :: found_phi_max(2)
+    real(dp) :: iota, alpha_at_min
 
     call field%neo_field_init(bc_filename, stor=0.5_dp)
+    iota = field%iota
+    print *, iota
     call find_local_maxima(field_along_fieldline, interval, found_phi_max)
     print *, found_phi_max
+    call guess_alpha_at_minimum(field, alpha_at_min, M)
+    print *, alpha_at_min
 
 contains
+    subroutine guess_alpha_at_minimum(field, alpha_at_min, M)
+        use field_base, only: field_t
+        use find_extrema, only: find_local_minima
+
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: M
+        real(dp), intent(out) :: alpha_at_min
+
+        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 4.0_dp*pi/)
+        real(dp) :: location(1)
+
+        call find_local_minima(estimate_B_mod_of_alpha, interval, location)
+        alpha_at_min = mod(location(1), 2*pi)
+
+    end subroutine guess_alpha_at_minimum
+
+    subroutine estimate_B_mod_of_alpha(alpha, B_mod)
+        real(dp), dimension(:), intent(in) :: alpha
+        real(dp), dimension(:), intent(out) :: B_mod
+
+        real(dp), dimension(size(alpha, 1)) :: phi, theta
+        real(dp) :: dummy, dummy_sqrtg, dummy_dB_dx(3)
+        integer :: idx
+
+        ! If f(theta,phi) approx f(alpha = M*theta - N*phi) one can estiamte
+        ! f(alpha) by choosing 1 specific theta-phi combination for that
+        ! alpha value e.g. phi=0 and theta=alpha/M
+        phi = 0.0_dp
+        theta = alpha/M
+
+        do idx = 1, size(alpha, 1)
+            call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), &
+                                             dummy_sqrtg, dummy_dB_dx)
+        end do
+    end subroutine estimate_B_mod_of_alpha
+
     subroutine field_along_fieldline(phi, B_mod)
         real(dp), dimension(:), intent(in) :: phi
         real(dp), dimension(:), intent(out) :: B_mod
