@@ -6,6 +6,7 @@ module neo_field
     implicit none
 
     type, extends(field_t) :: neo_field_t
+        real(dp) :: iota
     contains
         procedure :: neo_field_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -22,7 +23,7 @@ contains
         character(*), intent(in) :: bc_filename
         real(dp), intent(in) :: stor
 
-        real(dp) :: x(3), dummy_1, dummy_2, dummy_3(3)
+        real(dp) :: x(3), dummy_B_mod, dummy_sqrtg, dummy_dB_dx(3)
 
         if (magfie_newspline .ne. 1) then
             print *, "There can only be one neo_field "// &
@@ -33,7 +34,7 @@ contains
 
         in_file = bc_filename
         x = (/stor, 0.0_dp, 0.0_dp/)
-        call neo_magfie_a(x, dummy_1, dummy_2, dummy_3)
+        call neo_magfie_a(x, dummy_B_mod, dummy_sqrtg, dummy_dB_dx, self%iota)
 
     end subroutine neo_field_init
 
@@ -42,10 +43,10 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
 
-        real(dp) :: x(3)
+        real(dp) :: x(3), dummy_iota
 
         x = (/0.0_dp, theta, phi/)
-        call neo_magfie_a(x, B_mod, sqrtg, dB_dx)
+        call neo_magfie_a(x, B_mod, sqrtg, dB_dx, dummy_iota)
 
     end subroutine compute_B_sqrtg_dB_dx
 
@@ -53,14 +54,14 @@ contains
         use neo_magfie, only: magfie_newspline
         use neo_input, only: es
 
-        class(neo_field_t), intent(in) :: self
+        class(neo_field_t), intent(inout) :: self
         real(dp), intent(in) :: stor
 
-        real(dp) :: x(3), dummy_1, dummy_2, dummy_3(3)
+        real(dp) :: x(3), dummy_B_mod, dummy_sqrtg, dummy_dB_dx(3)
 
         if (magfie_newspline .ne. 1) magfie_newspline = 1
         x = (/stor, 0.0_dp, 0.0_dp/)
-        call neo_magfie_a(x, dummy_1, dummy_2, dummy_3)
+        call neo_magfie_a(x, dummy_B_mod, dummy_sqrtg, dummy_dB_dx, self%iota)
     end subroutine
 
 end module neo_field

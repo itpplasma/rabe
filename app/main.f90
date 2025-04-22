@@ -25,13 +25,14 @@ contains
         real(dp), dimension(:), intent(out) :: B_mod
 
         real(dp), dimension(size(phi, 1)) :: theta
-        real(dp) :: dummy, dummy3d(3)
+        real(dp) :: dummy, dummy_sqrtg, dummy_dB_dx(3)
         integer :: idx
 
         theta = phi*iota
 
         do idx = 1, size(phi, 1)
-      call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), dummy, dummy3d)
+            call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), &
+                                             dummy_sqrtg, dummy_dB_dx)
         end do
     end subroutine field_along_fieldline
 
