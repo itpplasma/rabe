@@ -23,7 +23,6 @@ contains
             real(dp), dimension(:), intent(out) :: B_mod
 
             real(dp), dimension(size(alpha, 1)) :: phi, theta
-            real(dp) :: dummy, dummy_sqrtg, dummy_dB_dx(3)
             integer :: idx
 
             ! If f(theta,phi) approx f(alpha = M*theta - N*phi) one can estiamte
@@ -33,8 +32,7 @@ contains
             theta = alpha/M
 
             do idx = 1, size(alpha, 1)
-                call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), &
-                                                 dummy_sqrtg, dummy_dB_dx)
+                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine estimate_B_mod_of_alpha
 

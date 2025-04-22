@@ -21,27 +21,25 @@ program rabe
     call field%neo_field_init(bc_filename, stor=0.5_dp)
     iota = field%iota
     print *, iota
-    call find_local_maxima(field_along_fieldline, interval, found_phi_max)
+    call find_local_maxima(B_mod_along_fieldline, interval, found_phi_max)
     print *, found_phi_max
     call guess_alpha_at_minimum(field, alpha_at_min, M)
     print *, alpha_at_min
 
 contains
 
-    subroutine field_along_fieldline(phi, B_mod)
+    subroutine B_mod_along_fieldline(phi, B_mod)
         real(dp), dimension(:), intent(in) :: phi
         real(dp), dimension(:), intent(out) :: B_mod
 
         real(dp), dimension(size(phi, 1)) :: theta
-        real(dp) :: dummy, dummy_sqrtg, dummy_dB_dx(3)
         integer :: idx
 
         theta = phi*iota
 
         do idx = 1, size(phi, 1)
-            call field%compute_B_sqrtg_dB_dx(theta(idx), phi(idx), B_mod(idx), &
-                                             dummy_sqrtg, dummy_dB_dx)
+            call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
         end do
-    end subroutine field_along_fieldline
+    end subroutine B_mod_along_fieldline
 
 end program rabe
