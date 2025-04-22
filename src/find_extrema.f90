@@ -12,6 +12,33 @@ module find_extrema
 
 contains
 
+    subroutine find_local_minima(func, interval, location, n_steps_in)
+        procedure(func1d) :: func
+        real(dp), intent(in) :: interval(2)
+        real(dp), dimension(:), intent(out) :: location
+        integer, intent(in), optional :: n_steps_in
+
+        integer :: n_steps
+
+        if (present(n_steps_in)) then
+            n_steps = n_steps_in
+        else
+            n_steps = 100
+        end if
+
+        call find_local_maxima(negative_func, interval, location, n_steps)
+
+    contains
+        subroutine negative_func(x, value)
+            use constants, only: dp
+            real(dp), dimension(:), intent(in) :: x
+            real(dp), dimension(:), intent(out) :: value
+            call func(x, value)
+            value = -value
+        end subroutine negative_func
+
+    end subroutine find_local_minima
+
     subroutine find_local_maxima(func, interval, location, n_steps_in)
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
