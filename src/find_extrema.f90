@@ -23,7 +23,7 @@ contains
         if (present(n_steps_in)) then
             n_steps = n_steps_in
         else
-            n_steps = 100
+            n_steps = 1000
         end if
 
         call find_local_maxima(negative_func, interval, location, n_steps)
@@ -47,28 +47,35 @@ contains
 
         integer :: n_maxima, n_steps
         real(dp), dimension(:), allocatable :: x, value
-        integer :: current_maxima, current_location
+        integer :: current_maximum, current_location
 
         if (present(n_steps_in)) then
             n_steps = n_steps_in
         else
-            n_steps = 100
+            n_steps = 1000
         end if
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
 
         n_maxima = size(location, dim=1)
-        current_maxima = 0
+        current_maximum = 0
         do current_location = 2, n_steps - 1
             if (value(current_location - 1) < value(current_location)) then
                 if (value(current_location + 1) < value(current_location)) then
-                    current_maxima = current_maxima + 1
-                    location(current_maxima) = x(current_location)
-                    if (current_maxima .ge. n_maxima) exit
+                    current_maximum = current_maximum + 1
+                    location(current_maximum) = x(current_location)
+                    if (current_maximum .eq. n_maxima) exit
                 end if
             end if
         end do
+
+        if (current_maximum < n_maxima) then
+            print *, "find_local_maxima: found less maxima then expected"
+            print *, "found: ", current_maximum
+            print *, "expected: ", n_maxima
+            error stop
+        end if
 
     end subroutine find_local_maxima
 
@@ -84,7 +91,7 @@ contains
         if (present(n_steps_in)) then
             n_steps = n_steps_in
         else
-            n_steps = 100
+            n_steps = 1000
         end if
 
         allocate (x(n_steps), value(n_steps))
