@@ -38,17 +38,11 @@ contains
 
     end subroutine guess_alpha_at_minimum
 
-    subroutine find_maxima_along_fieldline(field, iota, theta_0, phi_at_max)
+    subroutine find_maxima_along_fieldline(field, iota, theta_0, interval, phi_at_max)
         use find_extrema, only: find_local_maxima
         use field_base, only: field_t
-
-        real(dp), parameter :: M = 1.0_dp
-        real(dp), parameter :: nfp = 4.0_dp, scan_n_periods = 2.0_dp
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, &
-                                                          2.0_dp*pi/nfp*scan_n_periods/)
-
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: iota, theta_0
+        real(dp), intent(in) :: iota, theta_0, interval(2)
         real(dp), dimension(:) :: phi_at_max
 
         call find_local_maxima(B_mod_along_fieldline, interval, phi_at_max)
