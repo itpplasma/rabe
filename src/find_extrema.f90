@@ -72,8 +72,8 @@ contains
 
         if (current_maximum < n_maxima) then
             print *, "find_local_maxima: found less maxima then expected"
-            print *, "found: ", current_maximum
-            print *, "expected: ", n_maxima
+            print *, "found: ", current_maximum, "out of ", n_maxima
+            print *, "location: ", location
             error stop
         end if
 

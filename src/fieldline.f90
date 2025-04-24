@@ -68,4 +68,5 @@ contains
             end do
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
+
 end module fieldline_mod

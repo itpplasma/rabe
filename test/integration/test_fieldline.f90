@@ -46,16 +46,15 @@ contains
     subroutine test_find_maxima_along_fieldline()
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/)
-
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
+        real(dp) :: interval(2)
         type(fieldline_t) :: fieldline
         real(dp) :: found_phi(2), analytic_phi(2)
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
         theta_0 = (/3.0_dp/4.0_dp*pi, pi, -pi, -pi/)
-        phi_0 = (/0.25_dp*pi, 0.00_dp, 0.00_dp, 0.00_dp/)
+        phi_0 = (/0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi/)
         iota = (/1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp/)
 
         do idx = 1, 4
@@ -63,6 +62,8 @@ contains
             fieldline%theta_0 = theta_0(idx)
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
+            interval = (/0.0_dp, 2.0_dp*pi/) + phi_0(idx)
+            print *, interval
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
@@ -101,7 +102,7 @@ contains
             shift_value = abs(shift_value)
             first_valid_phi_max = offset + shift_value*shift + fieldline%phi_0
         else
-            shift = int(offset/shift_value)
+            shift = abs(int(offset/shift_value))
             shift_value = abs(shift_value)
             first_valid_phi_max = offset - shift*shift_value + fieldline%phi_0
         end if
