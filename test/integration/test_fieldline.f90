@@ -36,7 +36,7 @@ contains
             call field%neo_change_stor(stor(idx))
             call guess_alpha_over_M_at_minimum(field, found_alpha_over_M_min)
             found_alpha_min = mod(found_alpha_over_M_min*theta_mode + pi, 2*pi) - pi
-            if (abs((found_alpha_min - alpha_min)/(2*pi)) > retol) then
+            if (is_same(alpha_min, found_alpha_min, retol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_guess_alpah_at_minimum failed: alpha at minima"
                 print *, "found: ", found_alpha_min
@@ -49,7 +49,7 @@ contains
     subroutine test_find_maxima_along_fieldline()
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
-        real(dp), parameter :: retol = 1e-2
+        real(dp), parameter :: retol = 1e-2, abstol = 0.0_dp
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -77,7 +77,7 @@ contains
                                                       alpha_max, &
                                                       fieldline, &
                                                       analytic_phi)
-            if (is_same(analytic_phi, found_phi, retol)) then
+            if (is_same(analytic_phi, found_phi, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_find_maxima_along_fieldline failed: phi at maxima"
                 print *, "found: ", found_phi
@@ -123,7 +123,7 @@ contains
         use fieldline_mod, only: fieldline_t, set_fieldline_labels_to_mode_minimum
         use utils, only: linspace
 
-        real(dp), parameter :: retol = 1e-8
+        real(dp), parameter :: retol = 1e-8, abstol = 0.0_dp
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
@@ -144,7 +144,7 @@ contains
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
                                      B_mod)
-            if (abs(B_mod - B_mod_min)/B_mod_min > retol) then
+            if (is_same(B_mod_min, B_mod, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_set_fieldline_labels_to_mode_minimum failed: B_mod"
                 print *, "at theta_0", fieldlines(current)%theta_0

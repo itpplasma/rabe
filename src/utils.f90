@@ -3,6 +3,11 @@ module utils
 
     implicit none
 
+    interface is_same
+        module procedure is_same_scalar
+        module procedure is_same_array
+    end interface
+
 contains
     subroutine linspace(a, b, n, x)
         real(dp), intent(in) :: a, b
@@ -18,10 +23,10 @@ contains
         end do
     end subroutine linspace
 
-    function is_same(array_1, array_2, reltol_in, abstol_in)
-        real(dp), dimension(:), intent(in) :: array_1, array_2
+    function is_same_scalar(scalar_1, scalar_2, reltol_in, abstol_in)
+        real(dp), intent(in) :: scalar_1, scalar_2
         real(dp), intent(in), optional :: reltol_in, abstol_in
-        logical :: is_same
+        logical :: is_same_scalar
 
         real(dp) :: reltol, abstol
 
@@ -36,7 +41,28 @@ contains
             abstol = reltol
         end if
 
-        is_same = any(abs(array_1 - array_2) > reltol*array_1 + abstol)
-    end function is_same
+        is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*scalar_1 + abstol)
+    end function is_same_scalar
+
+    function is_same_array(array_1, array_2, reltol_in, abstol_in)
+        real(dp), dimension(:), intent(in) :: array_1, array_2
+        real(dp), intent(in), optional :: reltol_in, abstol_in
+        logical :: is_same_array
+
+        real(dp) :: reltol, abstol
+
+        if (present(reltol_in)) then
+            reltol = reltol_in
+        else
+            reltol = 0.0_dp
+        end if
+        if (present(abstol_in)) then
+            abstol = abstol_in
+        else
+            abstol = reltol
+        end if
+
+        is_same_array = any(abs(array_1 - array_2) > (reltol*array_1 + abstol))
+    end function is_same_array
 
 end module utils
