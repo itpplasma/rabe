@@ -4,7 +4,6 @@ program test_fieldline
 
     implicit none
 
-    real(dp), parameter :: retol = 1e-2
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
     real(dp), parameter :: theta_mode = 2.0_dp, phi_mode = -4.0_dp
     !The minimum/maximum alpha of a single mode field
@@ -17,23 +16,25 @@ program test_fieldline
     call field%neo_field_init(bc_filename, 0.0_dp)
     call test_guess_alpha_at_minimum()
     call test_find_maxima_along_fieldline()
+    call test_set_fieldline_labels_to_mode_minimum()
 
 contains
 
     subroutine test_guess_alpha_at_minimum()
         use fieldline_mod, only: guess_alpha_over_M_at_minimum
 
+        real(dp), parameter :: retol = 1e-3
+
         real(dp) :: stor(4)
         real(dp) :: found_alpha_over_M_min, found_alpha_min
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
-
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             call guess_alpha_over_M_at_minimum(field, found_alpha_over_M_min)
-            found_alpha_min = found_alpha_over_M_min*theta_mode
-            if (abs(found_alpha_min - alpha_min)/(2*pi) > retol) then
+            found_alpha_min = mod(found_alpha_over_M_min*theta_mode + pi, 2*pi) - pi
+            if (abs((found_alpha_min - alpha_min)/(2*pi)) > retol) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_guess_alpah_at_minimum failed: alpha at minima"
                 print *, "found: ", found_alpha_min
@@ -45,6 +46,8 @@ contains
 
     subroutine test_find_maxima_along_fieldline()
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
+
+        real(dp), parameter :: retol = 1e-2
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -114,5 +117,42 @@ contains
         end do
 
     end subroutine find_analytic_maxima_along_fieldline
+
+    subroutine test_set_fieldline_labels_to_mode_minimum()
+        use fieldline_mod, only: fieldline_t, set_fieldline_labels_to_mode_minimum
+        use utils, only: linspace
+
+        real(dp), parameter :: retol = 1e-8
+        real(dp), parameter :: stor = 0.5_dp
+        integer, parameter :: n_fieldlines = 10
+
+        real(dp), dimension(n_fieldlines) :: theta_0
+        type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+
+        real(dp) :: B_mod
+        real(dp) :: B_mod_min = 0.7_dp
+        integer :: current
+
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
+        fieldlines(:)%theta_0 = theta_0(:)
+        fieldlines(:)%iota = -1.25
+
+        call field%neo_change_stor(stor)
+      call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, fieldlines)
+        do current = 1, size(fieldlines)
+            call field%compute_B_mod(fieldlines(current)%theta_0, &
+                                     fieldlines(current)%phi_0, &
+                                     B_mod)
+            if (abs(B_mod - B_mod_min)/B_mod_min > retol) then
+                print *, "-------------------------------------------------------------"
+                print *, "test_set_fieldline_labels_to_mode_minimum failed: B_mod"
+                print *, "at theta_0", fieldlines(current)%theta_0
+                print *, "at phi_0", fieldlines(current)%phi_0
+                print *, "found: ", B_mod
+                print *, "minimum: ", B_mod_min
+                error stop
+            end if
+        end do
+    end subroutine test_set_fieldline_labels_to_mode_minimum
 
 end program test_fieldline

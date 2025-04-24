@@ -3,11 +3,28 @@ module fieldline_mod
     implicit none
 
     type :: fieldline_t
+        real(dp) :: theta_0
+        real(dp) :: phi_0
         real(dp) :: iota
-        real(dp) :: theta_0, phi_0
+        real(dp), dimension(:), allocatable :: phi_max
     end type fieldline_t
 
 contains
+
+    subroutine set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                    fieldlines)
+        use field_base, only: field_t
+
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: theta_mode, phi_mode
+        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
+
+        real(dp) :: alpha_over_M_min
+
+        call guess_alpha_over_M_at_minimum(field, alpha_over_M_min)
+        fieldlines%phi_0 = theta_mode/phi_mode*(fieldlines%theta_0 - alpha_over_M_min)
+    end subroutine set_fieldline_labels_to_mode_minimum
+
     subroutine guess_alpha_over_M_at_minimum(field, alpha_over_M_min)
         use field_base, only: field_t
         use find_extrema, only: find_local_minima
@@ -15,11 +32,14 @@ contains
         class(field_t), intent(in) :: field
         real(dp), intent(out) :: alpha_over_M_min
 
-        real(dp), dimension(2), parameter :: interval = (/-pi/4.0_dp, 1.75_dp*pi/)
+        ! alpha = M*theta - N*phi
+        ! as f~f(alpha) = sum c_j*cos(j*alpha) with 1<j<j_max
+        ! periodic at least after 2pi -> minimum must be in e.g [0, 3pi]
+        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 3.0_dp*pi/)
         real(dp) :: location(1)
 
         call find_local_minima(estimate_B_mod_of_alpha_over_M, interval, location)
-        alpha_over_M_min = mod(location(1), 2*pi)
+        alpha_over_M_min = location(1)
 
     contains
 
