@@ -14,6 +14,9 @@ install: build
 	cmake --install build
 
 test: build
+	ctest --test-dir build/test --output-on-failure -LE slow
+
+test_all: build
 	ctest --test-dir build/test --output-on-failure
 
 clean:
