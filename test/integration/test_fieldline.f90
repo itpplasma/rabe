@@ -1,6 +1,7 @@
 program test_fieldline
     use constants, only: dp, pi
     use neo_field, only: neo_field_t
+    use utils, only: is_same
 
     implicit none
 
@@ -17,6 +18,7 @@ program test_fieldline
     call test_guess_alpha_at_minimum()
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
+    call test_get_fieldlines()
 
 contains
 
@@ -66,7 +68,6 @@ contains
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
             interval = (/0.0_dp, 2.0_dp*pi/) + phi_0(idx)
-            print *, interval
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
@@ -76,7 +77,7 @@ contains
                                                       alpha_max, &
                                                       fieldline, &
                                                       analytic_phi)
-            if (any(abs(found_phi/analytic_phi - 1) > retol)) then
+            if (is_same(analytic_phi, found_phi, retol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_find_maxima_along_fieldline failed: phi at maxima"
                 print *, "found: ", found_phi
@@ -135,10 +136,10 @@ contains
 
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
         fieldlines(:)%theta_0 = theta_0(:)
-        fieldlines(:)%iota = -1.25
 
         call field%neo_change_stor(stor)
-      call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, fieldlines)
+        call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                  fieldlines)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
@@ -154,5 +155,49 @@ contains
             end if
         end do
     end subroutine test_set_fieldline_labels_to_mode_minimum
+
+    subroutine test_get_fieldlines()
+        use fieldline_mod, only: fieldline_t
+        use fieldline_mod, only: set_fieldline_labels_to_mode_minimum
+        use fieldline_mod, only: find_maxima_along_fieldline
+        use utils, only: linspace
+
+        use utils, only: linspace
+
+        real(dp), parameter :: reltol = 1e-2
+        real(dp), parameter :: stor = 0.5_dp
+        integer, parameter :: n_fieldlines = 10, n_maxima = 2
+
+        real(dp), dimension(n_fieldlines) :: theta_0
+        type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+
+        integer :: current
+        real(dp) :: interval(2)
+        real(dp) :: phi_max(2)
+
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
+        fieldlines(:)%theta_0 = theta_0(:)
+        fieldlines(:)%iota = -1.0_dp
+
+        call field%neo_change_stor(stor)
+        call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                  fieldlines)
+
+        do current = 1, n_fieldlines
+            allocate (fieldlines(current)%phi_max(n_maxima))
+            interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
+            call find_maxima_along_fieldline(field, fieldlines(current), &
+                                             interval, fieldlines(current)%phi_max)
+            phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
+            if (is_same(phi_max, fieldlines(current)%phi_max, reltol)) then
+                print *, "-------------------------------------------------------------"
+                print *, "test_get_fieldlines failed: phi_max"
+                print *, "found: ", fieldlines(current)%phi_max
+                print *, "expected: ", phi_max
+                error stop
+            end if
+        end do
+
+    end subroutine test_get_fieldlines
 
 end program test_fieldline
