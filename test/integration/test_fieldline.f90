@@ -1,24 +1,53 @@
 program test_fieldline
     use constants, only: dp, pi
+    use neo_field, only: neo_field_t
 
     implicit none
 
-    real(dp) :: retol = 1e-2
+    real(dp), parameter :: retol = 1e-2
+    character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
+    real(dp), parameter :: theta_mode = 2.0_dp, phi_mode = -4.0_dp
+    !The minimum/maximum alpha of a single mode field
+    !-cos(alpha) with alpha = M*theta - N*phi
+    real(dp), parameter :: alpha_max = pi
+    real(dp), parameter :: alpha_min = 0.0_dp
 
+    type(neo_field_t) :: field
+
+    call field%neo_field_init(bc_filename, 0.0_dp)
+    call test_guess_alpha_at_minimum()
     call test_find_maxima_along_fieldline()
 
 contains
 
+    subroutine test_guess_alpha_at_minimum()
+        use fieldline, only: guess_alpha_over_M_at_minimum
+
+        real(dp) :: stor(4)
+        real(dp) :: found_alpha_over_M_min, found_alpha_min
+        integer :: idx
+
+        stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
+
+        do idx = 1, 4
+            call field%neo_change_stor(stor(idx))
+            call guess_alpha_over_M_at_minimum(field, found_alpha_over_M_min)
+            found_alpha_min = found_alpha_over_M_min*theta_mode
+            if (abs(found_alpha_min - alpha_min)/(2*pi) > retol) then
+                print *, "-------------------------------------------------------------"
+                print *, "test_guess_alpah_at_minimum failed: alpha at minima"
+                print *, "found: ", found_alpha_min
+                print *, "analytic: ", alpha_min
+                error stop
+            end if
+        end do
+    end subroutine test_guess_alpha_at_minimum
+
     subroutine test_find_maxima_along_fieldline()
-        use neo_field, only: neo_field_t
         use fieldline, only: find_maxima_along_fieldline
 
-        character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-        real(dp), parameter :: theta_mode = 2.0_dp, phi_mode = -4.0_dp
-        real(dp), parameter :: alpha_max = pi !cos(m*theta - n*nfp*phi) = cos(alpha)
         real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/)
 
-        type(neo_field_t) :: field
         real(dp) :: stor(4), theta_0(4), iota(4)
         real(dp) :: found_phi(2), analytic_phi(2)
         integer :: idx
@@ -27,7 +56,6 @@ contains
         theta_0 = (/3.0_dp/4.0_dp*pi, pi, -pi, -pi/)
         iota = (/1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp/)
 
-        call field%neo_field_init(bc_filename, stor(1))
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             call find_maxima_along_fieldline(field, &
