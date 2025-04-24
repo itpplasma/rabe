@@ -1,6 +1,11 @@
-module fieldline
+module fieldline_mod
     use constants, only: dp, pi
     implicit none
+
+    type :: fieldline_t
+        real(dp) :: iota
+        real(dp) :: theta_0, phi_0
+    end type fieldline_t
 
 contains
     subroutine guess_alpha_over_M_at_minimum(field, alpha_over_M_min)
@@ -38,11 +43,12 @@ contains
 
     end subroutine guess_alpha_over_M_at_minimum
 
-    subroutine find_maxima_along_fieldline(field, iota, theta_0, interval, phi_at_max)
+    subroutine find_maxima_along_fieldline(field, fieldline, interval, phi_at_max)
         use find_extrema, only: find_local_maxima
         use field_base, only: field_t
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: iota, theta_0, interval(2)
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), intent(in) :: interval(2)
         real(dp), dimension(:) :: phi_at_max
 
         call find_local_maxima(B_mod_along_fieldline, interval, phi_at_max)
@@ -55,11 +61,11 @@ contains
             real(dp), dimension(size(phi, 1)) :: theta
             integer :: idx
 
-            theta = phi*iota + theta_0
+            theta = (phi - fieldline%phi_0)*fieldline%iota + fieldline%theta_0
 
             do idx = 1, size(phi, 1)
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
-end module fieldline
+end module fieldline_mod
