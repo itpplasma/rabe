@@ -20,8 +20,10 @@ contains
         real(dp), intent(in) :: a, b
         real(dp), intent(out) :: result
 
+        real(quadpack), parameter :: abs_error_tol_quadpack = 1.0e-8
+        real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-8
         real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
-        real(quadpack) :: abs_error_tol_quadpack, rel_error_tol_quadpack, abs_error
+        real(quadpack) :: abs_error
         integer :: error_flag
         real(quadpack) :: error_limit
 
@@ -30,9 +32,6 @@ contains
         ! quadpack operates in and requires real(8)
         a_quadpack = convert_to_quadpack(a)
         b_quadpack = convert_to_quadpack(b)
-
-        rel_error_tol_quadpack = 1.0e-8
-        abs_error_tol_quadpack = 1.0e-8
 
         ! integration by globally adaptive interval subdivision (quadpack import)
         call qags(quadpack_integrand, &
