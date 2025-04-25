@@ -9,11 +9,9 @@ add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)
 add_test(TestFieldline test_fieldline.x)
 
-add_library(mock_field STATIC
-  mock_field.f90
-)
-target_link_libraries(mock_field PRIVATE rabe_lib)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
+add_subdirectory(helpers)
 
 add_executable(test_integration_along_fieldline.x test_integration_along_fieldline.f90)
-target_link_libraries(test_integration_along_fieldline.x rabe_lib mock_field)
+target_link_libraries(test_integration_along_fieldline.x rabe_lib helpers_lib)
 add_test(TestIntegrationFieldline test_integration_along_fieldline.x)
