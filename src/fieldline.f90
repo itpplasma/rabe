@@ -11,8 +11,8 @@ module fieldline_mod
 
 contains
 
-    subroutine set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                    fieldlines)
+    subroutine set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                   fieldlines)
         use field_base, only: field_t
 
         class(field_t), intent(in) :: field
@@ -23,7 +23,7 @@ contains
 
         call guess_alpha_over_M_at_minimum(field, alpha_over_M_min)
         fieldlines%phi_0 = theta_mode/phi_mode*(fieldlines%theta_0 - alpha_over_M_min)
-    end subroutine set_fieldline_labels_to_mode_minimum
+    end subroutine set_fieldline_phi_0_to_mode_minimum
 
     subroutine guess_alpha_over_M_at_minimum(field, alpha_over_M_min)
         use field_base, only: field_t

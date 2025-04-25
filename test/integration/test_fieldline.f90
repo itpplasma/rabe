@@ -120,7 +120,7 @@ contains
     end subroutine find_analytic_maxima_along_fieldline
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
-        use fieldline_mod, only: fieldline_t, set_fieldline_labels_to_mode_minimum
+        use fieldline_mod, only: fieldline_t, set_fieldline_phi_0_to_mode_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = 1e-8, abstol = 0.0_dp
@@ -138,8 +138,8 @@ contains
         fieldlines(:)%theta_0 = theta_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                  fieldlines)
+        call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                 fieldlines)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
@@ -158,10 +158,8 @@ contains
 
     subroutine test_get_fieldlines()
         use fieldline_mod, only: fieldline_t
-        use fieldline_mod, only: set_fieldline_labels_to_mode_minimum
+        use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
         use fieldline_mod, only: find_maxima_along_fieldline
-        use utils, only: linspace
-
         use utils, only: linspace
 
         real(dp), parameter :: reltol = 1e-2
@@ -173,15 +171,15 @@ contains
 
         integer :: current
         real(dp) :: interval(2)
-        real(dp) :: phi_max(2)
+        real(dp) :: phi_max(n_maxima)
 
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
         fieldlines(:)%theta_0 = theta_0(:)
         fieldlines(:)%iota = -1.0_dp
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                  fieldlines)
+        call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
+                                                 fieldlines)
 
         do current = 1, n_fieldlines
             allocate (fieldlines(current)%phi_max(n_maxima))
