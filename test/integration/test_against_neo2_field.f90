@@ -1,4 +1,4 @@
-program test_against_neo2
+program test_against_neo2_field
     use neo_field, only: neo_field_t
     use constants, only: dp
 
@@ -54,4 +54,4 @@ program test_against_neo2
         end if
     end do
 
-end program test_against_neo2
+end program test_against_neo2_field
