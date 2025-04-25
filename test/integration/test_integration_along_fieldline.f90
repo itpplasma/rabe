@@ -37,7 +37,6 @@ contains
         call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
                                                  fieldline)
 
-        print *, "phi_0: ", fieldline(1)%phi_0
         interval = (/0.0_dp, 4*pi/) + fieldline(1)%phi_0
         call find_maxima_along_fieldline(field, fieldline(1), interval, &
                                          fieldline(1)%phi_max)
