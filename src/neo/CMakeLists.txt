@@ -48,3 +48,5 @@ if(LEGACY_SUITESPARSE)
 else()
   target_link_libraries(neo_lib PRIVATE SuiteSparse::umfpack)
 endif()
+
+target_compile_options(neo_lib PRIVATE -w) # No warnings as legacy code is not modified
