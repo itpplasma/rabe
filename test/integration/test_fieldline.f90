@@ -50,6 +50,7 @@ contains
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
         real(dp), parameter :: retol = 1e-2, abstol = 0.0_dp
+        integer, parameter :: n_maxima = 2, n_steps = 1000
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -62,6 +63,7 @@ contains
         phi_0 = (/0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi/)
         iota = (/1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp/)
 
+        allocate (fieldline%phi_max(n_maxima))
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             fieldline%theta_0 = theta_0(idx)
@@ -71,16 +73,16 @@ contains
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
-                                             found_phi)
+                                             n_steps)
             call find_analytic_maxima_along_fieldline(theta_mode, &
                                                       phi_mode, &
                                                       alpha_max, &
                                                       fieldline, &
                                                       analytic_phi)
-            if (is_same(analytic_phi, found_phi, retol, abstol)) then
+            if (is_same(analytic_phi, fieldline%phi_max, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_find_maxima_along_fieldline failed: phi at maxima"
-                print *, "found: ", found_phi
+                print *, "found: ", fieldline%phi_max
                 print *, "analytic: ", analytic_phi
                 error stop
             end if
@@ -163,6 +165,7 @@ contains
         use utils, only: linspace
 
         real(dp), parameter :: reltol = 1e-2
+        integer, parameter :: n_steps = 1000
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10, n_maxima = 2
 
@@ -185,7 +188,7 @@ contains
             allocate (fieldlines(current)%phi_max(n_maxima))
             interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, fieldlines(current)%phi_max)
+                                             interval, n_steps)
             phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
             if (is_same(phi_max, fieldlines(current)%phi_max, reltol)) then
                 print *, "-------------------------------------------------------------"

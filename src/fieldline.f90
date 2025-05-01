@@ -63,15 +63,19 @@ contains
 
     end subroutine guess_alpha_over_M_at_minimum
 
-    subroutine find_maxima_along_fieldline(field, fieldline, interval, phi_at_max)
+    subroutine find_maxima_along_fieldline(field, &
+                                           fieldline, &
+                                           interval, &
+                                           n_steps)
         use find_extrema, only: find_local_maxima
         use field_base, only: field_t
         class(field_t), intent(in) :: field
-        type(fieldline_t), intent(in) :: fieldline
+        type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
-        real(dp), dimension(:) :: phi_at_max
+        integer, intent(in), optional :: n_steps
 
-        call find_local_maxima(B_mod_along_fieldline, interval, phi_at_max)
+        call find_local_maxima(B_mod_along_fieldline, interval, &
+                               fieldline%phi_max, n_steps_in=n_steps)
 
     contains
         subroutine B_mod_along_fieldline(phi, B_mod)

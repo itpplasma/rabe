@@ -33,7 +33,7 @@ program rabe
         allocate (fieldlines(current)%phi_max(n_maxima))
         interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
         call find_maxima_along_fieldline(field, fieldlines(current), &
-                                         interval, fieldlines(current)%phi_max)
+                                         interval)
     end do
 
 end program rabe

@@ -54,7 +54,7 @@ contains
         if (present(n_steps_in)) then
             n_steps = n_steps_in
         else
-            n_steps = 1000
+            n_steps = 100
         end if
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
