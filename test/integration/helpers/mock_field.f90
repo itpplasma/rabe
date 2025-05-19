@@ -10,6 +10,7 @@ module mock_field
     contains
         procedure :: mock_field_init
         procedure :: compute_B_sqrtg_dB_dx
+        procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
     end type mock_field_t
 
@@ -31,11 +32,25 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
 
-        print *, "The type mock_field does only provide B_mod."// &
-            "Use compute_B_mod instead!"
+        print *, "The type mock_field does not provide sqrtg."// &
+            "Use compute_B_mod or compute_B_and_dB_dx instead!"
         error stop
 
     end subroutine compute_B_sqrtg_dB_dx
+
+    subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
+        class(mock_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod, dB_dx(3)
+
+        call self%compute_B_mod(theta, phi, B_mod)
+        dB_dx(1) = 0.0_dp
+        dB_dx(2) = -self%B_amplitude*self%theta_mode &
+                   *sin(self%theta_mode*theta - self%phi_mode*phi)
+        dB_dx(3) = +self%B_amplitude*self%phi_mode &
+                   *sin(self%theta_mode*theta - self%phi_mode*phi)
+
+    end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
         class(mock_field_t), intent(in) :: self

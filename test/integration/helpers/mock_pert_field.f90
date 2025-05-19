@@ -11,6 +11,7 @@ module mock_pert_field
     contains
         procedure :: mock_pert_field_init
         procedure :: compute_B_sqrtg_dB_dx
+        procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
     end type mock_pert_field_t
 
@@ -38,6 +39,24 @@ contains
         error stop
 
     end subroutine compute_B_sqrtg_dB_dx
+
+    subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
+        class(mock_pert_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod, dB_dx(3)
+
+        real(dp) :: dummy_B_mod
+
+        call self%field%compute_B_and_dB_dx(theta, phi, dummy_B_mod, dB_dx)
+        dB_dx(1) = dB_dx(1) + 0.0_dp
+        dB_dx(2) = dB_dx(2) - self%B_pert*self%theta_mode &
+                   *sin(self%theta_mode*theta - self%phi_mode*phi)
+        dB_dx(3) = dB_dx(3) + self%B_pert*self%phi_mode &
+                   *sin(self%theta_mode*theta - self%phi_mode*phi)
+
+        call self%compute_B_mod(theta, phi, B_mod)
+
+    end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
         class(mock_pert_field_t), intent(in) :: self

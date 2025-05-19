@@ -10,6 +10,7 @@ module neo_field
     contains
         procedure :: neo_field_init
         procedure :: compute_B_sqrtg_dB_dx
+        procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
         procedure :: neo_change_stor
     end type neo_field_t
@@ -50,6 +51,18 @@ contains
         call neo_magfie_a(x, B_mod, sqrtg, dB_dx, dummy_iota)
 
     end subroutine compute_B_sqrtg_dB_dx
+
+    subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
+        class(neo_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod, dB_dx(3)
+
+        real(dp) :: x(3), dummy_sqrtg, dummy_iota
+
+        x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
+        call neo_magfie_a(x, B_mod, dummy_sqrtg, dB_dx, dummy_iota)
+
+    end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
         class(neo_field_t), intent(in) :: self
