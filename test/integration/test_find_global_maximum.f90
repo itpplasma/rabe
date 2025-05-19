@@ -2,7 +2,7 @@ program test_find_global_maximum
     use constants, only: dp, pi
     use utils, only: is_same, linspace
     use mock_field, only: mock_field_t
-    use mock_pert_field, only: mock_pert_field_t
+    use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
     use fieldline_mod, only: find_maxima_along_fieldline
@@ -16,7 +16,7 @@ program test_find_global_maximum
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp, B_pert = 0.25_dp
     real(dp), parameter :: global_B_max = B_0 + B_amplitude + B_pert
     type(mock_field_t) :: field
-    type(mock_pert_field_t) :: pert_field
+    type(mock_perturbed_field_t) :: perturbed_field
 
     integer, parameter :: n_fieldlines = 100
     real(dp), parameter :: iota = -3.0_dp
@@ -29,19 +29,19 @@ program test_find_global_maximum
     integer :: current
 
     call field%mock_field_init(theta_mode, phi_mode, B_0, B_amplitude)
-    call pert_field%mock_pert_field_init(field, theta_mode, 0.0_dp, B_pert)
+    call perturbed_field%mock_perturbed_field_init(field, theta_mode, 0.0_dp, B_pert)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
     fieldlines(:)%theta_0 = theta_0
     fieldlines(:)%iota = iota
 
-    call set_fieldline_phi_0_to_mode_minimum(pert_field, theta_mode, phi_mode, &
+    call set_fieldline_phi_0_to_mode_minimum(perturbed_field, theta_mode, phi_mode, &
                                              fieldlines)
 
     found_global_B_max = 0.0_dp
     do current = 1, n_fieldlines
         interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
-        call find_maxima_along_fieldline(pert_field, fieldlines(current), &
+        call find_maxima_along_fieldline(perturbed_field, fieldlines(current), &
                                          interval, n_steps=n_steps)
         fieldline_B_max = max(fieldlines(current)%B_max(1), &
                               fieldlines(current)%B_max(2))
