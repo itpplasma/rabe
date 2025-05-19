@@ -9,7 +9,7 @@ program rabe
     implicit none
 
     real(dp), parameter :: stor = 0.5_dp
-    integer, parameter :: n_fieldlines = 10, n_maxima = 2
+    integer, parameter :: n_fieldlines = 10
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
     character(len=*), parameter :: bc_filename = "test/integration/input/"// &
                                    "quasi_helical.bc"
@@ -30,7 +30,6 @@ program rabe
     call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
                                              fieldlines)
     do current = 1, n_fieldlines
-        allocate (fieldlines(current)%phi_max(n_maxima))
         interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
         call find_maxima_along_fieldline(field, fieldlines(current), &
                                          interval)

@@ -6,7 +6,8 @@ module fieldline_mod
         real(dp) :: theta_0
         real(dp) :: phi_0
         real(dp) :: iota
-        real(dp), dimension(:), allocatable :: phi_max
+        real(dp) :: phi_max(2)
+        real(dp) :: B_max(2)
     end type fieldline_t
 
 contains
@@ -76,6 +77,8 @@ contains
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
                                fieldline%phi_max, n_steps_in=n_steps)
+
+        call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 
     contains
         subroutine B_mod_along_fieldline(phi, B_mod)

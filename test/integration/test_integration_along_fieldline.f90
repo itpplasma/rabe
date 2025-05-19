@@ -14,7 +14,6 @@ program test_integration_along_fieldline
 
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp
-    integer, parameter :: n_maxima = 2
     real(dp), parameter :: integral = 2.0_dp*pi*B_0
     type(mock_field_t) :: field
 
@@ -29,7 +28,6 @@ program test_integration_along_fieldline
 
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
-    allocate (fieldline(1)%phi_max(n_maxima))
 
     call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, fieldline)
 

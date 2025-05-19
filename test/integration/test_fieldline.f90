@@ -50,7 +50,7 @@ contains
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
         real(dp), parameter :: retol = 1e-2, abstol = 0.0_dp
-        integer, parameter :: n_maxima = 2, n_steps = 1000
+        integer, parameter :: n_steps = 1000
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -63,7 +63,6 @@ contains
         phi_0 = (/0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi/)
         iota = (/1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp/)
 
-        allocate (fieldline%phi_max(n_maxima))
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             fieldline%theta_0 = theta_0(idx)
@@ -167,14 +166,14 @@ contains
         real(dp), parameter :: reltol = 1e-2
         integer, parameter :: n_steps = 1000
         real(dp), parameter :: stor = 0.5_dp
-        integer, parameter :: n_fieldlines = 10, n_maxima = 2
+        integer, parameter :: n_fieldlines = 10
 
         real(dp), dimension(n_fieldlines) :: theta_0
         type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
         integer :: current
         real(dp) :: interval(2)
-        real(dp) :: phi_max(n_maxima)
+        real(dp) :: phi_max(2)
 
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
         fieldlines(:)%theta_0 = theta_0(:)
@@ -185,7 +184,6 @@ contains
                                                  fieldlines)
 
         do current = 1, n_fieldlines
-            allocate (fieldlines(current)%phi_max(n_maxima))
             interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
                                              interval, n_steps)
