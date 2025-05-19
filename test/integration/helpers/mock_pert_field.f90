@@ -1,14 +1,13 @@
 module mock_pert_field
     use constants, only: dp
     use field_base, only: field_t
-    use mock_field, only: mock_field_t
 
     implicit none
 
     type, extends(field_t) :: mock_pert_field_t
         real(dp) :: theta_mode, phi_mode
         real(dp) :: B_pert
-        type(mock_field_t) :: mock_field
+        class(field_t), allocatable :: field
     contains
         procedure :: mock_pert_field_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -17,14 +16,16 @@ module mock_pert_field
 
 contains
 
-    subroutine mock_pert_field_init(self, theta_mode, phi_mode, B_pert)
+    subroutine mock_pert_field_init(self, field, theta_mode, phi_mode, B_pert)
         class(mock_pert_field_t), intent(out) :: self
+        class(field_t), intent(in) :: field
         real(dp), intent(in) :: theta_mode, phi_mode
         real(dp), intent(in) :: B_pert
 
         self%theta_mode = theta_mode
         self%phi_mode = phi_mode
         self%B_pert = B_pert
+        allocate (self%field, source=field)
     end subroutine mock_pert_field_init
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
@@ -43,7 +44,7 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod
 
-        call self%mock_field%compute_B_mod(theta, phi, B_mod)
+        call self%field%compute_B_mod(theta, phi, B_mod)
         B_mod = B_mod + self%B_pert*cos(self%theta_mode*theta - self%phi_mode*phi)
     end subroutine compute_B_mod
 
