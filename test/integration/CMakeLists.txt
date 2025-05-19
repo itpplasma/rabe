@@ -15,3 +15,7 @@ add_subdirectory(helpers)
 add_executable(test_integration_along_fieldline.x test_integration_along_fieldline.f90)
 target_link_libraries(test_integration_along_fieldline.x rabe_lib helpers_lib)
 add_test(TestIntegrationFieldline test_integration_along_fieldline.x)
+
+add_executable(test_find_global_maximum.x test_find_global_maximum.f90)
+target_link_libraries(test_find_global_maximum.x rabe_lib helpers_lib)
+add_test(TestGlobalMaximum test_find_global_maximum.x)
