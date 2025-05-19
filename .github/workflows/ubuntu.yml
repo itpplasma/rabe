@@ -1,0 +1,39 @@
+name: Build and test ubuntu
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - '**'
+
+jobs:
+  run-golden-record:
+    runs-on: ubuntu-24.04
+
+    env:
+      CC: gcc
+      CXX: g++
+      FC: gfortran
+      MPI_HOME: /usr
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y -q --no-install-recommends python3-dev
+          python -m pip install --upgrade pip
+          pip install numpy
+
+      - name: Install required packages
+        run: |
+          sudo apt update
+          sudo apt install git cmake make ninja-build gcc g++ gfortran
+          sudo apt install libopenblas-dev libsuitesparse-dev
+
+      - name: build and test
+        run: make test_all
