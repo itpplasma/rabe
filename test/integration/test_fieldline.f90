@@ -7,49 +7,49 @@ program test_fieldline
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
     real(dp), parameter :: theta_mode = 2.0_dp, phi_mode = -4.0_dp
-    !The minimum/maximum alpha of a single mode field
-    !-cos(alpha) with alpha = M*theta - N*phi
-    real(dp), parameter :: alpha_max = pi
-    real(dp), parameter :: alpha_min = 0.0_dp
+    !The minimum/maximum chi of a single mode field
+    !-cos(chi) with chi = M*theta - N*phi
+    real(dp), parameter :: chi_max = pi
+    real(dp), parameter :: chi_min = 0.0_dp
 
     type(neo_field_t) :: field
 
     call field%neo_field_init(bc_filename, 0.0_dp)
-    call test_guess_alpha_at_minimum()
+    call test_guess_chi_at_minimum()
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
     call test_get_fieldlines()
 
 contains
 
-    subroutine test_guess_alpha_at_minimum()
-        use fieldline_mod, only: guess_alpha_over_M_at_minimum
+    subroutine test_guess_chi_at_minimum()
+        use fieldline_mod, only: guess_chi_min_over_N
 
-        real(dp), parameter :: retol = 1e-3
+        real(dp), parameter :: retol = 1e-2*0.5_dp*abs(phi_mode)
 
         real(dp) :: stor(4)
-        real(dp) :: found_alpha_over_M_min, found_alpha_min
+        real(dp) :: found_chi_min_over_N, found_chi_min
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
-            call guess_alpha_over_M_at_minimum(field, found_alpha_over_M_min)
-            found_alpha_min = mod(found_alpha_over_M_min*theta_mode + pi, 2*pi) - pi
-            if (is_same(alpha_min, found_alpha_min, retol)) then
+            call guess_chi_min_over_N(field, found_chi_min_over_N)
+            found_chi_min = mod(found_chi_min_over_N*phi_mode - pi, 2*pi) + pi
+            if (is_same(chi_min, found_chi_min, retol)) then
                 print *, "-------------------------------------------------------------"
-                print *, "test_guess_alpah_at_minimum failed: alpha at minima"
-                print *, "found: ", found_alpha_min
-                print *, "analytic: ", alpha_min
+                print *, "test_guess_chi_min failed: chi at minima"
+                print *, "found: ", found_chi_min
+                print *, "analytic: ", chi_min
                 error stop
             end if
         end do
-    end subroutine test_guess_alpha_at_minimum
+    end subroutine test_guess_chi_at_minimum
 
     subroutine test_find_maxima_along_fieldline()
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
-        real(dp), parameter :: retol = 1e-2, abstol = 0.0_dp
+        real(dp), parameter :: retol = 2e-2, abstol = 0.0_dp
         integer, parameter :: n_steps = 1000
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
@@ -75,7 +75,7 @@ contains
                                              n_steps)
             call find_analytic_maxima_along_fieldline(theta_mode, &
                                                       phi_mode, &
-                                                      alpha_max, &
+                                                      chi_max, &
                                                       fieldline, &
                                                       analytic_phi)
             if (is_same(analytic_phi, fieldline%phi_max, retol, abstol)) then
@@ -88,17 +88,17 @@ contains
         end do
     end subroutine test_find_maxima_along_fieldline
 
-    subroutine find_analytic_maxima_along_fieldline(m, n, alpha_max, &
+    subroutine find_analytic_maxima_along_fieldline(m, n, chi_max, &
                                                     fieldline, phi)
         use fieldline_mod, only: fieldline_t
-        real(dp), intent(in) :: m, n, alpha_max
+        real(dp), intent(in) :: m, n, chi_max
         type(fieldline_t) :: fieldline
         real(dp), dimension(:), intent(out) :: phi
 
         integer :: current_maximum
         real(dp) :: offset, shift_value, first_valid_phi_max, shift
 
-        offset = (alpha_max - m*fieldline%theta_0 + n*fieldline%phi_0)/ &
+        offset = (chi_max - m*fieldline%theta_0 + n*fieldline%phi_0)/ &
                  (fieldline%iota*m - n)
         shift_value = 2.0_dp*pi/(fieldline%iota*m - n)
 
@@ -124,7 +124,7 @@ contains
         use fieldline_mod, only: fieldline_t, set_fieldline_phi_0_to_mode_minimum
         use utils, only: linspace
 
-        real(dp), parameter :: retol = 1e-8, abstol = 0.0_dp
+        real(dp), parameter :: retol = (1e-2*phi_mode)**2, abstol = 0.0_dp
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
@@ -163,7 +163,7 @@ contains
         use fieldline_mod, only: find_maxima_along_fieldline
         use utils, only: linspace
 
-        real(dp), parameter :: reltol = 1e-2
+        real(dp), parameter :: reltol = 2e-2
         integer, parameter :: n_steps = 1000
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10

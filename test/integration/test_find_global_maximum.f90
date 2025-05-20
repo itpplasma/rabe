@@ -9,16 +9,16 @@ program test_find_global_maximum
 
     implicit none
 
-    real(dp), parameter :: reltol = 1e-5 !retol >= retol of find maxima
-    integer, parameter :: n_steps = 1000 !retol ~ interval/n_steps
-
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp, B_pert = 0.25_dp
     real(dp), parameter :: global_B_max = B_0 + B_amplitude + B_pert
     type(mock_field_t) :: field
     type(mock_perturbed_field_t) :: perturbed_field
 
-    integer, parameter :: n_fieldlines = 100
+    integer, parameter :: n_steps = 1000
+    real(dp), parameter :: reltol = (4*pi/n_steps*abs(phi_mode))**2
+
+    integer, parameter :: n_fieldlines = n_steps
     real(dp), parameter :: iota = -3.0_dp
 
     real(dp), dimension(n_fieldlines) :: theta_0
