@@ -1,4 +1,4 @@
-module integrands
+module fieldline_integrands
     use constants, only: dp
     use field_base, only: field_t
 
@@ -58,4 +58,4 @@ contains
         end if
     end function pitchparameter_squared
 
-end module integrands
+end module fieldline_integrands
