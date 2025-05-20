@@ -41,7 +41,7 @@ contains
             abstol = reltol
         end if
 
-        is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*scalar_1 + abstol)
+        is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*abs(scalar_1) + abstol)
     end function is_same_scalar
 
     function is_same_array(array_1, array_2, reltol_in, abstol_in)
@@ -62,7 +62,7 @@ contains
             abstol = reltol
         end if
 
-        is_same_array = any(abs(array_1 - array_2) > (reltol*array_1 + abstol))
+        is_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
     end function is_same_array
 
 end module utils
