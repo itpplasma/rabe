@@ -45,13 +45,13 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
 
-        real(dp) :: x(3), dB_dx_neo(3), dummy_iota
+        real(dp) :: x(3), dB_dx_neo2(3), dummy_iota
 
         x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
-        call neo_magfie_a(x, B_mod, sqrtg, dB_dx_neo, dummy_iota)
-        dB_dx(1) = dB_dx_neo(1)
-        dB_dx(2) = dB_dx_neo(3) !neo convention of x=(r, phi, theta)
-        dB_dx(3) = dB_dx_neo(2) !neo convention of x=(r, phi, theta)
+        call neo_magfie_a(x, B_mod, sqrtg, dB_dx_neo2, dummy_iota)
+        dB_dx(1) = dB_dx_neo2(1)
+        dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
+        dB_dx(3) = dB_dx_neo2(2) !neo convention of x=(r, phi, theta)
 
     end subroutine compute_B_sqrtg_dB_dx
 
@@ -60,13 +60,13 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, dB_dx(3)
 
-        real(dp) :: x(3), dB_dx_neo(3), dummy_sqrtg, dummy_iota
+        real(dp) :: x(3), dB_dx_neo2(3), dummy_sqrtg, dummy_iota
 
         x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
-        call neo_magfie_a(x, B_mod, dummy_sqrtg, dB_dx_neo, dummy_iota)
-        dB_dx(1) = dB_dx_neo(1)
-        dB_dx(2) = dB_dx_neo(3) !neo convention of x=(r, phi, theta)
-        dB_dx(3) = dB_dx_neo(2) !neo convention of x=(r, phi, theta)
+        call neo_magfie_a(x, B_mod, dummy_sqrtg, dB_dx_neo2, dummy_iota)
+        dB_dx(1) = dB_dx_neo2(1)
+        dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
+        dB_dx(3) = dB_dx_neo2(2) !neo convention of x=(r, phi, theta)
 
     end subroutine compute_B_and_dB_dx
 
