@@ -12,8 +12,7 @@ program test_make_flock_of_fieldlines
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
     type(neo_field_t) :: field
 
-    real(dp), parameter :: reltol = 2e-2
-    integer, parameter :: n_steps = 1000
+    real(dp), parameter :: reltol = 2e-4
     real(dp), parameter :: stor = 0.5_dp
     integer, parameter :: n_fieldlines = 10
 

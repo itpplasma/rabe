@@ -15,10 +15,10 @@ program test_find_global_maximum
     type(mock_field_t) :: field
     type(mock_perturbed_field_t) :: perturbed_field
 
-    integer, parameter :: n_steps = 1000
-    real(dp), parameter :: reltol = (4*pi/n_steps*abs(phi_mode))**2
+    real(dp), parameter :: tol_phi_max = 1e-3
+    real(dp), parameter :: B_reltol = (tol_phi_max*abs(phi_mode))**2
 
-    integer, parameter :: n_fieldlines = n_steps
+    integer, parameter :: n_fieldlines = 1000
     real(dp), parameter :: iota = -3.0_dp
 
     real(dp), dimension(n_fieldlines) :: theta_0
@@ -42,7 +42,7 @@ program test_find_global_maximum
     do current = 1, n_fieldlines
         interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
         call find_maxima_along_fieldline(perturbed_field, fieldlines(current), &
-                                         interval, n_steps=n_steps)
+                                         interval, tol_phi_max)
         fieldline_B_max = max(fieldlines(current)%B_max(1), &
                               fieldlines(current)%B_max(2))
         if (fieldline_B_max .gt. found_global_B_max) then
@@ -50,7 +50,7 @@ program test_find_global_maximum
         end if
     end do
 
-    if (is_same(global_B_max, found_global_B_max, reltol)) then
+    if (is_same(global_B_max, found_global_B_max, B_reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_find_global_maximum failed: global_B_max"
         print *, "found: ", found_global_B_max

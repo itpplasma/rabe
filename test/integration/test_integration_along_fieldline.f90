@@ -9,8 +9,8 @@ program test_integration_along_fieldline
 
     implicit none
 
-    real(dp), parameter :: reltol = 1e-3 !retol >= retol of find maxima
-    integer, parameter :: n_steps = 10000 !retol ~ interval/n_steps
+    real(dp), parameter :: phi_tol = 1e-3
+    real(dp), parameter :: reltol = 2*phi_tol
 
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp
@@ -32,7 +32,7 @@ program test_integration_along_fieldline
     call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, fieldline)
 
     interval = (/0.0_dp, 4*pi/) + fieldline(1)%phi_0
-    call find_maxima_along_fieldline(field, fieldline(1), interval, n_steps)
+    call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)
 
     call integrate_1d(B_mod_along_fieldline, &
                       fieldline(1)%phi_max(1), &

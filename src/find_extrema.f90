@@ -12,21 +12,13 @@ module find_extrema
 
 contains
 
-    subroutine find_local_minima(func, interval, location, n_steps_in)
+    subroutine find_local_minima(func, interval, location, abstol)
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
         real(dp), dimension(:), intent(out) :: location
-        integer, intent(in), optional :: n_steps_in
+        real(dp), intent(in), optional :: abstol
 
-        integer :: n_steps
-
-        if (present(n_steps_in)) then
-            n_steps = n_steps_in
-        else
-            n_steps = 1000
-        end if
-
-        call find_local_maxima(negative_func, interval, location, n_steps)
+        call find_local_maxima(negative_func, interval, location, abstol)
 
     contains
         subroutine negative_func(x, value)
@@ -39,20 +31,20 @@ contains
 
     end subroutine find_local_minima
 
-    subroutine find_local_maxima(func, interval, location, n_steps_in)
+    subroutine find_local_maxima(func, interval, location, abstol)
         use utils, only: linspace
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
         real(dp), dimension(:), intent(out) :: location
-        integer, intent(in), optional :: n_steps_in
+        real(dp), intent(in), optional :: abstol
 
         integer :: n_maxima, n_steps
         real(dp), dimension(:), allocatable :: x, value
         integer :: current_maximum, current_location
 
-        if (present(n_steps_in)) then
-            n_steps = n_steps_in
+        if (present(abstol)) then
+            n_steps = int(abs(interval(2) - interval(1))/abstol) + 2
         else
             n_steps = 1000
         end if
@@ -81,19 +73,19 @@ contains
 
     end subroutine find_local_maxima
 
-    function find_global_extrema(func, interval, n_steps_in) result(extrema)
+    function find_global_extrema(func, interval, abstol) result(extrema)
         use utils, only: linspace
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
-        integer, intent(in), optional :: n_steps_in
+        integer, intent(in), optional :: abstol
         real(dp) :: extrema(2)
 
         integer :: n_steps
         real(dp), dimension(:), allocatable :: x, value
 
-        if (present(n_steps_in)) then
-            n_steps = n_steps_in
+        if (present(abstol)) then
+            n_steps = int(abs(interval(2) - interval(1))/abstol) + 2
         else
             n_steps = 1000
         end if

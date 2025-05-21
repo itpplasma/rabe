@@ -49,8 +49,8 @@ contains
     subroutine test_find_maxima_along_fieldline()
         use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
 
-        real(dp), parameter :: retol = 2e-2, abstol = 0.0_dp
-        integer, parameter :: n_steps = 1000
+        real(dp), parameter :: phi_tol = 1e-3
+        real(dp), parameter :: retol = 0.0_dp, abstol = phi_tol
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -72,7 +72,7 @@ contains
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
-                                             n_steps)
+                                             phi_tol)
             call find_analytic_maxima_along_fieldline(theta_mode, &
                                                       phi_mode, &
                                                       chi_max, &
@@ -163,8 +163,7 @@ contains
         use fieldline_mod, only: find_maxima_along_fieldline
         use utils, only: linspace
 
-        real(dp), parameter :: reltol = 2e-2
-        integer, parameter :: n_steps = 1000
+        real(dp), parameter :: phi_tol = 1e-3
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
@@ -186,9 +185,9 @@ contains
         do current = 1, n_fieldlines
             interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, n_steps)
+                                             interval, phi_tol)
             phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
-            if (is_same(phi_max, fieldlines(current)%phi_max, reltol)) then
+            if (is_same(phi_max, fieldlines(current)%phi_max, abstol_in=phi_tol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_get_fieldlines failed: phi_max"
                 print *, "found: ", fieldlines(current)%phi_max

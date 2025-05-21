@@ -91,15 +91,15 @@ contains
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
-                                           n_steps)
+                                           phi_tol)
         use find_extrema, only: find_local_maxima
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
-        integer, intent(in), optional :: n_steps
+        real(dp), intent(in), optional :: phi_tol
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
-                               fieldline%phi_max, n_steps_in=n_steps)
+                               fieldline%phi_max, phi_tol)
 
         call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 
