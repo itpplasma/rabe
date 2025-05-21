@@ -9,6 +9,10 @@ add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)
 add_test(TestFieldline test_fieldline.x)
 
+add_executable(test_make_flock_of_fieldlines.x test_make_flock_of_fieldlines.f90)
+target_link_libraries(test_make_flock_of_fieldlines.x rabe_lib)
+add_test(TestMakeFlockOfFieldlines test_make_flock_of_fieldlines.x)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
 add_subdirectory(helpers)
 

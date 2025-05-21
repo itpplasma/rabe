@@ -1,5 +1,7 @@
 module fieldline_mod
     use constants, only: dp, pi
+    use field_base, only: field_t
+
     implicit none
 
     type :: fieldline_t
@@ -15,19 +17,30 @@ module fieldline_mod
 
 contains
 
-    subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota)
+    subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota, &
+                                        field, M_pol, N_tor)
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: theta_0
         real(dp), intent(in) :: iota
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: M_pol, N_tor
+
+        real(dp) :: interval(2)
+        integer :: current
 
         fieldlines(:)%theta_0 = theta_0
         fieldlines(:)%iota = iota
+
+        call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines)
+
+        do current = 1, size(fieldlines)
+            interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
+            call find_maxima_along_fieldline(field, fieldlines(current), interval)
+        end do
     end subroutine make_flock_of_fieldlines
 
     subroutine set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
                                                    fieldlines)
-        use field_base, only: field_t
-
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: theta_mode, phi_mode
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
@@ -39,7 +52,6 @@ contains
     end subroutine set_fieldline_phi_0_to_mode_minimum
 
     subroutine guess_chi_min_over_N(field, chi_min_over_N)
-        use field_base, only: field_t
         use find_extrema, only: find_local_minima
 
         class(field_t), intent(in) :: field
@@ -81,7 +93,6 @@ contains
                                            interval, &
                                            n_steps)
         use find_extrema, only: find_local_maxima
-        use field_base, only: field_t
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
