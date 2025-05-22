@@ -18,12 +18,13 @@ module fieldline_mod
 contains
 
     subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota, &
-                                        field, M_pol, N_tor)
+                                        field, M_pol, N_tor, phi_tol)
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: theta_0
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
         integer :: current
@@ -31,30 +32,34 @@ contains
         fieldlines(:)%theta_0 = theta_0
         fieldlines(:)%iota = iota
 
-        call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines)
+        call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines, &
+                                                 phi_tol)
 
         do current = 1, size(fieldlines)
             interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
-            call find_maxima_along_fieldline(field, fieldlines(current), interval)
+            call find_maxima_along_fieldline(field, fieldlines(current), interval, &
+                                             phi_tol)
         end do
     end subroutine make_flock_of_fieldlines
 
     subroutine set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                   fieldlines)
+                                                   fieldlines, phi_tol)
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: theta_mode, phi_mode
+        real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
         real(dp) :: chi_min_over_N
 
-        call guess_chi_min_over_N(field, chi_min_over_N)
+        call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
         fieldlines%phi_0 = theta_mode/phi_mode*fieldlines%theta_0 - chi_min_over_N
     end subroutine set_fieldline_phi_0_to_mode_minimum
 
-    subroutine guess_chi_min_over_N(field, chi_min_over_N)
+    subroutine guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
         use find_extrema, only: find_local_minima
 
         class(field_t), intent(in) :: field
+        real(dp), intent(in), optional :: phi_tol
         real(dp), intent(out) :: chi_min_over_N
 
         ! chi = M*theta - N*phi
@@ -63,7 +68,8 @@ contains
         real(dp), dimension(2), parameter :: interval = (/0.0_dp, 3.0_dp*pi/)
         real(dp) :: location(1)
 
-        call find_local_minima(estimate_B_mod_of_chi_over_N, interval, location)
+        call find_local_minima(estimate_B_mod_of_chi_over_N, interval, location, &
+                               phi_tol)
         chi_min_over_N = location(1)
 
     contains

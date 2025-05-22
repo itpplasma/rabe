@@ -18,7 +18,6 @@ program test_fieldline
     call test_guess_chi_at_minimum()
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
-    call test_get_fieldlines()
 
 contains
 
@@ -156,46 +155,5 @@ contains
             end if
         end do
     end subroutine test_set_fieldline_labels_to_mode_minimum
-
-    subroutine test_get_fieldlines()
-        use fieldline_mod, only: fieldline_t
-        use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
-        use fieldline_mod, only: find_maxima_along_fieldline
-        use utils, only: linspace
-
-        real(dp), parameter :: phi_tol = 1e-3
-        real(dp), parameter :: stor = 0.5_dp
-        integer, parameter :: n_fieldlines = 10
-
-        real(dp), dimension(n_fieldlines) :: theta_0
-        type(fieldline_t), dimension(n_fieldlines) :: fieldlines
-
-        integer :: current
-        real(dp) :: interval(2)
-        real(dp) :: phi_max(2)
-
-        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
-        fieldlines(:)%theta_0 = theta_0(:)
-        fieldlines(:)%iota = -1.0_dp
-
-        call field%neo_change_stor(stor)
-        call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                 fieldlines)
-
-        do current = 1, n_fieldlines
-            interval = (/0.0_dp, 2*pi/) + fieldlines(current)%phi_0
-            call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, phi_tol)
-            phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
-            if (is_same(phi_max, fieldlines(current)%phi_max, abstol_in=phi_tol)) then
-                print *, "-------------------------------------------------------------"
-                print *, "test_get_fieldlines failed: phi_max"
-                print *, "found: ", fieldlines(current)%phi_max
-                print *, "expected: ", phi_max
-                error stop
-            end if
-        end do
-
-    end subroutine test_get_fieldlines
 
 end program test_fieldline

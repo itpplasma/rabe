@@ -12,7 +12,8 @@ program test_make_flock_of_fieldlines
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
     type(neo_field_t) :: field
 
-    real(dp), parameter :: reltol = 2e-4
+    real(dp), parameter :: phi_tol = 1e-4
+    real(dp), parameter :: abstol = 2*phi_tol
     real(dp), parameter :: stor = 0.5_dp
     integer, parameter :: n_fieldlines = 10
 
@@ -26,13 +27,14 @@ program test_make_flock_of_fieldlines
     call field%neo_field_init(bc_filename, stor)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
-    call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor)
+    call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
+                                  phi_tol)
 
     do current = 1, n_fieldlines
         phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
-        if (is_same(phi_max, fieldlines(current)%phi_max, reltol)) then
+        if (is_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_get_fieldlines failed: phi_max"
+            print *, "test_make_flock_of_fieldlines failed: phi_max"
             print *, "found: ", fieldlines(current)%phi_max
             print *, "expected: ", phi_max
             error stop
