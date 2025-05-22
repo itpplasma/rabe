@@ -1,14 +1,14 @@
 program test_real_dft
     use constants, only: dp, pi
     use utils, only: is_same, linspace
-    use fourier, only: real_dft
+    use fourier, only: real_ft
 
     implicit none
 
     integer, parameter :: N = 8
     real(dp), parameter :: reltol = 1e-15
 
-    real(dp), dimension(N) :: f, k
+    real(dp), dimension(N) :: f, k, x
     real(dp), dimension(N/2 + 1) :: found_f_cos, found_f_sin, f_cos, f_sin
     complex(dp), dimension(N) :: f_exp
 
@@ -16,13 +16,14 @@ program test_real_dft
     integer :: k0, k1, k2
     integer :: n0
     integer :: j
-    logical :: is_symmetric
+
+    do j = 0, N - 1
+        x(j + 1) = 2.0_dp*pi*real(j, kind=dp)/real(N, kind=dp)
+    end do
 
     do k0 = 0, N/2
-        do j = 0, N - 1
-            f(j + 1) = cos(2.0d0*pi*k0*real(j, kind=dp)/real(N, kind=dp))
-        end do
-        call real_dft(f, found_f_cos, found_f_sin)
+        f = cos(x*k0)
+        call real_ft(x, f, found_f_cos, found_f_sin)
         f_cos(:) = 0.0_dp
         f_cos(k0 + 1) = 1.0_dp
         f_sin(:) = 0.0_dp
@@ -43,7 +44,7 @@ program test_real_dft
     do n0 = 1, N - 1
         f(:) = 0.0_dp
         f(n0 + 1) = 1.0_dp
-        call real_dft(f, found_f_cos, found_f_sin)
+        call real_ft(x, f, found_f_cos, found_f_sin)
         f_exp = exp(-2.0_dp*pi*(0.0_dp, 1.0_dp)/real(N, kind=dp) &
                     *real(n0, kind=dp)*k)
         f_cos(:) = real(f_exp(1:N/2 + 1))/real(N, kind=dp)*2.0_dp
@@ -65,7 +66,7 @@ program test_real_dft
 
     const = 2.0_dp
     f(:) = const
-    call real_dft(f, found_f_cos, found_f_sin)
+    call real_ft(x, f, found_f_cos, found_f_sin)
     f_cos(:) = 0.0_dp
     f_sin(:) = 0.0_dp
     f_cos(1) = const
@@ -83,11 +84,8 @@ program test_real_dft
 
     k1 = 2
     k2 = 4
-    do j = 0, N - 1
-        f(j + 1) = 2.0_dp*sin(2.0d0*pi*k1*real(j, kind=dp)/real(N, kind=dp)) &
-                   - 3.0_dp*cos(2.0d0*pi*k2*real(j, kind=dp)/real(N, kind=dp))
-    end do
-    call real_dft(f, found_f_cos, found_f_sin)
+    f = 2.0_dp*sin(x*k1) - 3.0_dp*cos(x*k2)
+    call real_ft(x, f, found_f_cos, found_f_sin)
     f_cos(:) = 0.0_dp
     f_cos(k2 + 1) = -3.0_dp
     f_sin(:) = 0.0_dp

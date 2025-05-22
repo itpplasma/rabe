@@ -4,19 +4,24 @@ module fourier
 
 contains
 
-    subroutine real_dft(f, f_cos, f_sin)
-        real(dp), dimension(:), intent(in) :: f
+    subroutine real_ft(x, f, f_cos, f_sin)
+        real(dp), dimension(:), intent(in) :: x, f
         real(dp), dimension(size(f)/2 + 1), intent(out) :: f_cos, f_sin
 
         integer :: N, k, j
+        real(dp) :: dx
         complex(dp) :: phase_step, phase, sum
         complex(dp), dimension(size(f)/2 + 1) :: f_exp
         complex(dp), parameter :: Icmplx = (0.0_dp, 1.0_dp)
 
+        call check_is_equidistant(x)
+        call check_has_correct_endpoints(x)
+
         N = size(f)
+        dx = x(2) - x(1)
 
         do k = 0, N/2
-            phase_step = exp(-2.0d0*pi*Icmplx*real(k, kind=dp)/real(N, kind=dp))
+            phase_step = exp(-Icmplx*dx*real(k, kind=dp))
             phase = (1.0_dp, 0.0_dp)
             sum = (0.0_dp, 0.0_dp)
             do j = 0, N - 1
@@ -41,6 +46,45 @@ contains
         f_cos = f_cos/real(N, kind=dp)
         f_sin = f_sin/real(N, kind=dp)
 
-    end subroutine real_dft
+    end subroutine real_ft
+
+    subroutine check_is_equidistant(x)
+        real(dp), dimension(:), intent(in) :: x
+        logical :: is_equidistant
+
+        real(dp), parameter :: tol = 1e-15
+        real(dp), dimension(size(x) - 1) :: dx
+        integer :: N
+
+        N = size(x)
+
+        dx = x(2:N) - x(1:N - 1)
+        is_equidistant = all(abs(dx - dx(1)) < tol)
+
+        if (.not. is_equidistant) then
+            print *, "Input x has to be equidistant for real_ft!"
+            error stop
+        end if
+    end subroutine check_is_equidistant
+
+    subroutine check_has_correct_endpoints(x)
+        real(dp), dimension(:), intent(in) :: x
+        logical :: has_correct_endpoints
+
+        real(dp), parameter :: tol = 1e-15
+        real(dp) :: endpoint, range
+        integer :: N
+
+        N = size(x)
+        endpoint = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
+        has_correct_endpoints = abs(endpoint - x(N)) < tol*endpoint
+        has_correct_endpoints = has_correct_endpoints .and. abs(0.0_dp - x(1)) < tol
+        if (.not. has_correct_endpoints) then
+            print *, "Input x has wrong endpoints for real_ft!"
+            print *, "actual: ", x(1), x(N)
+            print *, "required: ", 0.0_dp, endpoint
+            error stop
+        end if
+    end subroutine check_has_correct_endpoints
 
 end module fourier
