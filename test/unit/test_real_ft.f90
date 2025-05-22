@@ -1,4 +1,4 @@
-program test_real_dft
+program test_real_ft
     use constants, only: dp, pi
     use utils, only: is_same, linspace
     use fourier, only: real_ft
@@ -31,7 +31,7 @@ program test_real_dft
         if (is_same(f_cos, found_f_cos, reltol) .or. &
             is_same(f_sin, found_f_sin, reltol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_real_dft failed for case cos(2pi*k0*n/N), k0 = ", k0
+            print *, "test_real_ft failed for case cos(2pi*k0*n/N), k0 = ", k0
             print *, "found f_cos: ", found_f_cos
             print *, "f_cos: ", f_cos
             print *, "found f_sin: ", found_f_sin
@@ -55,7 +55,7 @@ program test_real_dft
         if (is_same(f_cos, found_f_cos, reltol) .or. &
             is_same(f_sin, found_f_sin, reltol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_real_dft failed for case kronecker_(n,n0), n0 = ", n0
+            print *, "test_real_ft failed for case kronecker_(n,n0), n0 = ", n0
             print *, "found f_cos: ", found_f_cos
             print *, "f_cos: ", f_cos
             print *, "found f_sin: ", found_f_sin
@@ -74,7 +74,7 @@ program test_real_dft
     if (is_same(f_cos, found_f_cos, reltol) .or. &
         is_same(f_sin, found_f_sin, reltol)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_real_dft failed for case const = ", const
+        print *, "test_real_ft failed for case const = ", const
         print *, "found f_cos: ", found_f_cos
         print *, "f_cos: ", f_cos
         print *, "found f_sin: ", found_f_sin
@@ -94,7 +94,7 @@ program test_real_dft
     if (is_same(f_cos, found_f_cos, reltol) .or. &
         is_same(f_sin, found_f_sin, reltol)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_real_dft failed for case sum of cos and sin"
+        print *, "test_real_ft failed for case sum of cos and sin"
         print *, "found f_cos: ", found_f_cos
         print *, "f_cos: ", f_cos
         print *, "found f_sin: ", found_f_sin
@@ -102,4 +102,4 @@ program test_real_dft
         error stop
     end if
 
-end program test_real_dft
+end program test_real_ft
