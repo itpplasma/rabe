@@ -4,37 +4,42 @@ program test_fourier_transform_over_label
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: make_flock_of_fieldlines
     use fieldline_integrals, only: fourier_transform_over_label
+    use fieldline_integrals, only: modes_t
     use utils, only: linspace
-    use utils, only: is_same
+    use utils, only: not_same
 
     implicit none
 
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.125_dp, eps_1 = 0.0
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.125_dp, eps_1 = 0.05_dp
+    real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*eps_0)/(B_0**2*N_tor)
     real(dp), parameter :: phi_0 = pi
     type(anti_sigma_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-4
-    real(dp), parameter :: abstol = 2*phi_tol
+    real(dp), parameter :: abstol = 1e-15
     real(dp), parameter :: stor = 0.5_dp
-    integer, parameter :: n_fieldlines = 10
+    integer, parameter :: n_fieldlines = 100
 
     real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), parameter :: iota = 0.0_dp
+    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), parameter :: iota = 1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(modes_t) :: radial_drift_modes
 
     integer :: current
     real(dp) :: B_mod
 
     call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
+    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
+    theta_0 = temp(1:n_fieldlines)
 
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
                                   phi_tol)
 
     do current = 1, n_fieldlines
-        if (is_same(phi_0, modulo(fieldlines(current)%phi_0, 2.0_dp*pi), &
-                    abstol_in=abstol)) then
+        if (not_same(phi_0, modulo(fieldlines(current)%phi_0, 2.0_dp*pi), &
+                     abstol_in=2.0_dp*phi_tol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_fourier_transform_over_label failed: phi_0"
             print *, "found: ", fieldlines(current)%phi_0
@@ -43,6 +48,24 @@ program test_fourier_transform_over_label
         end if
     end do
 
-    call fourier_transform_over_label(field, fieldlines)
+    call fourier_transform_over_label(field, fieldlines, radial_drift_modes)
+
+    if (not_same(0.0_dp, radial_drift_modes%sin_coeffs(1), &
+                 abstol_in=abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_fourier_transform_over_label failed: 0th radial drift sin mode"
+        print *, "found: ", radial_drift_modes%sin_coeffs(1)
+        print *, "expected: ", 0.0_dp
+        error stop
+    end if
+
+    if (not_same(I_v_1, radial_drift_modes%sin_coeffs(2), &
+                 abstol_in=abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_fourier_transform_over_label failed: 1st radial drift sin mode"
+        print *, "found: ", radial_drift_modes%sin_coeffs(2)
+        print *, "expected: ", I_v_1
+        error stop
+    end if
 
 end program test_fourier_transform_over_label

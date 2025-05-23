@@ -4,22 +4,42 @@ module fieldline_integrals
     use field_base, only: field_t
     implicit none
 
+    type :: modes_t
+        real(dp), dimension(:), allocatable :: cos_coeffs, sin_coeffs
+        real(dp), dimension(:), allocatable :: mode_number
+    end type modes_t
+
 contains
 
-    subroutine fourier_transform_over_label(field, fieldlines)
+    subroutine fourier_transform_over_label(field, fieldlines, radial_drift_modes)
         use fourier, only: real_ft
 
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
-        integer :: n_fieldlines
+        type(modes_t), intent(out) :: radial_drift_modes
 
+        integer :: n_fieldlines, n_modes
         integer :: current
+        real(dp), dimension(size(fieldlines)) :: label, radial_drift
 
         n_fieldlines = size(fieldlines)
+        n_modes = n_fieldlines/2 + 1
 
         do current = 1, n_fieldlines
             call calc_fieldline_integrals(field, fieldlines(current))
         end do
+
+        label = fieldlines(:)%theta_0
+        radial_drift = fieldlines(:)%well_average_radial_drift_velocity
+
+        allocate (radial_drift_modes%cos_coeffs(n_modes))
+        allocate (radial_drift_modes%sin_coeffs(n_modes))
+        allocate (radial_drift_modes%mode_number(n_modes))
+
+        call real_ft(label, &
+                     radial_drift, &
+                     radial_drift_modes%cos_coeffs, &
+                     radial_drift_modes%sin_coeffs)
 
     end subroutine fourier_transform_over_label
 
