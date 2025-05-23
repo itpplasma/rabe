@@ -31,7 +31,7 @@ program test_make_flock_of_fieldlines
                                   phi_tol)
 
     do current = 1, n_fieldlines
-        phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
+        phi_max = (/-1.5*pi, -0.5*pi/) + fieldlines(current)%phi_0
         if (not_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_make_flock_of_fieldlines failed: phi_max"

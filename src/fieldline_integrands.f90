@@ -18,7 +18,7 @@ contains
 
         dB_dtheta_0 = dB_dx(2)
 
-        radial_drift_velocity = sqrt(lambda_squared)/B**3*(3 + lambda_squared) &
+        radial_drift_velocity = 0.5_dp*sqrt(lambda_squared)/B**3*(3 + lambda_squared) &
                                 *dB_dtheta_0
     end function radial_drift_velocity
 

@@ -37,10 +37,13 @@ contains
                                                  phi_tol)
 
         do current = 1, size(fieldlines)
-            interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
+            interval = (/-2.0_dp*pi, 2.0_dp*pi/) + fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), interval, &
                                              phi_tol)
         end do
+
+        fieldlines(:)%eta_b = 1.0_dp/get_global_B_max(fieldlines)
+
     end subroutine make_flock_of_fieldlines
 
     subroutine set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
@@ -125,5 +128,17 @@ contains
             end do
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
+
+    function get_global_B_max(fieldlines) result(global_B_max)
+        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
+        real(dp) :: global_B_max
+
+        integer :: current
+        real(dp) :: B_max_1, B_max_2
+
+        B_max_1 = maxval(fieldlines(:)%B_max(1))
+        B_max_2 = maxval(fieldlines(:)%B_max(2))
+        global_B_max = max(B_max_1, B_max_2)
+    end function get_global_B_max
 
 end module fieldline_mod
