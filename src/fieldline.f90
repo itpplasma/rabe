@@ -12,7 +12,8 @@ module fieldline_mod
         real(dp) :: B_max(2)
 
         real(dp) :: eta_b
-        real(dp) :: I_hat
+        real(dp) :: well_average_lambda_b
+        real(dp) :: well_average_radial_drift_velocity
     end type fieldline_t
 
 contains

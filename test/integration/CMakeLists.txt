@@ -23,3 +23,7 @@ add_test(TestIntegrationFieldline test_integration_along_fieldline.x)
 add_executable(test_find_global_maximum.x test_find_global_maximum.f90)
 target_link_libraries(test_find_global_maximum.x rabe_lib helpers_lib)
 add_test(TestGlobalMaximum test_find_global_maximum.x)
+
+add_executable(test_fourier_transform_over_label.x test_fourier_transform_over_label.f90)
+target_link_libraries(test_fourier_transform_over_label.x rabe_lib helpers_lib)
+add_test(TestFourierTransformOverLabel test_fourier_transform_over_label.x)
