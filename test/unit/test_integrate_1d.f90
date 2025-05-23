@@ -1,7 +1,7 @@
 program test_integrate_1d
     use constants, only: dp
     use integrate, only: integrate_1d
-    use utils, only: is_same
+    use utils, only: not_same
 
     implicit none
 
@@ -13,7 +13,7 @@ program test_integrate_1d
 
     call integrate_1d(polynome, interval(1), interval(2), found_integral)
 
-    if (is_same(integral, found_integral, reltol, abstol)) then
+    if (not_same(integral, found_integral, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_1d failed: integral"
         print *, "found: ", found_integral

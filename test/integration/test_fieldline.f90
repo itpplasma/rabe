@@ -1,7 +1,7 @@
 program test_fieldline
     use constants, only: dp, pi
     use neo_field, only: neo_field_t
-    use utils, only: is_same
+    use utils, only: not_same
 
     implicit none
 
@@ -35,7 +35,7 @@ contains
             call field%neo_change_stor(stor(idx))
             call guess_chi_min_over_N(field, found_chi_min_over_N)
             found_chi_min = mod(found_chi_min_over_N*phi_mode - pi, 2*pi) + pi
-            if (is_same(chi_min, found_chi_min, retol)) then
+            if (not_same(chi_min, found_chi_min, retol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_guess_chi_min failed: chi at minima"
                 print *, "found: ", found_chi_min
@@ -77,7 +77,7 @@ contains
                                                       chi_max, &
                                                       fieldline, &
                                                       analytic_phi)
-            if (is_same(analytic_phi, fieldline%phi_max, retol, abstol)) then
+            if (not_same(analytic_phi, fieldline%phi_max, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_find_maxima_along_fieldline failed: phi at maxima"
                 print *, "found: ", fieldline%phi_max
@@ -144,7 +144,7 @@ contains
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
                                      B_mod)
-            if (is_same(B_mod_min, B_mod, retol, abstol)) then
+            if (not_same(B_mod_min, B_mod, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_set_fieldline_labels_to_mode_minimum failed: B_mod"
                 print *, "at theta_0", fieldlines(current)%theta_0

@@ -1,6 +1,6 @@
 program test_real_ft
     use constants, only: dp, pi
-    use utils, only: is_same, linspace
+    use utils, only: not_same, linspace
     use fourier, only: real_ft
 
     implicit none
@@ -28,8 +28,8 @@ program test_real_ft
         f_cos(k0 + 1) = 1.0_dp
         f_sin(:) = 0.0_dp
 
-        if (is_same(f_cos, found_f_cos, reltol) .or. &
-            is_same(f_sin, found_f_sin, reltol)) then
+        if (not_same(f_cos, found_f_cos, reltol) .or. &
+            not_same(f_sin, found_f_sin, reltol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_real_ft failed for case cos(2pi*k0*n/N), k0 = ", k0
             print *, "found f_cos: ", found_f_cos
@@ -52,8 +52,8 @@ program test_real_ft
         f_cos(1) = f_cos(1)/2.0_dp
         if (mod(N, 2) == 0) f_cos(N/2 + 1) = f_cos(N/2 + 1)/2.0_dp
 
-        if (is_same(f_cos, found_f_cos, reltol) .or. &
-            is_same(f_sin, found_f_sin, reltol)) then
+        if (not_same(f_cos, found_f_cos, reltol) .or. &
+            not_same(f_sin, found_f_sin, reltol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_real_ft failed for case kronecker_(n,n0), n0 = ", n0
             print *, "found f_cos: ", found_f_cos
@@ -71,8 +71,8 @@ program test_real_ft
     f_sin(:) = 0.0_dp
     f_cos(1) = const
 
-    if (is_same(f_cos, found_f_cos, reltol) .or. &
-        is_same(f_sin, found_f_sin, reltol)) then
+    if (not_same(f_cos, found_f_cos, reltol) .or. &
+        not_same(f_sin, found_f_sin, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_real_ft failed for case const = ", const
         print *, "found f_cos: ", found_f_cos
@@ -91,8 +91,8 @@ program test_real_ft
     f_sin(:) = 0.0_dp
     f_sin(k1 + 1) = 2.0_dp
 
-    if (is_same(f_cos, found_f_cos, reltol) .or. &
-        is_same(f_sin, found_f_sin, reltol)) then
+    if (not_same(f_cos, found_f_cos, reltol) .or. &
+        not_same(f_sin, found_f_sin, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_real_ft failed for case sum of cos and sin"
         print *, "found f_cos: ", found_f_cos

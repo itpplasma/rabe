@@ -3,9 +3,9 @@ module utils
 
     implicit none
 
-    interface is_same
-        module procedure is_same_scalar
-        module procedure is_same_array
+    interface not_same
+        module procedure not_same_scalar
+        module procedure not_same_array
     end interface
 
 contains
@@ -23,11 +23,11 @@ contains
         end do
     end subroutine linspace
 
-    function is_same_scalar(scalar_1, scalar_2, reltol_in, abstol_in)
+    function not_same_scalar(scalar_1, scalar_2, reltol_in, abstol_in)
         use ieee_arithmetic, only: ieee_is_nan
         real(dp), intent(in) :: scalar_1, scalar_2
         real(dp), intent(in), optional :: reltol_in, abstol_in
-        logical :: is_same_scalar
+        logical :: not_same_scalar
 
         real(dp) :: reltol, abstol
 
@@ -43,16 +43,16 @@ contains
         end if
 
         if (ieee_is_nan(scalar_1) .or. ieee_is_nan(scalar_2)) then
-            is_same_scalar = .true.
+            not_same_scalar = .true.
         else
-            is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*abs(scalar_1) + abstol)
+            not_same_scalar = abs(scalar_1 - scalar_2) > (reltol*abs(scalar_1) + abstol)
         end if
-    end function is_same_scalar
+    end function not_same_scalar
 
-    function is_same_array(array_1, array_2, reltol_in, abstol_in)
+    function not_same_array(array_1, array_2, reltol_in, abstol_in)
         real(dp), dimension(:), intent(in) :: array_1, array_2
         real(dp), intent(in), optional :: reltol_in, abstol_in
-        logical :: is_same_array
+        logical :: not_same_array
 
         real(dp) :: reltol, abstol
 
@@ -68,11 +68,11 @@ contains
         end if
 
         if (contains_nan(array_1) .or. contains_nan(array_2)) then
-            is_same_array = .true.
+            not_same_array = .true.
         else
-            is_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
+            not_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
         end if
-    end function is_same_array
+    end function not_same_array
 
     function contains_nan(array)
         use ieee_arithmetic, only: ieee_is_nan

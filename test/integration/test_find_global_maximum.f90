@@ -1,6 +1,6 @@
 program test_find_global_maximum
     use constants, only: dp, pi
-    use utils, only: is_same, linspace
+    use utils, only: not_same, linspace
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
@@ -50,7 +50,7 @@ program test_find_global_maximum
         end if
     end do
 
-    if (is_same(global_B_max, found_global_B_max, B_reltol)) then
+    if (not_same(global_B_max, found_global_B_max, B_reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_find_global_maximum failed: global_B_max"
         print *, "found: ", found_global_B_max

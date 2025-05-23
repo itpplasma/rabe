@@ -1,6 +1,6 @@
 program test_integration_along_fieldline
     use constants, only: dp, pi
-    use utils, only: is_same
+    use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
@@ -39,7 +39,7 @@ program test_integration_along_fieldline
                       fieldline(1)%phi_max(2), &
                       found_integral)
 
-    if (is_same(integral, found_integral, reltol)) then
+    if (not_same(integral, found_integral, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integration_along_fieldline failed: integral"
         print *, "found: ", found_integral

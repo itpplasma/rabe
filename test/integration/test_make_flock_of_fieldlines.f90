@@ -4,7 +4,7 @@ program test_make_flock_of_fieldlines
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: make_flock_of_fieldlines
     use utils, only: linspace
-    use utils, only: is_same
+    use utils, only: not_same
 
     implicit none
 
@@ -32,7 +32,7 @@ program test_make_flock_of_fieldlines
 
     do current = 1, n_fieldlines
         phi_max = (/0.5*pi, 1.5*pi/) + fieldlines(current)%phi_0
-        if (is_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then
+        if (not_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_make_flock_of_fieldlines failed: phi_max"
             print *, "found: ", fieldlines(current)%phi_max

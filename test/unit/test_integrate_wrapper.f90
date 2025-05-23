@@ -1,7 +1,7 @@
 program test_integrate_wrapper
     use constants, only: dp
     use integrate, only: integrate_1d
-    use utils, only: is_same
+    use utils, only: not_same
 
     implicit none
 
@@ -16,7 +16,7 @@ program test_integrate_wrapper
     wrapper_constant = constant_1
     call integrate_1d(polynome_wrapper, interval(1), interval(2), found_integral_1)
 
-    if (is_same(integral_1, found_integral_1, reltol, abstol)) then
+    if (not_same(integral_1, found_integral_1, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_wrapper failed: integral"
         print *, "found: ", found_integral_1
@@ -27,7 +27,7 @@ program test_integrate_wrapper
     wrapper_constant = constant_2
     call integrate_1d(polynome_wrapper, interval(1), interval(2), found_integral_2)
 
-    if (is_same(integral_2, found_integral_2, reltol, abstol)) then
+    if (not_same(integral_2, found_integral_2, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_wrapper failed: integral"
         print *, "found: ", found_integral_2
