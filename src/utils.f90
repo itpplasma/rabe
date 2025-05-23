@@ -24,6 +24,7 @@ contains
     end subroutine linspace
 
     function is_same_scalar(scalar_1, scalar_2, reltol_in, abstol_in)
+        use ieee_arithmetic, only: ieee_is_nan
         real(dp), intent(in) :: scalar_1, scalar_2
         real(dp), intent(in), optional :: reltol_in, abstol_in
         logical :: is_same_scalar
@@ -41,7 +42,11 @@ contains
             abstol = reltol
         end if
 
-        is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*abs(scalar_1) + abstol)
+        if (ieee_is_nan(scalar_1) .or. ieee_is_nan(scalar_2)) then
+            is_same_scalar = .true.
+        else
+            is_same_scalar = abs(scalar_1 - scalar_2) > (reltol*abs(scalar_1) + abstol)
+        end if
     end function is_same_scalar
 
     function is_same_array(array_1, array_2, reltol_in, abstol_in)
@@ -62,7 +67,27 @@ contains
             abstol = reltol
         end if
 
-        is_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
+        if (contains_nan(array_1) .or. contains_nan(array_2)) then
+            is_same_array = .true.
+        else
+            is_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
+        end if
     end function is_same_array
+
+    function contains_nan(array)
+        use ieee_arithmetic, only: ieee_is_nan
+        implicit none
+        real(dp), intent(in) :: array(:)
+        logical :: contains_nan
+        integer :: i
+
+        contains_nan = .false.
+        do i = 1, size(array)
+            if (ieee_is_nan(array(i))) then
+                contains_nan = .true.
+                return
+            end if
+        end do
+    end function contains_nan
 
 end module utils
