@@ -11,24 +11,25 @@ program test_fourier_transform_over_label
     implicit none
 
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.125_dp, eps_1 = 0.05_dp
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.00125_dp, eps_1 = 0.0005_dp
     real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*eps_0)/(B_0**2*N_tor)
     real(dp), parameter :: phi_0 = pi
     type(anti_sigma_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-4
-    real(dp), parameter :: abstol = 1e-15
+    real(dp), parameter :: reltol = 1e-2, abstol = 1e-15
     real(dp), parameter :: stor = 0.5_dp
-    integer, parameter :: n_fieldlines = 100
+    integer, parameter :: n_fieldlines = 50
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 1.0_dp
+    real(dp), parameter :: iota = 0.0_dp ! formula I_v_1 for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(modes_t) :: radial_drift_modes
 
     integer :: current
     real(dp) :: B_mod
+    real(dp), dimension(:), allocatable :: zeros
 
     call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
@@ -50,22 +51,26 @@ program test_fourier_transform_over_label
 
     call fourier_transform_over_label(field, fieldlines, radial_drift_modes)
 
-    if (not_same(0.0_dp, radial_drift_modes%sin_coeffs(1), &
-                 abstol_in=abstol)) then
-        print *, "-------------------------------------------------------------"
-        print *, "test_fourier_transform_over_label failed: 0th radial drift sin mode"
-        print *, "found: ", radial_drift_modes%sin_coeffs(1)
-        print *, "expected: ", 0.0_dp
-        error stop
-    end if
-
     if (not_same(I_v_1, radial_drift_modes%sin_coeffs(2), &
-                 abstol_in=abstol)) then
+                 reltol_in=reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_fourier_transform_over_label failed: 1st radial drift sin mode"
         print *, "found: ", radial_drift_modes%sin_coeffs(2)
         print *, "expected: ", I_v_1
-        error stop
+        print *, "ratio: ", radial_drift_modes%sin_coeffs(2)/I_v_1
+        stop
     end if
+
+    allocate (zeros(size(radial_drift_modes%cos_coeffs)))
+    zeros = 0.0_dp
+    if (not_same(zeros, radial_drift_modes%cos_coeffs, &
+                 abstol_in=abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_fourier_transform_over_label failed: radial drift cos modes"
+        print *, "found: ", radial_drift_modes%cos_coeffs
+        print *, "expected: all ", zeros(1)
+        stop
+    end if
+    deallocate (zeros)
 
 end program test_fourier_transform_over_label

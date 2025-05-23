@@ -48,11 +48,6 @@ contains
         type(fieldline_t), intent(inout) :: fieldline
         class(field_t), intent(in) :: field
 
-        call integrate_1d(wrapper_lambda_over_B_squared, &
-                          fieldline%phi_max(1), &
-                          fieldline%phi_max(2), &
-                          fieldline%well_average_lambda_b)
-
         call integrate_1d(wrapper_radial_drift_velocity, &
                           fieldline%phi_max(1), &
                           fieldline%phi_max(2), &
