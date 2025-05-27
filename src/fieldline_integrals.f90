@@ -6,17 +6,24 @@ module fieldline_integrals
 
     type :: modes_t
         real(dp), dimension(:), allocatable :: cos_coeffs, sin_coeffs
-        real(dp), dimension(:), allocatable :: mode_number
+        real(dp), dimension(:), allocatable :: mode_numbers
     end type modes_t
+
+    type :: fieldline_modes_t
+        type(modes_t) :: radial_drift
+        type(modes_t) :: aspect_ratio
+        type(modes_t) :: misalignement
+        type(modes_t) :: g_off
+    end type fieldline_modes_t
 
 contains
 
-    subroutine fourier_transform_over_label(field, fieldlines, radial_drift_modes)
+    subroutine fourier_transform_over_label(field, fieldlines, fieldline_modes)
         use fourier, only: real_ft
 
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
-        type(modes_t), intent(out) :: radial_drift_modes
+        type(fieldline_modes_t), intent(out) :: fieldline_modes
 
         integer :: n_fieldlines, n_modes
         integer :: current
@@ -32,14 +39,12 @@ contains
         label = fieldlines(:)%theta_0
         radial_drift = fieldlines(:)%well_average_radial_drift_velocity
 
-        allocate (radial_drift_modes%cos_coeffs(n_modes))
-        allocate (radial_drift_modes%sin_coeffs(n_modes))
-        allocate (radial_drift_modes%mode_number(n_modes))
+        call allocate_modes(fieldline_modes%radial_drift, n_modes)
 
         call real_ft(label, &
                      radial_drift, &
-                     radial_drift_modes%cos_coeffs, &
-                     radial_drift_modes%sin_coeffs)
+                     fieldline_modes%radial_drift%cos_coeffs, &
+                     fieldline_modes%radial_drift%sin_coeffs)
 
     end subroutine fourier_transform_over_label
 
@@ -95,5 +100,20 @@ contains
 
         theta = (phi - fieldline%phi_0)*fieldline%iota + fieldline%theta_0
     end function get_theta
+
+    subroutine allocate_modes(modes, n_modes)
+        integer, intent(in) :: n_modes
+        type(modes_t), intent(out) :: modes
+
+        integer :: j
+
+        allocate (modes%cos_coeffs(n_modes))
+        allocate (modes%sin_coeffs(n_modes))
+        allocate (modes%mode_numbers(n_modes))
+
+        do j = 0, n_modes - 1
+            modes%mode_numbers(j + 1) = j
+        end do
+    end subroutine allocate_modes
 
 end module fieldline_integrals

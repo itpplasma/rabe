@@ -4,7 +4,7 @@ program test_fourier_transform_over_label
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: make_flock_of_fieldlines
     use fieldline_integrals, only: fourier_transform_over_label
-    use fieldline_integrals, only: modes_t
+    use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
 
@@ -25,7 +25,7 @@ program test_fourier_transform_over_label
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.0_dp ! formula I_v_1 for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
-    type(modes_t) :: radial_drift_modes
+    type(fieldline_modes_t) :: fieldline_modes
 
     integer :: current
     real(dp) :: B_mod
@@ -49,25 +49,25 @@ program test_fourier_transform_over_label
         end if
     end do
 
-    call fourier_transform_over_label(field, fieldlines, radial_drift_modes)
+    call fourier_transform_over_label(field, fieldlines, fieldline_modes)
 
-    if (not_same(I_v_1, radial_drift_modes%sin_coeffs(2), &
+    if (not_same(I_v_1, fieldline_modes%radial_drift%sin_coeffs(2), &
                  reltol_in=reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_fourier_transform_over_label failed: 1st radial drift sin mode"
-        print *, "found: ", radial_drift_modes%sin_coeffs(2)
+        print *, "found: ", fieldline_modes%radial_drift%sin_coeffs(2)
         print *, "expected: ", I_v_1
-        print *, "ratio: ", radial_drift_modes%sin_coeffs(2)/I_v_1
+        print *, "ratio: ", fieldline_modes%radial_drift%sin_coeffs(2)/I_v_1
         stop
     end if
 
-    allocate (zeros(size(radial_drift_modes%cos_coeffs)))
+    allocate (zeros(size(fieldline_modes%radial_drift%cos_coeffs)))
     zeros = 0.0_dp
-    if (not_same(zeros, radial_drift_modes%cos_coeffs, &
+    if (not_same(zeros, fieldline_modes%radial_drift%cos_coeffs, &
                  abstol_in=abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_fourier_transform_over_label failed: radial drift cos modes"
-        print *, "found: ", radial_drift_modes%cos_coeffs
+        print *, "found: ", fieldline_modes%radial_drift%cos_coeffs
         print *, "expected: all ", zeros(1)
         stop
     end if
