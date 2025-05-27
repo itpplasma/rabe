@@ -46,6 +46,7 @@ contains
 
         if (error_flag /= 0) then
             print *, "Integration warning: error =", error_flag
+            error stop
         end if
 
         error_limit = abs(result_quadpack)*rel_error_tol_quadpack &
@@ -54,6 +55,7 @@ contains
         if (abs_error > error_limit) then
             print *, "Integration warning: integration error =", abs_error
             print *, "bigger than required ", error_limit
+            error stop
         end if
 
         result = convert_to_dp(result_quadpack)
