@@ -74,6 +74,16 @@ program test_fourier_transform_over_label
         error stop
     end if
 
+    if (not_same(1.0_dp, fieldline_modes%delta_eta%cos_coeffs(2), &
+                 reltol_in=0.0_dp, abstol_in=0.0_dp)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_fourier_transform_over_label failed: 1st delta_eta cos mode"
+        print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(2)
+        print *, "expected: ", "nan"
+        print *, "ratio: ", "nan"
+        error stop
+    end if
+
     allocate (zeros(size(fieldline_modes%radial_drift%cos_coeffs)))
     zeros = 0.0_dp
 

@@ -28,6 +28,7 @@ contains
         integer :: n_fieldlines, n_modes
         integer :: current
         real(dp) :: average_lambda
+        real(dp), dimension(size(fieldlines)) :: shifted_label
 
         n_fieldlines = size(fieldlines)
         n_modes = n_fieldlines/2 + 1
@@ -43,6 +44,7 @@ contains
 
         call allocate_modes(fieldline_modes%radial_drift, n_modes)
         call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
+        call allocate_modes(fieldline_modes%delta_eta, n_modes)
 
         call real_ft(fieldlines%theta_0, &
                      fieldlines%radial_drift, &
@@ -53,6 +55,12 @@ contains
                      fieldlines%delta_aspect_ratio, &
                      fieldline_modes%delta_aspect_ratio%cos_coeffs, &
                      fieldline_modes%delta_aspect_ratio%sin_coeffs)
+
+        shifted_label = fieldlines%theta_0 - fieldlines%iota_p
+        call real_ft(shifted_label, &
+                     fieldlines%delta_eta, &
+                     fieldline_modes%delta_eta%cos_coeffs, &
+                     fieldline_modes%delta_eta%sin_coeffs)
 
     end subroutine fourier_transform_over_label
 
