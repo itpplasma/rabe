@@ -37,7 +37,7 @@ contains
         end do
 
         label = fieldlines(:)%theta_0
-        radial_drift = fieldlines(:)%well_average_radial_drift_velocity
+        radial_drift = fieldlines(:)%radial_drift
 
         call allocate_modes(fieldline_modes%radial_drift, n_modes)
 
@@ -53,10 +53,10 @@ contains
         type(fieldline_t), intent(inout) :: fieldline
         class(field_t), intent(in) :: field
 
-        call integrate_1d(wrapper_radial_drift_velocity, &
+        call integrate_1d(wrapper_local_radial_drift, &
                           fieldline%phi_max(1), &
                           fieldline%phi_max(2), &
-                          fieldline%well_average_radial_drift_velocity)
+                          fieldline%radial_drift)
 
     contains
 
@@ -75,20 +75,20 @@ contains
                                                                   fieldline%eta_b)
         end function wrapper_lambda_over_B_squared
 
-        function wrapper_radial_drift_velocity(phi)
-            use fieldline_integrands, only: radial_drift_velocity
+        function wrapper_local_radial_drift(phi)
+            use fieldline_integrands, only: local_radial_drift
 
             real(dp), intent(in) :: phi
-            real(dp) :: wrapper_radial_drift_velocity
+            real(dp) :: wrapper_local_radial_drift
 
             real(dp) :: theta
 
             theta = get_theta(fieldline, phi)
-            wrapper_radial_drift_velocity = radial_drift_velocity(field, &
-                                                                  theta, &
-                                                                  phi, &
-                                                                  fieldline%eta_b)
-        end function wrapper_radial_drift_velocity
+            wrapper_local_radial_drift = local_radial_drift(field, &
+                                                            theta, &
+                                                            phi, &
+                                                            fieldline%eta_b)
+        end function wrapper_local_radial_drift
 
     end subroutine calc_fieldline_integrals
 

@@ -6,10 +6,10 @@ module fieldline_integrands
 
 contains
 
-    function radial_drift_velocity(field, theta, phi, eta)
+    function local_radial_drift(field, theta, phi, eta)
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: theta, phi, eta
-        real(dp) :: radial_drift_velocity
+        real(dp) :: local_radial_drift
 
         real(dp) :: B, dB_dx(3), lambda_squared, dB_dtheta_0
 
@@ -18,9 +18,9 @@ contains
 
         dB_dtheta_0 = dB_dx(2)
 
-        radial_drift_velocity = 0.5_dp*sqrt(lambda_squared)/B**3*(3 + lambda_squared) &
-                                *dB_dtheta_0
-    end function radial_drift_velocity
+        local_radial_drift = 0.5_dp*sqrt(lambda_squared)/B**3*(3 + lambda_squared) &
+                             *dB_dtheta_0
+    end function local_radial_drift
 
     function lambda_over_B_squared(field, theta, phi, eta)
         class(field_t), intent(in) :: field

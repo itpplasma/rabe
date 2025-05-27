@@ -13,7 +13,7 @@ module fieldline_mod
 
         real(dp) :: eta_b
         real(dp) :: well_average_lambda_b
-        real(dp) :: well_average_radial_drift_velocity
+        real(dp) :: radial_drift
     end type fieldline_t
 
 contains
