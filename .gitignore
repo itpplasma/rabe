@@ -1,6 +1,7 @@
 .venv/
 myenv/
 build/
+bin/
 external/
 *.bc
 *.mod
