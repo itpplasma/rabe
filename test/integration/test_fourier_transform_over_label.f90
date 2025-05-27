@@ -26,7 +26,7 @@ program test_fourier_transform_over_label
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.0_dp ! formula I_v_1 for small iota
+    real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
 
