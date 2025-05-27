@@ -12,6 +12,9 @@ module fieldline_mod
         real(dp) :: B_max(2)
 
         real(dp) :: eta_b
+        real(dp) :: delta_eta
+        real(dp) :: well_average_lambda
+        real(dp) :: delta_aspect_ratio
         real(dp) :: well_average_lambda_b
         real(dp) :: radial_drift
     end type fieldline_t
@@ -43,6 +46,7 @@ contains
         end do
 
         fieldlines(:)%eta_b = 1.0_dp/get_global_B_max(fieldlines)
+        fieldlines(:)%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
     end subroutine make_flock_of_fieldlines
 

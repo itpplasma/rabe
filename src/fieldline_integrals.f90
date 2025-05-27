@@ -11,8 +11,8 @@ module fieldline_integrals
 
     type :: fieldline_modes_t
         type(modes_t) :: radial_drift
-        type(modes_t) :: aspect_ratio
-        type(modes_t) :: misalignement
+        type(modes_t) :: delta_eta
+        type(modes_t) :: delta_aspect_ratio
         type(modes_t) :: g_off
     end type fieldline_modes_t
 
@@ -27,7 +27,7 @@ contains
 
         integer :: n_fieldlines, n_modes
         integer :: current
-        real(dp), dimension(size(fieldlines)) :: label, radial_drift
+        real(dp) :: average_lambda
 
         n_fieldlines = size(fieldlines)
         n_modes = n_fieldlines/2 + 1
@@ -35,16 +35,24 @@ contains
         do current = 1, n_fieldlines
             call calc_fieldline_integrals(field, fieldlines(current))
         end do
-
-        label = fieldlines(:)%theta_0
-        radial_drift = fieldlines(:)%radial_drift
+        average_lambda = sum(fieldlines(:)%well_average_lambda)/n_fieldlines
+        fieldlines(:)%delta_aspect_ratio = sqrt( &
+                                           average_lambda/ &
+                                           fieldlines(:)%well_average_lambda &
+                                           ) - 1
 
         call allocate_modes(fieldline_modes%radial_drift, n_modes)
+        call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
 
-        call real_ft(label, &
-                     radial_drift, &
+        call real_ft(fieldlines%theta_0, &
+                     fieldlines%radial_drift, &
                      fieldline_modes%radial_drift%cos_coeffs, &
                      fieldline_modes%radial_drift%sin_coeffs)
+
+        call real_ft(fieldlines%theta_0, &
+                     fieldlines%delta_aspect_ratio, &
+                     fieldline_modes%delta_aspect_ratio%cos_coeffs, &
+                     fieldline_modes%delta_aspect_ratio%sin_coeffs)
 
     end subroutine fourier_transform_over_label
 
@@ -57,6 +65,11 @@ contains
                           fieldline%phi_max(1), &
                           fieldline%phi_max(2), &
                           fieldline%radial_drift)
+
+        call integrate_1d(wrapper_lambda_over_B_squared, &
+                          fieldline%phi_max(1), &
+                          fieldline%phi_max(2), &
+                          fieldline%well_average_lambda)
 
     contains
 
