@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test install clean
+.PHONY: all build test install clean plot
 all: build
 
 build/CMakeCache.txt:
@@ -18,6 +18,9 @@ test: build
 
 test_all: build
 	ctest --test-dir build/test --output-on-failure
+
+plot: build
+	cmake --build build --target plot_maxima
 
 clean:
 	rm -rf build

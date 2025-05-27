@@ -17,3 +17,6 @@ target_link_libraries(${PROJECT_NAME} rabe_lib)
 
 enable_testing()
 add_subdirectory(test)
+
+# Optional plotting
+add_subdirectory(plot EXCLUDE_FROM_ALL)
