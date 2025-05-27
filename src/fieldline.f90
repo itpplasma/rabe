@@ -10,6 +10,7 @@ module fieldline_mod
         real(dp) :: iota
         real(dp) :: phi_max(2)
         real(dp) :: B_max(2)
+        real(dp) :: iota_p
 
         real(dp) :: eta_b
         real(dp) :: delta_eta
@@ -33,20 +34,20 @@ contains
         real(dp) :: interval(2)
         integer :: current
 
-        fieldlines(:)%theta_0 = theta_0
-        fieldlines(:)%iota = iota
+        fieldlines%theta_0 = theta_0
+        fieldlines%iota = iota
 
         call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines, &
                                                  phi_tol)
 
         do current = 1, size(fieldlines)
-            interval = (/-2.0_dp*pi, 2.0_dp*pi/) + fieldlines(current)%phi_0
-            call find_maxima_along_fieldline(field, fieldlines(current), interval, &
-                                             phi_tol)
+            interval = (/-1.5_dp*pi, 1.5_dp*pi/) + fieldlines(current)%phi_0
+            call find_maxima_along_fieldline(field, fieldlines(current), &
+                                             interval, phi_tol)
         end do
 
-        fieldlines(:)%eta_b = 1.0_dp/get_global_B_max(fieldlines)
-        fieldlines(:)%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
+        fieldlines%eta_b = 1.0_dp/get_global_B_max(fieldlines)
+        fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
     end subroutine make_flock_of_fieldlines
 
@@ -134,7 +135,7 @@ contains
     end subroutine find_maxima_along_fieldline
 
     function get_global_B_max(fieldlines) result(global_B_max)
-        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp) :: global_B_max
 
         integer :: current

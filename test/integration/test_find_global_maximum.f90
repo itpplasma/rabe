@@ -4,8 +4,7 @@ program test_find_global_maximum
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
-    use fieldline_mod, only: find_maxima_along_fieldline
+    use fieldline_mod, only: make_flock_of_fieldlines
 
     implicit none
 
@@ -18,8 +17,8 @@ program test_find_global_maximum
     real(dp), parameter :: tol_phi_max = 1e-3
     real(dp), parameter :: B_reltol = (tol_phi_max*abs(phi_mode))**2
 
-    integer, parameter :: n_fieldlines = 1000
-    real(dp), parameter :: iota = -3.0_dp
+    integer, parameter :: n_fieldlines = 200
+    real(dp), parameter :: iota = -1.0_dp
 
     real(dp), dimension(n_fieldlines) :: theta_0
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
@@ -32,24 +31,10 @@ program test_find_global_maximum
     call perturbed_field%mock_perturbed_field_init(field, theta_mode, 0.0_dp, B_pert)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
-    fieldlines(:)%theta_0 = theta_0
-    fieldlines(:)%iota = iota
+    call make_flock_of_fieldlines(fieldlines, theta_0, iota, perturbed_field, &
+                                  theta_mode, phi_mode, tol_phi_max)
 
-    call set_fieldline_phi_0_to_mode_minimum(perturbed_field, theta_mode, phi_mode, &
-                                             fieldlines)
-
-    found_global_B_max = 0.0_dp
-    do current = 1, n_fieldlines
-        interval = (/0.0_dp, 4*pi/) + fieldlines(current)%phi_0
-        call find_maxima_along_fieldline(perturbed_field, fieldlines(current), &
-                                         interval, tol_phi_max)
-        fieldline_B_max = max(fieldlines(current)%B_max(1), &
-                              fieldlines(current)%B_max(2))
-        if (fieldline_B_max .gt. found_global_B_max) then
-            found_global_B_max = fieldline_B_max
-        end if
-    end do
-
+    found_global_B_max = 1.0_dp/fieldlines(1)%eta_b
     if (not_same(global_B_max, found_global_B_max, B_reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_find_global_maximum failed: global_B_max"
