@@ -19,9 +19,7 @@ to execute tests.
 
 ## Third Party
 
-See licenses under `third_party`
-
-- `pyplot-fortran` for visualization
+- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (license under `plot`)
 
 ## References
 [1] M. Landreman et al., Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
