@@ -20,7 +20,7 @@ contains
         real(dp), intent(in) :: a, b
         real(dp), intent(out) :: result
 
-        real(quadpack), parameter :: abs_error_tol_quadpack = 1.0e-8
+        real(quadpack), parameter :: abs_error_tol_quadpack = 0.0_dp
         real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-8
         real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
         real(quadpack) :: abs_error
