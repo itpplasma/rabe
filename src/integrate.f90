@@ -80,97 +80,48 @@ contains
         real(dp), intent(in) :: a, b
         real(dp), intent(out) :: result
 
-        real(dp) :: interval_middle
-
-        real(quadpack), parameter :: abs_error_tol_quadpack = 1.0e-8
-        real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-8
-        real(quadpack) :: sub_a_quadpack, sub_b_quadpack
-        real(quadpack) :: left_result_quadpack, right_result_quadpack
-        real(quadpack) :: left_abs_error, right_abs_error
-        integer :: left_error_flag, right_error_flag
-        real(quadpack) :: left_error_limit, right_error_limit
-
-        integer :: neval_dummy
+        real(dp) :: sub_a, sub_b
+        real(dp) :: left_result, right_result
 
         if (b < a) then
             print *, "Error in integrate_1d_substituted: b < a"
             error stop
         end if
-        interval_middle = (b - a)*0.5_dp
-
-        ! quadpack operates in and requires real(8)
-        sub_a_quadpack = convert_to_quadpack(0.0_dp)
-        sub_b_quadpack = convert_to_quadpack(sqrt(interval_middle))
 
         ! integration by globally adaptive interval subdivision (quadpack import)
         ! qags struggels with functions of form sqrt(x-a) and sqrt(b-x)
-        ! Terefore we split the integral in two parts and substitute
+        ! Terefore we split the integral in the middle and substitute
         ! - left integral: t**2 = x - a
         ! - right integral: t**2 = b - x
-        call qags(left_substituted_integrand, &
-                  sub_a_quadpack, &
-                  sub_b_quadpack, &
-                  abs_error_tol_quadpack, &
-                  rel_error_tol_quadpack, &
-                  left_result_quadpack, &
-                  left_abs_error, &
-                  neval_dummy, &
-                  left_error_flag)
+        ! resulting in new limits
+        ! - left integral: 0 to sqrt((b - a)*0.5_dp)
+        ! - right integral: 0 to sqrt((b - a)*0.5_dp) (after absorbing [-] from trafo)
+        sub_a = 0.0_dp
+        sub_b = sqrt((b - a)*0.5_dp)
+        call integrate_1d(left_substituted_integrand, sub_a, sub_b, left_result)
+        call integrate_1d(right_substituted_integrand, sub_a, sub_b, right_result)
 
-        call qags(right_substituted_integrand, &
-                  sub_a_quadpack, &
-                  sub_b_quadpack, &
-                  abs_error_tol_quadpack, &
-                  rel_error_tol_quadpack, &
-                  right_result_quadpack, &
-                  right_abs_error, &
-                  neval_dummy, &
-                  right_error_flag)
-
-        if (left_error_flag /= 0 .or. right_error_flag /= 0) then
-            print *, "Integration warning: error =", left_error_flag
-            print *, "Integration warning: error =", right_error_flag
-            error stop
-        end if
-
-        left_error_limit = max(abs(left_result_quadpack)*rel_error_tol_quadpack, &
-                               abs_error_tol_quadpack)
-        right_error_limit = max(abs(right_result_quadpack)*rel_error_tol_quadpack, &
-                                abs_error_tol_quadpack)
-
-        if (left_abs_error > left_error_limit .or. &
-            right_abs_error > right_error_limit) then
-            print *, "Integration warning: too big integration error"
-            print *, "reached in left: ", left_abs_error
-            print *, "limit: ", left_error_limit
-            print *, "reached in right: ", right_abs_error
-            print *, "limit: ", right_error_limit
-            error stop
-        end if
-
-        result = convert_to_dp(left_result_quadpack + right_result_quadpack)
+        result = left_result + right_result
 
     contains
-        function left_substituted_integrand(t_quadpack)
-            real(quadpack), intent(in) :: t_quadpack
-            real(quadpack) :: left_substituted_integrand
+        function left_substituted_integrand(t)
+            real(dp), intent(in) :: t
+            real(dp) :: left_substituted_integrand
 
-            real(dp) :: t_dp, x_dp
+            real(dp) :: x
 
-            t_dp = real(t_quadpack, kind=dp)
-            x_dp = t_dp**2 + a
-            left_substituted_integrand = real(f(x_dp)*2.0_dp*t_dp, kind=quadpack)
+            x = t**2.0_dp + a
+            left_substituted_integrand = f(x)*2.0_dp*t
         end function left_substituted_integrand
 
-        function right_substituted_integrand(t_quadpack)
-            real(quadpack), intent(in) :: t_quadpack
-            real(quadpack) :: right_substituted_integrand
+        function right_substituted_integrand(t)
+            real(dp), intent(in) :: t
+            real(dp) :: right_substituted_integrand
 
-            real(dp) :: t_dp, x_dp
+            real(dp) :: x
 
-            t_dp = real(t_quadpack, kind=dp)
-            x_dp = b - t_dp**2
-            right_substituted_integrand = real(f(x_dp)*2.0_dp*t_dp, kind=quadpack)
+            x = b - t**2.0_dp
+            right_substituted_integrand = f(x)*2.0_dp*t
         end function right_substituted_integrand
 
     end subroutine integrate_1d_substituted
