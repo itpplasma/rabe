@@ -21,7 +21,6 @@ program test_fourier_transform_over_label
     real(dp), parameter :: reltol_radial_drift = 2.0_dp*eps_0
     real(dp), parameter :: reltol_aspect_ratio = 2.0_dp*eps_1/eps_0
     real(dp), parameter :: abstol = 1e-15
-    real(dp), parameter :: stor = 0.5_dp
     integer, parameter :: n_fieldlines = 50
 
     real(dp), dimension(n_fieldlines) :: theta_0
