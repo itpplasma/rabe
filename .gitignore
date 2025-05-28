@@ -8,3 +8,4 @@ external/
 *.egg-info
 *__pycache__
 **/output/
+.vscode
