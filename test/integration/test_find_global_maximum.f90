@@ -23,9 +23,7 @@ program test_find_global_maximum
     real(dp), dimension(n_fieldlines) :: theta_0
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
-    real(dp) :: interval(2)
     real(dp) :: found_global_B_max, fieldline_B_max
-    integer :: current
 
     call field%mock_field_init(theta_mode, phi_mode, B_0, B_amplitude)
     call perturbed_field%mock_perturbed_field_init(field, theta_mode, 0.0_dp, B_pert)
