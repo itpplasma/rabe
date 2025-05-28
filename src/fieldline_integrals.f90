@@ -65,19 +65,19 @@ contains
     end subroutine fourier_transform_over_label
 
     subroutine calc_fieldline_integrals(field, fieldline)
-        use integrate, only: integrate_1d
+        use integrate, only: integrate_1d_substituted
         type(fieldline_t), intent(inout) :: fieldline
         class(field_t), intent(in) :: field
 
-        call integrate_1d(wrapper_local_radial_drift, &
-                          fieldline%phi_max(1), &
-                          fieldline%phi_max(2), &
-                          fieldline%radial_drift)
+        call integrate_1d_substituted(wrapper_local_radial_drift, &
+                                      fieldline%phi_max(1), &
+                                      fieldline%phi_max(2), &
+                                      fieldline%radial_drift)
 
-        call integrate_1d(wrapper_lambda_over_B_squared, &
-                          fieldline%phi_max(1), &
-                          fieldline%phi_max(2), &
-                          fieldline%well_average_lambda)
+        call integrate_1d_substituted(wrapper_lambda_over_B_squared, &
+                                      fieldline%phi_max(1), &
+                                      fieldline%phi_max(2), &
+                                      fieldline%well_average_lambda)
 
     contains
 

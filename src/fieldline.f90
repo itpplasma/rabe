@@ -40,6 +40,9 @@ contains
         call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines, &
                                                  phi_tol)
 
+        fieldlines%iota_p = iota*(fieldlines(1)%theta_0*M_pol &
+                                  - fieldlines(2)%phi_0*N_tor)/(N_tor - iota*M_pol)
+
         do current = 1, size(fieldlines)
             interval = (/-1.5_dp*pi, 1.5_dp*pi/) + fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &

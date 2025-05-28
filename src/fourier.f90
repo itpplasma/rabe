@@ -63,6 +63,7 @@ contains
 
         if (.not. is_equidistant) then
             print *, "Input x has to be equidistant for real_ft!"
+            print *, "violation by ", maxval(abs(dx - dx(1)))
             error stop
         end if
     end subroutine check_is_equidistant
