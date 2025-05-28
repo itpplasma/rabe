@@ -6,6 +6,10 @@ add_executable(test_integrate_1d.x test_integrate_1d.f90)
 target_link_libraries(test_integrate_1d.x rabe_lib)
 add_test(TestIntegrate1d test_integrate_1d.x)
 
+add_executable(test_integrate_1d_substituted.x test_integrate_1d_substituted.f90)
+target_link_libraries(test_integrate_1d_substituted.x rabe_lib)
+add_test(TestIntegrate1dSubstituted test_integrate_1d_substituted.x)
+
 add_executable(test_integrate_wrapper.x test_integrate_wrapper.f90)
 target_link_libraries(test_integrate_wrapper.x rabe_lib)
 add_test(TestIntegrateWrapper test_integrate_wrapper.x)
