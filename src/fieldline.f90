@@ -1,5 +1,5 @@
 module fieldline_mod
-    use constants, only: dp, pi
+    use constants, only: dp, pi, eps
     use field_base, only: field_t
 
     implicit none
@@ -49,7 +49,7 @@ contains
                                              interval, phi_tol)
         end do
 
-        fieldlines%eta_b = 1.0_dp/get_global_B_max(fieldlines)
+        fieldlines%eta_b = (1.0_dp-eps)/get_global_B_max(fieldlines)
         fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
     end subroutine make_flock_of_fieldlines
