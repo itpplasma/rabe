@@ -31,3 +31,5 @@ add_test(TestAntiSigmaAnalytic test_anti_sigma_analytic.x)
 add_executable(test_pert_anti_sigma_analytic.x test_pert_anti_sigma_analytic.f90)
 target_link_libraries(test_pert_anti_sigma_analytic.x rabe_lib helpers_lib)
 add_test(TestPertAntiSigmaAnalytic test_pert_anti_sigma_analytic.x)
+
+add_subdirectory(plot)
