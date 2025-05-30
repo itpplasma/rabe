@@ -1,9 +1,8 @@
 module plot_mod
     use pyplot_module, only: pyplot
+    use constants, only: dp
 
     implicit none
-
-    integer, parameter :: dp = kind(1.0d0)
 
 contains
 
