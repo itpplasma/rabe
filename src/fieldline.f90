@@ -18,6 +18,8 @@ module fieldline_mod
         real(dp) :: delta_aspect_ratio
         real(dp) :: well_average_lambda_b
         real(dp) :: radial_drift
+    contains
+        procedure :: get_theta
     end type fieldline_t
 
 contains
@@ -49,7 +51,7 @@ contains
                                              interval, phi_tol)
         end do
 
-        fieldlines%eta_b = (1.0_dp-eps)/get_global_B_max(fieldlines)
+        fieldlines%eta_b = (1.0_dp - eps)/get_global_B_max(fieldlines)
         fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
     end subroutine make_flock_of_fieldlines
@@ -126,13 +128,12 @@ contains
             real(dp), dimension(:), intent(in) :: phi
             real(dp), dimension(:), intent(out) :: B_mod
 
-            real(dp), dimension(size(phi, 1)) :: theta
+            real(dp) :: theta
             integer :: idx
 
-            theta = (phi - fieldline%phi_0)*fieldline%iota + fieldline%theta_0
-
-            do idx = 1, size(phi, 1)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+            do idx = 1, size(phi)
+                theta = fieldline%get_theta(phi(idx))
+                call field%compute_B_mod(theta, phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
@@ -148,5 +149,14 @@ contains
         B_max_2 = maxval(fieldlines(:)%B_max(2))
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
+
+    function get_theta(self, phi) result(theta)
+        class(fieldline_t), intent(in) :: self
+        real(dp) :: phi
+
+        real(dp) :: theta
+
+        theta = (phi - self%phi_0)*self%iota + self%theta_0
+    end function get_theta
 
 end module fieldline_mod

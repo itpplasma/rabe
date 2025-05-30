@@ -89,7 +89,7 @@ contains
 
             real(dp) :: theta
 
-            theta = get_theta(fieldline, phi)
+            theta = fieldline%get_theta(phi)
             wrapper_lambda_over_B_squared = lambda_over_B_squared(field, &
                                                                   theta, &
                                                                   phi, &
@@ -104,7 +104,7 @@ contains
 
             real(dp) :: theta
 
-            theta = get_theta(fieldline, phi)
+            theta = fieldline%get_theta(phi)
             wrapper_local_radial_drift = local_radial_drift(field, &
                                                             theta, &
                                                             phi, &
@@ -112,15 +112,6 @@ contains
         end function wrapper_local_radial_drift
 
     end subroutine calc_fieldline_integrals
-
-    function get_theta(fieldline, phi) result(theta)
-        type(fieldline_t), intent(in) :: fieldline
-        real(dp) :: phi
-
-        real(dp) :: theta
-
-        theta = (phi - fieldline%phi_0)*fieldline%iota + fieldline%theta_0
-    end function get_theta
 
     subroutine allocate_modes(modes, n_modes)
         integer, intent(in) :: n_modes
