@@ -26,6 +26,24 @@ module fieldline_mod
 
 contains
 
+    function get_theta_scalar(self, phi) result(theta)
+        class(fieldline_t), intent(in) :: self
+        real(dp) :: phi
+
+        real(dp) :: theta
+
+        theta = (phi - self%phi_0)*self%iota + self%theta_0
+    end function get_theta_scalar
+
+    function get_theta_array(self, phi) result(theta)
+        class(fieldline_t), intent(in) :: self
+        real(dp), dimension(:) :: phi
+
+        real(dp), dimension(size(phi)) :: theta
+
+        theta = (phi - self%phi_0)*self%iota + self%theta_0
+    end function get_theta_array
+
     subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota, &
                                         field, M_pol, N_tor, phi_tol)
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
@@ -151,23 +169,5 @@ contains
         B_max_2 = maxval(fieldlines(:)%B_max(2))
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
-
-    function get_theta_scalar(self, phi) result(theta)
-        class(fieldline_t), intent(in) :: self
-        real(dp) :: phi
-
-        real(dp) :: theta
-
-        theta = (phi - self%phi_0)*self%iota + self%theta_0
-    end function get_theta_scalar
-
-    function get_theta_array(self, phi) result(theta)
-        class(fieldline_t), intent(in) :: self
-        real(dp), dimension(:) :: phi
-
-        real(dp), dimension(size(phi)) :: theta
-
-        theta = (phi - self%phi_0)*self%iota + self%theta_0
-    end function get_theta_array
 
 end module fieldline_mod
