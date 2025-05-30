@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test install clean
+.PHONY: all build test install clean plot
 all: build
 
 build/CMakeCache.txt:
@@ -14,10 +14,13 @@ install: build
 	cmake --install build
 
 test: build
-	ctest --test-dir build/test --output-on-failure -LE slow
+	ctest --test-dir build/test --output-on-failure -LE "slow|per_hand|plot"
 
 test_all: build
-	ctest --test-dir build/test --output-on-failure
+	ctest --test-dir build/test --output-on-failure -LE per_hand
+
+plot: build
+	ctest --test-dir build/test --output-on-failure -L plot
 
 clean:
 	rm -rf build

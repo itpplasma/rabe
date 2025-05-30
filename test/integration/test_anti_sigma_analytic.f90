@@ -33,7 +33,6 @@ program test_anti_sigma_analytic
     integer :: current
     real(dp) :: B_mod
     real(dp), dimension(:), allocatable :: zeros
-    real(dp) :: expected_deviation
 
     call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
