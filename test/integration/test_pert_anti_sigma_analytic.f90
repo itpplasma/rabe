@@ -29,7 +29,7 @@ program test_pert_anti_sigma_analytic
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.01_dp ! analytic formula for small iota
+    real(dp), parameter :: iota = 1.0_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
 

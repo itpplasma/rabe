@@ -22,6 +22,7 @@ contains
 
         real(quadpack), parameter :: abs_error_tol_quadpack = 0.0_dp
         real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-8
+        integer, parameter :: order_key = 6
         real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
         real(quadpack) :: abs_error
         integer :: error_flag
@@ -34,15 +35,16 @@ contains
         b_quadpack = convert_to_quadpack(b)
 
         ! integration by globally adaptive interval subdivision (quadpack import)
-        call qags(quadpack_integrand, &
-                  a_quadpack, &
-                  b_quadpack, &
-                  abs_error_tol_quadpack, &
-                  rel_error_tol_quadpack, &
-                  result_quadpack, &
-                  abs_error, &
-                  neval_dummy, &
-                  error_flag)
+        call qag(quadpack_integrand, &
+                 a_quadpack, &
+                 b_quadpack, &
+                 abs_error_tol_quadpack, &
+                 rel_error_tol_quadpack, &
+                 order_key, &
+                 result_quadpack, &
+                 abs_error, &
+                 neval_dummy, &
+                 error_flag)
 
         if (error_flag /= 0) then
             print *, "Integration warning: error =", error_flag
