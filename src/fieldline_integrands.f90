@@ -54,6 +54,7 @@ contains
             print *, "Square of pitch parameter (1 - B*eta) is negative!"
             print *, "B: ", B
             print *, "eta: ", eta
+            print *, "(1 - B*eta): ", pitchparameter_squared
             error stop
         end if
     end function pitchparameter_squared
