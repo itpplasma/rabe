@@ -19,7 +19,9 @@ module fieldline_mod
         real(dp) :: well_average_lambda_b
         real(dp) :: radial_drift
     contains
-        procedure :: get_theta
+        generic :: get_theta => get_theta_scalar, get_theta_array
+        procedure, private :: get_theta_scalar
+        procedure, private :: get_theta_array
     end type fieldline_t
 
 contains
@@ -128,12 +130,12 @@ contains
             real(dp), dimension(:), intent(in) :: phi
             real(dp), dimension(:), intent(out) :: B_mod
 
-            real(dp) :: theta
+            real(dp), dimension(size(phi)) :: theta
             integer :: idx
 
+            theta = fieldline%get_theta(phi)
             do idx = 1, size(phi)
-                theta = fieldline%get_theta(phi(idx))
-                call field%compute_B_mod(theta, phi(idx), B_mod(idx))
+                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
@@ -150,13 +152,22 @@ contains
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
 
-    function get_theta(self, phi) result(theta)
+    function get_theta_scalar(self, phi) result(theta)
         class(fieldline_t), intent(in) :: self
         real(dp) :: phi
 
         real(dp) :: theta
 
         theta = (phi - self%phi_0)*self%iota + self%theta_0
-    end function get_theta
+    end function get_theta_scalar
+
+    function get_theta_array(self, phi) result(theta)
+        class(fieldline_t), intent(in) :: self
+        real(dp), dimension(:) :: phi
+
+        real(dp), dimension(size(phi)) :: theta
+
+        theta = (phi - self%phi_0)*self%iota + self%theta_0
+    end function get_theta_array
 
 end module fieldline_mod
