@@ -33,3 +33,8 @@ target_link_libraries(test_pert_anti_sigma_analytic.x rabe_lib helpers_lib)
 add_test(TestPertAntiSigmaAnalytic test_pert_anti_sigma_analytic.x)
 
 add_subdirectory(plot)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/plot)
+add_executable(test_plot.x test_plot.f90)
+target_link_libraries(test_plot.x plot_lib rabe_lib)
+add_test(TestPlot test_plot.x)
+set_tests_properties(TestPlot PROPERTIES LABELS "plot")

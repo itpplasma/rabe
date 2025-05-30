@@ -20,7 +20,7 @@ test_all: build
 	ctest --test-dir build/test --output-on-failure
 
 plot: build
-	cmake --build build --target plot_maxima
+	ctest --test-dir build/test --output-on-failure -L plot
 
 clean:
 	rm -rf build
