@@ -47,7 +47,6 @@ contains
     subroutine plot_fieldlines_over_field(fieldlines, field)
         use myplot_module, only: myplot
         use field_base, only: field_t
-        use utils, only: meshgrid
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         class(field_t), intent(in) :: field
