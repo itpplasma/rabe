@@ -12,3 +12,6 @@ target_link_libraries(rabe_lib PRIVATE quadpack)
 
 add_subdirectory(neo)
 target_link_libraries(rabe_lib PRIVATE neo_lib)
+
+add_subdirectory(utils)
+target_link_libraries(rabe_lib PRIVATE utils_lib)

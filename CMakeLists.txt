@@ -9,6 +9,7 @@ include(compiler)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 include_directories(${CMAKE_BINARY_DIR}/src/neo)
+include_directories(${CMAKE_BINARY_DIR}/src/utils)
 add_subdirectory(src)
 
 add_executable(${PROJECT_NAME} app/main.f90)
