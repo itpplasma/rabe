@@ -1,8 +1,10 @@
 program test_plot
-    use plot_mod, only: plot
+    use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace
     implicit none
+
+    type(myplot) :: plt
 
     integer, parameter :: n_points = 100
     real(dp), dimension(n_points) :: x, f
@@ -10,6 +12,8 @@ program test_plot
     call linspace(0.0_dp, 2.0_dp*pi, n_points, x)
     f = sin(x)
 
-    call plot(x, f)
+    call plt%initialize()
+    call plt%add_plot(x, f, label="sin(x)", linestyle="--")
+    call plt%show()
 
 end program test_plot
