@@ -33,6 +33,7 @@ contains
         real(dp) :: theta
 
         theta = (phi - self%phi_0)*self%iota + self%theta_0
+        theta = modulo(theta, 2.0_dp*pi)
     end function get_theta_scalar
 
     function get_theta_array(self, phi) result(theta)
@@ -42,6 +43,7 @@ contains
         real(dp), dimension(size(phi)) :: theta
 
         theta = (phi - self%phi_0)*self%iota + self%theta_0
+        theta = modulo(theta, 2.0_dp*pi)
     end function get_theta_array
 
     subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota, &
