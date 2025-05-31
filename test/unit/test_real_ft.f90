@@ -8,11 +8,11 @@ program test_real_ft
     integer, parameter :: N = 8
     real(dp), parameter :: reltol = 1e-15
 
-    real(dp), dimension(N) :: f, k, x
+    real(dp), dimension(N) :: f, k, x, x_shifted
     real(dp), dimension(N/2 + 1) :: found_f_cos, found_f_sin, f_cos, f_sin
     complex(dp), dimension(N) :: f_exp
 
-    real(dp) :: const
+    real(dp) :: const, shift
     integer :: k0, k1, k2
     integer :: n0
     integer :: j
@@ -95,6 +95,22 @@ program test_real_ft
         not_same(f_sin, found_f_sin, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_real_ft failed for case sum of cos and sin"
+        print *, "found f_cos: ", found_f_cos
+        print *, "f_cos: ", f_cos
+        print *, "found f_sin: ", found_f_sin
+        print *, "f_sin: ", f_sin
+        error stop
+    end if
+
+    shift = 0.25_dp*pi
+    x_shifted = x + shift
+    f = 2.0_dp*sin(x_shifted*k1) - 3.0_dp*cos(x_shifted*k2)
+    call real_ft(x_shifted, f, found_f_cos, found_f_sin)
+
+    if (not_same(f_cos, found_f_cos, reltol) .or. &
+        not_same(f_sin, found_f_sin, reltol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_real_ft failed for case sum of cos and sin (shifted interval)"
         print *, "found f_cos: ", found_f_cos
         print *, "f_cos: ", f_cos
         print *, "found f_sin: ", found_f_sin

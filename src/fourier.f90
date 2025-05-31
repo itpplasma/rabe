@@ -22,7 +22,7 @@ contains
 
         do k = 0, N/2
             phase_step = exp(-Icmplx*dx*real(k, kind=dp))
-            phase = (1.0_dp, 0.0_dp)
+            phase = (1.0_dp, 0.0_dp)*exp(-Icmplx*x(1)*real(k, kind=dp))
             sum = (0.0_dp, 0.0_dp)
             do j = 0, N - 1
                 sum = sum + f(j + 1)*phase
@@ -70,20 +70,20 @@ contains
 
     subroutine check_has_correct_endpoints(x)
         real(dp), dimension(:), intent(in) :: x
-        logical :: has_correct_endpoints
+        logical :: has_correct_range
 
         real(dp), parameter :: tol = 1e-15
-        real(dp) :: endpoint, range
+        real(dp) :: correct_range, range
         integer :: N
 
         N = size(x)
-        endpoint = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
-        has_correct_endpoints = abs(endpoint - x(N)) < tol*endpoint
-        has_correct_endpoints = has_correct_endpoints .and. abs(0.0_dp - x(1)) < tol
-        if (.not. has_correct_endpoints) then
+        range = x(N) - x(1)
+        correct_range = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
+        has_correct_range = abs(correct_range - range) < tol*correct_range
+        if (.not. has_correct_range) then
             print *, "Input x has wrong endpoints for real_ft!"
             print *, "actual: ", x(1), x(N)
-            print *, "required: ", 0.0_dp, endpoint
+            print *, "required: ", x(1), x(1) + correct_range
             error stop
         end if
     end subroutine check_has_correct_endpoints
