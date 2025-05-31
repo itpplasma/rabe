@@ -99,7 +99,7 @@ program test_pert_anti_sigma_analytic
                      )) then
             print *, "-------------------------------------------------------------"
             print *, "test_pert_anti_sigma_analytic failed: ", &
-                     "delta_eta cos mode number", current
+                     "delta_eta cos mode number", current-1
             print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(current)
             print *, "expected: ", expected_deviation, "or lower"
             error stop
