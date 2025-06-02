@@ -17,3 +17,7 @@ add_test(TestIntegrateWrapper test_integrate_wrapper.x)
 add_executable(test_real_ft.x test_real_ft.f90)
 target_link_libraries(test_real_ft.x rabe_lib)
 add_test(TestRealFt test_real_ft.x)
+
+add_executable(test_misc.x test_misc.f90)
+target_link_libraries(test_misc.x rabe_lib)
+add_test(TestRealFt test_misc.x)
