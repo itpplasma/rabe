@@ -20,4 +20,10 @@ add_test(TestRealFt test_real_ft.x)
 
 add_executable(test_misc.x test_misc.f90)
 target_link_libraries(test_misc.x rabe_lib)
-add_test(TestRealFt test_misc.x)
+add_test(TestMisc test_misc.x)
+
+add_executable(plot_misc.x plot_misc.f90)
+target_link_libraries(plot_misc.x rabe_lib
+                                  myplot_lib)
+add_test(PlotMisc plot_misc.x)
+set_tests_properties(PlotMisc PROPERTIES LABELS "plot")

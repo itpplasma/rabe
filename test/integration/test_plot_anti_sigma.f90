@@ -11,7 +11,6 @@ program test_plot_anti_sigma
 
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.0125_dp, eps_1 = 0.0005_dp
-    real(dp), parameter :: phi_0 = pi
     type(anti_sigma_field_t) :: field
     real(dp), parameter :: B_pert = 0.01_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
     type(mock_perturbed_field_t) :: perturbed_field
