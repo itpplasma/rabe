@@ -14,15 +14,20 @@ module fieldline_mod
 
         real(dp) :: eta_b
         real(dp) :: delta_eta
-        real(dp) :: well_average_lambda
+        real(dp) :: integral_lambda_b_over_B_squared
         real(dp) :: delta_aspect_ratio
-        real(dp) :: well_average_lambda_b
+        real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
     contains
         generic :: get_theta => get_theta_scalar, get_theta_array
         procedure, private :: get_theta_scalar
         procedure, private :: get_theta_array
     end type fieldline_t
+
+    type :: surface_average_t
+        real(dp) :: B_squared
+        real(dp) :: lambda_b
+    end type surface_average_t
 
 contains
 
@@ -171,5 +176,18 @@ contains
         B_max_2 = maxval(fieldlines(:)%B_max(2))
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
+
+    subroutine calc_surface_averages(fieldlines, surface_average)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(surface_average_t), intent(out) :: surface_average
+
+        real(dp), dimension(size(fieldlines)) :: well_lengths
+
+        well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
+        surface_average%B_squared = sum(well_lengths)/ &
+                                    sum(fieldlines%integral_one_over_B_squared)
+        surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)/ &
+                                   sum(fieldlines%integral_one_over_B_squared)
+    end subroutine calc_surface_averages
 
 end module fieldline_mod

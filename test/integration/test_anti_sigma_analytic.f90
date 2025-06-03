@@ -3,6 +3,8 @@ program test_anti_sigma_analytic
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_mod, only: make_flock_of_fieldlines
+    use fieldline_mod, only: surface_average_t
+    use fieldline_mod, only: calc_surface_averages
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
@@ -14,12 +16,15 @@ program test_anti_sigma_analytic
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.0125_dp, eps_1 = 0.0005_dp
     real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*eps_0)/(B_0**2*N_tor)
     real(dp), parameter :: delta_A_o_1 = 0.25_dp*eps_1/eps_0
+    real(dp), parameter :: average_lambda_b = sqrt(8.0_dp*eps_0)/pi
     real(dp), parameter :: phi_0 = pi
     type(anti_sigma_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-4
     real(dp), parameter :: reltol_radial_drift = 2.0_dp*eps_0
     real(dp), parameter :: reltol_aspect_ratio = 2.0_dp*eps_1/eps_0
+    real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*eps_0
+    real(dp), parameter :: reltol_average_B_squared = 2.0_dp*eps_0**2
     real(dp), parameter :: abstol = 1e-15
     integer, parameter :: n_fieldlines = 50
     integer, parameter :: n_modes = n_fieldlines/2 + 1
@@ -29,6 +34,8 @@ program test_anti_sigma_analytic
     real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
+
+    type(surface_average_t) :: surface_average
 
     integer :: current
     real(dp) :: B_mod
@@ -114,5 +121,27 @@ program test_anti_sigma_analytic
     end if
 
     deallocate (zeros)
+
+    call calc_surface_averages(fieldlines, surface_average)
+
+    if (not_same(average_lambda_b, surface_average%lambda_b, &
+                 reltol_in=reltol_average_lambda_b, abstol_in=0.0_dp)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_anti_sigma_analytic failed: surface average lambda_b"
+        print *, "found: ", surface_average%lambda_b
+        print *, "expected: ", average_lambda_b
+        print *, "ratio: ", surface_average%lambda_b/average_lambda_b
+        error stop
+    end if
+
+    if (not_same(B_0**2, surface_average%B_squared, &
+                 reltol_in=reltol_average_B_squared, abstol_in=0.0_dp)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_anti_sigma_analytic failed: surface average lambda_b"
+        print *, "found: ", surface_average%B_squared
+        print *, "expected: ", B_0**2
+        print *, "ratio: ", surface_average%B_squared/B_0**2
+        error stop
+    end if
 
 end program test_anti_sigma_analytic
