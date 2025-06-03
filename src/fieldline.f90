@@ -25,6 +25,7 @@ module fieldline_mod
     end type fieldline_t
 
     type :: surface_average_t
+        real(dp) :: normalization
         real(dp) :: B_squared
         real(dp) :: lambda_b
     end type surface_average_t
@@ -184,10 +185,10 @@ contains
         real(dp), dimension(size(fieldlines)) :: well_lengths
 
         well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
-        surface_average%B_squared = sum(well_lengths)/ &
-                                    sum(fieldlines%integral_one_over_B_squared)
+        surface_average%normalization = sum(fieldlines%integral_one_over_B_squared)
+        surface_average%B_squared = sum(well_lengths)/surface_average%normalization
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)/ &
-                                   sum(fieldlines%integral_one_over_B_squared)
+                                   surface_average%normalization
     end subroutine calc_surface_averages
 
 end module fieldline_mod
