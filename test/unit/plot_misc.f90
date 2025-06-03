@@ -2,7 +2,7 @@ program plot_misc
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace
-    use misc, only: S_A
+    use misc, only: S_A, S_B
     implicit none
 
     type(myplot) :: plt
@@ -19,6 +19,10 @@ program plot_misc
                       S_A(angle)/pi, &
                       label="$S_A$", &
                       linestyle="r-")
+    call plt%add_plot(angle/pi, &
+                      S_B(angle)/pi, &
+                      label="$S_B$", &
+                      linestyle="b--")
     call plt%show()
 
 end program plot_misc
