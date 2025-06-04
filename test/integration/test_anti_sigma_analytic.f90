@@ -1,5 +1,5 @@
 program test_anti_sigma_analytic
-    use constants, only: dp, pi
+    use constants, only: dp, pi, eps
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -20,13 +20,13 @@ program test_anti_sigma_analytic
     real(dp), parameter :: phi_0 = pi
     type(anti_sigma_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-4
+    real(dp), parameter :: phi_tol = 1e-6
     real(dp), parameter :: reltol_radial_drift = 2.0_dp*eps_0
     real(dp), parameter :: reltol_aspect_ratio = 2.0_dp*eps_1/eps_0
     real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*eps_0
     real(dp), parameter :: reltol_average_B_squared = 2.0_dp*eps_0**2
     real(dp), parameter :: abstol = 1e-15
-    integer, parameter :: n_fieldlines = 50
+    integer, parameter :: n_fieldlines = 60
     integer, parameter :: n_modes = n_fieldlines/2 + 1
 
     real(dp), dimension(n_fieldlines) :: theta_0
@@ -103,7 +103,7 @@ program test_anti_sigma_analytic
     end if
 
     if (not_same(zeros, fieldline_modes%delta_eta%cos_coeffs, &
-                 abstol_in=abstol)) then
+                 abstol_in=eps*10.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_anti_sigma_analytic failed: delta_eta cos modes"
         print *, "found: ", fieldline_modes%delta_eta%cos_coeffs

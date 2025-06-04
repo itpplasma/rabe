@@ -31,7 +31,7 @@ contains
 
     end subroutine find_local_minima
 
-    subroutine find_local_maxima(func, interval, location, abstol)
+    recursive subroutine find_local_maxima(func, interval, location, abstol)
         use utils, only: linspace
 
         procedure(func1d) :: func
@@ -40,25 +40,52 @@ contains
         real(dp), intent(in), optional :: abstol
 
         integer :: n_maxima, n_steps
+        integer, parameter :: n_max = 10000
         real(dp), dimension(:), allocatable :: x, value
         integer :: current_maximum, current_location
+
+        logical :: do_recursion
+        real(dp) :: error
+        real(dp) :: subinterval(2)
+        real(dp), dimension(1) :: sublocation
 
         if (present(abstol)) then
             n_steps = int(abs(interval(2) - interval(1))/abstol) + 2
         else
             n_steps = 1000
         end if
+
+        if (n_steps <= 0 .or. n_steps >= n_max) then
+            n_steps = 1000
+            do_recursion = .true.
+        else
+            do_recursion = .false.
+        end if
+
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
 
+        error = abs(x(2) - x(1))
+
         n_maxima = size(location, dim=1)
         current_maximum = 0
         do current_location = 2, n_steps - 1
-            if (value(current_location - 1) < value(current_location)) then
-                if (value(current_location + 1) < value(current_location)) then
+            if (value(current_location - 1) <= value(current_location)) then
+                if (value(current_location + 1) <= value(current_location)) then
                     current_maximum = current_maximum + 1
-                    location(current_maximum) = x(current_location)
+                    if (do_recursion) then
+                        if (error > abstol) then
+                            subinterval(1) = x(current_location - 1)
+                            subinterval(2) = x(current_location + 1)
+                            call find_local_maxima(func, subinterval, sublocation, abstol)
+                            location(current_maximum) = sublocation(1)
+                        else
+                            location(current_maximum) = x(current_location)
+                        end if
+                    else
+                        location(current_maximum) = x(current_location)
+                    end if
                     if (current_maximum .eq. n_maxima) exit
                 end if
             end if

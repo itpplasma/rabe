@@ -1,5 +1,6 @@
 program test_find_extrema
     use constants, only: dp, pi
+    use utils, only: not_same
 
     implicit none
 
@@ -13,12 +14,15 @@ contains
         use find_extrema, only: find_local_minima
 
         real(dp), parameter :: tol = 1e-2
+        real(dp), parameter :: phi_tol = 1e-7
         real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/)
         real(dp), dimension(2), parameter :: expect_locs = (/2.1386_dp, 5.64832_dp/)
+        real(dp), dimension(2), parameter :: interval_2 = (/-1.5_dp, 3.5_dp/)
+        real(dp), dimension(2), parameter :: expect_locs_2 = (/-1.0_dp, 3.0_dp/)
         real(dp) :: found_loc(1), found_locs(2)
 
-        call find_local_minima(negative_sincos_func, interval, found_loc)
-        call find_local_minima(negative_sincos_func, interval, found_locs)
+        call find_local_minima(negative_sincos_func, interval, found_loc, tol)
+        call find_local_minima(negative_sincos_func, interval, found_locs, tol)
 
         if (any(abs(found_loc/expect_locs(1) - 1.0_dp) > tol)) then
             print *, "-------------------------------------------------------------"
@@ -35,6 +39,16 @@ contains
             print *, "expected locations: ", expect_locs
             error stop
         end if
+
+        call find_local_minima(poly_func, interval_2, found_locs, phi_tol)
+        if (not_same(expect_locs_2, found_locs, abstol_in=phi_tol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_find_local_minima"
+            print *, "found locations: ", found_locs
+            print *, "expected locations: ", expect_locs_2
+            print *, "relative error: ", 1.0_dp - found_locs/expect_locs_2
+            error stop
+        end if
     end subroutine test_find_local_minima
 
     subroutine negative_sincos_func(x, value)
@@ -45,6 +59,13 @@ contains
         value = -value
     end subroutine negative_sincos_func
 
+    subroutine poly_func(x, value)
+        real(dp), dimension(:), intent(in) :: x
+        real(dp), dimension(:), intent(out) :: value
+
+        value = 0.25_dp*x**4.0_dp - 2.0_dp/3.0_dp*x**3.0_dp - 1.5_dp*x**2.0_dp
+    end subroutine poly_func
+
     subroutine test_find_local_maxima()
         use find_extrema, only: find_local_maxima
 
@@ -53,8 +74,8 @@ contains
         real(dp), dimension(2), parameter :: expect_locs = (/2.1386_dp, 5.64832_dp/)
         real(dp) :: found_loc(1), found_locs(2)
 
-        call find_local_maxima(sincos_func, interval, found_loc)
-        call find_local_maxima(sincos_func, interval, found_locs)
+        call find_local_maxima(sincos_func, interval, found_loc, tol)
+        call find_local_maxima(sincos_func, interval, found_locs, tol)
 
         if (any(abs(found_loc/expect_locs(1) - 1.0_dp) > tol)) then
             print *, "-------------------------------------------------------------"

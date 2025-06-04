@@ -22,7 +22,7 @@ program test_pert_anti_sigma_analytic
 
     real(dp), parameter :: reltol_delta_eta = (B_pert/B_max)
     real(dp), parameter :: abstol = 1e-15
-    real(dp), parameter :: phi_tol = 1e-4
+    real(dp), parameter :: phi_tol = 1e-6
 
     integer, parameter :: n_fieldlines = 50
     integer, parameter :: n_modes = n_fieldlines/2 + 1
@@ -99,7 +99,7 @@ program test_pert_anti_sigma_analytic
                      )) then
             print *, "-------------------------------------------------------------"
             print *, "test_pert_anti_sigma_analytic failed: ", &
-                     "delta_eta cos mode number", current-1
+                "delta_eta cos mode number", current - 1
             print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(current)
             print *, "expected: ", expected_deviation, "or lower"
             error stop
