@@ -3,7 +3,7 @@ program test_pert_anti_sigma_analytic
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_of_fieldlines
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace

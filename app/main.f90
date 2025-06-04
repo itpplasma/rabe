@@ -3,8 +3,8 @@ program rabe
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
-    use fieldline_mod, only: find_maxima_along_fieldline
+    use make_fieldline, only: set_fieldline_phi_0_to_mode_minimum
+    use make_fieldline, only: find_maxima_along_fieldline
 
     implicit none
 

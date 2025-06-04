@@ -5,7 +5,7 @@ program test_plot_anti_sigma
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_of_fieldlines
 
     implicit none
 

@@ -3,8 +3,8 @@ program test_integration_along_fieldline
     use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: set_fieldline_phi_0_to_mode_minimum
-    use fieldline_mod, only: find_maxima_along_fieldline
+    use make_fieldline, only: set_fieldline_phi_0_to_mode_minimum
+    use make_fieldline, only: find_maxima_along_fieldline
     use integrate, only: integrate_1d
 
     implicit none

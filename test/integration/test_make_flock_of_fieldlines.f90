@@ -2,7 +2,7 @@ program test_make_flock_of_fieldlines
     use constants, only: dp, pi
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_of_fieldlines
     use utils, only: linspace
     use utils, only: not_same
 

@@ -22,7 +22,7 @@ program test_fieldline
 contains
 
     subroutine test_guess_chi_at_minimum()
-        use fieldline_mod, only: guess_chi_min_over_N
+        use make_fieldline, only: guess_chi_min_over_N
 
         real(dp), parameter :: retol = 1e-2*0.5_dp*abs(phi_mode)
 
@@ -46,7 +46,8 @@ contains
     end subroutine test_guess_chi_at_minimum
 
     subroutine test_find_maxima_along_fieldline()
-        use fieldline_mod, only: find_maxima_along_fieldline, fieldline_t
+        use make_fieldline, only: find_maxima_along_fieldline
+        use fieldline_mod, only: fieldline_t
 
         real(dp), parameter :: phi_tol = 1e-3
         real(dp), parameter :: retol = 0.0_dp, abstol = phi_tol
@@ -120,7 +121,8 @@ contains
     end subroutine find_analytic_maxima_along_fieldline
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
-        use fieldline_mod, only: fieldline_t, set_fieldline_phi_0_to_mode_minimum
+        use fieldline_mod, only: fieldline_t
+        use make_fieldline, only: set_fieldline_phi_0_to_mode_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*phi_mode)**2, abstol = 0.0_dp

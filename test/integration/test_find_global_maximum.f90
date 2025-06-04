@@ -4,17 +4,17 @@ program test_find_global_maximum
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_of_fieldlines
 
     implicit none
 
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp, B_pert = 0.25_dp
+    real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp, B_pert = 0.15_dp
     real(dp), parameter :: global_B_max = B_0 + B_amplitude + B_pert
     type(mock_field_t) :: field
     type(mock_perturbed_field_t) :: perturbed_field
 
-    real(dp), parameter :: tol_phi_max = 1e-3
+    real(dp), parameter :: tol_phi_max = 1e-4
     real(dp), parameter :: B_reltol = (tol_phi_max*abs(phi_mode))**2
 
     integer, parameter :: n_fieldlines = 200

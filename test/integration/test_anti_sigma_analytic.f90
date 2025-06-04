@@ -2,9 +2,9 @@ program test_anti_sigma_analytic
     use constants, only: dp, pi
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_mod, only: make_flock_of_fieldlines
-    use fieldline_mod, only: surface_average_t
-    use fieldline_mod, only: calc_surface_averages
+    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: surface_average_t
+    use make_fieldline, only: calc_surface_averages
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace

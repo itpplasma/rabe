@@ -25,32 +25,11 @@ contains
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         type(fieldline_modes_t), intent(out) :: fieldline_modes
 
-        integer :: n_fieldlines, n_modes
-        integer :: current
-        real(dp) :: average_delta_aspect_ratio
+        integer :: n_modes
+
         real(dp), dimension(size(fieldlines)) :: shifted_label
 
-        n_fieldlines = size(fieldlines)
-        n_modes = n_fieldlines/2 + 1
-
-        do current = 1, n_fieldlines
-            call calc_fieldline_integrals(field, fieldlines(current))
-        end do
-
-        ! I_ref can be chosen to be any e.g. I = I_1
-        ! (I_ref/I_j)**0.5 - 1 = (max(I_j)/I_j)**0.5 -1 =
-        ! ((I+delta)/(I+delta_j))**0.5 -1 ~ 0.5*(delta/I - delta_j/I)
-        ! and the result in linear order only differs by a constant delta/I
-        ! which does not enter the offset formula
-        fieldlines(:)%delta_aspect_ratio = sqrt( &
-                                fieldlines(1)%integral_lambda_b_over_B_squared/ &
-                                fieldlines(:)%integral_lambda_b_over_B_squared &
-                                           ) - 1
-        ! average of delta_aspect ratio also does not enter offset formula
-        ! can be set it to zero
-        average_delta_aspect_ratio = sum(fieldlines(:)%delta_aspect_ratio)/n_fieldlines
-        fieldlines(:)%delta_aspect_ratio = fieldlines(:)%delta_aspect_ratio - &
-                                           average_delta_aspect_ratio
+        n_modes = size(fieldlines)/2 + 1
 
         call allocate_modes(fieldline_modes%radial_drift, n_modes)
         call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
