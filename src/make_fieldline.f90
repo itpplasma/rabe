@@ -34,7 +34,8 @@ contains
                                   - fieldlines(2)%phi_0*N_tor)/(N_tor - iota*M_pol)
 
         do current = 1, n_fieldlines
-            interval = (/-1.5_dp*pi, 1.5_dp*pi/) + fieldlines(current)%phi_0
+            interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
+                       fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
                                              interval, phi_tol)
         end do
@@ -53,13 +54,13 @@ contains
         ! which does not enter the offset formula
         ! We choose I_ref so that the average of delta_aspect is zero
         fieldlines%I_ref = ( &
-                n_fieldlines/ &
-                (sum(1.0_dp/sqrt(fieldlines%integral_lambda_b_over_B_squared))) &
+                           n_fieldlines/ &
+                       (sum(1.0_dp/sqrt(fieldlines%integral_lambda_b_over_B_squared))) &
                            )**2.0_dp
         fieldlines%delta_aspect_ratio = sqrt( &
                                         fieldlines%I_ref/ &
                                         fieldlines%integral_lambda_b_over_B_squared &
-                                            ) - 1
+                                        ) - 1
 
     end subroutine make_flock_of_fieldlines
 
