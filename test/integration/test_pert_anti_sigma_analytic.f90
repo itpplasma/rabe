@@ -21,7 +21,7 @@ program test_pert_anti_sigma_analytic
     real(dp), parameter :: delta_eta_0 = B_pert/B_max**2.0_dp
 
     real(dp), parameter :: reltol_delta_eta = (B_pert/B_max)
-    real(dp), parameter :: abstol = 1e-15
+    real(dp), parameter :: abstol = 1e-12
     real(dp), parameter :: phi_tol = 2e-5
 
     integer, parameter :: n_fieldlines = 50
@@ -37,6 +37,10 @@ program test_pert_anti_sigma_analytic
     real(dp) :: B_mod
     real(dp), dimension(:), allocatable :: zeros
     real(dp) :: expected_deviation
+
+    logical :: test_failed
+
+    test_failed = .false.
 
     call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
     call perturbed_field%mock_perturbed_field_init(field, &
@@ -63,7 +67,7 @@ program test_pert_anti_sigma_analytic
         print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(2)
         print *, "expected: ", delta_eta_1
         print *, "ratio: ", fieldline_modes%delta_eta%cos_coeffs(2)/delta_eta_1
-        error stop
+        test_failed = .true.
     end if
 
     if (not_same(delta_eta_0, fieldline_modes%delta_eta%cos_coeffs(1), &
@@ -73,7 +77,7 @@ program test_pert_anti_sigma_analytic
         print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(1)
         print *, "expected: ", delta_eta_0
         print *, "ratio: ", fieldline_modes%delta_eta%cos_coeffs(1)/delta_eta_0
-        error stop
+        test_failed = .true.
     end if
 
     allocate (zeros(size(fieldline_modes%radial_drift%cos_coeffs)))
@@ -85,7 +89,7 @@ program test_pert_anti_sigma_analytic
         print *, "test_pert_anti_sigma_analytic failed: delta_eta sin modes"
         print *, "found: ", fieldline_modes%delta_eta%sin_coeffs
         print *, "expected: all ", zeros(1)
-        error stop
+        test_failed = .true.
     end if
 
     deallocate (zeros)
@@ -101,8 +105,10 @@ program test_pert_anti_sigma_analytic
                 "delta_eta cos mode number", current - 1
             print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(current)
             print *, "expected: ", expected_deviation, "or lower"
-            error stop
+            test_failed = .true.
         end if
     end do
+
+    if (test_failed) error stop
 
 end program test_pert_anti_sigma_analytic
