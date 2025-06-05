@@ -18,7 +18,7 @@ contains
         real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
-        real(dp) :: average_delta_aspect_ratio
+        real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
 
@@ -40,26 +40,26 @@ contains
         end do
 
         fieldlines%eta_b = (1.0_dp)/get_global_B_max(fieldlines)
-        fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
         do current = 1, n_fieldlines
             call calc_fieldline_integrals(field, fieldlines(current))
         end do
 
-        ! I_ref can be chosen to be any e.g. I = I_1
+        fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
+        ! I_ref can be chosen to be any I
         ! (I_ref/I_j)**0.5 - 1 = (max(I_j)/I_j)**0.5 -1 =
         ! ((I+delta)/(I+delta_j))**0.5 -1 ~ 0.5*(delta/I - delta_j/I)
         ! and the result in linear order only differs by a constant delta/I
         ! which does not enter the offset formula
-        fieldlines(:)%delta_aspect_ratio = sqrt( &
-                                       fieldlines(1)%integral_lambda_b_over_B_squared/ &
-                                        fieldlines(:)%integral_lambda_b_over_B_squared &
-                                           ) - 1
-        ! average of delta_aspect ratio also does not enter offset formula
-        ! can be set it to zero
-        average_delta_aspect_ratio = sum(fieldlines(:)%delta_aspect_ratio)/n_fieldlines
-        fieldlines(:)%delta_aspect_ratio = fieldlines(:)%delta_aspect_ratio - &
-                                           average_delta_aspect_ratio
+        ! We choose I_ref so that the average of delta_aspect is zero
+        I_ref = ( &
+                n_fieldlines/ &
+                (sum(1.0_dp/sqrt(fieldlines%integral_lambda_b_over_B_squared))) &
+                )**2.0_dp
+        fieldlines%delta_aspect_ratio = sqrt( &
+                                        I_ref/ &
+                                        fieldlines%integral_lambda_b_over_B_squared &
+                                            ) - 1
 
     end subroutine make_flock_of_fieldlines
 
