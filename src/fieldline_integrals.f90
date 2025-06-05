@@ -129,7 +129,7 @@ contains
         allocate (modes%mode_numbers(n_modes))
 
         do j = 0, n_modes - 1
-            modes%mode_numbers(j + 1) = j
+            modes%mode_numbers(j + 1) = real(j, kind=dp)
         end do
     end subroutine allocate_modes
 
