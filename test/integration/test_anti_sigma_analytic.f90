@@ -3,8 +3,7 @@ program test_anti_sigma_analytic
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use make_fieldline, only: surface_average_t
-    use make_fieldline, only: calc_surface_averages
+    use deviation, only: surface_average_t, calc_surface_averages
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
