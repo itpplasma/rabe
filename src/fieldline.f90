@@ -14,6 +14,7 @@ module fieldline_mod
         real(dp) :: eta_b
         real(dp) :: delta_eta
         real(dp) :: integral_lambda_b_over_B_squared
+        reaL(dp) :: I_ref
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift

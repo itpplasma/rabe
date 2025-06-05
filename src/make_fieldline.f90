@@ -52,12 +52,12 @@ contains
         ! and the result in linear order only differs by a constant delta/I
         ! which does not enter the offset formula
         ! We choose I_ref so that the average of delta_aspect is zero
-        I_ref = ( &
+        fieldlines%I_ref = ( &
                 n_fieldlines/ &
                 (sum(1.0_dp/sqrt(fieldlines%integral_lambda_b_over_B_squared))) &
-                )**2.0_dp
+                           )**2.0_dp
         fieldlines%delta_aspect_ratio = sqrt( &
-                                        I_ref/ &
+                                        fieldlines%I_ref/ &
                                         fieldlines%integral_lambda_b_over_B_squared &
                                             ) - 1
 
