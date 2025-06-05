@@ -43,3 +43,10 @@ target_link_libraries(test_plot_anti_sigma.x myplot_lib
                                              helpers_lib)
 add_test(TestPlotAntiSigma test_plot_anti_sigma.x)
 set_tests_properties(TestPlotAntiSigma PROPERTIES LABELS "plot")
+
+add_executable(plot_deviation_helical_anti_sigma.x plot_deviation_helical_anti_sigma.f90)
+target_link_libraries(plot_deviation_helical_anti_sigma.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDeviationHelicalAntiSigma plot_deviation_helical_anti_sigma.x)
+set_tests_properties(PlotDeviationHelicalAntiSigma PROPERTIES LABELS "current")
