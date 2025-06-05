@@ -53,8 +53,7 @@ program test_pert_anti_sigma_analytic
                                   M_pol, &
                                   N_tor, &
                                   phi_tol)
-    call fourier_transform_over_label(perturbed_field, &
-                                      fieldlines, &
+    call fourier_transform_over_label(fieldlines, &
                                       fieldline_modes)
 
     if (not_same(delta_eta_1, fieldline_modes%delta_eta%cos_coeffs(2), &

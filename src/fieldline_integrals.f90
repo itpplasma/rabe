@@ -18,11 +18,10 @@ module fieldline_integrals
 
 contains
 
-    subroutine fourier_transform_over_label(field, fieldlines, fieldline_modes)
+    subroutine fourier_transform_over_label(fieldlines, fieldline_modes)
         use fourier, only: real_ft
 
-        class(field_t), intent(in) :: field
-        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
         type(fieldline_modes_t), intent(out) :: fieldline_modes
 
         integer :: n_modes

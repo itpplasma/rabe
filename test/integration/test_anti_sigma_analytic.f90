@@ -58,7 +58,7 @@ program test_anti_sigma_analytic
         end if
     end do
 
-    call fourier_transform_over_label(field, fieldlines, fieldline_modes)
+    call fourier_transform_over_label(fieldlines, fieldline_modes)
 
     if (not_same(I_v_1, fieldline_modes%radial_drift%sin_coeffs(2), &
                  reltol_in=reltol_radial_drift, abstol_in=0.0_dp)) then
