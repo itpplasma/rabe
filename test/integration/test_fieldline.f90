@@ -50,7 +50,7 @@ contains
         use fieldline_mod, only: fieldline_t
 
         real(dp), parameter :: phi_tol = 1e-3
-        real(dp), parameter :: retol = 0.0_dp, abstol = phi_tol
+        real(dp), parameter :: retol = 0.0_dp, abstol = phi_tol*2.0_dp
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)

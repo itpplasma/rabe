@@ -1,5 +1,5 @@
 module make_fieldline
-    use constants, only: dp, pi, eps
+    use constants, only: dp, pi
     use field_base, only: field_t
     use fieldline_mod, only: fieldline_t
 
@@ -45,7 +45,7 @@ contains
                                              interval, phi_tol)
         end do
 
-        fieldlines%eta_b = (1.0_dp - eps)/get_global_B_max(fieldlines)
+        fieldlines%eta_b = (1.0_dp)/get_global_B_max(fieldlines)
         fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
 
         do current = 1, n_fieldlines
@@ -58,8 +58,8 @@ contains
         ! and the result in linear order only differs by a constant delta/I
         ! which does not enter the offset formula
         fieldlines(:)%delta_aspect_ratio = sqrt( &
-                                fieldlines(1)%integral_lambda_b_over_B_squared/ &
-                                fieldlines(:)%integral_lambda_b_over_B_squared &
+                                       fieldlines(1)%integral_lambda_b_over_B_squared/ &
+                                        fieldlines(:)%integral_lambda_b_over_B_squared &
                                            ) - 1
         ! average of delta_aspect ratio also does not enter offset formula
         ! can be set it to zero
@@ -133,6 +133,13 @@ contains
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
                                fieldline%phi_max, phi_tol)
+
+        ! To ensure that the there are no maxima in between phi_max
+        ! we move phi_max inside the well by the maximal potential error
+        if (present(phi_tol)) then
+            fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol
+            fieldline%phi_max(2) = fieldline%phi_max(2) - phi_tol
+        end if
 
         call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 
