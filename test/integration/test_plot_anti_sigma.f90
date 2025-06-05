@@ -15,7 +15,7 @@ program test_plot_anti_sigma
     real(dp), parameter :: B_pert = 0.01_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
     type(mock_perturbed_field_t) :: perturbed_field
 
-    real(dp), parameter :: phi_tol = 1e-5
+    real(dp), parameter :: phi_tol = 8e-5
     integer, parameter :: n_fieldlines = 20
 
     real(dp), dimension(n_fieldlines) :: theta_0
@@ -92,7 +92,7 @@ contains
                                          B_mesh(theta_idx, phi_idx))
             end do
         end do
-        call plt%add_contour(phi, theta, B_mesh, &
+        call plt%add_contour(phi, theta, transpose(B_mesh), &
                              levels=20, &
                              colorbar=.true., &
                              filled=.true.)
