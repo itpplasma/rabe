@@ -52,14 +52,14 @@ contains
         real(dp), dimension(:), intent(in) :: x
         logical :: is_equidistant
 
-        real(dp), parameter :: tol = 1e-15
+        real(dp), parameter :: tol = 1e-14
         real(dp), dimension(size(x) - 1) :: dx
         integer :: N
 
         N = size(x)
 
         dx = x(2:N) - x(1:N - 1)
-        is_equidistant = all(abs(dx - dx(1)) < tol)
+        is_equidistant = all(abs(dx - dx(1)) < tol*dx(1))
 
         if (.not. is_equidistant) then
             print *, "Input x has to be equidistant for real_ft!"
