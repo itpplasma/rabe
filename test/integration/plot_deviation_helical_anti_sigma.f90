@@ -11,13 +11,17 @@ program plot_deviation_helical_anti_sigma
 
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
     character(len=*), parameter :: bc_filename = "input/helical_anti.bc"
-    real(dp), parameter :: psi_edge = abs(-0.28274_dp) !Tm^2
-    real(dp), parameter :: dr_dpsi = 1.0_dp/0.3_dp
-    real(dp), parameter :: stor = 0.98_dp, R = 8.0_dp
+    real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi) !Tm^2
+    real(dp), parameter :: dr_dpsi = 1.0_dp/0.0661777_dp/psi_edge/100.0_dp
+    real(dp), parameter :: J_pol_over_N_tor = -4.0_dp*1e6
+    real(dp), parameter :: I_tor = 0.0_dp
+    real(dp), parameter :: stor = 0.9999_dp, R = 8.0_dp
+    real(dp), parameter :: eps_0 = -0.05, eps_1 = -0.0375
+    real(dp), parameter :: delta_A_1 = -0.25_dp*abs(eps_1/eps_0)
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 7e-7
-    integer, parameter :: n_fieldlines = 20
+    integer, parameter :: n_fieldlines = 50
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
@@ -27,7 +31,8 @@ program plot_deviation_helical_anti_sigma
     real(dp) :: deviation_A, deviation_B
     integer, parameter :: n_points = 100
     real(dp), dimension(n_points) :: nu_star
-    real(dp), dimension(n_points) :: l_c, lambda_due_A, lambda_due_B
+    real(dp) :: covariant_factor
+    real(dp) :: off_factor_A, off_factor_B
     type(myplot) :: plt
 
     call field%neo_field_init(bc_filename, stor)
@@ -42,47 +47,58 @@ program plot_deviation_helical_anti_sigma
                                   N_tor, &
                                   phi_tol)
 
-    !call plot_fieldlines_over_field(fieldlines, field)
+    call plot_fieldlines_over_field(fieldlines, field)
 
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
-    call plt%initialize(xlabel="$\theta_{mid}$", &
+    call plt%initialize(xlabel="$\vartheta_{mid}$", &
                         ylabel="$\Delta \eta$")
 
     call plt%add_plot(fieldlines%theta_0, &
                       fieldlines%delta_eta, &
                       label="\Delta \eta", &
                       linestyle="-")
-    !call plt%show()
+    call plt%show()
+
+    call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                        ylabel="$\Delta A$", &
+                        legend=.true.)
+
+    call plt%add_plot(fieldlines%theta_0, &
+                      fieldlines%delta_aspect_ratio, &
+                      label="$\Delta A$", &
+                      linestyle="-")
+    call plt%add_plot(fieldlines%theta_0, &
+                      delta_A_1*cos(fieldlines%theta_0), &
+                      label="$\Delta A$ analytic", &
+                      linestyle="-")
+    call plt%show()
 
     call plt%initialize(xlabel="$\nu_*$", &
                         ylabel="$\lambda_{bB}$", &
                         legend=.true.)
-    call linspace(20.0_dp, 28.0_dp, n_points, l_c)
-    l_c = 2.0_dp**l_c
-    lambda_due_A = deviation_A/psi_edge*dr_dpsi
-    !lambda_due_A = lambda_due_A * sqrt(l_c)
-    lambda_due_B = deviation_B*l_c
-    nu_star = pi*R/l_c
+    call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
+    nu_star = 0.1_dp**nu_star
 
-    print *, lambda_due_A(1)*sqrt(pi*R)
-    stop
+    covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
+    off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+    off_factor_B = deviation_B*0.5*R*pi*dr_dpsi
 
     call plt%add_plot(nu_star, &
-                      lambda_due_A, &
-                      label="due to aspect ratio diff", &
+                      off_factor_A/sqrt(nu_star), &
+                      label="offset factor due to aspect ratio =", &
                       linestyle="r-", &
                       xscale="log", &
                       yscale="log")
 
     call plt%add_plot(nu_star, &
-                      lambda_due_B*dr_dpsi, &
+                      off_factor_B/nu_star, &
                       label="due to misaligment", &
                       linestyle="b-", &
                       xscale="log", &
                       yscale="log")
 
-    !call plt%show()
+    call plt%show()
 
 contains
 
@@ -131,7 +147,6 @@ contains
         end do
 
         call linspace(phi_limits(1), phi_limits(2), n_points, phi)
-        call linspace(0.0_dp, 2.0_dp*pi/10.0_dp, n_points, phi)
         call linspace(0.0_dp, 2.0_dp*pi, n_points, theta)
         do theta_idx = 1, n_points
             do phi_idx = 1, n_points
@@ -146,10 +161,10 @@ contains
                              filled=.true.)
         call plt%show()
 
-   open (unit=10, file="B_mesh.dat", status='replace', action='write', form='formatted')
-        do theta_idx = 1, n_points
-         write (10, '( *(F11.9,1X) )') (B_mesh(theta_idx, phi_idx), phi_idx=1, n_points)
-        end do
+!    open (unit=10, file="B_mesh.dat", status='replace', action='write', form='formatted')
+!         do theta_idx = 1, n_points
+!          write (10, '( *(F11.9,1X) )') (B_mesh(theta_idx, phi_idx), phi_idx=1, n_points)
+!         end do
 
     end subroutine plot_fieldlines_over_field
 
