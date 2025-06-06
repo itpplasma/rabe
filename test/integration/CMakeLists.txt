@@ -5,6 +5,11 @@ target_link_libraries(test_against_neo2_field.x rabe_lib)
 add_test(TestAgainstNeo2Field test_against_neo2_field.x)
 set_tests_properties(TestAgainstNeo2Field PROPERTIES LABELS "slow")
 
+add_executable(test_against_neo2_anti_sigma.x test_against_neo2_anti_sigma.f90)
+target_link_libraries(test_against_neo2_anti_sigma.x rabe_lib)
+add_test(TestAgainstNeo2AntiSigma test_against_neo2_anti_sigma.x)
+set_tests_properties(TestAgainstNeo2AntiSigma PROPERTIES LABELS "slow")
+
 add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)
 add_test(TestFieldline test_fieldline.x)

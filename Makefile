@@ -16,6 +16,9 @@ install: build
 test: build
 	ctest --test-dir build/test --output-on-failure -LE "slow|per_hand|plot|current"
 
+test_slow: build
+	ctest --test-dir build/test --output-on-failure -L slow
+
 test_all: build
 	ctest --test-dir build/test --output-on-failure -LE per_hand
 
