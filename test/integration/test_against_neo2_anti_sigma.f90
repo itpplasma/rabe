@@ -1,6 +1,8 @@
 program test_against_neo2_anti_sigma
     use neo_field, only: neo_field_t
     use constants, only: dp, pi
+    use myplot_module, only: myplot
+    use utils, only: linspace
 
     implicit none
 
@@ -16,6 +18,10 @@ program test_against_neo2_anti_sigma
     integer :: case
 
     logical :: test_failed
+
+    integer, parameter :: n_stor = 20
+    real(dp), dimension(n_stor) :: stor_plot, B_at_chi_pi
+    type(myplot) :: plt
 
     test_failed = .false.
 
@@ -54,6 +60,24 @@ program test_against_neo2_anti_sigma
             test_failed = .true.
         end if
     end do
+
+    call plt%initialize(xlabel="$s_{tor}$", ylabel="$B$ [T]", legend=.true.)
+    call linspace(0.1_dp, 0.9999_dp, n_stor, stor_plot)
+    do case = 1, n_stor
+        call field%neo_change_stor(stor_plot(case))
+        call field%compute_B_mod(0.0_dp, -0.1_dp*pi, B_at_chi_pi(case))
+    end do
+    call plt%add_plot(stor_plot, B_at_chi_pi, "$B(\chi = \pi)$", "r-")
+    call plt%add_plot((/stor_plot(1), stor_plot(n_stor)/), &
+                      (/B_max, B_max/), &
+                      "analytic $B_{max}$", &
+                      "k-")
+    call plt%add_plot((/stor(2), stor(4)/), &
+                      (/bmod_neo2(2), bmod_neo2(4)/), &
+                      "NEO-2", &
+                      "bx", &
+                      markersize=6)
+    call plt%show()
 
     if (test_failed) error stop
 
