@@ -48,31 +48,11 @@ program plot_deviation_helical_anti_sigma
                                   phi_tol)
 
     call plot_fieldlines_over_field(fieldlines, field)
+    call plot_delta_eta(fieldlines)
+    call plot_I(fieldlines)
+    call plot_delta_A(fieldlines, delta_A_1)
 
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
-
-    call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                        ylabel="$\Delta \eta$")
-
-    call plt%add_plot(fieldlines%theta_0, &
-                      fieldlines%delta_eta, &
-                      label="\Delta \eta", &
-                      linestyle="-")
-    call plt%show()
-
-    call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                        ylabel="$\Delta A$", &
-                        legend=.true.)
-
-    call plt%add_plot(fieldlines%theta_0, &
-                      fieldlines%delta_aspect_ratio, &
-                      label="$\Delta A$", &
-                      linestyle="-")
-    call plt%add_plot(fieldlines%theta_0, &
-                      delta_A_1*cos(fieldlines%theta_0), &
-                      label="$\Delta A$ analytic", &
-                      linestyle="-")
-    call plt%show()
 
     call plt%initialize(xlabel="$\nu_*$", &
                         ylabel="$\lambda_{bB}$", &
@@ -101,6 +81,56 @@ program plot_deviation_helical_anti_sigma
     call plt%show()
 
 contains
+
+    subroutine plot_delta_eta(fieldlines)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$\Delta \eta$")
+
+        call plt%add_plot(fieldlines%theta_0, &
+                          fieldlines%delta_eta, &
+                          label="\Delta \eta", &
+                          linestyle="-")
+        call plt%show()
+    end subroutine plot_delta_eta
+
+    subroutine plot_delta_A(fieldlines, delta_A_1_analytic)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: delta_A_1_analytic
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$\Delta A$", &
+                            legend=.true.)
+
+        call plt%add_plot(fieldlines%theta_0, &
+                          fieldlines%delta_aspect_ratio, &
+                          label="$\Delta A$", &
+                          linestyle="-")
+        call plt%add_plot(fieldlines%theta_0, &
+                          delta_A_1_analytic*cos(fieldlines%theta_0), &
+                          label="$\Delta A$ analytic", &
+                          linestyle="-")
+        call plt%show()
+    end subroutine plot_delta_A
+
+    subroutine plot_I(fieldlines)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        integer :: n_fieldlines
+        real(dp) :: I_mean
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$I$")
+
+        n_fieldlines = size(fieldlines)
+        I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
+        call plt%add_plot(fieldlines%theta_0, &
+                          fieldlines%integral_lambda_b_over_B_squared/I_mean - 1.0_dp, &
+                          label="$I", &
+                          linestyle="-")
+        call plt%show()
+    end subroutine plot_I
 
     subroutine plot_fieldlines_over_field(fieldlines, field)
         use myplot_module, only: myplot
