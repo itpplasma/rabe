@@ -14,6 +14,9 @@ program test_integrate_1d_substituted
     real(dp), parameter :: integral_3 = 2.0_dp*(sqrt(2.0_dp) - 1.0_dp)
     real(dp), dimension(2), parameter :: interval_4 = (/-pi, pi/)
     real(dp), parameter :: integral_4 = 4.0_dp*sqrt(2.0_dp)
+    real(dp), dimension(2), parameter :: interval_5 = (/-pi, pi/)
+    real(dp), parameter :: eps = 0.5_dp
+    real(dp), parameter :: integral_5 = integral_4*(1.0_dp + eps/3.0_dp)
 
     real(dp) :: found_integral
     logical :: failed_test
@@ -68,6 +71,19 @@ program test_integrate_1d_substituted
         failed_test = .true.
     end if
 
+    call integrate_1d_substituted(trial_func_5, &
+                                  interval_5(1), &
+                                  interval_5(2), &
+                                  found_integral)
+    if (not_same(integral_5, found_integral, reltol, abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_integrate_1d_substituted failed: integral 5"
+        print *, "found: ", found_integral
+        print *, "analytic: ", integral_5
+        print *, "relative error: ", found_integral/integral_5 - 1.0_dp
+        failed_test = .true.
+    end if
+
     if (failed_test) error stop
 
 contains
@@ -99,5 +115,12 @@ contains
 
         trial_func_4 = sqrt(1.0_dp + cos(x))
     end function trial_func_4
+
+    function trial_func_5(x)
+        real(dp), intent(in) :: x
+        real(dp) :: trial_func_5
+
+        trial_func_5 = trial_func_4(x)*(1.0_dp + eps*cos(x))
+    end function trial_func_5
 
 end program test_integrate_1d_substituted
