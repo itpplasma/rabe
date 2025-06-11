@@ -171,12 +171,16 @@ contains
 
         type(myplot) :: plt
         integer :: n_fieldlines
-        real(dp) :: I_mean
+        real(dp) :: eps_ratio, I_factor, I_mean
         real(dp), dimension(size(fieldlines)) :: theta_0
+        character(len=100) :: label
 
         n_fieldlines = size(fieldlines)
         theta_0 = fieldlines%theta_0
+        eps_ratio = eps_1/abs(eps_0)
         I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
+        I_factor = sum(fieldlines%integral_lambda_b_over_B_squared/ &
+                       sqrt(1.0_dp - eps_ratio*cos(theta_0)))/n_fieldlines
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$I$ [T$^{-2}$]", &
@@ -185,9 +189,10 @@ contains
                           fieldlines%integral_lambda_b_over_B_squared, &
                           label="$I_{numeric}$", &
                           linestyle="b-")
+        write (label, "(A23,F10.8)") "$I^{mean}_{numeric} = $", I_mean
         call plt%add_plot(theta_0, &
                           I_mean*cos(0.0_dp*theta_0), &
-                          label="$I^{mean}_{numeric}$", &
+                          label=label, &
                           linestyle="b--")
         call plt%add_plot(theta_0, &
                           I_0_analytic + I_1_analytic*cos(theta_0), &
@@ -198,7 +203,7 @@ contains
                           label="approx $I^{mean}_{analytic}$", &
                           linestyle="r--")
         call plt%add_plot(theta_0, &
-                          I_0_analytic*sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)), &
+                          I_0_analytic*sqrt(1.0_dp - eps_ratio*cos(theta_0)), &
                           label="$I_{analytic}$", &
                           linestyle="g--")
         call plt%show()
@@ -207,11 +212,11 @@ contains
                             ylabel="$I_{normalized}$ [1]", &
                             legend=.true.)
         call plt%add_plot(theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared/I_mean - 1.0_dp, &
+                          fieldlines%integral_lambda_b_over_B_squared/I_factor - 1.0_dp, &
                           label="$I_{numeric}$", &
                           linestyle="b-")
         call plt%add_plot(theta_0, &
-                          sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)) - 1.0_dp, &
+                          sqrt(1.0_dp - eps_ratio*cos(theta_0)) - 1.0_dp, &
                           label="$I_{analytic}$", &
                           linestyle="g--")
         call plt%show()
@@ -225,6 +230,7 @@ contains
         real(dp), dimension(size(fieldlines)) :: theta_0, I_factor
         integer :: n_fieldlines
         real(dp) :: I_factor_mean
+        character(len=1024) :: label
 
         theta_0 = fieldlines%theta_0
         I_factor = fieldlines%integral_lambda_b_over_B_squared &
@@ -235,9 +241,10 @@ contains
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$I/\sqrt{1 + \epsilon\cos{\vartheta_0}}$ [T$^{-2}$]", &
                             legend=.true.)
+        write (label, "(A23,F10.8)") "numeric $I_{factor} =$ ", I_factor_mean
         call plt%add_plot(theta_0, &
                           I_factor/I_factor_mean, &
-                          label="numeric (normalised)", &
+                          label=label, &
                           linestyle="k-")
         call plt%show()
     end subroutine plot_I_factor
