@@ -4,7 +4,7 @@ program test_lambda_helical_anti_sigma
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use fieldline_integrands, only: lambda_over_B_squared
+    use integrate, only: integrate_1d_substituted
 
     implicit none
 
@@ -19,8 +19,11 @@ program test_lambda_helical_anti_sigma
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(fieldline_t) :: current_fieldline
 
+    real(dp), dimension(n_fieldlines) :: lambda_integral_analytic
     real(dp), dimension(n_fieldlines) :: lambda_integral
+    real(dp), parameter :: lambda_reltol = 1e-8
     integer :: current
     logical :: test_failed
 
@@ -35,76 +38,74 @@ program test_lambda_helical_anti_sigma
                                   N_tor, &
                                   phi_tol)
 
-    lambda_integral = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
-                      /N_tor*4.0_dp*sqrt(2.0_dp) &
-                      *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0))
+    lambda_integral_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
+                               /N_tor*4.0_dp*sqrt(2.0_dp) &
+                               *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0))
+
+    lambda_integral = 0.0_dp
+    do current = 1, n_fieldlines
+        current_fieldline = fieldlines(current)
+        call integrate_1d_substituted(wrapper_lambda, &
+                                      current_fieldline%phi_max(1), &
+                                      current_fieldline%phi_max(2), &
+                                      lambda_integral(current))
+    end do
 
     test_failed = .false.
-    do current = 1, n_fieldlines
-        if (.true.) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_lambda_helical_anti_sigma failed: lambda"
-            print *, "found: "
-            print *, "analytic: "
-            test_failed = .true.
-        end if
-    end do
+    if (not_same(lambda_integral_analytic, &
+                 lambda_integral, &
+                 reltol_in=lambda_reltol, &
+                 abstol_in=0.0_dp)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_lambda_helical_anti_sigma failed: lambda"
+        print *, "found: ", lambda_integral
+        print *, "analytic: ", lambda_integral_analytic
+        test_failed = .true.
+    end if
+
+    call plot_lambda(theta_0, lambda_integral_analytic, lambda_integral)
 
     if (test_failed) error stop
 
 contains
 
-    subroutine plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
+    function wrapper_lambda(phi)
+        use fieldline_integrands, only: lambda_over_B_squared
+
+        real(dp), intent(in) :: phi
+        real(dp) :: wrapper_lambda
+
+        real(dp) :: theta, B
+
+        theta = current_fieldline%get_theta(phi)
+        wrapper_lambda = lambda_over_B_squared(field, &
+                                               theta, &
+                                               phi, &
+                                               current_fieldline%eta_b)
+        call field%compute_B_mod(theta, phi, B)
+        wrapper_lambda = wrapper_lambda*B**2.0_dp
+    end function wrapper_lambda
+
+    subroutine plot_lambda(theta_0, lambda_integral_analytic, lambda_integral)
         use myplot_module, only: myplot
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), intent(in) :: I_0_analytic, I_1_analytic, eps_0, eps_1
+        real(dp), dimension(:), intent(in) :: theta_0
+        real(dp), dimension(:), intent(in) :: lambda_integral_analytic
+        real(dp), dimension(:), intent(in) :: lambda_integral
 
-        integer :: n_fieldlines
         type(myplot) :: plt
-        real(dp) :: I_mean
-        real(dp), dimension(size(fieldlines)) :: theta_0
-
-        n_fieldlines = size(fieldlines)
-        theta_0 = fieldlines%theta_0
-        I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                            ylabel="$I$ [T$^{-2}$]", &
+                            ylabel="$\int \lambda d\varphi$ [1]", &
                             legend=.true.)
         call plt%add_plot(theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared, &
-                          label="$I_{numeric}$", &
-                          linestyle="b-")
-        call plt%add_plot(theta_0, &
-                          I_mean*cos(0.0_dp*theta_0), &
-                          label="$I^{mean}_{numeric}$", &
-                          linestyle="b--")
-        call plt%add_plot(theta_0, &
-                          I_0_analytic + I_1_analytic*cos(theta_0), &
-                          label="approx $I_{analytic}$", &
+                          lambda_integral_analytic, &
+                          label="analytic", &
                           linestyle="r-")
         call plt%add_plot(theta_0, &
-                          I_0_analytic*cos(0.0_dp*theta_0), &
-                          label="approx $I^{mean}_{analytic}$", &
-                          linestyle="r--")
-        call plt%add_plot(theta_0, &
-                          I_0_analytic*sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)), &
-                          label="$I_{analytic}$", &
-                          linestyle="g--")
+                          lambda_integral, &
+                          label="numeric", &
+                          linestyle="b--")
         call plt%show()
-
-        call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                            ylabel="$I_{normalized}$ [1]", &
-                            legend=.true.)
-        call plt%add_plot(theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared/I_mean - 1.0_dp, &
-                          label="$I_{numeric}$", &
-                          linestyle="b-")
-        call plt%add_plot(theta_0, &
-                          sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)) - 1.0_dp, &
-                          label="$I_{analytic}$", &
-                          linestyle="g--")
-        call plt%show()
-    end subroutine plot_I
+    end subroutine plot_lambda
 
 end program test_lambda_helical_anti_sigma
