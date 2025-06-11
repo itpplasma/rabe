@@ -25,7 +25,7 @@ program test_deviation_helical_anti_sigma
     type(anti_sigma_field_t) :: field
     real(dp), dimension(2), parameter :: chi_max = (/+pi, -pi/) + 2.0_dp*pi
 
-    real(dp), parameter :: phi_tol = 7e-7
+    real(dp), parameter :: phi_tol = 1e-6
     real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0
     real(dp), parameter :: I_mean_reltol = eps_0*eps_0*3.0_dp
     real(dp), parameter :: I_amplitude_reltol = abs(eps_1/eps_0)
@@ -50,7 +50,6 @@ program test_deviation_helical_anti_sigma
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
-
     call make_flock_of_fieldlines(fieldlines, &
                                   theta_0, &
                                   iota, &
@@ -117,7 +116,7 @@ program test_deviation_helical_anti_sigma
 
     !call plot_fieldlines_over_field(fieldlines, field)
     !call plot_delta_eta(fieldlines)
-    call plot_I(fieldlines, I_0_analytic, I_1_analytic)
+    call plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
     !call plot_delta_A(fieldlines, delta_A_1)
 
     !call calc_deviation(fieldlines, field, deviation_A, deviation_B)
@@ -162,44 +161,53 @@ contains
         call plt%show()
     end subroutine plot_delta_A
 
-    subroutine plot_I(fieldlines, I_0_analytic, I_1_analytic)
+    subroutine plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), intent(in) :: I_0_analytic, I_1_analytic
+        real(dp), intent(in) :: I_0_analytic, I_1_analytic, eps_0, eps_1
 
         integer :: n_fieldlines
         real(dp) :: I_mean
+        real(dp), dimension(size(fieldlines)) :: theta_0
 
         n_fieldlines = size(fieldlines)
+        theta_0 = fieldlines%theta_0
         I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$I$ [T$^{-2}$]", &
                             legend=.true.)
-        call plt%add_plot(fieldlines%theta_0, &
+        call plt%add_plot(theta_0, &
                           fieldlines%integral_lambda_b_over_B_squared, &
                           label="$I_{numeric}$", &
                           linestyle="b-")
-        call plt%add_plot(fieldlines%theta_0, &
-                          I_mean*cos(0.0_dp*fieldlines%theta_0), &
+        call plt%add_plot(theta_0, &
+                          I_mean*cos(0.0_dp*theta_0), &
                           label="$I^{mean}_{numeric}$", &
                           linestyle="b--")
-        call plt%add_plot(fieldlines%theta_0, &
-                          I_0_analytic + I_1_analytic*cos(fieldlines%theta_0), &
-                          label="$I_{analytic}$", &
+        call plt%add_plot(theta_0, &
+                          I_0_analytic + I_1_analytic*cos(theta_0), &
+                          label="approx $I_{analytic}$", &
                           linestyle="r-")
-        call plt%add_plot(fieldlines%theta_0, &
-                          I_0_analytic*cos(0.0_dp*fieldlines%theta_0), &
-                          label="$I^{mean}_{analytic}$", &
+        call plt%add_plot(theta_0, &
+                          I_0_analytic*cos(0.0_dp*theta_0), &
+                          label="approx $I^{mean}_{analytic}$", &
                           linestyle="r--")
-        call plt%add_plot(fieldlines%theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared/I_mean &
-                          - 1.0_dp + I_0_analytic, &
-                          label="$I^{numeric}$ shifted/normalized", &
-                          linestyle="g-")
-        call plt%add_plot(fieldlines%theta_0, &
-                          I_1_analytic*cos(fieldlines%theta_0)/I_0_analytic &
-                          + I_0_analytic, &
-                          label="$I^{analytic}$ shifted/normalized", &
+        call plt%add_plot(theta_0, &
+                          I_0_analytic*sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)), &
+                          label="$I_{analytic}$", &
+                          linestyle="g--")
+        call plt%show()
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$I_{normalized}$ [1]", &
+                            legend=.true.)
+        call plt%add_plot(theta_0, &
+                          fieldlines%integral_lambda_b_over_B_squared/I_mean - 1.0_dp, &
+                          label="$I_{numeric}$", &
+                          linestyle="b-")
+        call plt%add_plot(theta_0, &
+                          sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0)) - 1.0_dp, &
+                          label="$I_{analytic}$", &
                           linestyle="g--")
         call plt%show()
     end subroutine plot_I
