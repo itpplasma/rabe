@@ -42,7 +42,7 @@ program test_pert_anti_sigma_analytic
 
     test_failed = .false.
 
-    call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
+    call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call perturbed_field%mock_perturbed_field_init(field, &
                                                    M_pol_pert, &
                                                    N_tor_pert, &

@@ -23,7 +23,7 @@ program test_plot_anti_sigma
     real(dp), parameter :: iota = 1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
-    call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
+    call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call perturbed_field%mock_perturbed_field_init(field, &
                                                    M_pol_pert, &
                                                    N_tor_pert, &
@@ -92,7 +92,8 @@ contains
                                          B_mesh(theta_idx, phi_idx))
             end do
         end do
-        call plt%add_contour(phi, theta, transpose(B_mesh), &
+        B_mesh = transpose(B_mesh)
+        call plt%add_contour(phi, theta, B_mesh, &
                              levels=20, &
                              colorbar=.true., &
                              filled=.true.)

@@ -26,7 +26,6 @@ program test_anti_sigma_analytic
     real(dp), parameter :: reltol_average_B_squared = 2.0_dp*eps_0**2
     real(dp), parameter :: abstol = 1e-13
     integer, parameter :: n_fieldlines = 60
-    integer, parameter :: n_modes = n_fieldlines/2 + 1
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
@@ -40,7 +39,7 @@ program test_anti_sigma_analytic
     real(dp) :: B_mod
     real(dp), dimension(:), allocatable :: zeros
 
-    call field%anti_sigma_field_init(N_tor, B_0, eps_0, eps_1)
+    call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
