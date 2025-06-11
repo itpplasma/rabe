@@ -26,7 +26,7 @@ contains
         real(dp), parameter :: tol = 1e-12
 
         type(fieldline_modes_t) :: modes
-        real(dp) :: iota_p, eta_b, I_ref_psi_edge
+        real(dp) :: iota_p, eta_b
         type(surface_average_t) :: average
         real(dp) :: symmetric_remainder
         real(dp) :: B_squared_sqrtg
@@ -36,7 +36,6 @@ contains
 
         iota_p = fieldlines(1)%iota_p
         eta_b = fieldlines(1)%eta_b
-        I_ref_psi_edge = fieldlines(1)%I_ref*get_B_squared_sqrtg_psi_edge(field)
 
         deviation_A = pi*sum(modes%radial_drift%sin_coeffs* &
                              modes%delta_aspect_ratio%cos_coeffs* &
