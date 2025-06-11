@@ -10,7 +10,7 @@ program test_deviation_helical_anti_sigma
     implicit none
 
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.0000375_dp
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.00375_dp
     real(dp), parameter :: I_0_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
                            /B_0**2.0_dp/N_tor*sqrt(32.0_dp) &
                            *(1.0_dp + abs(eps_0)*2.0_dp/3.0_dp)
@@ -27,6 +27,8 @@ program test_deviation_helical_anti_sigma
 
     real(dp), parameter :: phi_tol = 7e-7
     real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0
+    real(dp), parameter :: I_mean_reltol = eps_0*eps_0*3.0_dp
+    real(dp), parameter :: I_amplitude_reltol = abs(eps_1/eps_0)
     integer, parameter :: n_fieldlines = 20
     real(dp), dimension(2) :: phi_max
 
@@ -89,7 +91,7 @@ program test_deviation_helical_anti_sigma
     end do
 
     I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
-    if (not_same(I_mean, I_0_analytic, reltol_in=eps_0*eps_0*3.0_dp)) then
+    if (not_same(I_mean, I_0_analytic, reltol_in=I_mean_reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_deviation_helical_anti_sigma failed: I_mean"
         print *, "found: ", I_mean
@@ -98,11 +100,11 @@ program test_deviation_helical_anti_sigma
         test_failed = .true.
     end if
 
-    I_shifted = fieldlines%integral_lambda_b_over_B_squared*I_0_analytic/I_mean
-    I_shifted = I_shifted - I_0_analytic
+    I_shifted = fieldlines%integral_lambda_b_over_B_squared - I_mean
     I_amplitude = 0.5_dp*(maxval(I_shifted) - minval(I_shifted))
 
-    if (not_same(I_amplitude, I_1_analytic, reltol_in=0.0_dp)) then
+    if (not_same(I_amplitude, I_1_analytic/I_0_analytic, &
+                 reltol_in=I_amplitude_reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_deviation_helical_anti_sigma failed: I_amplitude"
         print *, "found: ", I_amplitude
@@ -165,7 +167,7 @@ contains
         real(dp), intent(in) :: I_0_analytic, I_1_analytic
 
         integer :: n_fieldlines
-        real(dp) :: I_mean, shift
+        real(dp) :: I_mean
 
         n_fieldlines = size(fieldlines)
         I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
@@ -189,12 +191,16 @@ contains
                           I_0_analytic*cos(0.0_dp*fieldlines%theta_0), &
                           label="$I^{mean}_{analytic}$", &
                           linestyle="r--")
-
-        shift = I_0_analytic - I_mean
         call plt%add_plot(fieldlines%theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared + shift, &
-                          label="$I_{numeric}$ shifted", &
+                          fieldlines%integral_lambda_b_over_B_squared/I_mean &
+                          - 1.0_dp + I_0_analytic, &
+                          label="$I^{numeric}$ shifted/normalized", &
                           linestyle="g-")
+        call plt%add_plot(fieldlines%theta_0, &
+                          I_1_analytic*cos(fieldlines%theta_0)/I_0_analytic &
+                          + I_0_analytic, &
+                          label="$I^{analytic}$ shifted/normalized", &
+                          linestyle="g--")
         call plt%show()
     end subroutine plot_I
 
