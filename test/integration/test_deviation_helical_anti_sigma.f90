@@ -40,7 +40,6 @@ program test_deviation_helical_anti_sigma
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
-    type(myplot) :: plt
 
     integer :: current
     real(dp), dimension(n_fieldlines) :: I_shifted
@@ -112,10 +111,11 @@ program test_deviation_helical_anti_sigma
         test_failed = .true.
     end if
 
-    if (test_failed) error stop
+    !if (test_failed) error stop
 
     !call plot_fieldlines_over_field(fieldlines, field)
     !call plot_delta_eta(fieldlines)
+    call plot_I_factor(fieldlines, eps_0, eps_1)
     call plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
     !call plot_delta_A(fieldlines, delta_A_1)
 
@@ -132,6 +132,8 @@ contains
     subroutine plot_delta_eta(fieldlines)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
 
+        type(myplot) :: plt
+
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$\Delta \eta$")
 
@@ -145,6 +147,8 @@ contains
     subroutine plot_delta_A(fieldlines, delta_A_1_analytic)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in) :: delta_A_1_analytic
+
+        type(myplot) :: plt
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$\Delta A$", &
@@ -165,6 +169,7 @@ contains
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in) :: I_0_analytic, I_1_analytic, eps_0, eps_1
 
+        type(myplot) :: plt
         integer :: n_fieldlines
         real(dp) :: I_mean
         real(dp), dimension(size(fieldlines)) :: theta_0
@@ -212,9 +217,35 @@ contains
         call plt%show()
     end subroutine plot_I
 
+    subroutine plot_I_factor(fieldlines, eps_0, eps_1)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: eps_0, eps_1
+
+        type(myplot) :: plt
+        real(dp), dimension(size(fieldlines)) :: theta_0, I_factor
+        integer :: n_fieldlines
+        real(dp) :: I_factor_mean
+
+        theta_0 = fieldlines%theta_0
+        I_factor = fieldlines%integral_lambda_b_over_B_squared &
+                   /sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0))
+        n_fieldlines = size(fieldlines)
+        I_factor_mean = sum(I_factor)/n_fieldlines
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$I/\sqrt{1 + \epsilon\cos{\vartheta_0}}$ [T$^{-2}$]", &
+                            legend=.true.)
+        call plt%add_plot(theta_0, &
+                          I_factor/I_factor_mean, &
+                          label="numeric (normalised)", &
+                          linestyle="k-")
+        call plt%show()
+    end subroutine plot_I_factor
+
     subroutine plot_deviation(off_factor_A, off_factor_B)
         real(dp), intent(in) :: off_factor_A, off_factor_B
 
+        type(myplot) :: plt
         integer, parameter :: n_points = 100
         real(dp), dimension(n_points) :: nu_star
 
