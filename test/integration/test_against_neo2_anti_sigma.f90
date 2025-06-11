@@ -14,7 +14,7 @@ program test_against_neo2_anti_sigma
     real(dp) :: stor(n_cases), theta(n_cases), phi(n_cases)
     real(dp) :: bmod
     real(dp) :: bmod_neo2(n_cases)
-    real(dp), parameter :: B_min = 0.875_dp, B_max = 1.05_dp
+    real(dp), parameter :: B_max = 1.05_dp
     integer :: case
 
     logical :: test_failed

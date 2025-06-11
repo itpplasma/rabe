@@ -41,7 +41,6 @@ contains
         integer, intent(in), optional :: n_steps_in
 
         integer :: n_maxima, n_steps
-        integer, parameter :: n_max = 10000
         real(dp), dimension(:), allocatable :: x, value
         integer :: current_maximum, current_location
         integer, dimension(3) :: current_region
