@@ -12,47 +12,63 @@ program test_integrate_1d_substituted
     real(dp), parameter :: integral_2 = 2.0_dp/3.0_dp
     real(dp), dimension(2), parameter :: interval_3 = (/0.0_dp, 0.5_dp*pi/)
     real(dp), parameter :: integral_3 = 2.0_dp*(sqrt(2.0_dp) - 1.0_dp)
+    real(dp), dimension(2), parameter :: interval_4 = (/-pi, pi/)
+    real(dp), parameter :: integral_4 = 4.0_dp*sqrt(2.0_dp)
 
     real(dp) :: found_integral
+    logical :: failed_test
+
+    failed_test = .false.
 
     call integrate_1d_substituted(trial_func_1, &
                                   interval_1(1), &
                                   interval_1(2), &
                                   found_integral)
-
     if (not_same(integral_1, found_integral, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_1d_substituted failed: integral 1"
         print *, "found: ", found_integral
         print *, "analytic: ", integral_1
-        error stop
+        failed_test = .true.
     end if
 
     call integrate_1d_substituted(trial_func_2, &
                                   interval_2(1), &
                                   interval_2(2), &
                                   found_integral)
-
     if (not_same(integral_2, found_integral, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_1d_substituted failed: integral 2"
         print *, "found: ", found_integral
         print *, "analytic: ", integral_2
-        error stop
+        failed_test = .true.
     end if
 
     call integrate_1d_substituted(trial_func_3, &
                                   interval_3(1), &
                                   interval_3(2), &
                                   found_integral)
-
     if (not_same(integral_3, found_integral, reltol, abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integrate_1d_substituted failed: integral 3"
         print *, "found: ", found_integral
         print *, "analytic: ", integral_3
-        error stop
+        failed_test = .true.
     end if
+
+    call integrate_1d_substituted(trial_func_4, &
+                                  interval_4(1), &
+                                  interval_4(2), &
+                                  found_integral)
+    if (not_same(integral_4, found_integral, reltol, abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_integrate_1d_substituted failed: integral 4"
+        print *, "found: ", found_integral
+        print *, "analytic: ", integral_4
+        failed_test = .true.
+    end if
+
+    if (failed_test) error stop
 
 contains
 
@@ -76,5 +92,12 @@ contains
 
         trial_func_3 = sqrt(1.0_dp - sin(x))
     end function trial_func_3
+
+    function trial_func_4(x)
+        real(dp), intent(in) :: x
+        real(dp) :: trial_func_4
+
+        trial_func_4 = sqrt(1.0_dp + cos(x))
+    end function trial_func_4
 
 end program test_integrate_1d_substituted
