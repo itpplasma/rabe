@@ -1,7 +1,7 @@
 program test_deviation_helical_anti_sigma
     use myplot_module, only: myplot
     use constants, only: dp, pi
-    use utils, only: linspace
+    use utils, only: linspace, not_same
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -10,7 +10,11 @@ program test_deviation_helical_anti_sigma
     implicit none
 
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.0375_dp
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.000375_dp
+    real(dp), parameter :: I_0_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
+                           *sqrt(32.0_dp)/B_0**2.0_dp/N_tor
+    real(dp), parameter :: I_1_analytic = -0.5_dp*eps_1/abs(eps_0)*I_0_analytic
+    real(dp), parameter :: B_max = B_0*(1.0_dp + abs(eps_0))
     real(dp), parameter :: delta_A_1 = -0.25_dp*abs(eps_1/eps_0)
     real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi) !Tm^2
     real(dp), parameter :: dr_dpsi = 1.0_dp/0.0661777_dp/psi_edge/100.0_dp
@@ -18,19 +22,25 @@ program test_deviation_helical_anti_sigma
     real(dp), parameter :: I_tor = 0.0_dp
     real(dp), parameter :: R = 8.0_dp
     type(anti_sigma_field_t) :: field
+    real(dp), dimension(2), parameter :: chi_max = (/+pi, -pi/) + 2.0_dp*pi
 
     real(dp), parameter :: phi_tol = 7e-7
-    integer, parameter :: n_fieldlines = 50
+    real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0
+    integer, parameter :: n_fieldlines = 10
+    real(dp), dimension(2) :: phi_max
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.47_dp
+    real(dp), parameter :: iota = 0.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
     type(myplot) :: plt
+
+    integer :: current
+    logical :: test_failed
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
@@ -44,18 +54,50 @@ program test_deviation_helical_anti_sigma
                                   N_tor, &
                                   phi_tol)
 
+    test_failed = .false.
+    do current = 1, n_fieldlines
+        phi_max = (M_pol*fieldlines(current)%theta_0 - chi_max)/N_tor
+        if (not_same(fieldlines(current)%phi_max(1), &
+                     phi_max(1), &
+                     abstol_in=2.0_dp*phi_tol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_deviation_helical_anti_sigma failed: left phi_max"
+            print *, "found: ", fieldlines(current)%phi_max(1)
+            print *, "analytic: ", phi_max(1)
+            test_failed = .true.
+        end if
+        if (not_same(fieldlines(current)%phi_max(2), &
+                     phi_max(2), &
+                     abstol_in=2.0_dp*phi_tol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_deviation_helical_anti_sigma failed: right phi_max"
+            print *, "found: ", fieldlines(current)%phi_max(2)
+            print *, "analytic: ", phi_max(2)
+            test_failed = .true.
+        end if
+     if (not_same(1.0_dp/fieldlines(current)%eta_b, B_max, reltol_in=B_max_reltol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_deviation_helical_anti_sigma failed: B_max"
+            print *, "found: ", 1.0_dp/fieldlines(current)%eta_b
+            print *, "analytic: ", B_max
+            print *, "relative error: ", fieldlines(current)%eta_b*B_max - 1.0_dp
+            test_failed = .true.
+        end if
+    end do
+    if (test_failed) error stop
+
     call plot_fieldlines_over_field(fieldlines, field)
-    call plot_delta_eta(fieldlines)
-    call plot_I(fieldlines)
-    call plot_delta_A(fieldlines, delta_A_1)
+    !call plot_delta_eta(fieldlines)
+    call plot_I(fieldlines, I_0_analytic, I_1_analytic)
+    !call plot_delta_A(fieldlines, delta_A_1)
 
-    call calc_deviation(fieldlines, field, deviation_A, deviation_B)
+    !call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
-    covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
-    off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-    off_factor_B = deviation_B*0.5*R*pi*dr_dpsi
+    !covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
+    !off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+    !off_factor_B = deviation_B*0.5*R*pi*dr_dpsi
 
-    call plot_deviation(off_factor_A, off_factor_B)
+    !call plot_deviation(off_factor_A, off_factor_B)
 
 contains
 
@@ -91,21 +133,35 @@ contains
         call plt%show()
     end subroutine plot_delta_A
 
-    subroutine plot_I(fieldlines)
+    subroutine plot_I(fieldlines, I_0_analytic, I_1_analytic)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: I_0_analytic, I_1_analytic
 
         integer :: n_fieldlines
         real(dp) :: I_mean
 
-        call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                            ylabel="$I$")
-
         n_fieldlines = size(fieldlines)
         I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
+
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$I$ [T$^{-2}$]", &
+                            legend=.true.)
         call plt%add_plot(fieldlines%theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared/I_mean - 1.0_dp, &
-                          label="$I", &
-                          linestyle="-")
+                          fieldlines%integral_lambda_b_over_B_squared, &
+                          label="$I_{numeric}$", &
+                          linestyle="b-")
+        call plt%add_plot(fieldlines%theta_0, &
+                          I_mean*cos(0.0_dp*fieldlines%theta_0), &
+                          label="$I^{mean}_{numeric}$", &
+                          linestyle="b--")
+        call plt%add_plot(fieldlines%theta_0, &
+                          I_0_analytic + I_1_analytic*cos(fieldlines%theta_0), &
+                          label="$I_{analytic}$", &
+                          linestyle="r-")
+        call plt%add_plot(fieldlines%theta_0, &
+                          I_0_analytic*cos(0.0_dp*fieldlines%theta_0), &
+                          label="$I^{mean}_{analytic}$", &
+                          linestyle="r--")
         call plt%show()
     end subroutine plot_I
 
