@@ -18,7 +18,8 @@ contains
 
         dB_dtheta_0 = dB_dx(2)
 
-        local_radial_drift = 0.5_dp*sqrt(lambda_squared)/B**3*(3 + lambda_squared) &
+        local_radial_drift = 0.5_dp*sqrt(lambda_squared)/B**3.0_dp &
+                             *(3.0_dp + lambda_squared) &
                              *dB_dtheta_0
     end function local_radial_drift
 
@@ -30,7 +31,7 @@ contains
         real(dp) :: B
 
         call field%compute_B_mod(theta, phi, B)
-        lambda_over_B_squared = sqrt(pitchparameter_squared(B, eta))/B**2
+        lambda_over_B_squared = sqrt(pitchparameter_squared(B, eta))/B**2.0_dp
     end function lambda_over_B_squared
 
     function B_squared(field, theta, phi)
@@ -41,14 +42,14 @@ contains
         real(dp) :: B
 
         call field%compute_B_mod(theta, phi, B)
-        B_squared = B**2
+        B_squared = B**2.0_dp
     end function B_squared
 
     function pitchparameter_squared(B, eta)
         real(dp), intent(in) :: B, eta
         real(dp) :: pitchparameter_squared
 
-        pitchparameter_squared = 1 - B*eta
+        pitchparameter_squared = 1.0_dp - B*eta
 
         if (pitchparameter_squared .lt. 0.0_dp) then
             print *, "Square of pitch parameter (1 - B*eta) is negative!"
