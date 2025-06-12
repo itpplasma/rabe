@@ -183,7 +183,7 @@ contains
                             ylabel="$I/\sqrt{1 + \epsilon\cos{\vartheta_0}}$ [T$^{-2}$]", &
                             legend=.true.)
         write (label, "(A38,F10.8)") "deviation from numeric $I_{factor} =$ ", &
-                                      I_factor_mean
+            I_factor_mean
         call plt%add_plot(theta_0, &
                           I_factor/I_factor_mean, &
                           label=label, &
@@ -202,7 +202,7 @@ contains
         real(dp), intent(in), optional :: off_factor_A_analytic
 
         type(myplot) :: plt
-        integer, parameter :: n_points = 100
+        integer, parameter :: n_points = 10
         real(dp), dimension(n_points) :: nu_star
 
         character(len=1024) :: label
@@ -213,30 +213,33 @@ contains
         call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
         nu_star = 0.1_dp**nu_star
 
-        write (label, "(A35,F10.8)") "offset factor due to $\Delta A$ =", &
+        write (label, "(A35,ES10.3E2)") "offset factor due to $\Delta A$ =", &
             off_factor_A
         call plt%add_plot(nu_star, &
                           off_factor_A/sqrt(nu_star), &
                           label=label, &
-                          linestyle="r--", &
+                          linestyle="r-", &
                           xscale="log", &
                           yscale="log")
 
         if (present(off_factor_A_analytic)) then
-            write (label, "(A42,F10.8,A1)") "analytic estimate (relative difference =", &
+            write (label, "(A42,ES10.3E2,A1)") "analytic estimate (relative difference =", &
                 abs(off_factor_A_analytic/off_factor_A - 1.0_dp), &
                 ")"
             call plt%add_plot(nu_star, &
                               off_factor_A_analytic/sqrt(nu_star), &
                               label=label, &
-                              linestyle="r.", &
+                              linestyle="ro", &
+                              markersize=8, &
                               xscale="log", &
                               yscale="log")
         end if
 
+        write (label, "(A36,ES10.3E2)") "offset factor due to $\Delta \eta$ =", &
+            off_factor_B
         call plt%add_plot(nu_star, &
                           off_factor_B/nu_star, &
-                          label="due to misaligment", &
+                          label=label, &
                           linestyle="b-", &
                           xscale="log", &
                           yscale="log")
