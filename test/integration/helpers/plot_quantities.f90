@@ -101,7 +101,7 @@ contains
                           linestyle="-")
         call plt%add_plot(fieldlines%theta_0, &
                           delta_A_1_analytic*cos(fieldlines%theta_0), &
-                          label="$\Delta A$ analytic", &
+                          label="$\Delta A$ approx analytic", &
                           linestyle="-")
         call plt%show()
     end subroutine plot_delta_A
