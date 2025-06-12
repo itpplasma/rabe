@@ -1,4 +1,4 @@
-program test_deviation_helical_anti_sigma
+program test_I_integral_helical_anti_sigma
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace, not_same
@@ -55,7 +55,7 @@ program test_deviation_helical_anti_sigma
     real(dp) :: I_mean, I_amplitude
     logical :: test_failed
 
-    logical, parameter :: should_plot = .true.
+    logical, parameter :: should_plot = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
@@ -75,7 +75,7 @@ program test_deviation_helical_anti_sigma
                      phi_max(1), &
                      abstol_in=2.0_dp*phi_tol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_deviation_helical_anti_sigma failed: left phi_max"
+            print *, "test_I_integral_helical_anti_sigma failed: left phi_max"
             print *, "found: ", fieldlines(current)%phi_max(1)
             print *, "analytic: ", phi_max(1)
             test_failed = .true.
@@ -84,14 +84,14 @@ program test_deviation_helical_anti_sigma
                      phi_max(2), &
                      abstol_in=2.0_dp*phi_tol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_deviation_helical_anti_sigma failed: right phi_max"
+            print *, "test_I_integral_helical_anti_sigma failed: right phi_max"
             print *, "found: ", fieldlines(current)%phi_max(2)
             print *, "analytic: ", phi_max(2)
             test_failed = .true.
         end if
      if (not_same(1.0_dp/fieldlines(current)%eta_b, B_max, reltol_in=B_max_reltol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_deviation_helical_anti_sigma failed: B_max"
+            print *, "test_I_integral_helical_anti_sigma failed: B_max"
             print *, "found: ", 1.0_dp/fieldlines(current)%eta_b
             print *, "analytic: ", B_max
             print *, "relative error: ", fieldlines(current)%eta_b*B_max - 1.0_dp
@@ -102,7 +102,7 @@ program test_deviation_helical_anti_sigma
     I_mean = sum(fieldlines%integral_lambda_b_over_B_squared)/n_fieldlines
     if (not_same(I_mean, I_0_analytic, reltol_in=I_mean_reltol)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_deviation_helical_anti_sigma failed: I_mean"
+        print *, "test_I_integral_helical_anti_sigma failed: I_mean"
         print *, "found: ", I_mean
         print *, "analytic: ", I_0_analytic
         print *, "relative error: ", I_mean/I_0_analytic - 1.0_dp
@@ -115,7 +115,7 @@ program test_deviation_helical_anti_sigma
     if (not_same(I_amplitude, I_1_analytic, &
                  reltol_in=I_amplitude_reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_deviation_helical_anti_sigma failed: I_amplitude"
+        print *, "test_I_integral_helical_anti_sigma failed: I_amplitude"
         print *, "found: ", I_amplitude
         print *, "analytic: ", I_1_analytic
         print *, "relative error: ", I_amplitude/I_1_analytic - 1.0_dp
@@ -132,4 +132,4 @@ program test_deviation_helical_anti_sigma
         call plot_delta_A(fieldlines, delta_A_1)
     end if
 
-end program test_deviation_helical_anti_sigma
+end program test_I_integral_helical_anti_sigma
