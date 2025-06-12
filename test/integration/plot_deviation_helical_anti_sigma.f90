@@ -6,6 +6,7 @@ program plot_deviation_helical_anti_sigma
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
+    use plot_quantities, only: plot_deviation
 
     implicit none
 
@@ -54,31 +55,11 @@ program plot_deviation_helical_anti_sigma
 
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
-    call plt%initialize(xlabel="$\nu_*$", &
-                        ylabel="$\lambda_{bB}$", &
-                        legend=.true.)
-    call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
-    nu_star = 0.1_dp**nu_star
-
     covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
     off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     off_factor_B = deviation_B*0.5*R*pi*dr_dpsi
 
-    call plt%add_plot(nu_star, &
-                      off_factor_A/sqrt(nu_star), &
-                      label="offset factor due to aspect ratio =", &
-                      linestyle="r-", &
-                      xscale="log", &
-                      yscale="log")
-
-    call plt%add_plot(nu_star, &
-                      off_factor_B/nu_star, &
-                      label="due to misaligment", &
-                      linestyle="b-", &
-                      xscale="log", &
-                      yscale="log")
-
-    call plt%show()
+    call plot_deviation(off_factor_A, off_factor_B)
 
 contains
 
@@ -190,11 +171,6 @@ contains
                              colorbar=.true., &
                              filled=.true.)
         call plt%show()
-
-!    open (unit=10, file="B_mesh.dat", status='replace', action='write', form='formatted')
-!         do theta_idx = 1, n_points
-!          write (10, '( *(F11.9,1X) )') (B_mesh(theta_idx, phi_idx), phi_idx=1, n_points)
-!         end do
 
     end subroutine plot_fieldlines_over_field
 
