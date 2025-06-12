@@ -1,5 +1,5 @@
 module misc
-    use constants, only: dp, pi
+    use constants, only: dp, pi, eps
     implicit none
 
 contains
@@ -14,6 +14,7 @@ contains
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 
         S_A = fit_fac*(angle_in_period - sign(0.5_dp*pi, angle_in_period))
+        if (abs(mod(angle, pi)) < eps) S_A = 0.0_dp
     end function S_A
 
     elemental function S_B(angle)
@@ -26,6 +27,7 @@ contains
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 
         S_B = sign(fit_fac, angle_in_period)
+        if (abs(mod(angle, pi)) < eps) S_B = 0.0_dp
     end function S_B
 
 end module misc
