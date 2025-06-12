@@ -10,11 +10,13 @@ program test_deviation_helical_anti_sigma
     implicit none
 
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.00375_dp
-    real(dp), parameter :: I_0_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
-                           /B_0**2.0_dp/N_tor*sqrt(32.0_dp) &
-                           *(1.0_dp + abs(eps_0)*2.0_dp/3.0_dp)
-    real(dp), parameter :: I_1_analytic = -0.5_dp*eps_1/abs(eps_0)*I_0_analytic
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.005, eps_1 = -0.000375_dp
+    real(dp), parameter :: factor = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
+                           /B_0**2.0_dp/N_tor*sqrt(32.0_dp)
+    real(dp), parameter :: I_0_analytic = factor*(1.0_dp + abs(eps_0)*2.0_dp/3.0_dp)
+    real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
+    real(dp), parameter :: I_1_analytic = factor*(-0.5_dp*eps_ratio)* &
+                           (1.0_dp + 6.0_dp*abs(eps_0))
     real(dp), parameter :: B_max = B_0*(1.0_dp + abs(eps_0))
     real(dp), parameter :: delta_A_1 = -0.25_dp*abs(eps_1/eps_0)
     real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi) !Tm^2
@@ -28,7 +30,8 @@ program test_deviation_helical_anti_sigma
     real(dp), parameter :: phi_tol = 1e-6
     real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0
     real(dp), parameter :: I_mean_reltol = eps_0*eps_0*3.0_dp
-    real(dp), parameter :: I_amplitude_reltol = abs(eps_1/eps_0)
+    real(dp), parameter :: I_amplitude_reltol = max(eps_ratio*eps_ratio*5.0_dp, &
+                                                    eps_0*eps_0*10.0_dp)
     integer, parameter :: n_fieldlines = 20
     real(dp), dimension(2) :: phi_max
 
@@ -101,7 +104,7 @@ program test_deviation_helical_anti_sigma
     I_shifted = fieldlines%integral_lambda_b_over_B_squared - I_mean
     I_amplitude = 0.5_dp*(maxval(I_shifted) - minval(I_shifted))
 
-    if (not_same(I_amplitude, I_1_analytic/I_0_analytic, &
+    if (not_same(I_amplitude, I_1_analytic, &
                  reltol_in=I_amplitude_reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_deviation_helical_anti_sigma failed: I_amplitude"
@@ -111,12 +114,12 @@ program test_deviation_helical_anti_sigma
         test_failed = .true.
     end if
 
-    !if (test_failed) error stop
+    if (test_failed) error stop
 
     !call plot_fieldlines_over_field(fieldlines, field)
     !call plot_delta_eta(fieldlines)
     call plot_I_factor(fieldlines, eps_0, eps_1)
-    call plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
+    !call plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)
     !call plot_delta_A(fieldlines, delta_A_1)
 
     !call calc_deviation(fieldlines, field, deviation_A, deviation_B)
@@ -212,7 +215,7 @@ contains
                             ylabel="$I_{normalized}$ [1]", &
                             legend=.true.)
         call plt%add_plot(theta_0, &
-                          fieldlines%integral_lambda_b_over_B_squared/I_factor - 1.0_dp, &
+                        fieldlines%integral_lambda_b_over_B_squared/I_factor - 1.0_dp, &
                           label="$I_{numeric}$", &
                           linestyle="b-")
         call plt%add_plot(theta_0, &
@@ -241,11 +244,18 @@ contains
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$I/\sqrt{1 + \epsilon\cos{\vartheta_0}}$ [T$^{-2}$]", &
                             legend=.true.)
-        write (label, "(A23,F10.8)") "numeric $I_{factor} =$ ", I_factor_mean
+        write (label, "(A38,F10.8)") "deviation from numeric $I_{factor} =$ ",// &
+                                      I_factor_mean
         call plt%add_plot(theta_0, &
                           I_factor/I_factor_mean, &
                           label=label, &
                           linestyle="k-")
+        label = "analytic approximation $+ \mathcal{O}(\epsilon_0^2)$"
+        call plt%add_plot(theta_0, &
+                          -8.0_dp/(3.0_dp - 2.0_dp*eps_0)*eps_1*cos(theta_0) &
+                          + 1.0_dp, &
+                          label=label, &
+                          linestyle="g-")
         call plt%show()
     end subroutine plot_I_factor
 
