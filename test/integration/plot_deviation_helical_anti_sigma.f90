@@ -22,7 +22,8 @@ program plot_deviation_helical_anti_sigma
     real(dp), parameter :: I_tor = 0.0_dp
     real(dp), parameter :: stor = 0.9999_dp, R = 8.0_dp
     real(dp), parameter :: eps_0 = -0.05, eps_1 = -0.0375
-    real(dp), parameter :: delta_A_1 = -0.25_dp*abs(eps_1/eps_0)
+    real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
+    real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*abs(eps_0))
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 7e-7
