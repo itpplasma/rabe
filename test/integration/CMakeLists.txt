@@ -44,7 +44,6 @@ target_link_libraries(test_I_integral_helical_anti_sigma.x rabe_lib
                                                           helpers_lib
                                                           myplot_lib)
 add_test(TestIIntegralHelicalAntiSigma test_I_integral_helical_anti_sigma.x)
-set_tests_properties(TestIIntegralHelicalAntiSigma PROPERTIES LABELS "current")
 
 add_executable(test_lambda_helical_anti_sigma.x test_lambda_helical_anti_sigma.f90)
 target_link_libraries(test_lambda_helical_anti_sigma.x rabe_lib
@@ -71,3 +70,10 @@ target_link_libraries(plot_deviation_helical_anti_sigma.x myplot_lib
                                                           helpers_lib)
 add_test(PlotDeviationHelicalAntiSigma plot_deviation_helical_anti_sigma.x)
 set_tests_properties(PlotDeviationHelicalAntiSigma PROPERTIES LABELS "plot")
+
+add_executable(plot_helical_anti_sigma_small_aspect.x plot_helical_anti_sigma_small_aspect.f90)
+target_link_libraries(plot_helical_anti_sigma_small_aspect.x myplot_lib
+                                                             rabe_lib
+                                                             helpers_lib)
+add_test(PlotHelicalAntiSigmaSmallAspect plot_helical_anti_sigma_small_aspect.x)
+set_tests_properties(PlotHelicalAntiSigmaSmallAspect PROPERTIES LABELS "current")

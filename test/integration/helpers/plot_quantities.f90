@@ -197,12 +197,15 @@ contains
         call plt%show()
     end subroutine plot_I_factor
 
-    subroutine plot_deviation(off_factor_A, off_factor_B)
+    subroutine plot_deviation(off_factor_A, off_factor_B, off_factor_A_analytic)
         real(dp), intent(in) :: off_factor_A, off_factor_B
+        real(dp), intent(in), optional :: off_factor_A_analytic
 
         type(myplot) :: plt
         integer, parameter :: n_points = 100
         real(dp), dimension(n_points) :: nu_star
+
+        character(len=1024) :: label
 
         call plt%initialize(xlabel="$\nu_*$", &
                             ylabel="$\lambda_{bB}$", &
@@ -210,12 +213,26 @@ contains
         call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
         nu_star = 0.1_dp**nu_star
 
+        write (label, "(A35,F10.8)") "offset factor due to $\Delta A$ =", &
+            off_factor_A
         call plt%add_plot(nu_star, &
                           off_factor_A/sqrt(nu_star), &
-                          label="offset factor due to aspect ratio =", &
-                          linestyle="r-", &
+                          label=label, &
+                          linestyle="r--", &
                           xscale="log", &
                           yscale="log")
+
+        if (present(off_factor_A_analytic)) then
+            write (label, "(A42,F10.8,A1)") "analytic estimate (relative difference =", &
+                abs(off_factor_A_analytic/off_factor_A - 1.0_dp), &
+                ")"
+            call plt%add_plot(nu_star, &
+                              off_factor_A_analytic/sqrt(nu_star), &
+                              label=label, &
+                              linestyle="r.", &
+                              xscale="log", &
+                              yscale="log")
+        end if
 
         call plt%add_plot(nu_star, &
                           off_factor_B/nu_star, &
