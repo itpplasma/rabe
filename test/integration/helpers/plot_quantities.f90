@@ -70,18 +70,32 @@ contains
 
     end subroutine plot_fieldlines_over_field
 
-    subroutine plot_delta_eta(fieldlines)
+    subroutine plot_delta_eta(fieldlines, delta_eta_1, iota_p)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in), optional :: delta_eta_1, iota_p
 
+        real(dp), dimension(size(fieldlines)) :: theta_0
         type(myplot) :: plt
 
-        call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                            ylabel="$\Delta \eta$")
+        theta_0 = fieldlines%theta_0
 
-        call plt%add_plot(fieldlines%theta_0, &
+        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+                            ylabel="$\Delta \eta$", &
+                            legend=.true.)
+
+        call plt%add_plot(theta_0, &
                           fieldlines%delta_eta, &
-                          label="\Delta \eta", &
+                          label="$\Delta \eta$", &
                           linestyle="-")
+
+        if (present(delta_eta_1)) then
+            if (.not. present(iota_p)) error stop
+            call plt%add_plot(theta_0, &
+                              abs(delta_eta_1) - delta_eta_1*cos(theta_0 - iota_p), &
+                              label="$\Delta \eta$ approx analytic", &
+                              linestyle="-")
+        end if
+
         call plt%show()
     end subroutine plot_delta_eta
 
@@ -204,21 +218,22 @@ contains
         real(dp), intent(in), optional :: off_factor_B_analytic
 
         type(myplot) :: plt
-        integer, parameter :: n_points = 10
+        integer, parameter :: n_points = 20
         real(dp), dimension(n_points) :: nu_star
 
         character(len=1024) :: label
 
         call plt%initialize(xlabel="$\nu_*$", &
-                            ylabel="$\lambda_{bB}$", &
-                            legend=.true.)
+                            ylabel="$|\lambda_{bB}|$", &
+                            legend=.true., &
+                            figsize=(/10, 10/))
         call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
         nu_star = 0.1_dp**nu_star
 
         write (label, "(A35,ES10.3E2)") "offset factor due to $\Delta A$ =", &
             off_factor_A
         call plt%add_plot(nu_star, &
-                          off_factor_A/sqrt(nu_star), &
+                          abs(off_factor_A)/sqrt(nu_star), &
                           label=label, &
                           linestyle="r-", &
                           xscale="log", &
@@ -229,7 +244,7 @@ contains
                 "analytic estimate (relative difference =", &
                 abs(off_factor_A_analytic/off_factor_A - 1.0_dp), ")"
             call plt%add_plot(nu_star, &
-                              off_factor_A_analytic/sqrt(nu_star), &
+                              abs(off_factor_A_analytic)/sqrt(nu_star), &
                               label=label, &
                               linestyle="ro", &
                               markersize=8, &
@@ -240,7 +255,7 @@ contains
         write (label, "(A36,ES10.3E2)") "offset factor due to $\Delta \eta$ =", &
             off_factor_B
         call plt%add_plot(nu_star, &
-                          off_factor_B/nu_star, &
+                          abs(off_factor_B)/nu_star, &
                           label=label, &
                           linestyle="b-", &
                           xscale="log", &
@@ -251,7 +266,7 @@ contains
                 "analytic estimate (relative difference =", &
                 abs(off_factor_B_analytic/off_factor_B - 1.0_dp), ")"
             call plt%add_plot(nu_star, &
-                              off_factor_B_analytic/sqrt(nu_star), &
+                              abs(off_factor_B_analytic)/nu_star, &
                               label=label, &
                               linestyle="bo", &
                               markersize=8, &
