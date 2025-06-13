@@ -85,8 +85,8 @@ contains
 
         ! chi = M*theta - N*phi
         ! as f~f(chi) = sum c_j*cos(j*chi) with 1<j<j_max
-        ! periodic at least after 2pi -> minimum must be in e.g [0, 3pi]
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 3.0_dp*pi/)
+        ! periodic at least after 2pi -> minimum must be in e.g [-pi, 2pi]
+        real(dp), dimension(2), parameter :: interval = (/-pi, 2.0_dp*pi/)
         real(dp) :: location(1)
 
         call find_local_minima(estimate_B_mod_of_chi_over_N, interval, location, &
