@@ -13,7 +13,6 @@ module fieldline_integrals
         type(modes_t) :: radial_drift
         type(modes_t) :: delta_eta
         type(modes_t) :: delta_aspect_ratio
-        type(modes_t) :: g_off
     end type fieldline_modes_t
 
 contains
