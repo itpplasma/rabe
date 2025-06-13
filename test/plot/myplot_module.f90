@@ -15,16 +15,18 @@ module myplot_module
 
 contains
 
-    subroutine initialize(self, xlabel, ylabel, legend)
+    subroutine initialize(self, xlabel, ylabel, legend, figsize)
         class(myplot), intent(out) :: self
 
         character(len=*), intent(in), optional :: xlabel, ylabel
         logical, intent(in), optional :: legend
+        integer, dimension(2), intent(in), optional :: figsize
 
         call self%plt%initialize(grid=.true., &
                                  xlabel=xlabel, &
                                  ylabel=ylabel, &
                                  legend=legend, &
+                                 figsize=figsize, &
                                  raw_strings=.true.)
     end subroutine initialize
 
