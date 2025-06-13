@@ -180,7 +180,7 @@ contains
         I_factor_mean = sum(I_factor)/n_fieldlines
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
-                            ylabel="$I/\sqrt{1 + \epsilon\cos{\vartheta_0}}$ [T$^{-2}$]", &
+                            ylabel="$I/\sqrt{1+\epsilon\cos{\vartheta_0}}$ [1/T$^2$]", &
                             legend=.true.)
         write (label, "(A38,F10.8)") "deviation from numeric $I_{factor} =$ ", &
             I_factor_mean
@@ -197,9 +197,11 @@ contains
         call plt%show()
     end subroutine plot_I_factor
 
-    subroutine plot_deviation(off_factor_A, off_factor_B, off_factor_A_analytic)
+    subroutine plot_deviation(off_factor_A, off_factor_B, &
+                              off_factor_A_analytic, off_factor_B_analytic)
         real(dp), intent(in) :: off_factor_A, off_factor_B
         real(dp), intent(in), optional :: off_factor_A_analytic
+        real(dp), intent(in), optional :: off_factor_B_analytic
 
         type(myplot) :: plt
         integer, parameter :: n_points = 10
@@ -223,9 +225,9 @@ contains
                           yscale="log")
 
         if (present(off_factor_A_analytic)) then
-            write (label, "(A42,ES10.3E2,A1)") "analytic estimate (relative difference =", &
-                abs(off_factor_A_analytic/off_factor_A - 1.0_dp), &
-                ")"
+            write (label, "(A42,ES10.3E2,A1)") &
+                "analytic estimate (relative difference =", &
+                abs(off_factor_A_analytic/off_factor_A - 1.0_dp), ")"
             call plt%add_plot(nu_star, &
                               off_factor_A_analytic/sqrt(nu_star), &
                               label=label, &
@@ -243,6 +245,19 @@ contains
                           linestyle="b-", &
                           xscale="log", &
                           yscale="log")
+
+        if (present(off_factor_B_analytic)) then
+            write (label, "(A42,ES10.3E2,A1)") &
+                "analytic estimate (relative difference =", &
+                abs(off_factor_B_analytic/off_factor_B - 1.0_dp), ")"
+            call plt%add_plot(nu_star, &
+                              off_factor_B_analytic/sqrt(nu_star), &
+                              label=label, &
+                              linestyle="bo", &
+                              markersize=8, &
+                              xscale="log", &
+                              yscale="log")
+        end if
 
         call plt%show()
     end subroutine plot_deviation
