@@ -31,7 +31,25 @@ contains
         real(dp) :: symmetric_remainder
         real(dp) :: B_squared_sqrtg
 
+        logical :: any_has_sin_part
+
         call fourier_transform_over_label(fieldlines, modes)
+
+        any_has_sin_part = .false.
+        if (has_sin_modes(modes%delta_aspect_ratio)) then
+            print *, "error: non-vanishing sin part of delta aspect ratio: "
+            print *, "sin part: ", sum(abs(modes%delta_aspect_ratio%sin_coeffs))
+            print *, "cos part: ", sum(abs(modes%delta_aspect_ratio%cos_coeffs))
+            any_has_sin_part = .true.
+        end if
+        if (has_sin_modes(modes%delta_eta)) then
+            print *, "error: non-vanishing sin part of delta eta: "
+            print *, "sin part: ", sum(abs(modes%delta_eta%sin_coeffs))
+            print *, "cos part: ", sum(abs(modes%delta_eta%cos_coeffs))
+            any_has_sin_part = .true.
+        end if
+        if (any_has_sin_part) error stop
+
         call calc_surface_averages(fieldlines, average)
 
         iota_p = fieldlines(1)%iota_p
@@ -96,6 +114,24 @@ contains
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
                                    dtheta_0/surface_average%normalization
     end subroutine calc_surface_averages
+
+    function has_sin_modes(modes)
+        use fieldline_integrals, only: modes_t
+        type(modes_t), intent(in) :: modes
+        logical :: has_sin_modes
+
+        real(dp), parameter :: tol = 1e-6, numerical_zero = 1e-8
+        real(dp) :: sum_sin, sum_cos
+
+        sum_sin = sum(abs(modes%sin_coeffs))
+        sum_cos = sum(abs(modes%cos_coeffs))
+
+        if (sum_cos > numerical_zero) then
+            has_sin_modes = sum_sin/sum_cos > tol
+        else
+            has_sin_modes = sum_sin > numerical_zero
+        end if
+    end function has_sin_modes
 
     function get_B_squared_sqrtg_psi_edge(field) result(B_squared_sqrtg_psi_edge)
         use field_base, only: field_t
