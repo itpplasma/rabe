@@ -70,10 +70,16 @@ contains
         real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
-        real(dp) :: chi_min_over_N
+        real(dp) :: chi_min_over_N, tol
 
         call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
-        if (not_multiple_of_pi(chi_min_over_N*phi_mode, phi_tol)) then
+
+        if (present(phi_tol)) then
+            tol = phi_tol*3.0_dp
+        else
+            tol = 3.0_dp*1e-2
+        end if
+        if (not_multiple_of_pi(chi_min_over_N*phi_mode, tol)) then
             print *, "error: found chi_min is not multiple of pi"
             print *, "chi_min: ", chi_min_over_N*phi_mode
             error stop
@@ -170,7 +176,8 @@ contains
     end function get_global_B_max
 
     function not_multiple_of_pi(chi, tol)
-        real(dp), intent(in) :: chi, tol
+        real(dp), intent(in) :: chi
+        real(dp), intent(in) :: tol
         logical :: not_multiple_of_pi
 
         real(dp) :: remainder
