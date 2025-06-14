@@ -11,7 +11,7 @@ program plot_deviation_landreman_paul_helical
     use plot_quantities, only: plot_maxima_over_label
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
-    use plot_quantities, only: plot_deviation
+    use plot_quantities, only: plot_deviation, external_data_t
 
     implicit none
 
@@ -30,6 +30,44 @@ program plot_deviation_landreman_paul_helical
     !------------------Taken from NEO-2 output---------------------------------!
     real(dp), parameter :: R = 14.06_dp ! called "r0"
     real(dp), parameter :: ds_dr = 0.00852345_dp*100.0_dp ! [1/m] called "avnabpsi"
+    integer, parameter :: n_neo2 = 18
+    real(dp), dimension(n_neo2), parameter :: nu_star_neo2 = (/3e-09, &
+                                                               1e-08, &
+                                                               3e-08, &
+                                                               1e-07, &
+                                                               3e-07, &
+                                                               4e-07, &
+                                                               7.1e-07, &
+                                                               1e-06, &
+                                                               1.2e-06, &
+                                                               2e-06, &
+                                                               3e-06, &
+                                                               6e-06, &
+                                                               1e-05, &
+                                                               1.1e-05, &
+                                                               1.9e-05, &
+                                                               3e-05, &
+                                                               5.8e-05, &
+                                                               0.0001/)
+    real(dp), dimension(n_neo2), parameter :: lambda_neo2 = (/10.552_dp, &
+                                                              9.4185_dp, &
+                                                              6.9596_dp, &
+                                                              4.9627_dp, &
+                                                              2.9668_dp, &
+                                                              2.4459_dp, &
+                                                              1.5623_dp, &
+                                                              1.1552_dp, &
+                                                              0.97471_dp, &
+                                                              0.58705_dp, &
+                                                              0.3798_dp, &
+                                                              0.16531_dp, &
+                                                              0.079321_dp, &
+                                                              0.067816_dp, &
+                                                              0.02108_dp, &
+                                                              0.00027645_dp, &
+                                                              -0.011303_dp, &
+                                                              -0.010043_dp/)
+    type(external_data_t) :: lambda_off_neo2
     !--------------------------------------------------------------------------!
 
     real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
@@ -77,7 +115,13 @@ program plot_deviation_landreman_paul_helical
     off_factor_A = deviation_A*dr_dAphi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     off_factor_B = deviation_B*0.5*R*pi*dr_dAphi
 
+    allocate (lambda_off_neo2%x(n_neo2), lambda_off_neo2%y(n_neo2))
+    lambda_off_neo2%x = nu_star_neo2
+    lambda_off_neo2%y = lambda_neo2 - minval(lambda_neo2)
+    lambda_off_neo2%y = lambda_off_neo2%y + 3e-2
     call plot_deviation(off_factor_A, &
-                        off_factor_B)
+                        off_factor_B, &
+                        lambda_off_external=lambda_off_neo2)
+    deallocate (lambda_off_neo2%x, lambda_off_neo2%y)
 
 end program plot_deviation_landreman_paul_helical
