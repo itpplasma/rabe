@@ -30,7 +30,7 @@ contains
         call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines, &
                                                  phi_tol)
 
-        fieldlines%iota_p = iota*(pi)/(N_tor - iota*M_pol)
+        fieldlines%iota_p = iota*sign(pi, N_tor)/(N_tor - iota*M_pol)
 
         do current = 1, n_fieldlines
             interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
@@ -73,6 +73,11 @@ contains
         real(dp) :: chi_min_over_N
 
         call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
+        if (not_multiple_of_pi(chi_min_over_N*phi_mode, phi_tol)) then
+            print *, "error: found chi_min is not multiple of pi"
+            print *, "chi_min: ", chi_min_over_N*phi_mode
+            error stop
+        end if
         fieldlines%phi_0 = theta_mode/phi_mode*fieldlines%theta_0 - chi_min_over_N
     end subroutine set_fieldline_phi_0_to_mode_minimum
 
@@ -163,5 +168,15 @@ contains
         B_max_2 = maxval(fieldlines(:)%B_max(2))
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
+
+    function not_multiple_of_pi(chi, tol)
+        real(dp), intent(in) :: chi, tol
+        logical :: not_multiple_of_pi
+
+        real(dp) :: remainder
+
+        remainder = abs(mod(chi, pi))
+        not_multiple_of_pi = remainder > tol .and. abs(remainder - pi) > tol
+    end function not_multiple_of_pi
 
 end module make_fieldline
