@@ -1,0 +1,83 @@
+program plot_deviation_landreman_paul_helical
+    use constants, only: dp, pi
+    use utils, only: linspace
+    use neo_field, only: neo_field_t
+    use fieldline_mod, only: fieldline_t
+    use make_fieldline, only: make_flock_of_fieldlines
+    use deviation, only: calc_deviation
+    use misc, only: S_A, S_B
+
+    use plot_quantities, only: plot_fieldlines_over_field
+    use plot_quantities, only: plot_maxima_over_label
+    use plot_quantities, only: plot_delta_eta
+    use plot_quantities, only: plot_delta_A
+    use plot_quantities, only: plot_deviation
+
+    implicit none
+
+    character(len=*), parameter :: bc_filename = "input/landreman_paul_helical.bc"
+
+    !------------------Taken from .bc file-------------------------------------!
+    real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: psi_edge = abs(41.86388_dp)/(2.0_dp*pi) ![Tm^2]
+    real(dp), parameter :: J_pol_over_N_tor = -1.27795890_dp*1e8
+    real(dp), parameter :: I_tor = 7.45931094_dp*1e-10
+    real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
+    !--------------------------------------------------------------------------!
+
+    real(dp), parameter :: stor = 0.60_dp
+
+    !------------------Taken from NEO-2 output---------------------------------!
+    real(dp), parameter :: R = 14.06_dp ! called "r0"
+    real(dp), parameter :: ds_dr = 0.00852345_dp*100.0_dp ! [1/m] called "avnabpsi"
+    !--------------------------------------------------------------------------!
+
+    real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
+    real(dp), parameter :: dr_dAphi = dr_dpsi*sign_sqrtg
+
+    type(neo_field_t) :: field
+
+    real(dp), parameter :: phi_tol = 5e-7
+    integer, parameter :: n_fieldlines = 50
+
+    real(dp), dimension(n_fieldlines) :: theta_0
+    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp) :: iota
+    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+
+    real(dp) :: deviation_A, deviation_B
+    real(dp) :: covariant_factor
+    real(dp) :: off_factor_A, off_factor_B
+
+    logical, parameter :: should_plot_others = .true.
+
+    call field%neo_field_init(bc_filename, stor)
+    iota = field%iota
+    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
+    theta_0 = temp(1:n_fieldlines)
+
+    call make_flock_of_fieldlines(fieldlines, &
+                                  theta_0, &
+                                  iota, &
+                                  field, &
+                                  M_pol, &
+                                  N_tor, &
+                                  phi_tol)
+
+    if (should_plot_others) then
+        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_maxima_over_label(fieldlines)
+        call plot_delta_eta(fieldlines)
+        call plot_delta_A(fieldlines)
+    end if
+
+    call calc_deviation(fieldlines, field, deviation_A, deviation_B)
+
+    covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
+    off_factor_A = deviation_A*dr_dAphi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+    off_factor_B = deviation_B*0.5*R*pi*dr_dAphi
+
+    call plot_deviation(off_factor_A, &
+                        off_factor_B)
+
+end program plot_deviation_landreman_paul_helical

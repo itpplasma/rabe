@@ -83,4 +83,11 @@ target_link_libraries(plot_deviation_poloidal_anti_sigma.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationPoloidalAntiSigma plot_deviation_poloidal_anti_sigma.x)
-set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "current")
+set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "plot")
+
+add_executable(plot_deviation_landreman_paul_helical.x plot_deviation_landreman_paul_helical.f90)
+target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
+set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "current")
