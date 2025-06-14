@@ -8,8 +8,62 @@ module plot_quantities
 
 contains
 
+    subroutine plot_maxima_over_label(fieldlines)
+        type(fieldline_t), dimension(:) :: fieldlines
+
+        type(myplot) :: plt
+        real(dp), dimension(size(fieldlines)) :: theta_0_shifted
+
+        call plt%initialize(xlabel="$\vartheta_0 - \iota_p$ [$\pi$]", &
+                            ylabel="$B$ [T]", &
+                            figsize=(/7, 7/), &
+                            legend=.true.)
+        theta_0_shifted = modulo(fieldlines%theta_0 - fieldlines%iota_p, 2.0_dp*pi)
+        call plt%add_plot(theta_0_shifted/pi, &
+                          fieldlines%B_max(1), &
+                          label="left $B_{max}$", &
+                          linestyle="o")
+        call plt%add_plot(theta_0_shifted/pi, &
+                          fieldlines%B_max(2), &
+                          label="right $B_{max}$", &
+                          linestyle="o")
+        call plt%show()
+    end subroutine plot_maxima_over_label
+
+    subroutine plot_field_along_chi_line(field, chi, M_pol, N_tor)
+        use field_base, only: field_t
+        use utils, only: linspace
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: chi, M_pol, N_tor
+
+        type(myplot) :: plt
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: theta, phi, B
+
+        character(len=1024) :: label
+        integer :: current
+
+        allocate (theta(n_points), phi(n_points), B(n_points))
+
+        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta)
+        phi = (theta*M_pol - chi)/N_tor
+
+        do current = 1, n_points
+            call field%compute_B_mod(theta(current), phi(current), B(current))
+        end do
+
+        call plt%initialize(xlabel="$\vartheta$ [$\pi$]", &
+                            ylabel="$B$ [T]", &
+                            figsize=(/7, 7/), &
+                            legend=.true.)
+        write (label, "(A17,ES10.3E2)") "$B$ along $\chi=$", chi
+        call plt%add_plot(theta/pi, B, label=label, linestyle="b-")
+        call plt%show()
+
+        deallocate (theta, phi, B)
+    end subroutine plot_field_along_chi_line
+
     subroutine plot_fieldlines_over_field(fieldlines, field, N_tor)
-        use myplot_module, only: myplot
         use field_base, only: field_t
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
@@ -101,7 +155,7 @@ contains
 
     subroutine plot_delta_A(fieldlines, delta_A_1_analytic)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), intent(in) :: delta_A_1_analytic
+        real(dp), intent(in), optional :: delta_A_1_analytic
 
         type(myplot) :: plt
 
@@ -113,10 +167,12 @@ contains
                           fieldlines%delta_aspect_ratio, &
                           label="$\Delta A$", &
                           linestyle="-")
-        call plt%add_plot(fieldlines%theta_0, &
-                          delta_A_1_analytic*cos(fieldlines%theta_0), &
-                          label="$\Delta A$ approx analytic", &
-                          linestyle="-")
+        if (present(delta_A_1_analytic)) then
+            call plt%add_plot(fieldlines%theta_0, &
+                              delta_A_1_analytic*cos(fieldlines%theta_0), &
+                              label="$\Delta A$ approx analytic", &
+                              linestyle="-")
+        end if
         call plt%show()
     end subroutine plot_delta_A
 
