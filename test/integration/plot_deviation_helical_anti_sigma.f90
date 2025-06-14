@@ -27,7 +27,7 @@ program plot_deviation_helical_anti_sigma
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 7e-7
-    integer, parameter :: n_fieldlines = 50
+    integer, parameter :: n_fieldlines = 20
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
