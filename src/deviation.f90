@@ -120,7 +120,7 @@ contains
         type(modes_t), intent(in) :: modes
         logical :: has_sin_modes
 
-        real(dp), parameter :: tol = 1e-6, numerical_zero = 1e-8
+        real(dp), parameter :: tol = 1e-3, numerical_zero = 1e-8
         real(dp) :: sum_sin, sum_cos
 
         sum_sin = sum(abs(modes%sin_coeffs))
