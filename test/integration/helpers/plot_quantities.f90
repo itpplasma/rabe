@@ -6,6 +6,11 @@ module plot_quantities
 
     implicit none
 
+    type external_data_t
+        real(dp), dimension(:), allocatable :: x
+        real(dp), dimension(:), allocatable :: y
+    end type external_data_t
+
 contains
 
     subroutine plot_maxima_over_label(fieldlines)
@@ -268,10 +273,14 @@ contains
     end subroutine plot_I_factor
 
     subroutine plot_deviation(off_factor_A, off_factor_B, &
-                              off_factor_A_analytic, off_factor_B_analytic)
+                              off_factor_A_analytic, off_factor_B_analytic, &
+                              lambda_off_external)
         real(dp), intent(in) :: off_factor_A, off_factor_B
+
         real(dp), intent(in), optional :: off_factor_A_analytic
         real(dp), intent(in), optional :: off_factor_B_analytic
+
+        type(external_data_t), intent(in), optional :: lambda_off_external
 
         type(myplot) :: plt
         integer, parameter :: n_points = 20
@@ -286,7 +295,7 @@ contains
         call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
         nu_star = 0.1_dp**nu_star
 
-        write (label, "(A35,ES10.3E2)") "offset factor due to $\Delta A$ =", &
+        write (label, "(A33,ES10.3E2)") "offset factor due to $\Delta A$ =", &
             off_factor_A
         call plt%add_plot(nu_star, &
                           abs(off_factor_A)/sqrt(nu_star), &
@@ -325,6 +334,23 @@ contains
                               abs(off_factor_B_analytic)/nu_star, &
                               label=label, &
                               linestyle="bo", &
+                              markersize=8, &
+                              xscale="log", &
+                              yscale="log")
+        end if
+
+        call plt%add_plot(nu_star, &
+                          abs(off_factor_A/sqrt(nu_star) + off_factor_B/nu_star), &
+                          label="total", &
+                          linestyle="c--", &
+                          xscale="log", &
+                          yscale="log")
+
+        if (present(lambda_off_external)) then
+            call plt%add_plot(lambda_off_external%x, &
+                              lambda_off_external%y, &
+                              label="external results (including sign)", &
+                              linestyle="co", &
                               markersize=8, &
                               xscale="log", &
                               yscale="log")
