@@ -22,12 +22,21 @@ contains
         logical, intent(in), optional :: legend
         integer, dimension(2), intent(in), optional :: figsize
 
+        integer :: font_size
+
+        font_size = 18
+
         call self%plt%initialize(grid=.true., &
                                  xlabel=xlabel, &
                                  ylabel=ylabel, &
                                  legend=legend, &
                                  figsize=figsize, &
-                                 raw_strings=.true.)
+                                 raw_strings=.true., &
+                                 font_size=font_size, &
+                                 legend_fontsize=font_size, &
+                                 axes_labelsize=font_size, &
+                                 xtick_labelsize=font_size, &
+                                 ytick_labelsize=font_size)
     end subroutine initialize
 
     subroutine add_plot(self, x, f, label, linestyle, linewidth, markersize, &
@@ -41,8 +50,15 @@ contains
         integer, intent(in), optional :: markersize
         character(len=*), intent(in), optional :: xscale, yscale
 
+        integer :: my_linewidth
+
+        if (present(linewidth)) then
+            my_linewidth = linewidth
+        else
+            my_linewidth = 1
+        end if
         call self%plt%add_plot(x, f, label, linestyle, &
-                               linewidth=linewidth, &
+                               linewidth=my_linewidth, &
                                markersize=markersize, &
                                xscale=xscale, &
                                yscale=yscale)
