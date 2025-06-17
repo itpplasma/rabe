@@ -9,6 +9,7 @@ module plot_quantities
     type external_data_t
         real(dp), dimension(:), allocatable :: x
         real(dp), dimension(:), allocatable :: y
+        character(len=1024) :: label
     end type external_data_t
 
 contains
@@ -284,7 +285,8 @@ contains
 
         type(myplot) :: plt
         integer, parameter :: n_points = 20
-        real(dp), dimension(n_points) :: nu_star
+        real(dp), dimension(:), allocatable :: nu_star
+        real(dp), dimension(2) :: nu_star_lim
 
         character(len=1024) :: label
 
@@ -292,8 +294,22 @@ contains
                             ylabel="$|\lambda_{bB}|$", &
                             legend=.true., &
                             figsize=(/10, 10/))
-        call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
-        nu_star = 0.1_dp**nu_star
+
+        if (present(lambda_off_external)) then
+            call plt%add_plot(lambda_off_external%x, &
+                              lambda_off_external%y, &
+                              label=lambda_off_external%label, &
+                              linestyle="co", &
+                              markersize=8, &
+                              xscale="log", &
+                              yscale="log")
+            allocate (nu_star(size(lambda_off_external%x)), &
+                      source=lambda_off_external%x)
+        else
+            allocate (nu_star(n_points))
+            call linspace(0.0_dp, 8.0_dp, n_points, nu_star)
+            nu_star = 0.1_dp**nu_star
+        end if
 
         write (label, "(A33,ES10.3E2)") "offset factor due to $\Delta A$ =", &
             off_factor_A
@@ -339,22 +355,15 @@ contains
                               yscale="log")
         end if
 
+        nu_star_lim(1) = minval(nu_star)
+        nu_star_lim(2) = maxval(nu_star)
         call plt%add_plot(nu_star, &
                           abs(off_factor_A/sqrt(nu_star) + off_factor_B/nu_star), &
                           label="total", &
                           linestyle="c--", &
                           xscale="log", &
-                          yscale="log")
-
-        if (present(lambda_off_external)) then
-            call plt%add_plot(lambda_off_external%x, &
-                              lambda_off_external%y, &
-                              label="external results (including sign)", &
-                              linestyle="co", &
-                              markersize=8, &
-                              xscale="log", &
-                              yscale="log")
-        end if
+                          yscale="log", &
+                          xlim=nu_star_lim)
 
         call plt%show()
     end subroutine plot_deviation

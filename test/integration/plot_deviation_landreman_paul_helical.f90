@@ -117,6 +117,7 @@ program plot_deviation_landreman_paul_helical
     off_factor_B = deviation_B*0.5*R*pi*dr_dAphi
 
     allocate (lambda_off_neo2%x(n_neo2), lambda_off_neo2%y(n_neo2))
+    lambda_off_neo2%label = "NEO-2: $\lambda_{bB} - \lambda^\mathrm{SC}$"
     lambda_off_neo2%x = nu_star_neo2
     lambda_off_neo2%y = lambda_neo2 - shaing_callen_limit
     lambda_off_neo2%y = lambda_off_neo2%y + 3e-2
