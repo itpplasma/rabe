@@ -49,24 +49,25 @@ program plot_deviation_landreman_paul_helical
                                                                3e-05, &
                                                                5.8e-05, &
                                                                0.0001/)
-    real(dp), dimension(n_neo2), parameter :: lambda_neo2 = (/10.552_dp, &
-                                                              9.4185_dp, &
-                                                              6.9596_dp, &
-                                                              4.9627_dp, &
-                                                              2.9668_dp, &
-                                                              2.4459_dp, &
-                                                              1.5623_dp, &
-                                                              1.1552_dp, &
-                                                              0.97471_dp, &
-                                                              0.58705_dp, &
-                                                              0.3798_dp, &
-                                                              0.16531_dp, &
-                                                              0.079321_dp, &
-                                                              0.067816_dp, &
-                                                              0.02108_dp, &
-                                                              0.00027645_dp, &
-                                                              -0.011303_dp, &
-                                                              -0.010043_dp/)
+    real(dp), dimension(n_neo2), parameter :: lambda_neo2 = (/7.29201_dp, &
+                                                              6.15848_dp, &
+                                                              3.69955_dp, &
+                                                              1.70273_dp, &
+                                                              -0.293197_dp, &
+                                                              -0.814098_dp, &
+                                                              -1.69767_dp, &
+                                                              -2.10485_dp, &
+                                                              -2.28529_dp, &
+                                                              -2.67295_dp, &
+                                                              -2.8802_dp, &
+                                                              -3.09469_dp, &
+                                                              -3.18068_dp, &
+                                                              -3.19218_dp, &
+                                                              -3.23892_dp, &
+                                                              -3.25972_dp, &
+                                                              -3.2713_dp, &
+                                                              -3.27004_dp/)
+    real(dp), parameter :: shaing_callen_limit = -3.3268_dp
     type(external_data_t) :: lambda_off_neo2
     !--------------------------------------------------------------------------!
 
@@ -117,7 +118,7 @@ program plot_deviation_landreman_paul_helical
 
     allocate (lambda_off_neo2%x(n_neo2), lambda_off_neo2%y(n_neo2))
     lambda_off_neo2%x = nu_star_neo2
-    lambda_off_neo2%y = lambda_neo2 - minval(lambda_neo2)
+    lambda_off_neo2%y = lambda_neo2 - shaing_callen_limit
     lambda_off_neo2%y = lambda_off_neo2%y + 3e-2
     call plot_deviation(off_factor_A, &
                         off_factor_B, &
