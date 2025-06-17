@@ -2,7 +2,7 @@ EXTERNAL_FILE = ../../external/simsopt/tests/test_files/wout_LandremanPaul2021_Q
 OUTPUT_DIR = output
 VMEC_FILE = $(OUTPUT_DIR)/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc
 
-.PHONY: all clean quasi_axisymmetric.bc plot
+.PHONY: all clean quasi_axisymmetric.bc all_modes.bc plot
 all: quasi_axisymmetric.bc
 
 #Alias
@@ -19,6 +19,10 @@ $(OUTPUT_DIR)/quasi_axisymmetric.bc: $(VMEC_FILE) $(OUTPUT_DIR)
 
 plot: $(OUTPUT_DIR)/quasi_axisymmetric.bc
 	python plot_quasi_axisymmetric.py
+	python plot_non_symmetric.bc
+
+$(OUTPUT_DIR)/all_modes.bc: $(VMEC_FILE) $(OUTPUT_DIR)
+	python ../../python/make_bc_from_booz_xform.py $< $@
 
 clean:
 	rm -rf $(OUTPUT_DIR)
