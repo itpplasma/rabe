@@ -40,7 +40,7 @@ contains
     end subroutine initialize
 
     subroutine add_plot(self, x, f, label, linestyle, linewidth, markersize, &
-                        xscale, yscale)
+                        xscale, yscale, xlim, ylim)
         class(myplot), intent(inout) :: self
         real(dp), dimension(:), intent(in) :: x
         real(dp), dimension(size(x)), intent(in) :: f
@@ -49,6 +49,7 @@ contains
         integer, intent(in), optional :: linewidth
         integer, intent(in), optional :: markersize
         character(len=*), intent(in), optional :: xscale, yscale
+        real(dp), dimension(2), optional :: xlim, ylim
 
         integer :: my_linewidth
 
@@ -61,7 +62,9 @@ contains
                                linewidth=my_linewidth, &
                                markersize=markersize, &
                                xscale=xscale, &
-                               yscale=yscale)
+                               yscale=yscale, &
+                               xlim=xlim, &
+                               ylim=ylim)
     end subroutine add_plot
 
     subroutine add_contour(self, x, y, f, levels, colorbar, filled)
