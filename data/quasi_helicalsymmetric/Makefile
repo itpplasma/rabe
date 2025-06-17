@@ -2,7 +2,7 @@ EXTERNAL_FILE = ../../external/simsopt/tests/test_files/wout_LandremanPaul2021_Q
 OUTPUT_DIR = output
 VMEC_FILE = $(OUTPUT_DIR)/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc
 
-.PHONY: all clean quasi_helicalsymmetric.bc plot
+.PHONY: all clean quasi_helicalsymmetric.bc all_modes.bc plot
 all: quasi_helicalsymmetric.bc
 
 #Alias
