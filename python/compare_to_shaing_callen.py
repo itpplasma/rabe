@@ -24,7 +24,7 @@ elif magnetic_case == "helical":
         "output/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
     )
     neo2_file = os.path.join(
-        "output/helicalsymmetric_collisionality_scan_stor_0p26.out"
+        "output/helicalsymmetric_collisionality_scan_stor_0p60.out"
     )
     bc_filename = os.path.join("output/quasi_helicalsymmetric.bc")
     helicity_n = -1
