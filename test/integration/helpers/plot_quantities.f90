@@ -311,8 +311,8 @@ contains
             nu_star = 0.1_dp**nu_star
         end if
 
-        write (label, "(A33,ES10.3E2)") "offset factor due to $\Delta A$ =", &
-            off_factor_A
+        write (label, "(A35,ES10.3E2,A1)") "offset due to $\Delta A$ (factor$=$", &
+            off_factor_A, ")"
         call plt%add_plot(nu_star, &
                           abs(off_factor_A)/sqrt(nu_star), &
                           label=label, &
@@ -333,8 +333,8 @@ contains
                               yscale="log")
         end if
 
-        write (label, "(A36,ES10.3E2)") "offset factor due to $\Delta \eta$ =", &
-            off_factor_B
+        write (label, "(A38,ES10.3E2,A1)") "offset due to $\Delta \eta$ (factor$=$", &
+            off_factor_B, ")"
         call plt%add_plot(nu_star, &
                           abs(off_factor_B)/nu_star, &
                           label=label, &
