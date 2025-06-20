@@ -8,6 +8,8 @@ program rabe
 
     implicit none
 
+    character(len=*), parameter :: input_file = "rabe.in"
+
     character(len=100) :: bc_filename
     real(dp) :: M_pol
     real(dp) :: N_tor
@@ -50,7 +52,7 @@ program rabe
         phi_tol, &
         n_fieldlines
 
-    call read_namelist('input.nml')
+    call read_namelist(input_file)
     psi_edge = flux_edge/(2.0_dp*pi)
     dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/psi_edge
 
@@ -95,19 +97,20 @@ contains
 
         inquire (file=filename, exist=file_exists)
         if (.not. file_exists) then
-            print *, 'error: file not found: ', filename
+            print *, "error: file not found: ", filename
             stop
         end if
 
-        open (newunit=unit, file=filename, status='old', action='read', iostat=ios)
+        open (newunit=unit, file=filename, status="old", action="read", iostat=ios)
         if (ios /= 0) then
-            print *, 'error: cannot open file: ', filename
+            print *, "error: cannot open file: ", filename
             stop
         end if
 
         read (unit, nml=rabe_config, iostat=ios)
         if (ios /= 0) then
-            print *, 'error: failed to read namelist rabe_config'
+            print *, "error: failed to read namelist rabe_config"
+            print *, "iostat = ", ios
             stop
         end if
 
