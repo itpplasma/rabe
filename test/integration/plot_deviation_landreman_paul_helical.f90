@@ -20,8 +20,8 @@ program plot_deviation_landreman_paul_helical
     !------------------Taken from .bc file-------------------------------------!
     real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
     real(dp), parameter :: psi_edge = abs(41.86388_dp)/(2.0_dp*pi) ![Tm^2]
-    real(dp), parameter :: J_pol_over_N_tor = -1.27795890_dp*1e8
-    real(dp), parameter :: I_tor = 7.45931094_dp*1e-10
+    real(dp), parameter :: J_pol_over_N_tor = -1.27798075_dp*1e8
+    real(dp), parameter :: I_tor = -3.40005801*1e-09
     real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 
