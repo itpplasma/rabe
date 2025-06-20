@@ -15,11 +15,11 @@ program rabe
     real(dp) :: N_tor
     real(dp) :: s_tor
     real(dp) :: ds_dr ![1/cm]
-    real(dp) :: J_pol_over_N_tor
-    real(dp) :: I_tor
+    real(dp) :: J_pol_over_N_tor ![A]
+    real(dp) :: I_tor ![A]
     real(dp) :: flux_edge ![Tm^2]
     real(dp) :: sign_sqrtg
-    real(dp) :: R
+    real(dp) :: R ![m]
     real(dp) :: phi_tol
     integer :: n_fieldlines
 
