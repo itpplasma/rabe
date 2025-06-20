@@ -9,6 +9,7 @@ program rabe
     implicit none
 
     character(len=*), parameter :: input_file = "rabe.in"
+    character(len=*), parameter :: output_file = "rabe.out"
 
     character(len=100) :: bc_filename
     real(dp) :: M_pol
@@ -27,6 +28,7 @@ program rabe
 
     real(dp) :: psi_edge ![Tm^2/rad]
     real(dp) :: dr_dpsi ![rad/Tm/]
+    real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota
 
     real(dp), dimension(:), allocatable :: theta_0
@@ -37,6 +39,8 @@ program rabe
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
+
+    integer :: output
 
     namelist /rabe_config/ &
         bc_filename, &
@@ -55,6 +59,7 @@ program rabe
     call read_namelist(input_file)
     psi_edge = flux_edge/(2.0_dp*pi)
     dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/psi_edge
+    dr_dAtheta = dr_dpsi*sign_sqrtg
 
     call field%neo_field_init(bc_filename, s_tor)
     iota = field%iota
@@ -77,11 +82,18 @@ program rabe
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
     covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
-    off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-    off_factor_B = deviation_B*0.5*R*pi*dr_dpsi
+    off_factor_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+    off_factor_B = deviation_B*0.5*R*pi*dr_dAtheta
 
     print *, "1/sqrt(nu_star) factor: ", off_factor_A
     print *, "1/nu_star factor: ", off_factor_B
+
+    open (newunit=output, file=output_file, status="replace", action="write")
+
+    write (output, "(A15,1x,A9)") "1/sqrt(nu_star)", "1/nu_star"
+    write (output, "(ES10.3E2,ES10.3E2)") off_factor_A, off_factor_B
+
+    close (output)
 
     deallocate (fieldlines)
     deallocate (theta_0)
