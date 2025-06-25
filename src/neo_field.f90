@@ -7,6 +7,8 @@ module neo_field
 
     type, extends(field_t) :: neo_field_t
         real(dp) :: iota
+        real(dp) :: psi_tor_edge
+        real(dp) :: B_theta_covariant, B_phi_covariant
     contains
         procedure :: neo_field_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -20,6 +22,7 @@ contains
     subroutine neo_field_init(self, bc_filename, stor)
         use neo_magfie, only: magfie_newspline
         use neo_control, only: in_file
+        use neo_input, only: psi_pr
 
         class(neo_field_t), intent(out) :: self
         character(*), intent(in) :: bc_filename
@@ -36,8 +39,14 @@ contains
 
         in_file = bc_filename
         x = (/stor, 0.0_dp, 0.0_dp/)
-        call neo_magfie_a(x, dummy_B_mod, dummy_sqrtg, dummy_dB_dx, self%iota)
-
+        call neo_magfie_a(x, &
+                          dummy_B_mod, &
+                          dummy_sqrtg, &
+                          dummy_dB_dx, &
+                          self%iota, &
+                          self%B_theta_covariant, &
+                          self%B_phi_covariant)
+        self%psi_tor_edge = psi_pr
     end subroutine neo_field_init
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
@@ -84,7 +93,6 @@ contains
 
     subroutine neo_change_stor(self, stor)
         use neo_magfie, only: magfie_newspline
-        use neo_input, only: es
 
         class(neo_field_t), intent(inout) :: self
         real(dp), intent(in) :: stor
@@ -93,7 +101,13 @@ contains
 
         if (magfie_newspline .ne. 1) magfie_newspline = 1
         x = (/stor, 0.0_dp, 0.0_dp/)
-        call neo_magfie_a(x, dummy_B_mod, dummy_sqrtg, dummy_dB_dx, self%iota)
+        call neo_magfie_a(x, &
+                          dummy_B_mod, &
+                          dummy_sqrtg, &
+                          dummy_dB_dx, &
+                          self%iota, &
+                          self%B_theta_covariant, &
+                          self%B_phi_covariant)
     end subroutine
 
 end module neo_field

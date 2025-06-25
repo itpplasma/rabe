@@ -49,7 +49,8 @@ contains
     !> bmod: float, magnetic field modulus at given location?
     !> sqrtg: float, square root of metric determinant at given location?
     !> dB_dx: vector of floats, same size as x.
-    subroutine neo_magfie_a(x, bmod, sqrtg, dB_dx, iota)
+    subroutine neo_magfie_a(x, bmod, sqrtg, dB_dx, iota, &
+                            B_theta_covariant, B_phi_covariant)
 
         use neo_exchange, only: b_min, b_max, theta_bmin, theta_bmax, &
             & phi_bmin, phi_bmax
@@ -61,6 +62,8 @@ contains
         real(dp), intent(out) :: sqrtg
         real(dp), dimension(size(x)), intent(out) :: dB_dx
         real(dp), intent(out) :: iota
+
+        real(dp), intent(out), optional :: B_theta_covariant, B_phi_covariant
 
         integer(i4b) :: swd = 1
         integer :: i, m, n
@@ -274,6 +277,9 @@ contains
         dB_dx(1) = bb_s
         dB_dx(3) = bb_tb
         dB_dx(2) = bb_pb
+
+        if (present(B_theta_covariant)) B_theta_covariant = curr_tor
+        if (present(B_phi_covariant)) B_phi_covariant = curr_pol
 
     end subroutine neo_magfie_a
 

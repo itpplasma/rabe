@@ -12,6 +12,13 @@ target_link_libraries(test_against_neo2_anti_sigma.x rabe_lib
 add_test(TestAgainstNeo2AntiSigma test_against_neo2_anti_sigma.x)
 set_tests_properties(TestAgainstNeo2AntiSigma PROPERTIES LABELS "slow")
 
+add_executable(test_neo_covariant_components.x
+               test_neo_covariant_components.f90)
+target_link_libraries(test_neo_covariant_components.x rabe_lib
+                                                      utils_lib)
+add_test(TestNeoCovariantComponents test_neo_covariant_components.x)
+set_tests_properties(TestNeoCovariantComponents PROPERTIES LABELS "slow")
+
 add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)
 add_test(TestFieldline test_fieldline.x)
@@ -90,4 +97,4 @@ target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
-set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "current")
+set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "plot")
