@@ -16,16 +16,13 @@ program rabe
     real(dp) :: N_tor
     real(dp) :: s_tor
     real(dp) :: ds_dr ![1/cm]
-    real(dp) :: J_pol_over_N_tor ![A]
-    real(dp) :: I_tor ![A]
-    real(dp) :: flux_edge ![Tm^2]
     real(dp) :: sign_sqrtg
-    real(dp) :: R ![m]
     real(dp) :: phi_tol
     integer :: n_fieldlines
 
     type(neo_field_t) :: field
 
+    real(dp) :: R ![m]
     real(dp) :: psi_edge ![Tm^2/rad]
     real(dp) :: dr_dpsi ![rad/Tm/]
     real(dp) :: dr_dAtheta ![rad/Tm/]
@@ -48,18 +45,11 @@ program rabe
         N_tor, &
         s_tor, &
         ds_dr, &
-        J_pol_over_N_tor, &
-        I_tor, &
-        flux_edge, &
         sign_sqrtg, &
-        R, &
         phi_tol, &
         n_fieldlines
 
     call read_namelist(input_file)
-    psi_edge = flux_edge/(2.0_dp*pi)
-    dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/psi_edge
-    dr_dAtheta = dr_dpsi*sign_sqrtg
 
     call field%neo_field_init(bc_filename, s_tor)
     iota = field%iota
@@ -81,7 +71,10 @@ program rabe
 
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
-    covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
+    covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
+    dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/field%psi_tor_edge
+    dr_dAtheta = dr_dpsi*sign_sqrtg
+    R = field%R
     off_factor_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     off_factor_B = deviation_B*0.5*R*pi*dr_dAtheta
 
