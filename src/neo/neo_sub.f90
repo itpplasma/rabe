@@ -49,11 +49,12 @@ contains
         do imn = 1, mnmax
             if (ixm(imn) .eq. 0 .and. ixn(imn) .eq. 0) then
                 bmref = bmnc(1, imn)
+                rt0 = rmnc(1, imn)
                 bmref_g = bmref
             end if
         end do
 
-        if (bmref .eq. 0.0_dp) then
+        if (rt0 .eq. 0.0_dp .or. bmref .eq. 0.0_dp) then
             write (w_us, *) ' NEO_INIT: Fatal problem setting rt0 or bmref', rt0, bmref
             stop
         end if
@@ -291,7 +292,10 @@ contains
             if (i_alloc /= 0) stop 'Allocation for real arrays failed!'
 
             allocate (bmnc(ns, mnmax), stat=i_alloc)
-            if (i_alloc /= 0) stop 'Allocation for fourier arrays (1) failed!'
+            if (i_alloc /= 0) stop 'Allocation for fourier arrays bmnc failed!'
+
+            allocate (rmnc(ns, mnmax), stat=i_alloc)
+            if (i_alloc /= 0) stop 'Allocation for fourier arrays rmnc failed!'
             !***********************************************************************
             ! Read input arrays
             !***********************************************************************
@@ -316,9 +320,10 @@ contains
                         ixm(j) = 0
                         ixn(j) = -extra_count
                         bmnc(i, j) = 0.0d0
+                        rmnc(i, j) = 0.0d0
                     else
                         read (r_u1, *) ixm(j), ixn(j), &
-                            dummy, dummy, dummy, &
+                            rmnc(i, j), dummy, dummy, &
                             bmnc(i, j)
                     end if
                 end do
