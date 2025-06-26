@@ -8,8 +8,9 @@ if __name__ == "__main__":
     from simsopt.mhd.boozer import Boozer
 
     vmec_file = sys.argv[1]
-    helicity_n = int(sys.argv[2])
-    output_file = sys.argv[3]
+    helicity_m = int(sys.argv[2])
+    helicity_n = int(sys.argv[3])
+    output_file = sys.argv[4]
 
     vmec = Vmec(vmec_file)
     boozer = Boozer(vmec)
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     for mode in range(len(quasi_symmetric_bmnc_b)):
         m = boozer.bx.xm_b[mode]
         n = boozer.bx.xn_b[mode]
-        if m * helicity_n * nfp != n:
+        if m * helicity_n * nfp != n * helicity_m:
             quasi_symmetric_bmnc_b[mode, :] = 0.0
 
     write_stellarator_bc_file(

@@ -34,7 +34,7 @@ def read_modes_bc(bc_filename: str, get_mode_idx):
     return rmnc, zmns, vmns, bmnc
 
 
-def split_off_symmetric_modes(modes, helicity_n):
+def split_off_symmetric_modes(modes, helicity_n, helicity_m: int = 1):
     symmetric_modes = copy.deepcopy(modes)
     non_symmetric_modes = copy.deepcopy(modes)
     for m in range(modes.m_max + 1):
@@ -42,7 +42,7 @@ def split_off_symmetric_modes(modes, helicity_n):
             mode_idx = modes.get_mode_idx(m, n)
             if mode_idx < 0:
                 continue
-            if m * helicity_n == n:
+            if m * helicity_n == n * helicity_m:
                 non_symmetric_modes.coefs[:, mode_idx] = 0.0
             else:
                 symmetric_modes.coefs[:, mode_idx] = 0.0
