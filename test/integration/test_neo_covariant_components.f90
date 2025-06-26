@@ -6,7 +6,7 @@ program test_neo_covariant_components
     implicit none
 
     real(dp) :: reltol = 1e-3, abstol = 1e-16
-    real(dp) :: reltol_psi = 1e-6
+    real(dp) :: reltol_global_quantities = 1e-6
     character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
     real(dp), parameter :: N = 4.0_dp
 
@@ -15,6 +15,7 @@ program test_neo_covariant_components
     real(dp) :: stor(n_cases)
     real(dp) :: B_theta_covariant(n_cases), B_phi_covariant(n_cases), iota(n_cases)
     real(dp) :: psi_tor_edge
+    real(dp) :: R
 
     integer :: case
     logical :: test_failed
@@ -26,6 +27,7 @@ program test_neo_covariant_components
     B_phi_covariant = (/-1.277e8, -1.277e8, -1.277e8, -1.277e8/)*N*2.0_dp*1e-7
     iota = (/-1.238_dp, -1.243_dp, -1.244_dp, -1.245_dp/)
     psi_tor_edge = 41.86388_dp/(2.0_dp*pi)
+    R = 14.06045_dp
 
     call field%neo_field_init(bc_filename, stor(1))
     do case = 1, n_cases - 1
@@ -67,7 +69,7 @@ program test_neo_covariant_components
         end if
         if (not_same(psi_tor_edge, &
                      field%psi_tor_edge, &
-                     reltol_in=reltol_psi, &
+                     reltol_in=reltol_global_quantities, &
                      abstol_in=0.0_dp)) then
             print *, "-------------------------------------------------------------"
             print *, "test_neo_covariant_components failed: psi_tor_edge"
@@ -75,6 +77,18 @@ program test_neo_covariant_components
             print *, "got: ", field%psi_tor_edge
             print *, "relative difference: ", &
                 field%psi_tor_edge/psi_tor_edge - 1.0_dp
+            test_failed = .true.
+        end if
+        if (not_same(R, &
+                     field%R, &
+                     reltol_in=reltol_global_quantities, &
+                     abstol_in=0.0_dp)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_neo_covariant_components failed: R"
+            print *, "expected: ", R
+            print *, "got: ", field%R
+            print *, "relative difference: ", &
+                field%R/R - 1.0_dp
             test_failed = .true.
         end if
         call field%neo_change_stor(stor(case + 1))
