@@ -3,6 +3,7 @@ myenv/
 build/
 bin/
 external/
+*.nc
 *.bc
 *.mod
 *.egg-info
