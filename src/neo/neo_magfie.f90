@@ -278,8 +278,8 @@ contains
         dB_dx(3) = bb_tb
         dB_dx(2) = bb_pb
 
-        if (present(B_theta_covariant)) B_theta_covariant = curr_tor
-        if (present(B_phi_covariant)) B_phi_covariant = curr_pol
+        if (present(B_theta_covariant)) B_theta_covariant = -curr_tor
+        if (present(B_phi_covariant)) B_phi_covariant = -curr_pol
 
     end subroutine neo_magfie_a
 

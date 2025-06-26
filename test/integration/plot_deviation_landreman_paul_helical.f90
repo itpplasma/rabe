@@ -19,16 +19,12 @@ program plot_deviation_landreman_paul_helical
 
     !------------------Taken from .bc file-------------------------------------!
     real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
-    real(dp), parameter :: psi_edge = abs(41.86388_dp)/(2.0_dp*pi) ![Tm^2]
-    real(dp), parameter :: J_pol_over_N_tor = -1.27798075_dp*1e8
-    real(dp), parameter :: I_tor = -3.40005801*1e-09
     real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 
     real(dp), parameter :: stor = 0.60_dp
 
     !------------------Taken from NEO-2 output---------------------------------!
-    real(dp), parameter :: R = 14.06_dp ! called "r0"
     real(dp), parameter :: ds_dr = 0.00852345_dp*100.0_dp ! [1/m] called "avnabpsi"
     integer, parameter :: n_neo2 = 18
     real(dp), dimension(n_neo2), parameter :: nu_star_neo2 = (/3e-09, &
@@ -71,8 +67,8 @@ program plot_deviation_landreman_paul_helical
     type(external_data_t) :: lambda_off_neo2
     !--------------------------------------------------------------------------!
 
-    real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
-    real(dp), parameter :: dr_dAphi = dr_dpsi*sign_sqrtg
+    real(dp) :: R
+    real(dp) :: dr_dAphi
 
     type(neo_field_t) :: field
 
@@ -112,7 +108,9 @@ program plot_deviation_landreman_paul_helical
 
     call calc_deviation(fieldlines, field, deviation_A, deviation_B)
 
-    covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
+    covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
+    dr_dAphi = 1.0_dp/(ds_dr*field%psi_tor_edge)*sign_sqrtg
+    R = field%R
     off_factor_A = deviation_A*dr_dAphi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     off_factor_B = deviation_B*0.5*R*pi*dr_dAphi
 
