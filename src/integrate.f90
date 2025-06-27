@@ -46,17 +46,18 @@ contains
                  neval_dummy, &
                  error_flag)
 
-        if (error_flag /= 0) then
-            print *, "Integration warning: error =", error_flag
-            error stop
-        end if
-
         error_limit = abs(result_quadpack)*rel_error_tol_quadpack &
                       + abs_error_tol_quadpack
 
         if (abs_error > error_limit) then
-            print *, "Integration warning: integration error =", abs_error
+            print *, "Integration warning: absolute error =", abs_error
             print *, "bigger than required ", error_limit
+            print *, "relative error", abs_error/abs(result_quadpack)
+            error stop
+        end if
+
+        if (error_flag /= 0) then
+            print *, "Integration warning: error =", error_flag
             error stop
         end if
 
