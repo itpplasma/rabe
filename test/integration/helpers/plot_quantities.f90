@@ -28,11 +28,11 @@ contains
         call plt%add_plot(theta_0_shifted/pi, &
                           fieldlines%B_max(1), &
                           label="left $B_{max}$", &
-                          linestyle="o")
+                          linestyle="-o")
         call plt%add_plot(theta_0_shifted/pi, &
                           fieldlines%B_max(2), &
                           label="right $B_{max}$", &
-                          linestyle="o")
+                          linestyle="-o")
         call plt%show()
     end subroutine plot_maxima_over_label
 
@@ -165,16 +165,16 @@ contains
 
         type(myplot) :: plt
 
-        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+        call plt%initialize(xlabel="$\vartheta_{mid} [\pi]$", &
                             ylabel="$\Delta A$", &
                             legend=.true.)
 
-        call plt%add_plot(fieldlines%theta_0, &
+        call plt%add_plot(fieldlines%theta_0/pi, &
                           fieldlines%delta_aspect_ratio, &
                           label="$\Delta A$", &
                           linestyle="-")
         if (present(delta_A_1_analytic)) then
-            call plt%add_plot(fieldlines%theta_0, &
+            call plt%add_plot(fieldlines%theta_0/pi, &
                               delta_A_1_analytic*cos(fieldlines%theta_0), &
                               label="$\Delta A$ approx analytic", &
                               linestyle="-")
