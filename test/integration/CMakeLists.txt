@@ -98,3 +98,10 @@ target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
                                                           helpers_lib)
 add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
 set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "plot")
+
+add_executable(plot_deviation_goodman_squid.x plot_deviation_goodman_squid.f90)
+target_link_libraries(plot_deviation_goodman_squid.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDeviationGoodmanSquid plot_deviation_goodman_squid.x)
+set_tests_properties(PlotDeviationGoodmanSquid PROPERTIES LABELS "current")
