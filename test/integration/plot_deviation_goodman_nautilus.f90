@@ -7,6 +7,7 @@ program plot_deviation_goodman_squid
     use deviation, only: calc_deviation
     use misc, only: S_A, S_B
 
+    use plot_quantities, only: plot_delta_eta_modes
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_maxima_over_label
     use plot_quantities, only: plot_delta_eta
@@ -61,6 +62,7 @@ program plot_deviation_goodman_squid
                                   phi_tol)
 
     if (should_plot_others) then
+        call plot_delta_eta_modes(fieldlines)
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
         call plot_maxima_over_label(fieldlines)
         call plot_delta_eta(fieldlines)

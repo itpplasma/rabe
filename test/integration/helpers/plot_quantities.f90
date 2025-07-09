@@ -69,6 +69,64 @@ contains
         deallocate (theta, phi, B)
     end subroutine plot_field_along_chi_line
 
+    subroutine plot_delta_eta_modes(fieldlines)
+        use fieldline_integrals, only: fourier_transform_over_label
+        use fieldline_integrals, only: fieldline_modes_t
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        type(fieldline_modes_t) :: fieldline_modes
+
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: theta_mid, theta, delta_eta
+        integer :: max_mode
+        integer, parameter :: skip = 3
+
+        type(myplot) :: plt
+        character(len=1024) :: label
+
+        call fourier_transform_over_label(fieldlines, fieldline_modes)
+
+        allocate (theta_mid(n_points), theta(n_points), delta_eta(n_points))
+        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
+        theta = theta_mid - fieldlines(1)%iota_p
+
+        call plt%initialize(xlabel="$\vartheta_{mid}[\pi]$", &
+                            ylabel="$\Delta \eta$", &
+                            legend=.true.)
+
+        do max_mode = 1, size(fieldline_modes%delta_eta%cos_coeffs), skip
+            delta_eta = eval_modes(theta, fieldline_modes%delta_eta, max_mode)
+            write (label, "(I3,A6)") max_mode, " modes"
+            call plt%add_plot(theta_mid/pi, &
+                              delta_eta, &
+                              label=label, &
+                              linestyle="-")
+        end do
+
+        call plt%add_plot(fieldlines%theta_0/pi, &
+                          fieldlines%delta_eta, &
+                          label="original", &
+                          linestyle="ko")
+
+        call plt%show()
+
+        deallocate (theta_mid, delta_eta)
+    end subroutine plot_delta_eta_modes
+
+    elemental function eval_modes(x, modes, max_mode)
+        use fieldline_integrals, only: modes_t
+        real(dp), intent(in) :: x
+        type(modes_t), intent(in) :: modes
+        integer, intent(in) :: max_mode
+
+        real(dp) :: eval_modes
+
+        eval_modes = sum(modes%cos_coeffs(1:max_mode) &
+                         *cos(modes%mode_numbers(1:max_mode)*x)) + &
+                     sum(modes%sin_coeffs(1:max_mode) &
+                         *sin(modes%mode_numbers(1:max_mode)*x))
+    end function eval_modes
+
     subroutine plot_fieldlines_over_field(fieldlines, field, N_tor)
         use field_base, only: field_t
 
