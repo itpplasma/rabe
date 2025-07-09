@@ -69,6 +69,47 @@ contains
         deallocate (theta, phi, B)
     end subroutine plot_field_along_chi_line
 
+    subroutine plot_deviation_spectrum(fieldlines)
+        use fieldline_integrals, only: fourier_transform_over_label
+        use fieldline_integrals, only: fieldline_modes_t
+        use misc, only: S_B
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        type(fieldline_modes_t) :: modes
+
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: deviation_B
+        integer :: current
+        real(dp) :: iota_p
+
+        type(myplot) :: plt
+        character(len=1024) :: label
+
+        call fourier_transform_over_label(fieldlines, modes)
+        iota_p = fieldlines(1)%iota_p
+
+        allocate (deviation_B(n_points))
+
+        call plt%initialize(xlabel="mode", &
+                            ylabel="amplitude", &
+                            legend=.true.)
+
+        do current = 1, size(modes%delta_eta%cos_coeffs)
+            deviation_B(current) = modes%radial_drift%sin_coeffs(current)* &
+                                   modes%delta_eta%cos_coeffs(current)* &
+                                   S_B(iota_p*modes%delta_eta%mode_numbers(current))
+        end do
+
+        call plt%add_plot(modes%delta_eta%mode_numbers, &
+                          deviation_B, &
+                          label="spectrum of deviation due to $\Delta \eta$", &
+                          linestyle="-o")
+
+        call plt%show()
+
+        deallocate (deviation_B)
+    end subroutine plot_deviation_spectrum
+
     subroutine plot_delta_eta_modes(fieldlines)
         use fieldline_integrals, only: fourier_transform_over_label
         use fieldline_integrals, only: fieldline_modes_t
