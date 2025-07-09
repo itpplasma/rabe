@@ -84,7 +84,7 @@ program rabe
     open (newunit=output, file=output_file, status="replace", action="write")
 
     write (output, "(A15,1x,A9)") "1/sqrt(nu_star)", "1/nu_star"
-    write (output, "(ES10.3E2,ES10.3E2)") off_factor_A, off_factor_B
+    write (output, "(ES10.3E2,1x,ES10.3E2)") off_factor_A, off_factor_B
 
     close (output)
 
