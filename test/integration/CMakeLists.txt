@@ -103,5 +103,5 @@ add_executable(plot_deviation_goodman_nautilus.x plot_deviation_goodman_nautilus
 target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
-add_test(PlotDeviationGoodmannautilus plot_deviation_goodman_nautilus.x)
-set_tests_properties(PlotDeviationGoodmannautilus PROPERTIES LABELS "current")
+add_test(PlotDeviationGoodmanNautilus plot_deviation_goodman_nautilus.x)
+set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "current")
