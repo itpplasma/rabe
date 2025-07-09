@@ -52,7 +52,7 @@ contains
         real(dp), dimension(:), intent(in) :: x
         logical :: is_equidistant
 
-        real(dp), parameter :: tol = 1e-14
+        real(dp), parameter :: tol = 1e-13
         real(dp), dimension(size(x) - 1) :: dx
         integer :: N
 
