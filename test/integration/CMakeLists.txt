@@ -99,9 +99,9 @@ target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
 add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
 set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "plot")
 
-add_executable(plot_deviation_goodman_squid.x plot_deviation_goodman_squid.f90)
-target_link_libraries(plot_deviation_goodman_squid.x myplot_lib
+add_executable(plot_deviation_goodman_nautilus.x plot_deviation_goodman_nautilus.f90)
+target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
-add_test(PlotDeviationGoodmanSquid plot_deviation_goodman_squid.x)
-set_tests_properties(PlotDeviationGoodmanSquid PROPERTIES LABELS "current")
+add_test(PlotDeviationGoodmannautilus plot_deviation_goodman_nautilus.x)
+set_tests_properties(PlotDeviationGoodmannautilus PROPERTIES LABELS "current")

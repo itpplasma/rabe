@@ -15,7 +15,7 @@ program plot_deviation_goodman_squid
 
     implicit none
 
-    character(len=*), parameter :: bc_filename = "input/squid.bc"
+    character(len=*), parameter :: bc_filename = "input/nautilus.bc"
 
     !------------------Taken from .bc file-------------------------------------!
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 4.0_dp
@@ -25,7 +25,7 @@ program plot_deviation_goodman_squid
     real(dp), parameter :: stor = 0.25_dp
 
     !------------------Taken from NEO-2 output---------------------------------!
-    real(dp), parameter :: ds_dr = 0.00752119_dp*100.0_dp ! [1/m] called "avnabpsi"
+    real(dp), parameter :: ds_dr = 0.00656735_dp*100.0_dp ! [1/m] called "avnabpsi"
     !--------------------------------------------------------------------------!
 
     real(dp) :: R
