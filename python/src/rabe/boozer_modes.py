@@ -168,3 +168,41 @@ def get_axis_projection(rmnc: Modes, zmns: Modes, nfp: int, n_phi: int = 100):
     Z = evaluate(fourier_z, theta, phi_boozer)
 
     return phi_boozer, R, Z
+
+
+def get_contours(
+    rmnc: Modes, zmns: Modes, nfp: int, n_surface: int = 10, phi: float = 0.0
+):
+    from .fourier_series import FourierSeries, evaluate
+
+    n_theta = 100
+
+    step = len(rmnc.rho_tor) / (n_surface - 1)
+    surfaces = [int(i * step) for i in range(n_surface)]
+    surfaces[-1] = -1
+
+    theta_boozer = np.zeros(n_theta)
+    theta_boozer[:-1] = np.linspace(0, 2 * np.pi, n_theta - 1)
+    theta_boozer[-1] = np.nan
+    phi_boozer = phi * np.ones_like(theta_boozer)
+    R = np.zeros((n_surface, n_theta))
+    Z = np.zeros((n_surface, n_theta))
+
+    for current in range(n_surface):
+        surface = surfaces[current]
+        fourier_r = FourierSeries(
+            list(rmnc.m[surface]),
+            list(nfp * rmnc.n[surface]),
+            list(rmnc.coefs[surface]),
+            list(np.zeros(len(rmnc.m[surface]))),
+        )
+        fourier_z = FourierSeries(
+            list(zmns.m[surface]),
+            list(nfp * zmns.n[surface]),
+            list(np.zeros(len(zmns.m[surface]))),
+            list(zmns.coefs[surface]),
+        )
+        R[current] = evaluate(fourier_r, theta_boozer, phi_boozer)
+        Z[current] = evaluate(fourier_z, theta_boozer, phi_boozer)
+
+    return R, Z
