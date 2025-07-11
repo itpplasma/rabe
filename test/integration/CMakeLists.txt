@@ -104,4 +104,11 @@ target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationGoodmanNautilus plot_deviation_goodman_nautilus.x)
-set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "current")
+set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "plot")
+
+add_executable(plot_deviation_drevlak_qh.x plot_deviation_drevlak_qh.f90)
+target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
+set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "current")
