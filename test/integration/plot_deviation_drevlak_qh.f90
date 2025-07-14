@@ -9,6 +9,7 @@ program plot_deviation_drevlak_qh
 
     use plot_quantities, only: plot_deviation_spectrum
     use plot_quantities, only: plot_delta_eta_modes
+    use plot_quantities, only: plot_B_along_fieldline
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_maxima_over_label
     use plot_quantities, only: plot_delta_eta
@@ -36,7 +37,7 @@ program plot_deviation_drevlak_qh
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 5e-7
-    integer, parameter :: n_fieldlines = 101
+    integer, parameter :: n_fieldlines = 11
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
@@ -63,6 +64,7 @@ program plot_deviation_drevlak_qh
                                   phi_tol)
 
     if (should_plot_others) then
+        call plot_B_along_fieldline(field, fieldlines(8))
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)

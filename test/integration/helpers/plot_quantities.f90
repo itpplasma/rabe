@@ -3,6 +3,7 @@ module plot_quantities
     use myplot_module, only: myplot
     use fieldline_mod, only: fieldline_t
     use utils, only: linspace
+    use field_base, only: field_t
 
     implicit none
 
@@ -37,7 +38,6 @@ contains
     end subroutine plot_maxima_over_label
 
     subroutine plot_field_along_chi_line(field, chi, M_pol, N_tor)
-        use field_base, only: field_t
         use utils, only: linspace
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: chi, M_pol, N_tor
@@ -169,7 +169,6 @@ contains
     end function eval_modes
 
     subroutine plot_fieldlines_over_field(fieldlines, field, N_tor)
-        use field_base, only: field_t
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         class(field_t), intent(in) :: field
@@ -466,5 +465,62 @@ contains
 
         call plt%show()
     end subroutine plot_deviation
+
+    subroutine plot_B_along_fieldline(field, &
+                                      fieldline, &
+                                      interval)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), intent(inout) :: fieldline
+        real(dp), intent(in), optional :: interval(2)
+
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: phi, B
+        character(len=1024) :: label
+
+        type(myplot) :: plt
+
+        allocate (phi(n_points), B(n_points))
+
+        if (present(interval)) then
+            call linspace(interval(1), interval(2), n_points, phi)
+        else
+            call linspace(0.0_dp, 2.0_dp*pi, n_points, phi)
+        end if
+
+        call B_mod_along_fieldline(phi, B)
+
+        call plt%initialize(xlabel="$\varphi [\pi]$", &
+                            ylabel="$B$ [T]", &
+                            legend=.true., &
+                            figsize=(/10, 10/))
+
+        write (label, "(A25,ES10.3E2,A7)") "$\vartheta_\mathrm{mid}=$", &
+            fieldline%theta_0/pi, "[$\pi$]"
+
+        call plt%add_plot(phi/pi, &
+                          B, &
+                          label=label, &
+                          linestyle="ko-", &
+                          markersize=8)
+
+        call plt%show()
+
+        deallocate (phi, B)
+
+    contains
+        subroutine B_mod_along_fieldline(phi, B_mod)
+            real(dp), dimension(:), intent(in) :: phi
+            real(dp), dimension(:), intent(out) :: B_mod
+
+            real(dp), dimension(size(phi)) :: theta
+            integer :: idx
+
+            theta = fieldline%get_theta(phi)
+            do idx = 1, size(phi)
+                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+            end do
+        end subroutine B_mod_along_fieldline
+
+    end subroutine plot_B_along_fieldline
 
 end module plot_quantities
