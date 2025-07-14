@@ -44,6 +44,9 @@ program plot_deviation_drevlak_qh
     real(dp) :: iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
+    integer :: current
+    real(dp) :: interval(2)
+
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
@@ -64,7 +67,10 @@ program plot_deviation_drevlak_qh
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_B_along_fieldline(field, fieldlines(8))
+        current = 8
+        interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
+                   fieldlines(current)%phi_0
+        call plot_B_along_fieldline(field, fieldlines(current), interval)
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)

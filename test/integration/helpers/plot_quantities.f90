@@ -473,7 +473,7 @@ contains
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in), optional :: interval(2)
 
-        integer, parameter :: n_points = 100
+        integer, parameter :: n_points = 1001
         real(dp), dimension(:), allocatable :: phi, B
         character(len=1024) :: label
 
@@ -501,7 +501,7 @@ contains
                           B, &
                           label=label, &
                           linestyle="ko-", &
-                          markersize=8)
+                          markersize=1)
 
         call plt%show()
 
