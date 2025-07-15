@@ -127,6 +127,9 @@ contains
         allocate (modes%sin_coeffs(n_modes))
         allocate (modes%mode_numbers(n_modes))
 
+        modes%cos_coeffs = 0.0_dp
+        modes%sin_coeffs = 0.0_dp
+
         do j = 0, n_modes - 1
             modes%mode_numbers(j + 1) = real(j, kind=dp)
         end do
