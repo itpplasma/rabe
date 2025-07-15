@@ -4,6 +4,8 @@ module plot_quantities
     use fieldline_mod, only: fieldline_t
     use utils, only: linspace
     use field_base, only: field_t
+    use fieldline_integrals, only: fourier_transform_over_label
+    use fieldline_integrals, only: fieldline_modes_t
 
     implicit none
 
@@ -70,8 +72,6 @@ contains
     end subroutine plot_field_along_chi_line
 
     subroutine plot_deviation_spectrum(fieldlines)
-        use fieldline_integrals, only: fourier_transform_over_label
-        use fieldline_integrals, only: fieldline_modes_t
         use misc, only: S_B
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
 
@@ -111,8 +111,6 @@ contains
     end subroutine plot_deviation_spectrum
 
     subroutine plot_delta_eta_modes(fieldlines)
-        use fieldline_integrals, only: fourier_transform_over_label
-        use fieldline_integrals, only: fieldline_modes_t
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
 
         type(fieldline_modes_t) :: fieldline_modes
@@ -466,11 +464,53 @@ contains
         call plt%show()
     end subroutine plot_deviation
 
+    subroutine plot_B_part_of_distributions_function(fieldlines)
+        use deviation, only: surface_average_t
+        use fieldline_integrals, only: modes_t, allocate_modes
+        use misc, only: S_B
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        type(fieldline_modes_t) :: fieldline_modes
+        type(modes_t) :: modes
+
+        integer, parameter :: n_points = 300
+        integer :: max_mode
+        real(dp), dimension(:), allocatable :: theta_mid, g_off
+
+        type(myplot) :: plt
+        character(len=1024) :: label
+
+        call fourier_transform_over_label(fieldlines, fieldline_modes)
+
+        max_mode = size(fieldline_modes%delta_eta%cos_coeffs, dim=1)
+        call allocate_modes(modes, max_mode)
+
+        modes%sin_coeffs = fieldline_modes%delta_eta%cos_coeffs* &
+               S_B(fieldlines(1)%iota_p*fieldline_modes%delta_aspect_ratio%mode_numbers)
+
+        allocate (theta_mid(n_points), g_off(n_points))
+        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
+
+        g_off = eval_modes(theta_mid, modes, max_mode)
+        g_off = g_off/maxval(abs(g_off))
+
+        call plt%initialize(xlabel="$\vartheta_{mid} [1]$", &
+                            ylabel="$g_\mathrm{off}$ [normalized]", &
+                            legend=.true.)
+        write (label, "(A20)") "due to $\Delta \eta$"
+        call plt%add_plot(theta_mid, &
+                          g_off, &
+                          label=label, &
+                          linestyle="k-")
+        call plt%show()
+
+    end subroutine plot_B_part_of_distributions_function
+
     subroutine plot_B_along_fieldline(field, &
                                       fieldline, &
                                       interval)
         class(field_t), intent(in) :: field
-        type(fieldline_t), intent(inout) :: fieldline
+        type(fieldline_t), intent(in) :: fieldline
         real(dp), intent(in), optional :: interval(2)
 
         integer, parameter :: n_points = 1001
