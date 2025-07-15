@@ -5,6 +5,7 @@ bin/
 external/
 *.nc
 *.bc
+*.dat
 *.mod
 *.egg-info
 *__pycache__

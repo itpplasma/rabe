@@ -9,6 +9,7 @@ program plot_deviation_goodman_squid
 
     use plot_quantities, only: plot_deviation_spectrum
     use plot_quantities, only: plot_distributions_function
+    use plot_quantities, only: external_data_t
     use plot_quantities, only: plot_delta_eta_modes
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_maxima_over_label
@@ -49,6 +50,8 @@ program plot_deviation_goodman_squid
     real(dp) :: off_factor_A, off_factor_B
 
     logical, parameter :: should_plot_others = .true.
+
+    type(external_data_t) :: g_neo2
     real(dp), parameter :: nu_star = 6e-5
     real(dp), parameter :: scaling = 100.0_dp/5.884 !100/bmod0 -> g_(NEO-2) in [cm]
 
@@ -66,7 +69,14 @@ program plot_deviation_goodman_squid
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_distributions_function(fieldlines, field, nu_star, scaling)
+        g_neo2%label = "NEO-2: $\hat{g}_0 \frac{\mathrm{bmod0}}{100}$"
+        call read_column("input/theta.dat", g_neo2%x, 1, 1)
+        call read_column("input/gvpar0.dat", &
+                         g_neo2%y, &
+                         size(g_neo2%x, dim=1), &
+                         size(g_neo2%x, dim=1)/8)
+        g_neo2%y = g_neo2%y/scaling
+        call plot_distributions_function(fieldlines, field, nu_star, g_neo2)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
@@ -85,5 +95,54 @@ program plot_deviation_goodman_squid
 
     call plot_deviation(off_factor_A, &
                         off_factor_B)
+
+contains
+    subroutine read_column(filename, data, n_columns, select_column)
+        character(len=*), intent(in) :: filename
+        real(dp), dimension(:), allocatable, intent(out) :: data
+        integer, intent(in) :: n_columns
+        integer, intent(in), optional :: select_column
+
+        integer :: i, n, unit, column, ios
+        real(dp), dimension(:), allocatable :: row
+        character(len=1024) :: line
+
+        column = 1
+        if (present(select_column)) column = select_column
+
+        open (newunit=unit, file=filename, status='old', action='read')
+        n = 0
+        do
+            read (unit, '(A)', iostat=ios) line
+            if (ios /= 0) exit
+            n = n + 1
+        end do
+        rewind (unit)
+
+        read (unit, '(A)', iostat=ios) line
+        if (ios /= 0) then
+            print *, 'Error reading file.'
+            stop
+        end if
+
+        if (column > n_columns) then
+          print *, 'Requested column ', column, ' exceeds number of columns ', n_columns
+            error stop
+        end if
+        rewind (unit)
+
+        allocate (data(n))
+        allocate (row(n_columns))
+        do i = 1, n
+            read (unit, *, iostat=ios) row
+            if (ios /= 0) then
+                print *, 'Error reading line ', i
+                error stop
+            end if
+            data(i) = row(column)
+        end do
+
+        close (unit)
+    end subroutine read_column
 
 end program plot_deviation_goodman_squid

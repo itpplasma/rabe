@@ -464,7 +464,7 @@ contains
         call plt%show()
     end subroutine plot_deviation
 
-    subroutine plot_distributions_function(fieldlines, field, nu_star, scaling)
+    subroutine plot_distributions_function(fieldlines, field, nu_star, g_external)
         use deviation, only: surface_average_t, calc_surface_averages
         use fieldline_integrals, only: modes_t, allocate_modes
         use misc, only: S_A, S_B
@@ -472,7 +472,7 @@ contains
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         type(neo_field_t), intent(in) :: field
         real(dp), intent(in) :: nu_star
-        real(dp), intent(in) :: scaling !common factor to bring to proper units
+        type(external_data_t), intent(in), optional :: g_external
 
         type(fieldline_modes_t) :: modes
         type(surface_average_t) :: averages
@@ -513,15 +513,20 @@ contains
         g_off = eval_modes(theta_mid, g_off_modes, max_mode)
 
         call plt%initialize(xlabel="$\vartheta_{mid} [1]$", &
-                            ylabel="$g_\mathrm{off}$ [scaled]", &
+                            ylabel="$g_\mathrm{off}$ [Tm]", &
                             legend=.true.)
-        write (label, "(A28,ES10.3E2,A10,ES10.3E2)") "$g_\mathrm{off}$ at $\nu_*=$", &
-            nu_star, " scaled by factor ", &
-            scaling
+        write (label, "(A34,ES10.3E2)") "rabe: $g_\mathrm{off}$ at $\nu_*=$", &
+            nu_star
         call plt%add_plot(theta_mid, &
-                          g_off*scaling, &
+                          g_off, &
                           label=label, &
                           linestyle="k-")
+        if (present(g_external)) then
+            call plt%add_plot(g_external%x, &
+                              g_external%y, &
+                              label=g_external%label, &
+                              linestyle="r-")
+        end if
         call plt%show()
 
     end subroutine plot_distributions_function
