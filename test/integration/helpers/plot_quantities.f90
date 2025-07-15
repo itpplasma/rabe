@@ -464,14 +464,21 @@ contains
         call plt%show()
     end subroutine plot_deviation
 
-    subroutine plot_B_part_of_distributions_function(fieldlines)
-        use deviation, only: surface_average_t
+    subroutine plot_distributions_function(fieldlines, field, nu_star, scaling)
+        use deviation, only: surface_average_t, calc_surface_averages
         use fieldline_integrals, only: modes_t, allocate_modes
-        use misc, only: S_B
+        use misc, only: S_A, S_B
+        use neo_field, only: neo_field_t
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(neo_field_t), intent(in) :: field
+        real(dp), intent(in) :: nu_star
+        real(dp), intent(in) :: scaling !common factor to bring to proper units
 
-        type(fieldline_modes_t) :: fieldline_modes
-        type(modes_t) :: modes
+        type(fieldline_modes_t) :: modes
+        type(surface_average_t) :: averages
+        type(modes_t) :: g_off_modes
+        real(dp) :: covariant_factor, prefactor_A
+        real(dp) :: l_c
 
         integer, parameter :: n_points = 300
         integer :: max_mode
@@ -480,31 +487,44 @@ contains
         type(myplot) :: plt
         character(len=1024) :: label
 
-        call fourier_transform_over_label(fieldlines, fieldline_modes)
+        call fourier_transform_over_label(fieldlines, modes)
+        call calc_surface_averages(fieldlines, averages)
 
-        max_mode = size(fieldline_modes%delta_eta%cos_coeffs, dim=1)
-        call allocate_modes(modes, max_mode)
+        max_mode = size(modes%delta_eta%cos_coeffs, dim=1)
+        call allocate_modes(g_off_modes, max_mode)
 
-        modes%sin_coeffs = fieldline_modes%delta_eta%cos_coeffs* &
-               S_B(fieldlines(1)%iota_p*fieldline_modes%delta_aspect_ratio%mode_numbers)
+        l_c = field%R*pi/(2.0_dp*nu_star)
+
+        covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*field%iota)
+        prefactor_A = 2.0_dp*sqrt(covariant_factor*fieldlines(1)%eta_b* &
+                                  fieldlines(1)%I_ref/l_c)
+        g_off_modes%sin_coeffs = prefactor_A*modes%delta_eta%cos_coeffs* &
+                         S_A(fieldlines(1)%iota_p*modes%delta_aspect_ratio%mode_numbers)
+        g_off_modes%sin_coeffs = g_off_modes%sin_coeffs + &
+                                 modes%delta_eta%cos_coeffs* &
+                                 S_B(fieldlines(1)%iota_p*modes%delta_eta%mode_numbers)
+        g_off_modes%sin_coeffs = g_off_modes%sin_coeffs* &
+                                 averages%B_squared/averages%lambda_b* &
+                                 l_c*0.5_dp
 
         allocate (theta_mid(n_points), g_off(n_points))
         call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
 
-        g_off = eval_modes(theta_mid, modes, max_mode)
-        g_off = g_off/maxval(abs(g_off))
+        g_off = eval_modes(theta_mid, g_off_modes, max_mode)
 
         call plt%initialize(xlabel="$\vartheta_{mid} [1]$", &
-                            ylabel="$g_\mathrm{off}$ [normalized]", &
+                            ylabel="$g_\mathrm{off}$ [scaled]", &
                             legend=.true.)
-        write (label, "(A20)") "due to $\Delta \eta$"
+        write (label, "(A28,ES10.3E2,A10,ES10.3E2)") "$g_\mathrm{off}$ at $\nu_*=$", &
+            nu_star, " scaled by factor ", &
+            scaling
         call plt%add_plot(theta_mid, &
-                          g_off, &
+                          g_off*scaling, &
                           label=label, &
                           linestyle="k-")
         call plt%show()
 
-    end subroutine plot_B_part_of_distributions_function
+    end subroutine plot_distributions_function
 
     subroutine plot_B_along_fieldline(field, &
                                       fieldline, &

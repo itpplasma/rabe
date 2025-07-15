@@ -8,7 +8,7 @@ program plot_deviation_goodman_squid
     use misc, only: S_A, S_B
 
     use plot_quantities, only: plot_deviation_spectrum
-    use plot_quantities, only: plot_B_part_of_distributions_function
+    use plot_quantities, only: plot_distributions_function
     use plot_quantities, only: plot_delta_eta_modes
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_maxima_over_label
@@ -49,6 +49,8 @@ program plot_deviation_goodman_squid
     real(dp) :: off_factor_A, off_factor_B
 
     logical, parameter :: should_plot_others = .true.
+    real(dp), parameter :: nu_star = 6e-5
+    real(dp), parameter :: scaling = 100.0_dp/5.884 !100/bmod0 -> g_(NEO-2) in [cm]
 
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
@@ -64,7 +66,7 @@ program plot_deviation_goodman_squid
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_B_part_of_distributions_function(fieldlines)
+        call plot_distributions_function(fieldlines, field, nu_star, scaling)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
