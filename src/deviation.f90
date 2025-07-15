@@ -78,8 +78,8 @@ contains
                              S_B(iota_p*modes%delta_eta%mode_numbers))
 
         symmetric_remainder = pi*sum(modes%radial_drift%cos_coeffs* &
-                                     modes%delta_aspect_ratio%sin_coeffs* &
-                                     S_B(iota_p*modes%delta_aspect_ratio%mode_numbers))
+                                     modes%delta_eta%sin_coeffs* &
+                                     S_B(iota_p*modes%delta_eta%mode_numbers))
 
         if (abs(symmetric_remainder/deviation_B) > tol) then
             print *, "warning: non-vanishing symmetric part of deviation B: "
