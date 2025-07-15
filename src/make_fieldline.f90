@@ -131,15 +131,55 @@ contains
                                            interval, &
                                            phi_tol)
         use find_extrema, only: find_local_maxima
+        use, intrinsic :: ieee_arithmetic
+
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
         real(dp), intent(in), optional :: phi_tol
 
-        call find_local_maxima(B_mod_along_fieldline, interval, &
-                               fieldline%phi_max, phi_tol)
+        integer, parameter :: n_max = 10
+        real(dp), dimension(n_max) :: phi_max, B_max
+        integer :: found_maxima
+        integer :: of_biggest_B
 
-        ! To ensure that the there are no maxima in between phi_max
+        call find_local_maxima(B_mod_along_fieldline, interval, &
+                               phi_max, phi_tol)
+
+        found_maxima = count(.not. ieee_is_nan(phi_max))
+
+        if (found_maxima < 2) then
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "error in find_maxima_along_fieldline: "
+            print *, "Found less than two maxima in provided interval!"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+        elseif (found_maxima > 2) then
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "warning in find_maxima_along_fieldline: "
+            print *, "The provided field violates omnigeneity too strongly!"
+            print *, "-> Found more than one local maximum per half period", &
+                "for fieldline!"
+            print *, "Calculation done with biggest maximum in each half period!"
+            print *, "Final result for bootstrap deviation can not be trusted!"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            call B_mod_along_fieldline(phi_max(1:found_maxima), B_max(1:found_maxima))
+            of_biggest_B = maxloc(B_max, mask=(phi_max < fieldline%phi_0), dim=1)
+            fieldline%phi_max(1) = phi_max(of_biggest_B)
+            of_biggest_B = maxloc(B_max, mask=(phi_max > fieldline%phi_0), dim=1)
+            fieldline%phi_max(2) = phi_max(of_biggest_B)
+        else
+            fieldline%phi_max = phi_max(1:found_maxima)
+        end if
+
+        ! To ensure that the there are no maxima in between found phi_max
         ! we move phi_max inside the well by the maximal potential error
         if (present(phi_tol)) then
             fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol

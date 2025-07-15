@@ -33,6 +33,7 @@ contains
 
     recursive subroutine find_local_maxima(func, interval, location, abstol, n_steps_in)
         use utils, only: linspace
+        use, intrinsic :: ieee_arithmetic
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
@@ -66,6 +67,8 @@ contains
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
+
+        location = ieee_value(location, ieee_quiet_nan)
 
         error = abs(x(2) - x(1))
 
@@ -103,10 +106,8 @@ contains
             end if
         end do
 
-        if (current_maximum < n_maxima) then
-            print *, "find_local_maxima: found less maxima then expected"
-            print *, "found: ", current_maximum, "out of ", n_maxima
-            print *, "location: ", location
+        if (current_maximum < 1) then
+            print *, "find_local_maxima: found no local maxima"
             error stop
         end if
 

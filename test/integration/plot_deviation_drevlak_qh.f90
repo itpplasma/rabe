@@ -37,7 +37,7 @@ program plot_deviation_drevlak_qh
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 5e-7
-    integer, parameter :: n_fieldlines = 11
+    integer, parameter :: n_fieldlines = 101
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
