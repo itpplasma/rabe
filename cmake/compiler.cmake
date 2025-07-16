@@ -19,6 +19,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
  " -fimplicit-none "
  " -Wno-unused-variable -Wno-unused-dummy-argument -Wno-unused-label "
  " -Wshadow "
+ " -Wno-external-argument-mismatch "  # GCC 15 bug
   )
   string(REPLACE ";" "" MY_DEBUG_FLAG  ${MY_DEBUG_FLAG_LIST})
   set(CMAKE_Fortran_FLAGS_DEBUG "${MY_DEBUG_FLAG}")
