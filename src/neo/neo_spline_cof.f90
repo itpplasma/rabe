@@ -42,12 +42,12 @@ SUBROUTINE splinecof3_fast(x, y, a, b, c, d)
 
   call dptsv(n-2, 1, ds, dl, cs, n-2, info)
 
-  a = y(1:n-1)
+  a(1:n-1) = y(1:n-1)
   b(1) = r(1)/h(1) - h(1)/3d0*cs(1)
   b(2:n-2) = r(2:n-2)/h(2:n-2)-h(2:n-2)/3d0*(cs(2:n-2) + 2d0*cs(1:n-3))
   b(n-1)   = r(n-1)/h(n-1)-h(n-1)/3d0*(2d0*cs(n-2))
   c(4)     = 0
-  c(2:)    = cs
+  c(2:n-1)    = cs
   d(1)     = 1d0/(3d0*h(1))*cs(1)
   d(2:n-2) = 1d0/(3d0*h(2:n-2))*(cs(2:n-2)-cs(1:n-3))
   d(n-1)   = 1d0/(3d0*h(n-1))*(-cs(n-2))
@@ -162,9 +162,10 @@ SUBROUTINE splinecof3_a(x, y, c1, cn, lambda1, indx, sw1, sw2, &
   d(size(x)) = 0d0
 
   return
-100 error stop "cannot use fast splines"  
 
-  len_x    = SIZE(x)
+
+  ! Cannot use fast splines, fall back to long spline routine
+100  len_x    = SIZE(x)
   len_indx = SIZE(indx)
   size_dimension = VAR * len_indx - 2
 
