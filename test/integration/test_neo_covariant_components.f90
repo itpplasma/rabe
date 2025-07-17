@@ -23,8 +23,8 @@ program test_neo_covariant_components
     test_failed = .false.
 
     stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
-    B_theta_covariant = (/7.45e-10, 3.1e-09, -2.84e-09, 1.17e-08/)*2.0_dp*1e-7
-    B_phi_covariant = (/-1.277e8, -1.277e8, -1.277e8, -1.277e8/)*N*2.0_dp*1e-7
+    B_theta_covariant = (/-7.45e-10, -3.1e-09, 2.84e-09, -1.17e-08/)*2.0_dp*1e-7
+    B_phi_covariant = (/1.277e8, 1.277e8, 1.277e8, 1.277e8/)*N*2.0_dp*1e-7
     iota = (/-1.238_dp, -1.243_dp, -1.244_dp, -1.245_dp/)
     psi_tor_edge = 41.86388_dp/(2.0_dp*pi)
     R = 14.06045_dp
