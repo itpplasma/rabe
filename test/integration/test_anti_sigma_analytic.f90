@@ -33,12 +33,18 @@ program test_anti_sigma_analytic
     real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
+    integer :: n_modes
+    integer, parameter :: active = 2
 
     type(surface_average_t) :: surface_average
 
     integer :: current
     real(dp) :: B_mod
     real(dp), dimension(:), allocatable :: zeros
+
+    logical :: failed_test
+
+    failed_test = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
@@ -54,23 +60,23 @@ program test_anti_sigma_analytic
             print *, "test_anti_sigma_analytic failed: phi_0"
             print *, "found: ", fieldlines(current)%phi_0
             print *, "expected: ", phi_0
-            error stop
+            failed_test = .true.
         end if
     end do
 
     call fourier_transform_over_label(fieldlines, fieldline_modes)
 
-    if (not_same(I_v_1, fieldline_modes%radial_drift%sin_coeffs(2), &
+    if (not_same(I_v_1, fieldline_modes%radial_drift%sin_coeffs(active), &
                  reltol_in=reltol_radial_drift, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_anti_sigma_analytic failed: 1st radial drift sin mode"
-        print *, "found: ", fieldline_modes%radial_drift%sin_coeffs(2)
+        print *, "found: ", fieldline_modes%radial_drift%sin_coeffs(active)
         print *, "expected: ", I_v_1
-        print *, "ratio: ", fieldline_modes%radial_drift%sin_coeffs(2)/I_v_1
-        error stop
+        print *, "ratio: ", fieldline_modes%radial_drift%sin_coeffs(active)/I_v_1
+        failed_test = .true.
     end if
 
-    if (not_same(delta_A_o_1, fieldline_modes%delta_aspect_ratio%cos_coeffs(2), &
+    if (not_same(delta_A_o_1, fieldline_modes%delta_aspect_ratio%cos_coeffs(active), &
                  reltol_in=reltol_aspect_ratio, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "test_anti_sigma_analytic failed: 1st delta_aspect_ratio cos mode"
@@ -78,10 +84,11 @@ program test_anti_sigma_analytic
         print *, "expected: ", delta_A_o_1
         print *, "relative error: ", 1.0_dp - &
             fieldline_modes%delta_aspect_ratio%cos_coeffs(2)/delta_A_o_1
-        error stop
+        failed_test = .true.
     end if
 
-    allocate (zeros(size(fieldline_modes%radial_drift%cos_coeffs)))
+    n_modes = size(fieldline_modes%radial_drift%cos_coeffs)
+    allocate (zeros(n_modes))
     zeros = 0.0_dp
 
     if (not_same(zeros, fieldline_modes%radial_drift%cos_coeffs, &
@@ -90,7 +97,7 @@ program test_anti_sigma_analytic
         print *, "test_anti_sigma_analytic failed: radial drift cos modes"
         print *, "found: ", fieldline_modes%radial_drift%cos_coeffs
         print *, "expected: all ", zeros(1)
-        error stop
+        failed_test = .true.
     end if
 
     if (not_same(zeros, fieldline_modes%delta_aspect_ratio%sin_coeffs, &
@@ -99,7 +106,7 @@ program test_anti_sigma_analytic
         print *, "test_anti_sigma_analytic failed: delta_aspect_ratio sin modes"
         print *, "found: ", fieldline_modes%delta_aspect_ratio%sin_coeffs
         print *, "expected: all ", zeros(1)
-        error stop
+        failed_test = .true.
     end if
 
     if (not_same(zeros, fieldline_modes%delta_eta%cos_coeffs, &
@@ -108,7 +115,7 @@ program test_anti_sigma_analytic
         print *, "test_anti_sigma_analytic failed: delta_eta cos modes"
         print *, "found: ", fieldline_modes%delta_eta%cos_coeffs
         print *, "expected: all ", zeros(1)
-        error stop
+        failed_test = .true.
     end if
 
     if (not_same(zeros, fieldline_modes%delta_eta%sin_coeffs, &
@@ -117,7 +124,7 @@ program test_anti_sigma_analytic
         print *, "test_anti_sigma_analytic failed: delta_eta sin modes"
         print *, "found: ", fieldline_modes%delta_eta%sin_coeffs
         print *, "expected: all ", zeros(1)
-        error stop
+        failed_test = .true.
     end if
 
     deallocate (zeros)
@@ -131,7 +138,7 @@ program test_anti_sigma_analytic
         print *, "found: ", surface_average%lambda_b
         print *, "expected: ", average_lambda_b
         print *, "ratio: ", surface_average%lambda_b/average_lambda_b
-        error stop
+        failed_test = .true.
     end if
 
     if (not_same(B_0**2, surface_average%B_squared, &
@@ -141,7 +148,9 @@ program test_anti_sigma_analytic
         print *, "found: ", surface_average%B_squared
         print *, "expected: ", B_0**2
         print *, "ratio: ", surface_average%B_squared/B_0**2
-        error stop
+        failed_test = .true.
     end if
+
+    if (failed_test) error stop
 
 end program test_anti_sigma_analytic
