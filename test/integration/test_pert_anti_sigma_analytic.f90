@@ -11,7 +11,7 @@ program test_pert_anti_sigma_analytic
 
     implicit none
 
-    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
+    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 1.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.0125_dp, eps_1 = 0.0005_dp
     type(anti_sigma_field_t) :: field
     real(dp), parameter :: B_pert = 0.001_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
@@ -21,7 +21,7 @@ program test_pert_anti_sigma_analytic
     real(dp), parameter :: delta_eta_0 = B_pert/B_max**2.0_dp
 
     real(dp), parameter :: reltol_delta_eta = (B_pert/B_max)
-    real(dp), parameter :: abstol = 1e-12
+    real(dp), parameter :: abstol = 1e-15
     real(dp), parameter :: phi_tol = 2e-5
 
     integer, parameter :: n_fieldlines = 50
@@ -29,7 +29,7 @@ program test_pert_anti_sigma_analytic
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 1.0_dp ! analytic formula for small iota
+    real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
 
@@ -103,7 +103,7 @@ program test_pert_anti_sigma_analytic
             print *, "-------------------------------------------------------------"
             print *, "test_pert_anti_sigma_analytic failed: ", &
                 "delta_eta cos mode number", current - 1
-            print *, "found: ", fieldline_modes%delta_eta%cos_coeffs(current)
+            print *, "found abs: ", abs(fieldline_modes%delta_eta%cos_coeffs(current))
             print *, "expected: ", expected_deviation, "or lower"
             test_failed = .true.
         end if
