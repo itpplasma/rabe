@@ -10,8 +10,8 @@ program compare_distribution_function_neo2
     use readers, only: read_column
 
     use fieldline_integrals, only: modes_t
-    use plot_quantities, only: get_g_modes_from_fieldlines
-    use plot_quantities, only: get_modes
+    use distribution_function, only: get_g_modes_from_fieldlines
+    use distribution_function, only: get_modes
     use plot_quantities, only: compare_modes
 
     implicit none
@@ -20,7 +20,6 @@ program compare_distribution_function_neo2
 
     !------------------Taken from .bc file-------------------------------------!
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 4.0_dp
-    real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 
     real(dp), parameter :: stor = 0.25_dp

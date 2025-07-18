@@ -4,6 +4,7 @@ add_library(helpers_lib STATIC
   anti_sigma_field.f90
   plot_quantities.f90
   readers.f90
+  distribution_function.f90
 )
 target_link_libraries(helpers_lib PRIVATE rabe_lib
                                           myplot_lib)
