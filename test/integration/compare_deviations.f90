@@ -109,13 +109,14 @@ program compare_deviations
                  reltol_in=reltol, abstol_in=0.0_dp)) then
         print *, "-------------------------------------------------------------"
         print *, "compare_deviations failed: compare to offset due to distribution"
-        print *, "sum of serperate contributions: ", offset_rabe
-        print *, "directly from distributions function: ", offset_g_rabe
         test_failed = .true.
     end if
 
-    print *, "NEO-2: ", offset_neo2
-    print *, "from g_neo2: ", offset_g_neo2
+    print *, "sum of serperate contributions (Delta A & Delta eta): ", offset_rabe
+    print *, "directly from asymptotic distributions function: ", offset_g_rabe
+    print *, "from NEO-2 distributions function: ", offset_g_neo2
+    print *, "result from NEO-2: ", offset_neo2
+
     if (test_failed) error stop 1
 
 end program compare_deviations
