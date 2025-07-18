@@ -2,7 +2,7 @@
 myenv/
 build/
 bin/
-external/
+./external/
 *.nc
 *.bc
 *.dat

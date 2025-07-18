@@ -29,9 +29,6 @@ target_link_libraries(test_make_flock_of_fieldlines.x rabe_lib)
 add_test(TestMakeFlockOfFieldlines test_make_flock_of_fieldlines.x)
 set_tests_properties(TestMakeFlockOfFieldlines PROPERTIES LABELS "quick")
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
-add_subdirectory(helpers)
-
 add_executable(test_integration_along_fieldline.x test_integration_along_fieldline.f90)
 target_link_libraries(test_integration_along_fieldline.x rabe_lib helpers_lib)
 add_test(TestIntegrationFieldline test_integration_along_fieldline.x)
@@ -98,38 +95,3 @@ target_link_libraries(plot_deviation_poloidal_anti_sigma.x myplot_lib
                                                           helpers_lib)
 add_test(PlotDeviationPoloidalAntiSigma plot_deviation_poloidal_anti_sigma.x)
 set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "plot")
-
-add_executable(plot_deviation_landreman_paul_helical.x plot_deviation_landreman_paul_helical.f90)
-target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
-set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "external")
-
-add_executable(plot_deviation_goodman_nautilus.x plot_deviation_goodman_nautilus.f90)
-target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(PlotDeviationGoodmanNautilus plot_deviation_goodman_nautilus.x)
-set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "external")
-
-add_executable(plot_deviation_drevlak_qh.x plot_deviation_drevlak_qh.f90)
-target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
-set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "external")
-
-add_executable(compare_distribution_function_neo2.x compare_distribution_function_neo2.f90)
-target_link_libraries(compare_distribution_function_neo2.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(CompareDistributionFunctionNeo2 compare_distribution_function_neo2.x)
-set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "external")
-
-add_executable(compare_deviations.x compare_deviations.f90)
-target_link_libraries(compare_deviations.x myplot_lib
-                                           rabe_lib
-                                           helpers_lib)
-add_test(CompareDeviations compare_deviations.x)
-set_tests_properties(CompareDeviations PROPERTIES LABELS "external")

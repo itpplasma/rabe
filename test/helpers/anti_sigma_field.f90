@@ -59,14 +59,14 @@ contains
         chi = self%M_pol*theta - self%N_tor*phi
         dB_dx(1) = 0.0_dp
         dB_dx(2) = self%B_0*( &
-                             - self%M_pol*self%eps_0*sin(chi) &
-                             + self%M_pol*self%eps_1*cos(theta)*sin(chi) &
-                             - self%eps_1*sin(theta)*(1 - self%sign*cos(chi)) &
-                            )
+                   -self%M_pol*self%eps_0*sin(chi) &
+                   + self%M_pol*self%eps_1*cos(theta)*sin(chi) &
+                   - self%eps_1*sin(theta)*(1 - self%sign*cos(chi)) &
+                   )
         dB_dx(3) = self%B_0*( &
-                             + self%N_tor*self%eps_0*sin(chi) &
-                             - self%N_tor*self%eps_1*cos(theta)*self%sign*sin(chi) &
-                            )
+                   +self%N_tor*self%eps_0*sin(chi) &
+                   - self%N_tor*self%eps_1*cos(theta)*self%sign*sin(chi) &
+                   )
     end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
