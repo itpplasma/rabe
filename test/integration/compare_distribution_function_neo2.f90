@@ -1,13 +1,18 @@
-program plot_distribution_function
+program compare_distribution_function_neo2
     use constants, only: dp, pi
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
 
-    use plot_quantities, only: plot_distributions_function
+    use plot_quantities, only: plot_distribution_function
     use plot_quantities, only: external_data_t
     use readers, only: read_column
+
+    use fieldline_integrals, only: modes_t
+    use plot_quantities, only: get_g_modes_from_fieldlines
+    use plot_quantities, only: get_modes
+    use plot_quantities, only: compare_modes
 
     implicit none
 
@@ -34,6 +39,10 @@ program plot_distribution_function
     real(dp), parameter :: nu_star = 6e-5
     real(dp), parameter :: scaling = 100.0_dp/5.884 !100/bmod0 -> g_(NEO-2) in [cm]
     integer :: n_columns
+    integer :: n_neo2
+
+    type(modes_t), dimension(2) :: modes
+    character(len=1024), dimension(2) :: labels
 
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
@@ -57,6 +66,15 @@ program plot_distribution_function
                      n_columns, &
                      n_columns/8)
     g_neo2%y = g_neo2%y/scaling
-    call plot_distributions_function(fieldlines, field, nu_star, g_neo2)
+    call plot_distribution_function(fieldlines, field, nu_star, g_neo2)
 
-end program plot_distribution_function
+    call get_g_modes_from_fieldlines(fieldlines, field, nu_star, modes(1))
+    labels(1) = "rabe: $g_\mathrm{off}$"
+
+    n_neo2 = size(g_neo2%x)
+    call get_modes(g_neo2%x(1:n_neo2 - 1), g_neo2%y(1:n_neo2 - 1), modes(2))
+    labels(2) = g_neo2%label
+
+    call compare_modes(modes, labels)
+
+end program compare_distribution_function_neo2

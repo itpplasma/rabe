@@ -8,7 +8,7 @@ program plot_deviation_goodman_squid
     use misc, only: S_A, S_B
 
     use plot_quantities, only: plot_deviation_spectrum
-    use plot_quantities, only: plot_distributions_function
+    use plot_quantities, only: plot_distribution_function
     use readers, only: read_column
     use plot_quantities, only: external_data_t
     use plot_quantities, only: plot_delta_eta_modes
@@ -77,7 +77,7 @@ program plot_deviation_goodman_squid
                          size(g_neo2%x, dim=1), &
                          size(g_neo2%x, dim=1)/8)
         g_neo2%y = g_neo2%y/scaling
-        call plot_distributions_function(fieldlines, field, nu_star, g_neo2)
+        call plot_distribution_function(fieldlines, field, nu_star, g_neo2)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)
         call plot_fieldlines_over_field(fieldlines, field, N_tor)

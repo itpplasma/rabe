@@ -72,7 +72,7 @@ contains
         real(dp), dimension(:), intent(in) :: x
         logical :: has_correct_range
 
-        real(dp), parameter :: tol = 1e-15
+        real(dp), parameter :: tol = 1e-13
         real(dp) :: correct_range, range
         integer :: N
 

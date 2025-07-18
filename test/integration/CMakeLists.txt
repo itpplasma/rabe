@@ -113,9 +113,9 @@ target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
 add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
 set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "plot")
 
-add_executable(plot_distribution_function.x plot_distribution_function.f90)
-target_link_libraries(plot_distribution_function.x myplot_lib
+add_executable(compare_distribution_function_neo2.x compare_distribution_function_neo2.f90)
+target_link_libraries(compare_distribution_function_neo2.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
-add_test(PlotDistributionFunction plot_distribution_function.x)
-set_tests_properties(PlotDistributionFunction PROPERTIES LABELS "current")
+add_test(CompareDistributionFunctionNeo2 compare_distribution_function_neo2.x)
+set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "current")
