@@ -14,16 +14,19 @@ install: build
 	cmake --install build
 
 test: build
-	ctest --test-dir build/test --output-on-failure -LE "slow|per_hand|plot|current"
+	ctest --test-dir build/test --output-on-failure -L quick
 
 test_slow: build
 	ctest --test-dir build/test --output-on-failure -L slow
 
 test_all: build
-	ctest --test-dir build/test --output-on-failure -LE per_hand
+	ctest --test-dir build/test --output-on-failure -L "quick|slow"
 
 plot: build
 	ctest --test-dir build/test --output-on-failure -L plot
+
+external: build
+	ctest --test-dir build/test -V -L external
 
 current: build
 	ctest --test-dir build/test --output-on-failure -L current

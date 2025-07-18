@@ -22,10 +22,12 @@ set_tests_properties(TestNeoCovariantComponents PROPERTIES LABELS "slow")
 add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)
 add_test(TestFieldline test_fieldline.x)
+set_tests_properties(TestFieldline PROPERTIES LABELS "quick")
 
 add_executable(test_make_flock_of_fieldlines.x test_make_flock_of_fieldlines.f90)
 target_link_libraries(test_make_flock_of_fieldlines.x rabe_lib)
 add_test(TestMakeFlockOfFieldlines test_make_flock_of_fieldlines.x)
+set_tests_properties(TestMakeFlockOfFieldlines PROPERTIES LABELS "quick")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
 add_subdirectory(helpers)
@@ -33,24 +35,29 @@ add_subdirectory(helpers)
 add_executable(test_integration_along_fieldline.x test_integration_along_fieldline.f90)
 target_link_libraries(test_integration_along_fieldline.x rabe_lib helpers_lib)
 add_test(TestIntegrationFieldline test_integration_along_fieldline.x)
+set_tests_properties(TestIntegrationFieldline PROPERTIES LABELS "quick")
 
 add_executable(test_find_global_maximum.x test_find_global_maximum.f90)
 target_link_libraries(test_find_global_maximum.x rabe_lib helpers_lib)
 add_test(TestGlobalMaximum test_find_global_maximum.x)
+set_tests_properties(TestGlobalMaximum PROPERTIES LABELS "quick")
 
 add_executable(test_anti_sigma_analytic.x test_anti_sigma_analytic.f90)
 target_link_libraries(test_anti_sigma_analytic.x rabe_lib helpers_lib)
 add_test(TestAntiSigmaAnalytic test_anti_sigma_analytic.x)
+set_tests_properties(TestAntiSigmaAnalytic PROPERTIES LABELS "quick")
 
 add_executable(test_pert_anti_sigma_analytic.x test_pert_anti_sigma_analytic.f90)
 target_link_libraries(test_pert_anti_sigma_analytic.x rabe_lib helpers_lib)
 add_test(TestPertAntiSigmaAnalytic test_pert_anti_sigma_analytic.x)
+set_tests_properties(TestPertAntiSigmaAnalytic PROPERTIES LABELS "quick")
 
 add_executable(test_I_integral_helical_anti_sigma.x test_I_integral_helical_anti_sigma.f90)
 target_link_libraries(test_I_integral_helical_anti_sigma.x rabe_lib
                                                           helpers_lib
                                                           myplot_lib)
 add_test(TestIIntegralHelicalAntiSigma test_I_integral_helical_anti_sigma.x)
+set_tests_properties(TestIIntegralHelicalAntiSigma PROPERTIES LABELS "quick")
 
 add_executable(test_lambda_helical_anti_sigma.x test_lambda_helical_anti_sigma.f90)
 target_link_libraries(test_lambda_helical_anti_sigma.x rabe_lib
@@ -97,32 +104,32 @@ target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
-set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "plot")
+set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "external")
 
 add_executable(plot_deviation_goodman_nautilus.x plot_deviation_goodman_nautilus.f90)
 target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationGoodmanNautilus plot_deviation_goodman_nautilus.x)
-set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "plot")
+set_tests_properties(PlotDeviationGoodmanNautilus PROPERTIES LABELS "external")
 
 add_executable(plot_deviation_drevlak_qh.x plot_deviation_drevlak_qh.f90)
 target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
-set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "plot")
+set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "external")
 
 add_executable(compare_distribution_function_neo2.x compare_distribution_function_neo2.f90)
 target_link_libraries(compare_distribution_function_neo2.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(CompareDistributionFunctionNeo2 compare_distribution_function_neo2.x)
-set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "plot")
+set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "external")
 
 add_executable(compare_deviations.x compare_deviations.f90)
 target_link_libraries(compare_deviations.x myplot_lib
                                            rabe_lib
                                            helpers_lib)
 add_test(CompareDeviations compare_deviations.x)
-set_tests_properties(CompareDeviations PROPERTIES LABELS "current")
+set_tests_properties(CompareDeviations PROPERTIES LABELS "external")
