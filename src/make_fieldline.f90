@@ -164,7 +164,7 @@ contains
             print *, "warning in find_maxima_along_fieldline: "
             print *, "The provided field violates omnigeneity too strongly!"
             print *, "-> Found more than one local maximum per half period", &
-                "for fieldline!"
+                " for fieldline!"
             print *, "Calculation done with biggest maximum in each half period!"
             print *, "Final result for bootstrap deviation can not be trusted!"
             print *, "---------------------------------------------------------"

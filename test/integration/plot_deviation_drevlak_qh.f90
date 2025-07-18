@@ -67,7 +67,7 @@ program plot_deviation_drevlak_qh
                                   phi_tol)
 
     if (should_plot_others) then
-        current = 8
+        current = 16
         interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
                    fieldlines(current)%phi_0
         call plot_B_along_fieldline(field, fieldlines(current), interval)
