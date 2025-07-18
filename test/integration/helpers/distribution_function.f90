@@ -4,6 +4,7 @@ module distribution_function
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: modes_t, allocate_modes
     use fieldline_integrals, only: fieldline_modes_t
+    use deviation, only: surface_average_t, calc_surface_averages
 
     implicit none
 
@@ -16,18 +17,19 @@ contains
         real(dp) :: offset
 
         type(fieldline_modes_t) :: modes
+        type(surface_average_t) :: averages
         integer :: n_modes
 
         call fourier_transform_over_label(fieldlines, modes)
-
+        call calc_surface_averages(fieldlines, averages)
         n_modes = size(modes%radial_drift%sin_coeffs)
 
         offset = pi*sum(modes%radial_drift%sin_coeffs* &
-                        g_modes%sin_coeffs(1:n_modes))
+                        g_modes%sin_coeffs(1:n_modes))/ &
+                 averages%normalization
     end function get_offset_from_distribution
 
     subroutine get_g_modes_from_fieldlines(fieldlines, field, nu_star, g_off_modes)
-        use deviation, only: surface_average_t, calc_surface_averages
         use misc, only: S_A, S_B
         use neo_field, only: neo_field_t
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
@@ -58,7 +60,7 @@ contains
         covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*field%iota)
         prefactor_A = 2.0_dp*sqrt(covariant_factor*fieldlines(1)%eta_b* &
                                   fieldlines(1)%I_ref/l_c)
-        g_off_modes%sin_coeffs = prefactor_A*modes%delta_eta%cos_coeffs* &
+        g_off_modes%sin_coeffs = prefactor_A*modes%delta_aspect_ratio%cos_coeffs* &
                          S_A(fieldlines(1)%iota_p*modes%delta_aspect_ratio%mode_numbers)
         g_off_modes%sin_coeffs = g_off_modes%sin_coeffs + &
                                  modes%delta_eta%cos_coeffs* &

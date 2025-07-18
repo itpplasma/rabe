@@ -118,4 +118,11 @@ target_link_libraries(compare_distribution_function_neo2.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(CompareDistributionFunctionNeo2 compare_distribution_function_neo2.x)
-set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "current")
+set_tests_properties(CompareDistributionFunctionNeo2 PROPERTIES LABELS "plot")
+
+add_executable(compare_deviations.x compare_deviations.f90)
+target_link_libraries(compare_deviations.x myplot_lib
+                                           rabe_lib
+                                           helpers_lib)
+add_test(CompareDeviations compare_deviations.x)
+set_tests_properties(CompareDeviations PROPERTIES LABELS "current")
