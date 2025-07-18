@@ -587,7 +587,7 @@ contains
 
         call plt_cos%show()
 
-        call plt_cos%initialize(xlabel="mode", &
+        call plt_sin%initialize(xlabel="mode", &
                                 ylabel="sin amplitude", &
                                 legend=.true.)
 
