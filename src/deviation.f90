@@ -13,14 +13,13 @@ module deviation
 
 contains
 
-    subroutine calc_deviation(fieldlines, field, deviation_A, deviation_B)
+    subroutine calc_deviation(fieldlines, deviation_A, deviation_B)
         use fieldline_integrals, only: fieldline_modes_t
         use fieldline_integrals, only: allocate_modes
         use fieldline_integrals, only: fourier_transform_over_label
         use misc, only: S_A, S_B
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        class(field_t), intent(in) :: field
         real(dp), intent(out) :: deviation_A, deviation_B
 
         real(dp), parameter :: tol = 1e-12

@@ -79,7 +79,7 @@ program plot_deviation_drevlak_qh
         call plot_delta_A(fieldlines)
     end if
 
-    call calc_deviation(fieldlines, field, deviation_A, deviation_B)
+    call calc_deviation(fieldlines, deviation_A, deviation_B)
 
     covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
     dr_dAphi = 1.0_dp/(ds_dr*field%psi_tor_edge)*sign_sqrtg

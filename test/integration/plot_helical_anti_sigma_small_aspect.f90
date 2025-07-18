@@ -68,7 +68,7 @@ program plot_helical_anti_sigma_small_aspect
         call plot_delta_A(fieldlines, delta_A_1)
     end if
 
-    call calc_deviation(fieldlines, field, deviation_A, deviation_B)
+    call calc_deviation(fieldlines, deviation_A, deviation_B)
 
     covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
     off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)

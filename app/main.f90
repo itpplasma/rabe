@@ -69,7 +69,7 @@ program rabe
                                   N_tor, &
                                   phi_tol)
 
-    call calc_deviation(fieldlines, field, deviation_A, deviation_B)
+    call calc_deviation(fieldlines, deviation_A, deviation_B)
 
     covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
     dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/field%psi_tor_edge
