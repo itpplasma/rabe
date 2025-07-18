@@ -111,4 +111,11 @@ target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
                                                           rabe_lib
                                                           helpers_lib)
 add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
-set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "current")
+set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "plot")
+
+add_executable(plot_distribution_function.x plot_distribution_function.f90)
+target_link_libraries(plot_distribution_function.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDistributionFunction plot_distribution_function.x)
+set_tests_properties(PlotDistributionFunction PROPERTIES LABELS "current")
