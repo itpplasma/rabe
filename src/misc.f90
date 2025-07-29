@@ -9,7 +9,7 @@ contains
         real(dp) :: S_A
 
         real(dp) :: angle_in_period
-        real(dp), parameter :: fit_fac = 0.26_dp
+        real(dp), parameter :: fit_fac = 0.3_dp
 
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 
@@ -22,7 +22,7 @@ contains
         real(dp) :: S_B
 
         real(dp) :: angle_in_period
-        real(dp), parameter :: fit_fac = 1.85_dp
+        real(dp), parameter :: fit_fac = 2.0_dp
 
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 
