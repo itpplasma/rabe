@@ -78,7 +78,7 @@ contains
 
         type(fieldline_modes_t) :: modes
 
-        integer, parameter :: n_points = 100
+        integer :: n_modes
         real(dp), dimension(:), allocatable :: deviation_B
         integer :: current
         real(dp) :: iota_p
@@ -88,14 +88,15 @@ contains
 
         call fourier_transform_over_label(fieldlines, modes)
         iota_p = fieldlines(1)%iota_p
+        n_modes = size(modes%delta_eta%cos_coeffs)
 
-        allocate (deviation_B(n_points))
+        allocate (deviation_B(n_modes))
 
         call plt%initialize(xlabel="mode", &
                             ylabel="amplitude", &
                             legend=.true.)
 
-        do current = 1, size(modes%delta_eta%cos_coeffs)
+        do current = 1, n_modes
             deviation_B(current) = modes%radial_drift%sin_coeffs(current)* &
                                    modes%delta_eta%cos_coeffs(current)* &
                                    S_B(iota_p*modes%delta_eta%mode_numbers(current))
