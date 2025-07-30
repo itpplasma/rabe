@@ -25,10 +25,10 @@ program plot_deviation_drevlak_qh
     real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 
-    real(dp), parameter :: stor = 0.4732_dp
+    real(dp), parameter :: stor = 0.2508_dp
 
     !------------------Taken from NEO-2 output---------------------------------!
-    real(dp), parameter :: ds_dr = 0.006402_dp*100.0_dp ! [1/m] called "avnabpsi"
+    real(dp), parameter :: ds_dr = 0.00460389_dp*100.0_dp ! [1/m] called "avnabpsi"
     !--------------------------------------------------------------------------!
 
     real(dp) :: R
@@ -36,8 +36,8 @@ program plot_deviation_drevlak_qh
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 5e-7
-    integer, parameter :: n_fieldlines = 101
+    real(dp), parameter :: phi_tol = 1e-6
+    integer, parameter :: n_fieldlines = 200
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
