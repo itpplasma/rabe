@@ -21,6 +21,7 @@ contains
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
+        logical :: more_than_2_maxima, too_strong_violation
 
         n_fieldlines = size(fieldlines)
 
@@ -32,12 +33,29 @@ contains
 
         fieldlines%iota_p = iota*sign(pi, N_tor)/(N_tor - iota*M_pol)
 
+        too_strong_violation = .false.
         do current = 1, n_fieldlines
             interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
                        fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, phi_tol)
+                                             interval, phi_tol, more_than_2_maxima)
+            if (more_than_2_maxima) too_strong_violation = .true.
         end do
+
+        if (too_strong_violation) then
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "warning in make_flock_of_fieldlines: "
+            print *, "The provided field violates omnigeneity too strongly!"
+            print *, "-> Found more than one local maximum per half period", &
+                " for at least one fieldline!"
+            print *, "Calculation done with biggest maximum in each half period!"
+            print *, "Final result for bootstrap deviation can not be trusted!"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+            print *, "---------------------------------------------------------"
+        end if
 
         fieldlines%eta_b = (1.0_dp)/get_global_B_max(fieldlines)
 
@@ -129,7 +147,8 @@ contains
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
-                                           phi_tol)
+                                           phi_tol, &
+                                           more_than_2_maxima)
         use find_extrema, only: find_local_maxima
         use, intrinsic :: ieee_arithmetic
 
@@ -137,11 +156,14 @@ contains
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
         real(dp), intent(in), optional :: phi_tol
+        logical, intent(out), optional :: more_than_2_maxima
 
         integer, parameter :: n_max = 10
         real(dp), dimension(n_max) :: phi_max, B_max
         integer :: found_maxima
         integer :: of_biggest_B
+
+        if (present(more_than_2_maxima)) more_than_2_maxima = .false.
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
                                phi_max, phi_tol)
@@ -157,19 +179,9 @@ contains
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
+            error stop
         elseif (found_maxima > 2) then
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "warning in find_maxima_along_fieldline: "
-            print *, "The provided field violates omnigeneity too strongly!"
-            print *, "-> Found more than one local maximum per half period", &
-                " for fieldline!"
-            print *, "Calculation done with biggest maximum in each half period!"
-            print *, "Final result for bootstrap deviation can not be trusted!"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
+            if (present(more_than_2_maxima)) more_than_2_maxima = .true.
             call B_mod_along_fieldline(phi_max(1:found_maxima), B_max(1:found_maxima))
             of_biggest_B = maxloc(B_max, mask=(phi_max < fieldline%phi_0), dim=1)
             fieldline%phi_max(1) = phi_max(of_biggest_B)
