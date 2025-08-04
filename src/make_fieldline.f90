@@ -88,7 +88,7 @@ contains
         real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
-        real(dp) :: chi_min_over_N, tol
+        real(dp) :: chi_min_over_N, tol, chi_max
 
         call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
 
@@ -97,9 +97,12 @@ contains
         else
             tol = 3.0_dp*1e-2
         end if
-        if (not_multiple_of_pi(chi_min_over_N*phi_mode, tol)) then
-            print *, "error: found chi_min is not multiple of pi"
-            print *, "chi_min: ", chi_min_over_N*phi_mode
+        chi_max = chi_min_over_N*phi_mode + pi
+        if (not_multiple_of_2pi(chi_max, tol)) then
+            print *, "error: found chi_max is not multiple of 2pi"
+            print *, "chi_max: ", chi_max
+            print *, "The maxima contour of the ideal omnigenous configuration"
+            print *, "must pass through (theta=0,phi=0)!"
             error stop
         end if
         fieldlines%phi_0 = theta_mode/phi_mode*fieldlines%theta_0 - chi_min_over_N
@@ -227,15 +230,15 @@ contains
         global_B_max = max(B_max_1, B_max_2)
     end function get_global_B_max
 
-    function not_multiple_of_pi(chi, tol)
-        real(dp), intent(in) :: chi
+    function not_multiple_of_2pi(angle, tol)
+        real(dp), intent(in) :: angle
         real(dp), intent(in) :: tol
-        logical :: not_multiple_of_pi
+        logical :: not_multiple_of_2pi
 
         real(dp) :: remainder
 
-        remainder = abs(mod(chi, pi))
-        not_multiple_of_pi = remainder > tol .and. abs(remainder - pi) > tol
-    end function not_multiple_of_pi
+        remainder = abs(mod(angle, 2.0_dp*pi))
+        not_multiple_of_2pi = remainder > tol .and. abs(remainder - 2.0*pi) > tol
+    end function not_multiple_of_2pi
 
 end module make_fieldline
