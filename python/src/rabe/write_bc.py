@@ -31,7 +31,7 @@ def write_stellarator_bc_file(
         filename,
         "",
         0,
-        np.max(m),
+        np.max(np.abs(m)),
         np.max(n) // nfp,
         n_surf,
         nfp,
