@@ -33,17 +33,17 @@ contains
         call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
         call allocate_modes(fieldline_modes%delta_eta, n_modes)
 
-        call real_ft(fieldlines%theta_0, &
+        call real_ft(fieldlines%xi_0, &
                      fieldlines%radial_drift, &
                      fieldline_modes%radial_drift%cos_coeffs, &
                      fieldline_modes%radial_drift%sin_coeffs)
 
-        call real_ft(fieldlines%theta_0, &
+        call real_ft(fieldlines%xi_0, &
                      fieldlines%delta_aspect_ratio, &
                      fieldline_modes%delta_aspect_ratio%cos_coeffs, &
                      fieldline_modes%delta_aspect_ratio%sin_coeffs)
 
-        shifted_label = fieldlines%theta_0 - fieldlines%iota_p
+        shifted_label = fieldlines%xi_0 - fieldlines%iota_p
         call real_ft(shifted_label, &
                      fieldlines%delta_eta, &
                      fieldline_modes%delta_eta%cos_coeffs, &

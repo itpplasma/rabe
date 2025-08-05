@@ -4,6 +4,7 @@ module fieldline_mod
     implicit none
 
     type :: fieldline_t
+        real(dp) :: xi_0
         real(dp) :: theta_0
         real(dp) :: phi_0
         real(dp) :: iota
@@ -14,7 +15,7 @@ module fieldline_mod
         real(dp) :: eta_b
         real(dp) :: delta_eta
         real(dp) :: integral_lambda_b_over_B_squared
-        reaL(dp) :: I_ref
+        real(dp) :: I_ref
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
@@ -33,7 +34,6 @@ contains
         real(dp) :: theta
 
         theta = (phi - self%phi_0)*self%iota + self%theta_0
-        theta = modulo(theta, 2.0_dp*pi)
     end function get_theta_scalar
 
     function get_theta_array(self, phi) result(theta)
@@ -43,7 +43,6 @@ contains
         real(dp), dimension(size(phi)) :: theta
 
         theta = (phi - self%phi_0)*self%iota + self%theta_0
-        theta = modulo(theta, 2.0_dp*pi)
     end function get_theta_array
 
 end module fieldline_mod

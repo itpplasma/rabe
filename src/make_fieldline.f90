@@ -7,17 +7,18 @@ module make_fieldline
 
 contains
 
-    subroutine make_flock_of_fieldlines(fieldlines, theta_0, iota, &
+    subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, phi_tol)
         use fieldline_integrals, only: calc_fieldline_integrals
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
-        real(dp), dimension(:), intent(in) :: theta_0
+        real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor
         real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
+        real(dp) :: nfp
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
@@ -25,13 +26,16 @@ contains
 
         n_fieldlines = size(fieldlines)
 
-        fieldlines%theta_0 = theta_0
+        fieldlines%xi_0 = xi_0
         fieldlines%iota = iota
 
-        call set_fieldline_phi_0_to_mode_minimum(field, M_pol, N_tor, fieldlines, &
-                                                 phi_tol)
+        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, fieldlines, &
+                                                phi_tol)
 
-        fieldlines%iota_p = iota*sign(pi, N_tor)/(N_tor - iota*M_pol)
+        nfp = max(1.0_dp, abs(N_tor))
+        fieldlines%iota_p = iota*sign(pi, N_tor)* &
+                            (N_tor*iota + M_pol)/(N_tor - iota*M_pol)* &
+                            nfp/(N_tor**2.0_dp + M_pol**2.0_dp)
 
         too_strong_violation = .false.
         do current = 1, n_fieldlines
@@ -81,32 +85,42 @@ contains
 
     end subroutine make_flock_of_fieldlines
 
-    subroutine set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                   fieldlines, phi_tol)
+    subroutine set_fieldline_labels_along_chi_min(field, M_pol, N_tor, &
+                                                  fieldlines, phi_tol)
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: theta_mode, phi_mode
+        real(dp), intent(in) :: M_pol, N_tor
         real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
-        real(dp) :: chi_min_over_N, tol, chi_max
+        real(dp) :: chi_min_over_N, tol, chi_min
+        real(dp) :: normalization, nfp
 
-        call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
+        if (N_tor .ne. 0.0_dp) then
+            call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
 
-        if (present(phi_tol)) then
-            tol = phi_tol*3.0_dp
+            if (present(phi_tol)) then
+                tol = phi_tol*3.0_dp
+            else
+                tol = 3.0_dp*1e-2
+            end if
+            chi_min = chi_min_over_N*N_tor
+            if (not_multiple_of_2pi(chi_min, tol)) then
+                print *, "error: found chi_min is not multiple of 2pi"
+                print *, "chi_min: ", chi_min/pi, "[pi]"
+                print *, "The minima contour of the ideal omnigenous configuration"
+                print *, "must pass through (theta=0,phi=0)!"
+                error stop
+            end if
         else
-            tol = 3.0_dp*1e-2
+            print *, "check not yet supported for N=0"
+            !error stop
         end if
-        chi_max = chi_min_over_N*phi_mode + pi
-        if (not_multiple_of_2pi(chi_max, tol)) then
-            print *, "error: found chi_max is not multiple of 2pi"
-            print *, "chi_max: ", chi_max
-            print *, "The maxima contour of the ideal omnigenous configuration"
-            print *, "must pass through (theta=0,phi=0)!"
-            error stop
-        end if
-        fieldlines%phi_0 = theta_mode/phi_mode*fieldlines%theta_0 - chi_min_over_N
-    end subroutine set_fieldline_phi_0_to_mode_minimum
+
+        normalization = N_tor**2.0_dp + M_pol**2.0_dp
+        nfp = max(1.0_dp, abs(N_tor))
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
+    end subroutine set_fieldline_labels_along_chi_min
 
     subroutine guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
         use find_extrema, only: find_local_minima
@@ -179,6 +193,10 @@ contains
             print *, "---------------------------------------------------------"
             print *, "error in find_maxima_along_fieldline: "
             print *, "Found less than two maxima in provided interval!"
+            print *, "theta_0: ", fieldline%theta_0
+            print *, "phi_0: ", fieldline%phi_0
+            print *, "interval: ", interval
+            print *, "found maxima: ", phi_max(1:found_maxima)
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"

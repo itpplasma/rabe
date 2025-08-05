@@ -122,7 +122,7 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use make_fieldline, only: set_fieldline_phi_0_to_mode_minimum
+        use make_fieldline, only: set_fieldline_labels_along_chi_min
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*phi_mode)**2, abstol = 0.0_dp
@@ -140,8 +140,8 @@ contains
         fieldlines(:)%theta_0 = theta_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, &
-                                                 fieldlines)
+        call set_fieldline_labels_along_chi_min(field, theta_mode, phi_mode, &
+                                                fieldlines)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &

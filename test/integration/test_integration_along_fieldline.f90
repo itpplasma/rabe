@@ -3,7 +3,7 @@ program test_integration_along_fieldline
     use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: set_fieldline_phi_0_to_mode_minimum
+    use make_fieldline, only: set_fieldline_labels_along_chi_min
     use make_fieldline, only: find_maxima_along_fieldline
     use integrate, only: integrate_1d
 
@@ -29,7 +29,7 @@ program test_integration_along_fieldline
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
-    call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, fieldline)
+    call set_fieldline_labels_along_chi_min(field, theta_mode, phi_mode, fieldline)
 
     interval = (/0.0_dp, 4*pi/) + fieldline(1)%phi_0
     call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)
