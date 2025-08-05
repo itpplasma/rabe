@@ -61,7 +61,12 @@ target_link_libraries(test_lambda_helical_anti_sigma.x rabe_lib
                                                           helpers_lib
                                                           myplot_lib)
 add_test(TestLambdaHelicalAntiSigma test_lambda_helical_anti_sigma.x)
-set_tests_properties(TestLambdaHelicalAntiSigma PROPERTIES LABELS "plot")
+set_tests_properties(TestLambdaHelicalAntiSigma PROPERTIES LABELS "quick")
+
+add_executable(test_set_fieldline_labels.x test_set_fieldline_labels.f90)
+target_link_libraries(test_set_fieldline_labels.x rabe_lib helpers_lib)
+add_test(TestSetFieldlineLabels test_set_fieldline_labels.x)
+set_tests_properties(TestSetFieldlineLabels PROPERTIES LABELS "quick")
 
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
