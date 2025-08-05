@@ -15,7 +15,7 @@ program test_lambda_helical_anti_sigma
     real(dp), parameter :: phi_tol = 1e-6
     integer, parameter :: n_fieldlines = 20
 
-    real(dp), dimension(n_fieldlines) :: theta_0
+    real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
@@ -27,11 +27,13 @@ program test_lambda_helical_anti_sigma
     integer :: current
     logical :: test_failed
 
+    logical :: should_plot = .false.
+
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    xi_0 = temp(1:n_fieldlines)
     call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
+                                  xi_0, &
                                   iota, &
                                   field, &
                                   M_pol, &
@@ -40,7 +42,7 @@ program test_lambda_helical_anti_sigma
 
     lambda_integral_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
                                /N_tor*4.0_dp*sqrt(2.0_dp) &
-                               *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(theta_0))
+                               *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(fieldlines%theta_0))
 
     lambda_integral = 0.0_dp
     do current = 1, n_fieldlines
@@ -63,7 +65,9 @@ program test_lambda_helical_anti_sigma
         test_failed = .true.
     end if
 
-    call plot_lambda(theta_0, lambda_integral_analytic, lambda_integral)
+    if (should_plot) then
+        call plot_lambda(xi_0, lambda_integral_analytic, lambda_integral)
+    end if
 
     if (test_failed) error stop
 
