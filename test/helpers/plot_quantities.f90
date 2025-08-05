@@ -22,18 +22,18 @@ contains
         type(fieldline_t), dimension(:) :: fieldlines
 
         type(myplot) :: plt
-        real(dp), dimension(size(fieldlines)) :: theta_0_shifted
+        real(dp), dimension(size(fieldlines)) :: xi_0_shifted
 
-        call plt%initialize(xlabel="$\vartheta_0 - \iota_p$ [$\pi$]", &
+        call plt%initialize(xlabel="$\xi_0 - \iota_p$ [$\pi$]", &
                             ylabel="$B$ [T]", &
                             figsize=(/7, 7/), &
                             legend=.true.)
-        theta_0_shifted = modulo(fieldlines%theta_0 - fieldlines%iota_p, 2.0_dp*pi)
-        call plt%add_plot(theta_0_shifted/pi, &
+        xi_0_shifted = modulo(fieldlines%xi_0 - fieldlines%iota_p, 2.0_dp*pi)
+        call plt%add_plot(xi_0_shifted/pi, &
                           fieldlines%B_max(1), &
                           label="left $B_{max}$", &
                           linestyle="-o")
-        call plt%add_plot(theta_0_shifted/pi, &
+        call plt%add_plot(xi_0_shifted/pi, &
                           fieldlines%B_max(2), &
                           label="right $B_{max}$", &
                           linestyle="-o")
@@ -177,7 +177,7 @@ contains
         integer :: current
         integer :: n_fieldlines
         real(dp), dimension(2) :: phi_max, theta_max
-        real(dp), dimension(2) :: phi_limits
+        real(dp), dimension(4) :: phi_limits, theta_limits
         integer, parameter :: n_points = 300
         real(dp), dimension(n_points) :: phi, theta
         real(dp), dimension(n_points, n_points) :: phi_mesh, theta_mesh
@@ -189,8 +189,15 @@ contains
 
         call plt%initialize(xlabel="$\varphi$", ylabel="$\vartheta$")
 
-        phi_limits = +(/-1.5_dp*pi/N_tor + fieldlines(1)%phi_0, &
-                        +1.5_dp*pi/N_tor + fieldlines(n_fieldlines)%phi_0/)
+        phi_limits(1) = fieldlines(1)%phi_max(1)
+        phi_limits(2) = fieldlines(1)%phi_max(2)
+        phi_limits(3) = fieldlines(n_fieldlines)%phi_max(1)
+        phi_limits(4) = fieldlines(n_fieldlines)%phi_max(2)
+
+        theta_limits(1:2) = fieldlines(1)%get_theta(fieldlines(1)%phi_max)
+        theta_limits(3:4) = fieldlines(n_fieldlines)%get_theta( &
+                            fieldlines(n_fieldlines)%phi_max)
+
         do current = 1, size(fieldlines)
             phi_max = fieldlines(current)%phi_max
             call linspace(phi_max(1), &
@@ -198,7 +205,7 @@ contains
                           n_points, &
                           phi)
             theta = fieldlines(current)%get_theta(phi)
-            write (label, '(F0.1)') fieldlines(current)%theta_0
+            write (label, '(F0.1)') fieldlines(current)%xi_0
             call plt%add_plot(phi, theta, &
                               label=label, &
                               linestyle="k.", &
@@ -210,8 +217,8 @@ contains
                               markersize=5)
         end do
 
-        call linspace(phi_limits(1), phi_limits(2), n_points, phi)
-        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta)
+        call linspace(minval(phi_limits), maxval(phi_limits), n_points, phi)
+        call linspace(minval(theta_limits), maxval(theta_limits), n_points, theta)
         do theta_idx = 1, n_points
             do phi_idx = 1, n_points
                 call field%compute_B_mod(theta(theta_idx), &
@@ -227,28 +234,128 @@ contains
 
     end subroutine plot_fieldlines_over_field
 
+    subroutine plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor)
+
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: M_pol, N_tor
+
+        type(myplot) :: plt
+        integer :: current
+        integer :: n_fieldlines
+        real(dp), dimension(2) :: phi_max, theta_max
+        real(dp), dimension(2) :: chi_max, xi_max
+        real(dp), dimension(4) :: phi_limits, theta_limits
+        real(dp), dimension(4) :: chi_limits, xi_limits
+        integer, parameter :: n_points = 300
+        real(dp), dimension(n_points) :: phi, theta
+        real(dp), dimension(n_points) :: chi, xi
+        real(dp) :: phi_temp, theta_temp
+        real(dp), dimension(n_points, n_points) :: B_mesh
+        integer :: xi_idx, chi_idx
+        character(len=100) :: label
+
+        n_fieldlines = size(fieldlines)
+
+        call plt%initialize(xlabel="$\chi$", ylabel="$\xi$")
+
+        phi_limits(1) = fieldlines(1)%phi_max(1)
+        phi_limits(2) = fieldlines(1)%phi_max(2)
+        phi_limits(3) = fieldlines(n_fieldlines)%phi_max(1)
+        phi_limits(4) = fieldlines(n_fieldlines)%phi_max(2)
+
+        theta_limits(1:2) = fieldlines(1)%get_theta(fieldlines(1)%phi_max)
+        theta_limits(3:4) = fieldlines(n_fieldlines)%get_theta( &
+                            fieldlines(n_fieldlines)%phi_max)
+
+        call convert_to_chi_xi(theta_limits, phi_limits, &
+                               M_pol, N_tor, &
+                               xi_limits, chi_limits)
+        print *, xi_limits
+        print *, phi_limits
+        do current = 1, size(fieldlines)
+            phi_max = fieldlines(current)%phi_max
+            call linspace(phi_max(1), &
+                          phi_max(2), &
+                          n_points, &
+                          phi)
+            theta = fieldlines(current)%get_theta(phi)
+            call convert_to_chi_xi(theta, phi, M_pol, N_tor, xi, chi)
+            write (label, '(F0.1)') fieldlines(current)%xi_0
+            call plt%add_plot(chi, xi, &
+                              label=label, &
+                              linestyle="k.", &
+                              linewidth=1)
+            theta_max = fieldlines(current)%get_theta(phi_max)
+            call convert_to_chi_xi(theta_max, phi_max, M_pol, N_tor, xi_max, chi_max)
+            call plt%add_plot(chi_max, xi_max, &
+                              label=label, &
+                              linestyle="ro", &
+                              markersize=5)
+        end do
+
+        call linspace(minval(chi_limits), maxval(chi_limits), n_points, chi)
+        call linspace(minval(xi_limits), maxval(xi_limits), n_points, xi)
+        do xi_idx = 1, n_points
+            do chi_idx = 1, n_points
+                call convert_to_theta_phi(xi(xi_idx), chi(chi_idx), M_pol, N_tor, &
+                                          theta_temp, phi_temp)
+                call field%compute_B_mod(theta_temp, &
+                                         phi_temp, &
+                                         B_mesh(xi_idx, chi_idx))
+            end do
+        end do
+        call plt%add_contour(chi, xi, transpose(B_mesh), &
+                             levels=20, &
+                             colorbar=.true., &
+                             filled=.true.)
+        call plt%show()
+
+    end subroutine plot_fieldlines_over_field_chi_xi
+
+    subroutine convert_to_chi_xi(theta, phi, M_pol, N_tor, xi, chi)
+        real(dp), dimension(:), intent(in) :: theta, phi
+        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), dimension(:), intent(out) :: xi, chi
+
+        xi = N_tor*theta + M_pol*phi
+        chi = M_pol*theta - N_tor*phi
+    end subroutine convert_to_chi_xi
+
+    subroutine convert_to_theta_phi(xi, chi, M_pol, N_tor, theta, phi)
+        real(dp), intent(in) :: xi, chi
+        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(out) :: theta, phi
+
+        real(dp) :: normalization
+
+        normalization = M_pol**2.0_dp + N_tor**2.0_dp
+        theta = (N_tor*xi + M_pol*chi)/normalization
+        phi = (M_pol*xi - N_tor*chi)/normalization
+    end subroutine convert_to_theta_phi
+
     subroutine plot_delta_eta(fieldlines, delta_eta_1, iota_p)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in), optional :: delta_eta_1, iota_p
 
-        real(dp), dimension(size(fieldlines)) :: theta_0
+        real(dp), dimension(size(fieldlines)) :: xi_0
         type(myplot) :: plt
 
-        theta_0 = fieldlines%theta_0
+        xi_0 = fieldlines%xi_0
 
         call plt%initialize(xlabel="$\vartheta_{mid}$", &
                             ylabel="$\Delta \eta$", &
                             legend=.true.)
 
-        call plt%add_plot(theta_0, &
+        call plt%add_plot(xi_0, &
                           fieldlines%delta_eta, &
                           label="$\Delta \eta$", &
                           linestyle="-")
 
         if (present(delta_eta_1)) then
             if (.not. present(iota_p)) error stop
-            call plt%add_plot(theta_0, &
-                              abs(delta_eta_1) - delta_eta_1*cos(theta_0 - iota_p), &
+            call plt%add_plot(xi_0, &
+                              abs(delta_eta_1) - delta_eta_1*cos(xi_0 - iota_p), &
                               label="$\Delta \eta$ approx analytic", &
                               linestyle="-")
         end if
@@ -262,17 +369,17 @@ contains
 
         type(myplot) :: plt
 
-        call plt%initialize(xlabel="$\vartheta_{mid} [\pi]$", &
+        call plt%initialize(xlabel="$\xi_{mid} [\pi]$", &
                             ylabel="$\Delta A$", &
                             legend=.true.)
 
-        call plt%add_plot(fieldlines%theta_0/pi, &
+        call plt%add_plot(fieldlines%xi_0/pi, &
                           fieldlines%delta_aspect_ratio, &
                           label="$\Delta A$", &
                           linestyle="-")
         if (present(delta_A_1_analytic)) then
-            call plt%add_plot(fieldlines%theta_0/pi, &
-                              delta_A_1_analytic*cos(fieldlines%theta_0), &
+            call plt%add_plot(fieldlines%xi_0/pi, &
+                              delta_A_1_analytic*cos(fieldlines%xi_0), &
                               label="$\Delta A$ approx analytic", &
                               linestyle="-")
         end if
