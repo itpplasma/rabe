@@ -6,7 +6,7 @@ program test_fieldline
     implicit none
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-    real(dp), parameter :: theta_mode = 2.0_dp, phi_mode = -4.0_dp
+    real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
     !The minimum/maximum chi of a single mode field
     !-cos(chi) with chi = M*theta - N*phi
     real(dp), parameter :: chi_max = pi
@@ -22,19 +22,19 @@ program test_fieldline
 contains
 
     subroutine test_guess_chi_at_minimum()
-        use make_fieldline, only: guess_chi_min_over_N
+        use make_fieldline, only: guess_chi_min
 
-        real(dp), parameter :: retol = 1e-2*0.5_dp*abs(phi_mode)
+        real(dp), parameter :: retol = 1e-2*0.5_dp*abs(N_tor)
 
         real(dp) :: stor(4)
-        real(dp) :: found_chi_min_over_N, found_chi_min
+        real(dp) :: chi_min, found_chi_min
         integer :: idx
 
         stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
-            call guess_chi_min_over_N(field, found_chi_min_over_N)
-            found_chi_min = mod(found_chi_min_over_N*phi_mode - pi, 2*pi) + pi
+            call guess_chi_min(field, chi_min, N_tor, M_pol)
+            found_chi_min = mod(chi_min - pi, 2*pi) + pi
             if (not_same(chi_min, found_chi_min, retol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_guess_chi_min failed: chi at minima"
@@ -73,8 +73,8 @@ contains
                                              fieldline, &
                                              interval, &
                                              phi_tol)
-            call find_analytic_maxima_along_fieldline(theta_mode, &
-                                                      phi_mode, &
+            call find_analytic_maxima_along_fieldline(M_pol, &
+                                                      N_tor, &
                                                       chi_max, &
                                                       fieldline, &
                                                       analytic_phi)
@@ -125,7 +125,7 @@ contains
         use make_fieldline, only: set_fieldline_labels_along_chi_min
         use utils, only: linspace
 
-        real(dp), parameter :: retol = (1e-2*phi_mode)**2, abstol = 0.0_dp
+        real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
@@ -140,7 +140,7 @@ contains
         fieldlines(:)%theta_0 = theta_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_along_chi_min(field, theta_mode, phi_mode, &
+        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, &
                                                 fieldlines)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &

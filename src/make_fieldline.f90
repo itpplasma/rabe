@@ -92,28 +92,22 @@ contains
         real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
-        real(dp) :: chi_min_over_N, tol, chi_min
+        real(dp) :: chi_min, tol
         real(dp) :: normalization, nfp
 
-        if (N_tor .ne. 0.0_dp) then
-            call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
+        call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
 
-            if (present(phi_tol)) then
-                tol = phi_tol*3.0_dp
-            else
-                tol = 3.0_dp*1e-2
-            end if
-            chi_min = chi_min_over_N*N_tor
-            if (not_multiple_of_2pi(chi_min, tol)) then
-                print *, "error: found chi_min is not multiple of 2pi"
-                print *, "chi_min: ", chi_min/pi, "[pi]"
-                print *, "The minima contour of the ideal omnigenous configuration"
-                print *, "must pass through (theta=0,phi=0)!"
-                error stop
-            end if
+        if (present(phi_tol)) then
+            tol = phi_tol*3.0_dp
         else
-            print *, "check not yet supported for N=0"
-            !error stop
+            tol = 3.0_dp*1e-2
+        end if
+        if (not_multiple_of_2pi(chi_min, tol)) then
+            print *, "error: found chi_min is not multiple of 2pi"
+            print *, "chi_min: ", chi_min/pi, "[pi]"
+            print *, "The minima contour of the ideal omnigenous configuration"
+            print *, "must pass through (theta=0,phi=0)!"
+            error stop
         end if
 
         normalization = N_tor**2.0_dp + M_pol**2.0_dp
@@ -122,12 +116,13 @@ contains
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
     end subroutine set_fieldline_labels_along_chi_min
 
-    subroutine guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
+    subroutine guess_chi_min(field, chi_min, N_tor, M_pol, tol)
         use find_extrema, only: find_local_minima
 
         class(field_t), intent(in) :: field
-        real(dp), intent(in), optional :: phi_tol
-        real(dp), intent(out) :: chi_min_over_N
+        real(dp), intent(out) :: chi_min
+        real(dp), intent(in) :: N_tor, M_pol
+        real(dp), intent(in), optional :: tol
 
         ! chi = M*theta - N*phi
         ! as f~f(chi) = sum c_j*cos(j*chi) with 1<j<j_max
@@ -135,13 +130,42 @@ contains
         real(dp), dimension(2), parameter :: interval = (/0.0_dp, 3.0_dp*pi/)
         real(dp) :: location(1)
 
-        call find_local_minima(estimate_B_mod_of_chi_over_N, interval, location, &
-                               phi_tol)
-        chi_min_over_N = location(1)
+        ! If f(theta,phi) approx f(chi = M*theta - N*phi) one can estiamte
+        ! f(chi/N) by choosing 1 specific theta-phi combination for that
+        ! chi value e.g.
+        ! - phi=-chi/N and theta=0 or
+        ! - phi=0 and theta=chi/M
+
+        if (nint(N_tor) /= 0) then
+            call find_local_minima(B_mod_along_phi_axis, interval, location, tol)
+        elseif (nint(M_pol) /= 0) then
+            call find_local_minima(B_mod_along_theta_axis, interval, location, tol)
+        else
+            print *, "error in guess_chi_min: M_pol=N_tor=0"
+            print *, "M_pol and N_tor must not be both zero!"
+            error stop
+        end if
+
+        chi_min = location(1)
 
     contains
 
-        subroutine estimate_B_mod_of_chi_over_N(chi_over_N, B_mod)
+        subroutine B_mod_along_phi_axis(chi, B_mod)
+            real(dp), dimension(:), intent(in) :: chi
+            real(dp), dimension(:), intent(out) :: B_mod
+
+            real(dp), dimension(size(chi, 1)) :: phi, theta
+            integer :: idx
+
+            phi = -chi/N_tor
+            theta = 0.0_dp
+
+            do idx = 1, size(chi, 1)
+                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+            end do
+        end subroutine B_mod_along_phi_axis
+
+        subroutine B_mod_along_theta_axis(chi_over_N, B_mod)
             real(dp), dimension(:), intent(in) :: chi_over_N
             real(dp), dimension(:), intent(out) :: B_mod
 
@@ -157,9 +181,9 @@ contains
             do idx = 1, size(chi_over_N, 1)
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
-        end subroutine estimate_B_mod_of_chi_over_N
+        end subroutine B_mod_along_theta_axis
 
-    end subroutine guess_chi_min_over_N
+    end subroutine guess_chi_min
 
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
