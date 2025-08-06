@@ -69,10 +69,10 @@
 ## Symbol Warnings (Linker)
 
 ### src/utils/libutils_lib.a
-- constants.f90.o has no symbols (ranlib warning)
+- constants.f90.o has no symbols (ranlib warning) [NO FIX NEEDED - macOS-specific, harmless]
 
 ### src/neo/libneo_lib.a
-- neo_inter_interfaces.f90.o has no symbols (ranlib warning)
+- neo_inter_interfaces.f90.o has no symbols (ranlib warning) [NO FIX NEEDED - macOS-specific, harmless]
 
 ## Priority Order for Fixes
 
