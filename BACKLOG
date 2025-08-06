@@ -55,10 +55,10 @@
 - ~~Line 46: Unused parameter 'n_points'~~ [FIXED]
 
 ### test/integration/test_I_integral_helical_anti_sigma.f90
-- Line 29: Unused parameter 'dr_dpsi'
-- Line 31: Unused parameter 'i_tor'
-- Line 30: Unused parameter 'j_pol_over_n_tor'
-- Line 32: Unused parameter 'r'
+- ~~Line 29: Unused parameter 'dr_dpsi'~~ [FIXED]
+- ~~Line 31: Unused parameter 'i_tor'~~ [FIXED]
+- ~~Line 30: Unused parameter 'j_pol_over_n_tor'~~ [FIXED]
+- ~~Line 32: Unused parameter 'r'~~ [FIXED]
 
 ## Large Array Warnings (-Wsurprising)
 
