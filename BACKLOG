@@ -1,0 +1,84 @@
+# Compiler Warnings Backlog
+
+## Array Temporaries Warnings (-Warray-temporaries)
+
+### src/fieldline_integrals.f90
+- Line 36: Creating array temporary at fieldlines%xi_0
+- Line 37: Creating array temporary at fieldlines%radial_drift
+- Line 41: Creating array temporary at fieldlines%xi_0
+- Line 42: Creating array temporary at fieldlines%delta_aspect_ratio
+- Line 48: Creating array temporary at fieldlines%delta_eta
+
+### src/find_extrema.f90
+- Line 71: Creating array temporary at ieee_value(location, ieee_quiet_nan)
+- Line 81: Creating array temporary at value(current_region)
+
+### src/neo_field.f90
+- Line 43: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)
+- Line 62: Creating array temporary at (/0.0_dp, phi, theta/)
+- Line 77: Creating array temporary at (/0.0_dp, phi, theta/)
+- Line 92: Creating array temporary at (/0.0_dp, phi, theta/)
+- Line 106: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)
+
+### test/integration/test_against_neo2_anti_sigma.f90
+- Line 58: Creating array temporary (2 occurrences)
+- Line 62: Creating array temporary (2 occurrences)
+- Line 63: Creating array temporary (2 occurrences)
+
+### test/integration/test_lambda_helical_anti_sigma.f90
+- Line 105: Creating array temporary for argument 'f'
+- Line 109: Creating array temporary for argument 'f'
+
+### test/unit/plot_misc.f90
+- Line 18: Creating array temporary at angle/pi
+- Line 19: Creating array temporary at S_A(angle)/pi
+- Line 22: Creating array temporary at angle/pi
+- Line 23: Creating array temporary at S_B(angle)/pi
+
+### test/helpers/plot_quantities.f90
+- Multiple lines (32, 33, 36, 37, 69, 141, 147, 148, 254, 308, 351, 358, 376, 377, 381, 382, 410, 415, 419, 423, 427, 436, 440, 468, 473, 521, 532, 543, 554, 565, 652): Creating array temporary warnings
+
+## Real Comparison Warning (-Wcompare-reals)
+
+### src/make_fieldline.f90
+- Line 98: Inequality comparison for REAL(8) - if (N_tor .ne. 0.0_dp)
+
+## Character Warnings
+
+### test/plot/pyplot-fortran/pyplot_module.F90
+- Line 189: Missing terminating ' character
+- Line 206: Missing terminating ' character
+
+## Unused Parameter Warnings (-Wunused-parameter)
+
+### test/helpers/distribution_function.f90
+- Line 46: Unused parameter 'n_points'
+
+### test/integration/test_I_integral_helical_anti_sigma.f90
+- Line 29: Unused parameter 'dr_dpsi'
+- Line 31: Unused parameter 'i_tor'
+- Line 30: Unused parameter 'j_pol_over_n_tor'
+- Line 32: Unused parameter 'r'
+
+## Large Array Warnings (-Wsurprising)
+
+### test/helpers/plot_quantities.f90
+- Line 254: Array 'b_mesh' larger than stack limit
+- Line 184: Array 'b_mesh' larger than stack limit
+
+## Symbol Warnings (Linker)
+
+### src/utils/libutils_lib.a
+- constants.f90.o has no symbols (ranlib warning)
+
+### src/neo/libneo_lib.a
+- neo_inter_interfaces.f90.o has no symbols (ranlib warning)
+
+## Priority Order for Fixes
+
+1. Real comparison warning (correctness issue)
+2. Character warnings (syntax issues)
+3. Unused parameters (code cleanliness)
+4. Array temporaries (performance)
+5. Large arrays (stack safety)
+6. Symbol warnings (build system)
