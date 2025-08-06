@@ -95,7 +95,7 @@ contains
         real(dp) :: chi_min_over_N, tol, chi_min
         real(dp) :: normalization, nfp
 
-        if (N_tor .ne. 0.0_dp) then
+        if (nint(N_tor) /= 0) then
             call guess_chi_min_over_N(field, chi_min_over_N, phi_tol)
 
             if (present(phi_tol)) then

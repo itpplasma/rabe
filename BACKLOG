@@ -41,7 +41,7 @@
 ## Real Comparison Warning (-Wcompare-reals)
 
 ### src/make_fieldline.f90
-- Line 98: Inequality comparison for REAL(8) - if (N_tor .ne. 0.0_dp)
+- ~~Line 98: Inequality comparison for REAL(8) - if (N_tor .ne. 0.0_dp)~~ [FIXED]
 
 ## Character Warnings
 
