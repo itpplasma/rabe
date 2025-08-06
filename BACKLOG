@@ -63,8 +63,8 @@
 ## Large Array Warnings (-Wsurprising)
 
 ### test/helpers/plot_quantities.f90
-- Line 254: Array 'b_mesh' larger than stack limit
-- Line 184: Array 'b_mesh' larger than stack limit
+- ~~Line 254: Array 'b_mesh' larger than stack limit~~ [FIXED]
+- ~~Line 184: Array 'b_mesh' larger than stack limit~~ [FIXED]
 
 ## Symbol Warnings (Linker)
 

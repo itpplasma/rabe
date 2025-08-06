@@ -181,7 +181,7 @@ contains
         integer, parameter :: n_points = 300
         real(dp), dimension(n_points) :: phi, theta
         real(dp), dimension(n_points, n_points) :: phi_mesh, theta_mesh
-        real(dp), dimension(n_points, n_points) :: B_mesh
+        real(dp), dimension(:,:), allocatable :: B_mesh
         integer :: theta_idx, phi_idx
         character(len=100) :: label
 
@@ -219,6 +219,7 @@ contains
 
         call linspace(minval(phi_limits), maxval(phi_limits), n_points, phi)
         call linspace(minval(theta_limits), maxval(theta_limits), n_points, theta)
+        allocate(B_mesh(n_points, n_points))
         do theta_idx = 1, n_points
             do phi_idx = 1, n_points
                 call field%compute_B_mod(theta(theta_idx), &
@@ -230,6 +231,7 @@ contains
                              levels=20, &
                              colorbar=.true., &
                              filled=.true.)
+        deallocate(B_mesh)
         call plt%show()
 
     end subroutine plot_fieldlines_over_field
@@ -251,7 +253,7 @@ contains
         real(dp), dimension(n_points) :: phi, theta
         real(dp), dimension(n_points) :: chi, xi
         real(dp) :: phi_temp, theta_temp
-        real(dp), dimension(n_points, n_points) :: B_mesh
+        real(dp), dimension(:,:), allocatable :: B_mesh
         integer :: xi_idx, chi_idx
         character(len=100) :: label
 
@@ -296,6 +298,7 @@ contains
 
         call linspace(minval(chi_limits), maxval(chi_limits), n_points, chi)
         call linspace(minval(xi_limits), maxval(xi_limits), n_points, xi)
+        allocate(B_mesh(n_points, n_points))
         do xi_idx = 1, n_points
             do chi_idx = 1, n_points
                 call convert_to_theta_phi(xi(xi_idx), chi(chi_idx), M_pol, N_tor, &
@@ -309,6 +312,7 @@ contains
                              levels=20, &
                              colorbar=.true., &
                              filled=.true.)
+        deallocate(B_mesh)
         call plt%show()
 
     end subroutine plot_fieldlines_over_field_chi_xi
