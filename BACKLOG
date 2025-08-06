@@ -46,8 +46,8 @@
 ## Character Warnings
 
 ### test/plot/pyplot-fortran/pyplot_module.F90
-- Line 189: Missing terminating ' character
-- Line 206: Missing terminating ' character
+- ~~Line 189: Missing terminating ' character~~ [FIXED]
+- ~~Line 206: Missing terminating ' character~~ [FIXED]
 
 ## Unused Parameter Warnings (-Wunused-parameter)
 

@@ -186,7 +186,7 @@
     logical,               intent(in), optional :: axis_equal      !! set true for axis = 'equal'
     logical,               intent(in), optional :: polar           !! set true for polar plots (cannot use with mplot3d)
     character(len=*),      intent(in), optional :: real_fmt        !! format string for real numbers (examples: '(E30.16)' [default], '*')
-    logical,               intent(in), optional :: use_oo_api      !! avoid matplotlib's GUI by using the OO interface (cannot use with showfig)
+    logical,               intent(in), optional :: use_oo_api      !! avoid matplotlib GUI by using the OO interface (cannot use with showfig)
     logical,               intent(in), optional :: axisbelow       !! to put the grid lines below the other chart elements [default is true]
     logical,               intent(in), optional :: tight_layout    !! enable tight layout [default is false]
     logical,               intent(in), optional :: raw_strings     !! if True, all strings sent to Python are treated as
@@ -203,7 +203,7 @@
     character(len=max_int_len)  :: ytick_labelsize_str   !! size of x axis tick labels dummy string
     character(len=max_int_len)  :: ztick_labelsize_str   !! size of z axis tick labels dummy string
     character(len=max_int_len)  :: legend_fontsize_str   !! size of legend font dummy string
-    character(len=:),allocatable :: python_fig_func      !! Python's function for creating a new Figure instance
+    character(len=:),allocatable :: python_fig_func      !! Python function for creating a new Figure instance
 
     character(len=*), parameter :: default_font_size_str = '10' !! the default font size for plots
 
