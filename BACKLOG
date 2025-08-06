@@ -14,11 +14,11 @@
 - Line 81: Creating array temporary at value(current_region)
 
 ### src/neo_field.f90
-- Line 43: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)
-- Line 62: Creating array temporary at (/0.0_dp, phi, theta/)
-- Line 77: Creating array temporary at (/0.0_dp, phi, theta/)
-- Line 92: Creating array temporary at (/0.0_dp, phi, theta/)
-- Line 106: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)
+- ~~Line 43: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)~~ [FIXED]
+- ~~Line 62: Creating array temporary at (/0.0_dp, phi, theta/)~~ [FIXED]
+- ~~Line 77: Creating array temporary at (/0.0_dp, phi, theta/)~~ [FIXED]
+- ~~Line 92: Creating array temporary at (/0.0_dp, phi, theta/)~~ [FIXED]
+- ~~Line 106: Creating array temporary at (/stor, 0.0_dp, 0.0_dp/)~~ [FIXED]
 
 ### test/integration/test_against_neo2_anti_sigma.f90
 - Line 58: Creating array temporary (2 occurrences)

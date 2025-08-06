@@ -40,7 +40,7 @@ contains
         end if
 
         in_file = bc_filename
-        x = (/stor, 0.0_dp, 0.0_dp/)
+        x = [stor, 0.0_dp, 0.0_dp]
         call neo_magfie_a(x, &
                           dummy_B_mod, &
                           dummy_sqrtg, &
@@ -59,7 +59,7 @@ contains
 
         real(dp) :: x(3), dB_dx_neo2(3), dummy_iota
 
-        x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
+        x = [0.0_dp, phi, theta] !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, B_mod, sqrtg, dB_dx_neo2, dummy_iota)
         dB_dx(1) = dB_dx_neo2(1)
         dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
@@ -74,7 +74,7 @@ contains
 
         real(dp) :: x(3), dB_dx_neo2(3), dummy_sqrtg, dummy_iota
 
-        x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
+        x = [0.0_dp, phi, theta] !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, B_mod, dummy_sqrtg, dB_dx_neo2, dummy_iota)
         dB_dx(1) = dB_dx_neo2(1)
         dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
@@ -89,7 +89,7 @@ contains
 
         real(dp) :: x(3), dummy_iota, dummy_sqrtg, dummy_dB_dx(3)
 
-        x = (/0.0_dp, phi, theta/) !neo convention of x=(r, phi, theta)
+        x = [0.0_dp, phi, theta] !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, B_mod, dummy_sqrtg, dummy_dB_dx, dummy_iota)
 
     end subroutine compute_B_mod
@@ -103,7 +103,7 @@ contains
         real(dp) :: x(3), dummy_B_mod, dummy_sqrtg, dummy_dB_dx(3)
 
         if (magfie_newspline .ne. 1) magfie_newspline = 1
-        x = (/stor, 0.0_dp, 0.0_dp/)
+        x = [stor, 0.0_dp, 0.0_dp]
         call neo_magfie_a(x, &
                           dummy_B_mod, &
                           dummy_sqrtg, &
