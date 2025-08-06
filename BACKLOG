@@ -52,7 +52,7 @@
 ## Unused Parameter Warnings (-Wunused-parameter)
 
 ### test/helpers/distribution_function.f90
-- Line 46: Unused parameter 'n_points'
+- ~~Line 46: Unused parameter 'n_points'~~ [FIXED]
 
 ### test/integration/test_I_integral_helical_anti_sigma.f90
 - Line 29: Unused parameter 'dr_dpsi'

@@ -43,7 +43,6 @@ contains
         real(dp) :: covariant_factor, prefactor_A
         real(dp) :: l_c
 
-        integer, parameter :: n_points = 300
         integer :: max_mode
         real(dp), dimension(:), allocatable :: theta_mid, g_off
 
