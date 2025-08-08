@@ -334,30 +334,29 @@ contains
         phi = (M_pol*xi - N_tor*chi)/normalization
     end subroutine convert_to_theta_phi
 
-    subroutine plot_delta_eta(fieldlines, delta_eta_1, iota_p)
+    subroutine plot_delta_eta(fieldlines, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), intent(in), optional :: delta_eta_1, iota_p
+        real(dp), intent(in), optional :: delta_eta_1
 
-        real(dp), dimension(size(fieldlines)) :: xi_0
+        real(dp), dimension(size(fieldlines)) :: shifted_label
         type(myplot) :: plt
 
-        xi_0 = fieldlines%xi_0
+        shifted_label = fieldlines%xi_0 - fieldlines(1)%iota_p
 
-        call plt%initialize(xlabel="$\vartheta_{mid}$", &
+        call plt%initialize(xlabel="$\xi_{mid} - \iota_p$ [$\pi$]", &
                             ylabel="$\Delta \eta$", &
                             legend=.true.)
 
-        call plt%add_plot(xi_0, &
+        call plt%add_plot(shifted_label/pi, &
                           fieldlines%delta_eta, &
                           label="$\Delta \eta$", &
                           linestyle="-")
 
         if (present(delta_eta_1)) then
-            if (.not. present(iota_p)) error stop
-            call plt%add_plot(xi_0, &
-                              abs(delta_eta_1) - delta_eta_1*cos(xi_0 - iota_p), &
+            call plt%add_plot(shifted_label/pi, &
+                              abs(delta_eta_1) - delta_eta_1*cos(shifted_label), &
                               label="$\Delta \eta$ approx analytic", &
-                              linestyle="-")
+                              linestyle="--")
         end if
 
         call plt%show()
