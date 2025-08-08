@@ -33,7 +33,7 @@ contains
                                                 phi_tol)
 
         nfp = max(1.0_dp, abs(N_tor))
-        fieldlines%iota_p = iota*sign(pi, N_tor)* &
+        fieldlines%iota_p = sign(pi, N_tor)* &
                             (N_tor*iota + M_pol)/(N_tor - iota*M_pol)* &
                             nfp/(N_tor**2.0_dp + M_pol**2.0_dp)
 
@@ -93,7 +93,7 @@ contains
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
         real(dp) :: chi_min, tol
-        real(dp) :: normalization, nfp
+        real(dp) :: nfp
 
         call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
 
@@ -110,7 +110,6 @@ contains
             error stop
         end if
 
-        normalization = N_tor**2.0_dp + M_pol**2.0_dp
         nfp = max(1.0_dp, abs(N_tor))
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
