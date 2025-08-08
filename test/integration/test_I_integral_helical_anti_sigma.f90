@@ -31,7 +31,7 @@ program test_I_integral_helical_anti_sigma
     real(dp), parameter :: I_tor = 0.0_dp
     real(dp), parameter :: R = 8.0_dp
     type(anti_sigma_field_t) :: field
-    real(dp), dimension(2), parameter :: chi_max = (/+pi, -pi/) + 2.0_dp*pi
+    real(dp), dimension(2), parameter :: chi_max = (/+pi, -pi/)
 
     real(dp), parameter :: phi_tol = 1e-6
     real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0

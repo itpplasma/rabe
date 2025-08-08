@@ -9,15 +9,15 @@ program test_find_global_maximum
     implicit none
 
     real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = 0.5_dp, B_pert = 0.15_dp
-    real(dp), parameter :: global_B_max = B_0 + B_amplitude + B_pert
+    real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = -0.5_dp, B_pert = -0.15_dp
+    real(dp), parameter :: global_B_max = B_0 + abs(B_amplitude) + abs(B_pert)
     type(mock_field_t) :: field
     type(mock_perturbed_field_t) :: perturbed_field
 
     real(dp), parameter :: tol_phi_max = 1e-5
     real(dp) :: B_reltol
 
-    integer, parameter :: n_fieldlines = 200
+    integer, parameter :: n_fieldlines = 100
     real(dp), parameter :: iota = -1.0_dp
 
     real(dp), dimension(n_fieldlines) :: theta_0

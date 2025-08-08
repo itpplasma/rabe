@@ -12,18 +12,18 @@ program test_anti_sigma_analytic
     implicit none
 
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.0125_dp, eps_1 = 0.0005_dp
-    real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*eps_0)/(B_0**2*N_tor)
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.0125_dp, eps_1 = -0.0005_dp
+    real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*abs(eps_0))/(B_0**2*N_tor)
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
-    real(dp), parameter :: delta_A_o_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*eps_0)
-    real(dp), parameter :: average_lambda_b = sqrt(8.0_dp*eps_0)/pi
-    real(dp), parameter :: phi_0 = pi
+    real(dp), parameter :: delta_A_o_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*abs(eps_0))
+    real(dp), parameter :: average_lambda_b = sqrt(8.0_dp*abs(eps_0))/pi
+    real(dp), parameter :: phi_0 = 0.0_dp
     type(anti_sigma_field_t) :: field
 
     real(dp), parameter :: phi_tol = 4e-6
-    real(dp), parameter :: reltol_radial_drift = 2.0_dp*eps_0
-    real(dp), parameter :: reltol_aspect_ratio = eps_ratio
-    real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*eps_0
+    real(dp), parameter :: reltol_radial_drift = 2.0_dp*abs(eps_0)
+    real(dp), parameter :: reltol_aspect_ratio = abs(eps_ratio)
+    real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*abs(eps_0)
     real(dp), parameter :: reltol_average_B_squared = 2.0_dp*eps_0**2
     real(dp), parameter :: abstol = 1e-13
     integer, parameter :: n_fieldlines = 60
