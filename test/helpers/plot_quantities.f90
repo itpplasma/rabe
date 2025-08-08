@@ -36,7 +36,7 @@ contains
         call plt%add_plot(xi_0_shifted/pi, &
                           fieldlines%B_max(2), &
                           label="right $B_{max}$", &
-                          linestyle="-o")
+                          linestyle="--o")
         call plt%show()
     end subroutine plot_maxima_over_label
 
@@ -338,23 +338,20 @@ contains
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in), optional :: delta_eta_1
 
-        real(dp), dimension(size(fieldlines)) :: shifted_label
         type(myplot) :: plt
 
-        shifted_label = fieldlines%xi_0 - fieldlines(1)%iota_p
-
-        call plt%initialize(xlabel="$\xi_{mid} - \iota_p$ [$\pi$]", &
+        call plt%initialize(xlabel="$\xi_{mid}$ [$\pi$]", &
                             ylabel="$\Delta \eta$", &
                             legend=.true.)
 
-        call plt%add_plot(shifted_label/pi, &
+        call plt%add_plot(fieldlines%xi_0/pi, &
                           fieldlines%delta_eta, &
                           label="$\Delta \eta$", &
                           linestyle="-")
 
         if (present(delta_eta_1)) then
-            call plt%add_plot(shifted_label/pi, &
-                              abs(delta_eta_1) - delta_eta_1*cos(shifted_label), &
+            call plt%add_plot(fieldlines%xi_0/pi, &
+                              abs(delta_eta_1) + delta_eta_1*cos(fieldlines%xi_0), &
                               label="$\Delta \eta$ approx analytic", &
                               linestyle="--")
         end if
