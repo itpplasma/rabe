@@ -77,7 +77,7 @@ contains
         do current_location = 2, n_steps - 1
             if (value(current_location - 1) <= value(current_location)) then
                 if (value(current_location + 1) <= value(current_location)) then
-                    current_region = (/-1, 0, 1/) + current_location
+                    current_region = [-1, 0, 1] + current_location
                     if (cannot_resolve(value(current_region))) then
                         print *, "find_local_maxima: can not resolve maxima"
                         print *, "requested abstol: ", abstol

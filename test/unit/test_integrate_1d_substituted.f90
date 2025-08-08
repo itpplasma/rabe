@@ -6,15 +6,15 @@ program test_integrate_1d_substituted
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-8_dp, abstol = 0.0_dp
-    real(dp), dimension(2), parameter :: interval_1 = (/-1.0_dp, 1.0_dp/)
+    real(dp), dimension(2), parameter :: interval_1 = [-1.0_dp, 1.0_dp]
     real(dp), parameter :: integral_1 = 0.5_dp*pi
-    real(dp), dimension(2), parameter :: interval_2 = (/0.0_dp, 1.0_dp/)
+    real(dp), dimension(2), parameter :: interval_2 = [0.0_dp, 1.0_dp]
     real(dp), parameter :: integral_2 = 2.0_dp/3.0_dp
-    real(dp), dimension(2), parameter :: interval_3 = (/0.0_dp, 0.5_dp*pi/)
+    real(dp), dimension(2), parameter :: interval_3 = [0.0_dp, 0.5_dp*pi]
     real(dp), parameter :: integral_3 = 2.0_dp*(sqrt(2.0_dp) - 1.0_dp)
-    real(dp), dimension(2), parameter :: interval_4 = (/-pi, pi/)
+    real(dp), dimension(2), parameter :: interval_4 = [-pi, pi]
     real(dp), parameter :: integral_4 = 4.0_dp*sqrt(2.0_dp)
-    real(dp), dimension(2), parameter :: interval_5 = (/-pi, pi/)
+    real(dp), dimension(2), parameter :: interval_5 = [-pi, pi]
     real(dp), parameter :: eps = 0.5_dp
     real(dp), parameter :: integral_5 = integral_4*(1.0_dp + eps/3.0_dp)
 

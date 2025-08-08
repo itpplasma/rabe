@@ -15,10 +15,10 @@ contains
 
         real(dp), parameter :: tol = 1e-2
         real(dp), parameter :: phi_tol = 1e-7
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/)
-        real(dp), dimension(2), parameter :: expect_locs = (/2.1386_dp, 5.64832_dp/)
-        real(dp), dimension(2), parameter :: interval_2 = (/-1.5_dp, 3.5_dp/)
-        real(dp), dimension(2), parameter :: expect_locs_2 = (/-1.0_dp, 3.0_dp/)
+        real(dp), dimension(2), parameter :: interval = [0.0_dp, 2.0_dp*pi]
+        real(dp), dimension(2), parameter :: expect_locs = [2.1386_dp, 5.64832_dp]
+        real(dp), dimension(2), parameter :: interval_2 = [-1.5_dp, 3.5_dp]
+        real(dp), dimension(2), parameter :: expect_locs_2 = [-1.0_dp, 3.0_dp]
         real(dp) :: found_loc(1), found_locs(2)
 
         call find_local_minima(negative_sincos_func, interval, found_loc, tol)
@@ -70,8 +70,8 @@ contains
         use find_extrema, only: find_local_maxima
 
         real(dp), parameter :: tol = 1e-2
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 2.0_dp*pi/)
-        real(dp), dimension(2), parameter :: expect_locs = (/2.1386_dp, 5.64832_dp/)
+        real(dp), dimension(2), parameter :: interval = [0.0_dp, 2.0_dp*pi]
+        real(dp), dimension(2), parameter :: expect_locs = [2.1386_dp, 5.64832_dp]
         real(dp) :: found_loc(1), found_locs(2)
 
         call find_local_maxima(sincos_func, interval, found_loc, tol)
@@ -109,7 +109,7 @@ contains
         real(dp), parameter :: interval(2) = [0.0_dp, 2.0_dp*pi]
         real(dp), parameter :: tol = 1e-3
 
-        expected_extrema = (/-1.0_dp, 1.0_dp/)
+        expected_extrema = [-1.0_dp, 1.0_dp]
         extrema = find_global_extrema(sin_func, interval)
 
         if (any(abs(extrema/expected_extrema - 1) > tol)) then

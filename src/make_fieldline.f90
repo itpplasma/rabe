@@ -39,7 +39,7 @@ contains
 
         too_strong_violation = .false.
         do current = 1, n_fieldlines
-            interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
+            interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - iota*M_pol) + &
                        fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
                                              interval, phi_tol, more_than_2_maxima)
@@ -126,7 +126,7 @@ contains
         ! chi = M*theta - N*phi
         ! as f~f(chi) = sum c_j*cos(j*chi) with 1<j<j_max
         ! periodic at least after 2pi -> minimum must be in e.g [-pi, 2pi]
-        real(dp), dimension(2), parameter :: interval = (/0.0_dp, 3.0_dp*pi/)
+        real(dp), dimension(2), parameter :: interval = [0.0_dp, 3.0_dp*pi]
         real(dp) :: location(1)
 
         ! If f(theta,phi) approx f(chi = M*theta - N*phi) one can estiamte

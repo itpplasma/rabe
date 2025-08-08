@@ -31,7 +31,7 @@ program test_fieldline_integral
 
     call set_fieldline_phi_0_to_mode_minimum(field, theta_mode, phi_mode, fieldline)
 
-    interval = (/0.0_dp, 4*pi/) + fieldline(1)%phi_0
+    interval = [0.0_dp, 4.0_dp*pi] + fieldline(1)%phi_0
     call find_maxima_along_fieldline(field, fieldline(1), interval, n_steps)
 
     call integrate_1d(B_mod_along_fieldline, &

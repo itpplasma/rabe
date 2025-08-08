@@ -26,7 +26,7 @@ contains
 
         call plt%initialize(xlabel="$\xi_0 - \iota_p$ [$\pi$]", &
                             ylabel="$B$ [T]", &
-                            figsize=(/7, 7/), &
+                            figsize=[7, 7], &
                             legend=.true.)
         xi_0_shifted = modulo(fieldlines%xi_0 - fieldlines%iota_p, 2.0_dp*pi)
         call plt%add_plot(xi_0_shifted/pi, &
@@ -63,7 +63,7 @@ contains
 
         call plt%initialize(xlabel="$\vartheta$ [$\pi$]", &
                             ylabel="$B$ [T]", &
-                            figsize=(/7, 7/), &
+                            figsize=[7, 7], &
                             legend=.true.)
         write (label, "(A17,ES10.3E2)") "$B$ along $\chi=$", chi
         call plt%add_plot(theta/pi, B, label=label, linestyle="b-")
@@ -496,7 +496,7 @@ contains
         call plt%initialize(xlabel="$\nu_*$", &
                             ylabel="$|\lambda_{bB}|$", &
                             legend=.true., &
-                            figsize=(/10, 10/))
+                            figsize=[10, 10])
 
         if (present(lambda_off_external)) then
             call plt%add_plot(lambda_off_external%x, &
@@ -643,7 +643,7 @@ contains
         call plt%initialize(xlabel="$\varphi [\pi]$", &
                             ylabel="$B$ [T]", &
                             legend=.true., &
-                            figsize=(/10, 10/))
+                            figsize=[10, 10])
 
         write (label, "(A25,ES10.3E2,A7)") "$\vartheta_\mathrm{mid}=$", &
             fieldline%theta_0/pi, "[$\pi$]"

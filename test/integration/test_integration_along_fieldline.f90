@@ -31,7 +31,7 @@ program test_integration_along_fieldline
 
     call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, fieldline)
 
-    interval = (/0.0_dp, 4*pi/) + fieldline(1)%phi_0
+    interval = [0.0_dp, 4*pi] + fieldline(1)%phi_0
     call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)
 
     call integrate_1d(B_mod_along_fieldline, &
