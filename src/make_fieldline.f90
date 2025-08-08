@@ -165,20 +165,17 @@ contains
             end do
         end subroutine B_mod_along_phi_axis
 
-        subroutine B_mod_along_theta_axis(chi_over_N, B_mod)
-            real(dp), dimension(:), intent(in) :: chi_over_N
+        subroutine B_mod_along_theta_axis(chi, B_mod)
+            real(dp), dimension(:), intent(in) :: chi
             real(dp), dimension(:), intent(out) :: B_mod
 
-            real(dp), dimension(size(chi_over_N, 1)) :: phi, theta
+            real(dp), dimension(size(chi, 1)) :: phi, theta
             integer :: idx
 
-            ! If f(theta,phi) approx f(chi = M*theta - N*phi) one can estiamte
-            ! f(chi/N) by choosing 1 specific theta-phi combination for that
-            ! chi value e.g. phi=-chi/N and theta=0
-            phi = -chi_over_N
-            theta = 0.0_dp
+            theta = chi/M_pol
+            phi = 0.0_dp
 
-            do idx = 1, size(chi_over_N, 1)
+            do idx = 1, size(chi, 1)
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_theta_axis
