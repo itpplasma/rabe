@@ -9,9 +9,13 @@ program test_pert_anti_sigma_analytic
     use utils, only: linspace
     use utils, only: not_same
 
+    use plot_quantities, only: plot_delta_eta
+    use plot_quantities, only: plot_delta_A
+    use plot_quantities, only: plot_fieldlines_over_field
+
     implicit none
 
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 1.0_dp
+    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.0125_dp, eps_1 = -0.0005_dp
     type(anti_sigma_field_t) :: field
     real(dp), parameter :: B_pert = 0.001_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
@@ -27,7 +31,7 @@ program test_pert_anti_sigma_analytic
     integer, parameter :: n_fieldlines = 50
     integer, parameter :: n_modes = n_fieldlines/2 + 1
 
-    real(dp), dimension(n_fieldlines) :: theta_0
+    real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
@@ -38,6 +42,7 @@ program test_pert_anti_sigma_analytic
     real(dp), dimension(:), allocatable :: zeros
     real(dp) :: expected_deviation
 
+    logical, parameter :: should_plot = .true.
     logical :: test_failed
 
     test_failed = .false.
@@ -48,10 +53,10 @@ program test_pert_anti_sigma_analytic
                                                    N_tor_pert, &
                                                    B_pert)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    xi_0 = temp(1:n_fieldlines)
 
     call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
+                                  xi_0, &
                                   iota, &
                                   perturbed_field, &
                                   M_pol, &
@@ -108,6 +113,12 @@ program test_pert_anti_sigma_analytic
             test_failed = .true.
         end if
     end do
+
+    if (should_plot) then
+        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_delta_A(fieldlines)
+        call plot_delta_eta(fieldlines, delta_eta_1)
+    end if
 
     if (test_failed) error stop
 
