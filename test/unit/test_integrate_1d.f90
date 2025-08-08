@@ -6,9 +6,9 @@ program test_integrate_1d
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-8_dp, abstol = 0.0_dp
-    real(dp), dimension(2), parameter :: interval_polynom = (/0.0_dp, 1.0_dp/)
+    real(dp), dimension(2), parameter :: interval_polynom = [0.0_dp, 1.0_dp]
     real(dp), parameter :: integral_polynom = 1.0_dp
-    real(dp), dimension(2), parameter :: interval_not_polynom = (/0.0_dp, 0.5_dp*pi/)
+    real(dp), dimension(2), parameter :: interval_not_polynom = [0.0_dp, 0.5_dp*pi]
     real(dp), parameter :: integral_not_polynom = 10.0_dp
 
     real(dp) :: found_integral

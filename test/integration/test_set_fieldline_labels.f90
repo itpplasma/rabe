@@ -36,9 +36,9 @@ program test_set_fieldline_labels
 
     logical, parameter :: should_plot = .false.
 
-    M_pols = (/1.0_dp, 1.0_dp, 0.0_dp, -2.0_dp/)
-    N_tors = (/1.0_dp, 0.0_dp, 2.0_dp, -1.0_dp/)
-    iotas = (/2.5_dp, 100.0_dp, -1.5_dp, 0.0_dp/)
+    M_pols = [1.0_dp, 1.0_dp, 0.0_dp, -2.0_dp]
+    N_tors = [1.0_dp, 0.0_dp, 2.0_dp, -1.0_dp]
+    iotas = [2.5_dp, 100.0_dp, -1.5_dp, 0.0_dp]
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)

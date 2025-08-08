@@ -6,7 +6,7 @@ program test_integrate_wrapper
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-8_dp, abstol = 0.0_dp
-    real(dp), dimension(2), parameter :: interval = (/0.0_dp, 1.0_dp/)
+    real(dp), dimension(2), parameter :: interval = [0.0_dp, 1.0_dp]
     real(dp), parameter :: constant_1 = 0.0_dp, constant_2 = 1.0_dp
     real(dp), parameter :: integral_1 = 1.0_dp, integral_2 = 2.0_dp
 

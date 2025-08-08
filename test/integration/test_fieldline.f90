@@ -30,7 +30,7 @@ contains
         real(dp) :: chi_min, found_chi_min
         integer :: idx
 
-        stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
+        stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             call guess_chi_min(field, chi_min, N_tor, M_pol)
@@ -58,17 +58,17 @@ contains
         real(dp) :: found_phi(2), analytic_phi(2)
         integer :: idx
 
-        stor = (/0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp/)
-        theta_0 = (/3.0_dp/4.0_dp*pi, pi, -pi, -pi/)
-        phi_0 = (/0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi/)
-        iota = (/1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp/)
+        stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
+        theta_0 = [3.0_dp/4.0_dp*pi, pi, -pi, -pi]
+        phi_0 = [0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi]
+        iota = [1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp]
 
         do idx = 1, 4
             call field%neo_change_stor(stor(idx))
             fieldline%theta_0 = theta_0(idx)
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
-            interval = (/0.0_dp, 2.0_dp*pi/) + phi_0(idx)
+            interval = [0.0_dp, 2.0_dp*pi] + phi_0(idx)
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
