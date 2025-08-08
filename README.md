@@ -17,6 +17,16 @@ make test
 ```
 to execute tests.
 
+## Continuous Integration
+
+This project uses GitHub Actions for continuous integration. The CI pipeline:
+
+- Runs on every push and pull request to main
+- Tests on Ubuntu and macOS with Debug/Release builds
+- Executes quick tests on all pushes
+- Runs slow tests on pull requests only
+- Excludes plot, per_hand, and external tests from CI
+
 ## Third Party
 
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (license under `plot`)
