@@ -31,7 +31,7 @@ program plot_helical_anti_sigma_small_aspect
     real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp - 6.0_dp*eps_0)
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-6
+    real(dp), parameter :: phi_tol = 5e-6
     integer, parameter :: n_fieldlines = 20
 
     real(dp), dimension(n_fieldlines) :: theta_0

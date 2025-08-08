@@ -26,18 +26,18 @@ program plot_deviation_poloidal_anti_sigma
     real(dp), parameter :: ds_dr = 0.387524_dp*100.0_dp !1/m
     real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
 
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = 0.125, eps_1 = 0.05_dp
-    real(dp), parameter :: delta_B_1 = -2.0_dp*1e-4
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.125, eps_1 = -0.05_dp
+    real(dp), parameter :: delta_B_1 = 2.0_dp*1e-4
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
     real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*abs(eps_0))
-    real(dp), parameter :: B_max = B_0*(1.0_dp + eps_0) + abs(delta_B_1)
+    real(dp), parameter :: B_max = B_0*(1.0_dp + abs(eps_0)) + abs(delta_B_1)
     real(dp), parameter :: delta_eta_1 = delta_B_1/B_max**2.0_dp
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 4e-6
-    integer, parameter :: n_fieldlines = 20
+    integer, parameter :: n_fieldlines = 41
 
-    real(dp), dimension(n_fieldlines) :: theta_0
+    real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.1618_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
@@ -48,17 +48,20 @@ program plot_deviation_poloidal_anti_sigma
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
 
-    real(dp), parameter :: iota_p = iota*pi/(N_tor - iota*M_pol)
+    real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
+    real(dp), parameter :: iota_p = sign(pi, N_tor)* &
+                           (N_tor*iota + M_pol)/(N_tor - iota*M_pol)* &
+                           nfp/(N_tor**2.0_dp + M_pol**2.0_dp)
     real(dp) :: off_factor_A_analytic, off_factor_B_analytic
 
-    logical, parameter :: should_plot_others = .false.
+    logical, parameter :: should_plot_others = .true.
 
     call field%neo_field_init(bc_filename, stor)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    xi_0 = temp(1:n_fieldlines)
 
     call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
+                                  xi_0, &
                                   iota, &
                                   field, &
                                   M_pol, &
@@ -67,8 +70,8 @@ program plot_deviation_poloidal_anti_sigma
 
     if (should_plot_others) then
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
-        call plot_delta_eta(fieldlines, delta_eta_1, fieldlines(1)%iota_p)
-        call plot_delta_A(fieldlines, delta_A_1)
+        call plot_delta_eta(fieldlines, delta_eta_1)
+        !call plot_delta_A(fieldlines, delta_A_1)
     end if
 
     call calc_deviation(fieldlines, deviation_A, deviation_B)
