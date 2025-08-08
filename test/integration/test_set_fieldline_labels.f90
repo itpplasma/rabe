@@ -16,12 +16,12 @@ program test_set_fieldline_labels
 
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.01, eps_1 = -0.0001_dp
     type(anti_sigma_field_t) :: base_field
-    real(dp), parameter :: B_pert = 0.001_dp, N_pert = 0.0_dp, M_pert = 1.0_dp
+    real(dp), parameter :: B_pert = 0.0003_dp, N_pert = 0.0_dp, M_pert = 1.0_dp
     type(mock_perturbed_field_t) :: field
 
     real(dp), parameter :: phi_tol = 3e-5
 
-    integer, parameter :: n_fieldlines = 40
+    integer, parameter :: n_fieldlines = 20
     real(dp), dimension(2) :: phi_max
 
     real(dp), dimension(n_fieldlines) :: xi_0
@@ -38,11 +38,11 @@ program test_set_fieldline_labels
     integer :: case, current
     logical :: test_failed
 
-    logical, parameter :: should_plot = .true.
+    logical, parameter :: should_plot = .false.
 
-    M_pols = [1.0_dp, 1.0_dp, 1.0_dp, -2.0_dp]
-    N_tors = [1.0_dp, -1.0_dp, 2.0_dp, -1.0_dp]
-    iotas = [2.5_dp, 100.0_dp, -1.5_dp, 1.3_dp]
+    M_pols = [1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp]
+    N_tors = [1.0_dp, -1.0_dp, 0.0_dp, -1.0_dp]
+    iotas = [-2.3_dp, 1.0_dp, -1.5_dp, 0.8_dp]
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
@@ -78,10 +78,10 @@ program test_set_fieldline_labels
         if (should_plot) then
             call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, &
                                           phi_tol=phi_tol)
+            call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor)
             call plot_maxima_over_label(fieldlines)
-            !call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor)
-            !call plot_fieldlines_over_field(fieldlines, field, N_tor)
-            !call plot_delta_A(fieldlines)
+            call plot_fieldlines_over_field(fieldlines, field, N_tor)
+            call plot_delta_A(fieldlines)
         end if
     end do
 
