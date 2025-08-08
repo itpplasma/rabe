@@ -23,6 +23,8 @@ program test_against_neo2_anti_sigma
     real(dp), dimension(n_stor) :: stor_plot, B_at_chi_pi
     type(myplot) :: plt
 
+    logical, parameter :: should_plot = .false.
+
     test_failed = .false.
 
     stor = (/0.50_dp, 0.70_dp, 0.80_dp, 0.9999_dp/)
@@ -48,23 +50,25 @@ program test_against_neo2_anti_sigma
         end if
     end do
 
-    call plt%initialize(xlabel="$s_{tor}$", ylabel="$B$ [T]", legend=.true.)
-    call linspace(0.1_dp, 0.9999_dp, n_stor, stor_plot)
-    do case = 1, n_stor
-        call field%neo_change_stor(stor_plot(case))
-        call field%compute_B_mod(0.0_dp, -0.1_dp*pi, B_at_chi_pi(case))
-    end do
-    call plt%add_plot(stor_plot, B_at_chi_pi, "$B(\chi = \pi)$", "r-")
-    call plt%add_plot((/stor_plot(1), stor_plot(n_stor)/), &
-                      (/B_max, B_max/), &
-                      "analytic $B_{max}$", &
-                      "k-")
-    call plt%add_plot((/stor(2), stor(4)/), &
-                      (/bmod_neo2(2), bmod_neo2(4)/), &
-                      "NEO-2", &
-                      "bx", &
-                      markersize=6)
-    call plt%show()
+    if (should_plot) then
+        call plt%initialize(xlabel="$s_{tor}$", ylabel="$B$ [T]", legend=.true.)
+        call linspace(0.1_dp, 0.9999_dp, n_stor, stor_plot)
+        do case = 1, n_stor
+            call field%neo_change_stor(stor_plot(case))
+            call field%compute_B_mod(0.0_dp, -0.1_dp*pi, B_at_chi_pi(case))
+        end do
+        call plt%add_plot(stor_plot, B_at_chi_pi, "$B(\chi = \pi)$", "r-")
+        call plt%add_plot((/stor_plot(1), stor_plot(n_stor)/), &
+                          (/B_max, B_max/), &
+                          "analytic $B_{max}$", &
+                          "k-")
+        call plt%add_plot((/stor(2), stor(4)/), &
+                          (/bmod_neo2(2), bmod_neo2(4)/), &
+                          "NEO-2", &
+                          "bx", &
+                          markersize=6)
+        call plt%show()
+    end if
 
     if (test_failed) error stop
 
