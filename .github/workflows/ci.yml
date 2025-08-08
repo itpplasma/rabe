@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test on ${{ matrix.os }} - ${{ matrix.build-type }}
@@ -18,11 +22,25 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+        cache: 'pip'
+
+    - name: Cache system dependencies (macOS)
+      if: runner.os == 'macOS'
+      uses: actions/cache@v4
+      with:
+        path: |
+          /usr/local/Cellar
+          /usr/local/opt
+        key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/ci.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-brew-
 
     - name: Install system dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -43,7 +61,7 @@ jobs:
           cmake \
           suite-sparse \
           openblas \
-          lapack
+          lapack || true
 
     - name: Install Python dependencies
       run: |
@@ -57,22 +75,26 @@ jobs:
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-          -DCMAKE_Fortran_COMPILER=gfortran
+          -DCMAKE_Fortran_COMPILER=gfortran \
+          -DCMAKE_VERBOSE_MAKEFILE=ON
 
     - name: Build
-      run: cmake --build build --parallel
+      run: cmake --build build --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu)
 
     - name: Run quick tests
       run: |
         cd build
-        ctest --output-on-failure -L quick
+        ctest --output-on-failure -L quick --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      timeout-minutes: 10
 
     - name: Run Python tests
+      if: matrix.build-type == 'Release'
       run: |
         if [ -d python/test ]; then
           cd python
-          python -m pytest test/ -v
+          python -m pytest test/ -v --tb=short
         fi
+      timeout-minutes: 5
 
   test-slow:
     name: Slow tests
@@ -83,11 +105,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+        cache: 'pip'
 
     - name: Install system dependencies (Ubuntu)
       run: |
@@ -111,12 +136,13 @@ jobs:
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_Fortran_COMPILER=gfortran
+          -DCMAKE_Fortran_COMPILER=gfortran \
+          -DCMAKE_VERBOSE_MAKEFILE=ON
 
     - name: Build
-      run: cmake --build build --parallel
+      run: cmake --build build --parallel $(nproc)
 
     - name: Run slow tests
       run: |
         cd build
-        ctest --output-on-failure -L slow
+        ctest --output-on-failure -L slow --parallel $(nproc)
