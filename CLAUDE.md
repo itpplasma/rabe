@@ -122,3 +122,34 @@ Follow the Red-Green-Refactor cycle:
 - Follow 88-character line limit and 4-space indentation
 - The codebase integrates with NEO-2 modules for magnetic field calculations
 - Build system enforces out-of-source builds (use `build/` directory)
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration:
+
+### Pipeline Triggers
+- Push to all branches
+- Pull requests to main
+
+### Test Execution
+- **Quick tests**: Run on all OS/build combinations on every push (~24 seconds)
+- **Slow tests**: Run on ubuntu-latest Release only on pull requests (~64 seconds)
+- **Excluded**: Tests labeled 'plot', 'per_hand', and 'external' are not run in CI
+
+### Build Matrix
+- **Operating Systems**: ubuntu-latest, macos-latest
+- **Build Types**: Debug, Release
+- **Compiler**: gfortran
+- **Python**: 3.11
+
+### Quality Checks
+- Line length enforcement (88 characters max)
+- No commented-out code blocks
+- Proper indentation (4 spaces)
+- No trailing whitespace
+
+### CI Development Guidelines
+- All CI tests must be non-tautological (real assertions)
+- No test stubs or placeholders allowed
+- Test failures must propagate to CI status
+- See DESIGN.md for detailed CI architecture
