@@ -43,7 +43,7 @@ contains
                         xscale, yscale, xlim, ylim)
         class(myplot), intent(inout) :: self
         real(dp), dimension(:), intent(in) :: x
-        real(dp), dimension(size(x)), intent(in) :: f
+        real(dp), dimension(:), intent(in) :: f
         character(len=*), intent(in) :: label, linestyle
 
         integer, intent(in), optional :: linewidth
@@ -71,7 +71,7 @@ contains
         use utils, only: linspace
         class(myplot), intent(inout) :: self
         real(dp), dimension(:), intent(in) :: x, y
-        real(dp), dimension(size(x), size(y)), intent(in) :: f
+        real(dp), dimension(:, :), intent(in) :: f
         integer, optional :: levels
         logical, optional :: colorbar
         logical, optional :: filled
