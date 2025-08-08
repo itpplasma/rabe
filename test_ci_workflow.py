@@ -26,9 +26,9 @@ def test_workflow_structure(workflow_path):
     assert 'name' in workflow, "Workflow must have a name"
     assert workflow['name'] == 'CI', f"Workflow name should be 'CI', got '{workflow['name']}'"
     
-    # Check triggers
-    assert 'on' in workflow, "Workflow must have triggers"
-    triggers = workflow['on']
+    # Check triggers (YAML parses 'on' as True)
+    assert True in workflow or 'on' in workflow, "Workflow must have triggers"
+    triggers = workflow.get(True) or workflow.get('on')
     
     # Check push trigger
     assert 'push' in triggers, "Workflow must trigger on push"
