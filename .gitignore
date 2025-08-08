@@ -1,13 +1,34 @@
+# Virtual environments
 .venv/
 myenv/
+venv/
+env/
+
+# Build directories
 build/
 bin/
 ./external/
+
+# Data files
 *.nc
 *.bc
 *.dat
+
+# Fortran modules
 *.mod
+
+# Python
 *.egg-info
 *__pycache__
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Output directories
 **/output/
+
+# IDE
 .vscode
+.idea/
