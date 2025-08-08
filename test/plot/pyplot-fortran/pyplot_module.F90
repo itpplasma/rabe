@@ -186,11 +186,11 @@
     logical,               intent(in), optional :: axis_equal      !! set true for axis = 'equal'
     logical,               intent(in), optional :: polar           !! set true for polar plots (cannot use with mplot3d)
     character(len=*),      intent(in), optional :: real_fmt        !! format string for real numbers (examples: '(E30.16)' [default], '*')
-    logical,               intent(in), optional :: use_oo_api      !! avoid matplotlib's GUI by using the OO interface (cannot use with showfig)
+    logical,               intent(in), optional :: use_oo_api      !! avoid matplotlibs GUI by using the OO interface (cannot use with showfig)
     logical,               intent(in), optional :: axisbelow       !! to put the grid lines below the other chart elements [default is true]
     logical,               intent(in), optional :: tight_layout    !! enable tight layout [default is false]
     logical,               intent(in), optional :: raw_strings     !! if True, all strings sent to Python are treated as
-                                                                   !! raw strings (e.g., r'str'). Default is False.
+                                                                   !! raw strings (e.g., r"str"). Default is False.
     logical,               intent(in), optional :: usetex          !! if True, enable LaTeX. (default if false)
     character(len=*),      intent(in), optional :: xaxis_date_fmt  !! if present, used to set the date format for the x-axis
     character(len=*),      intent(in), optional :: yaxis_date_fmt  !! if present, used to set the date format for the y-axis
@@ -203,7 +203,7 @@
     character(len=max_int_len)  :: ytick_labelsize_str   !! size of x axis tick labels dummy string
     character(len=max_int_len)  :: ztick_labelsize_str   !! size of z axis tick labels dummy string
     character(len=max_int_len)  :: legend_fontsize_str   !! size of legend font dummy string
-    character(len=:),allocatable :: python_fig_func      !! Python's function for creating a new Figure instance
+    character(len=:),allocatable :: python_fig_func      !! Python function for creating a new Figure instance
 
     character(len=*), parameter :: default_font_size_str = '10' !! the default font size for plots
 
@@ -362,8 +362,8 @@
     integer,                intent (in), optional  :: linewidth    !! width of the plot line
     real(wp),dimension(2),  intent (in), optional  :: xlim         !! x-axis range
     real(wp),dimension(2),  intent (in), optional  :: ylim         !! y-axis range
-    character(len=*),       intent (in), optional  :: xscale       !! example: 'linear' (default), 'log'
-    character(len=*),       intent (in), optional  :: yscale       !! example: 'linear' (default), 'log'
+    character(len=*),       intent (in), optional  :: xscale       !! example: "linear" (default), "log"
+    character(len=*),       intent (in), optional  :: yscale       !! example: "linear" (default), "log"
     real(wp),dimension(:),  intent (in), optional  :: color        !! RGB color tuple [0-1,0-1,0-1]
     integer,                intent (out), optional :: istat        !! status output (0 means no problems)
 
@@ -448,8 +448,8 @@
     character(len=*),       intent (in)           :: label        !! plot label
     real(wp),dimension(2),  intent (in), optional :: xlim         !! x-axis range
     real(wp),dimension(2),  intent (in), optional :: ylim         !! y-axis range
-    character(len=*),       intent (in), optional :: xscale       !! example: 'linear' (default), 'log'
-    character(len=*),       intent (in), optional :: yscale       !! example: 'linear' (default), 'log'
+    character(len=*),       intent (in), optional :: xscale       !! example: "linear" (default), "log"
+    character(len=*),       intent (in), optional :: yscale       !! example: "linear" (default), "log"
     integer,                intent (in), optional :: bins         !! number of bins
     logical,                intent (in), optional :: normed       !! boolean flag that determines whether bin counts are normalized [NO LONGER USED]
     logical,                intent (in), optional :: cumulative   !! boolean flag that determines whether histogram represents the cumulative density of dataset
@@ -525,7 +525,7 @@
     real(wp),dimension(:),   intent (in), optional :: levels       !! contour levels to plot
     character(len=*),        intent (in), optional :: color        !! color of the contour line
     logical,                 intent (in), optional :: filled       !! use filled control (default=False)
-    character(len=*),        intent (in), optional :: cmap         !! colormap if filled=True (examples: 'jet', 'bone')
+    character(len=*),        intent (in), optional :: cmap         !! colormap if filled=True (examples: "jet", "bone")
     logical,                 intent (in), optional :: colorbar     !! add a colorbar (default=False)
     integer,                 intent (out),optional :: istat        !! status output (0 means no problems)
 
@@ -541,7 +541,7 @@
     character(len=*), parameter   :: yname_ = 'Y'  !! Y variable name for contour
     character(len=*), parameter   :: zname_ = 'Z'  !! Z variable name for contour
     character(len=:), allocatable :: extras        !! optional stuff
-    character(len=:), allocatable :: contourfunc   !! 'contour' or 'contourf'
+    character(len=:), allocatable :: contourfunc   !! "contour" or "contourf"
     logical :: is_filled !! if it is a filled contour plot
 
     if (allocated(me%str)) then
@@ -621,7 +621,7 @@
     integer,                 intent (in),  optional :: linewidth    !! width of the plot line
     real(wp),dimension(:),   intent (in),  optional :: levels       !! contour levels to plot
     character(len=*),        intent (in),  optional :: color        !! Color of the surface patches
-    character(len=*),        intent (in),  optional :: cmap         !! colormap if filled=True (examples: 'jet', 'bone')
+    character(len=*),        intent (in),  optional :: cmap         !! colormap if filled=True (examples: "jet", "bone")
     logical,                 intent (in),  optional :: colorbar     !! add a colorbar (default=False)
     logical,                 intent (in),  optional :: antialiased  !! The surface is made opaque by using antialiased=False
     integer,                 intent (out), optional :: istat        !! status output (0 means no problems)
@@ -711,7 +711,7 @@
     integer,                 intent (in),  optional :: linewidth    !! width of the plot line
     real(wp),dimension(:),   intent (in),  optional :: levels       !! contour levels to plot
     character(len=*),        intent (in),  optional :: color        !! Color of the surface patches
-    character(len=*),        intent (in),  optional :: cmap         !! colormap if filled=True (examples: 'jet', 'bone')
+    character(len=*),        intent (in),  optional :: cmap         !! colormap if filled=True (examples: "jet", "bone")
     logical,                 intent (in),  optional :: colorbar     !! add a colorbar (default=False)
     logical,                 intent (in),  optional :: antialiased  !! The surface is made opaque by using antialiased=False
     integer,                 intent (out), optional :: istat        !! status output (0 means no problems)
@@ -941,11 +941,11 @@
     real(wp), dimension(:), intent(in),  optional :: bottom        !! bottom values
     character(len=*),       intent(in),  optional :: color         !! plot color
     real(wp), dimension(:), intent(in),  optional :: yerr          !! yerr values
-    character(len=*),       intent(in),  optional :: align         !! default: 'center'
+    character(len=*),       intent(in),  optional :: align         !! default: "center"
     real(wp),dimension(2),  intent (in), optional :: xlim          !! x-axis range
     real(wp),dimension(2),  intent (in), optional :: ylim          !! y-axis range
-    character(len=*),       intent (in), optional :: xscale        !! example: 'linear' (default), 'log'
-    character(len=*),       intent (in), optional :: yscale        !! example: 'linear' (default), 'log'
+    character(len=*),       intent (in), optional :: xscale        !! example: "linear" (default), "log"
+    character(len=*),       intent (in), optional :: yscale        !! example: "linear" (default), "log"
     integer,                intent (out),optional :: istat         !! status output (0 means no problems)
 
     character(len=:), allocatable :: xstr               !! x axis values stringified
@@ -1087,8 +1087,8 @@
     integer,                intent (in), optional :: linewidth    !! width of the plot line
     real(wp),dimension(2),  intent (in), optional :: xlim         !! x-axis range
     real(wp),dimension(2),  intent (in), optional :: ylim         !! y-axis range
-    character(len=*),       intent (in), optional :: xscale       !! example: 'linear' (default), 'log'
-    character(len=*),       intent (in), optional :: yscale       !! example: 'linear' (default), 'log'
+    character(len=*),       intent (in), optional :: xscale       !! example: "linear" (default), "log"
+    character(len=*),       intent (in), optional :: yscale       !! example: "linear" (default), "log"
     real(wp),dimension(:),  intent (in), optional :: color        !! RGB color tuple [0-1,0-1,0-1]
     integer,                intent (out),optional :: istat        !! status output (0 means no problems)
 
@@ -1287,7 +1287,7 @@
     character(len=*),              intent(in)  :: fmt       !! real format string
     character(len=:), allocatable, intent(out) :: str       !! real values stringified
     logical,                       intent(in)  :: use_numpy !! activate numpy python module usage
-    logical,intent(in),optional                :: is_tuple  !! if true [default], use '()', if false use '[]'
+    logical,intent(in),optional                :: is_tuple  !! if true [default], use "()", if false use "[]"
 
     integer                     :: i         !! counter
     integer                     :: istat     !! IO status
@@ -1376,7 +1376,7 @@
     class(pyplot),    intent(inout)         :: me     !! pytplot handler
     character(len=*), intent(in),  optional :: pyfile !! name of the python script to generate
     integer,          intent (out),optional :: istat  !! status output (0 means no problems)
-    character(len=*), intent(in),optional   :: python !! python executable to use. (by default, this is 'python')
+    character(len=*), intent(in),optional   :: python !! python executable to use. (by default, this is "python")
 
     integer                       :: iunit   !! IO unit
     character(len=:), allocatable :: file    !! file name
@@ -1533,9 +1533,9 @@
     logical, intent(in), optional            :: transparent !! transparent background (T/F)
     character(len=*), intent(in), optional   :: facecolor   !! the colors of the figure rectangle
     character(len=*), intent(in), optional   :: edgecolor   !! the colors of the figure rectangle
-    character(len=*), intent(in), optional   :: orientation !! 'landscape' or 'portrait'
+    character(len=*), intent(in), optional   :: orientation !! "landscape" or "portrait"
     integer,          intent (out), optional :: istat       !! status output (0 means no problems)
-    character(len=*), intent(in),optional    :: python      !! python executable to use. (by default, this is 'python')
+    character(len=*), intent(in),optional    :: python      !! python executable to use. (by default, this is "python")
 
     character(len=:),allocatable :: tmp  !! for building the `savefig` arguments.
 
@@ -1589,7 +1589,7 @@
     class(pyplot),    intent(inout)          :: me      !! pyplot handler
     character(len=*), intent(in), optional   :: pyfile  !! name of the Python script to generate
     integer,          intent (out), optional :: istat   !! status output (0 means no problems)
-    character(len=*), intent(in),optional    :: python  !! python executable to use. (by default, this is 'python')
+    character(len=*), intent(in),optional    :: python  !! python executable to use. (by default, this is "python")
 
     if (.not. allocated(me%str)) then
 
