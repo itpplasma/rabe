@@ -42,6 +42,8 @@ program test_set_fieldline_labels
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
+    fieldlines%xi_0 = xi_0
+    expected_chi_0 = 0.0_dp
 
     test_failed = .false.
 
@@ -49,8 +51,8 @@ program test_set_fieldline_labels
         M_pol = M_pols(case)
         N_tor = N_tors(case)
         iota = iotas(case)
-        fieldlines%xi_0 = xi_0
-        expected_chi_0 = 0.0_dp
+        print *, "--------------------------------------------------------------"
+        print *, "case: M_pol=", M_pol, " N_tor=", N_tor, "iota=", iota
 
         fieldlines%iota = iota
         call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
