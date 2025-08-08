@@ -34,9 +34,9 @@ contains
 
         nfp = sign(max(1.0_dp, abs(N_tor)), N_tor)
         normalization = N_tor**2.0_dp + M_pol**2.0_dp
-        fieldlines%iota_p = -sign(pi, N_tor)* &
-                            ((N_tor*iota + M_pol)/(N_tor - iota*M_pol) + &
-                             (normalization - M_pol)/nfp)* &
+        fieldlines%iota_p = sign(pi, N_tor - iota*M_pol)* &
+                            ((N_tor*iota + M_pol)/(N_tor - iota*M_pol) - &
+                             M_pol/nfp)* &
                             nfp/(N_tor**2.0_dp + M_pol**2.0_dp)
 
         too_strong_violation = .false.
@@ -95,7 +95,7 @@ contains
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
         real(dp) :: chi_min, tol
-        real(dp) :: nfp, normalization
+        real(dp) :: nfp
 
         call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
 
@@ -113,7 +113,6 @@ contains
         end if
 
         nfp = sign(max(1.0_dp, abs(N_tor)), N_tor)
-        normalization = n_tor**2.0_dp + M_pol**2.0_dp
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
     end subroutine set_fieldline_labels_along_chi_min

@@ -247,10 +247,10 @@ contains
         real(dp), dimension(2) :: chi_max, xi_max
         real(dp), dimension(4) :: phi_limits, theta_limits
         real(dp), dimension(4) :: chi_limits, xi_limits
-        integer, parameter :: n_points = 300
+        integer, parameter :: n_points = 300, linewidth = 2
         real(dp), dimension(n_points) :: phi, theta
         real(dp), dimension(n_points) :: chi, xi
-        real(dp) :: phi_temp, theta_temp
+        real(dp) :: phi_temp, theta_temp, nfp
         real(dp), dimension(n_points, n_points) :: B_mesh
         integer :: xi_idx, chi_idx
         character(len=100) :: label
@@ -309,6 +309,24 @@ contains
                              levels=20, &
                              colorbar=.true., &
                              filled=.true.)
+
+        nfp = max(1.0_dp, abs(N_tor))
+        call plt%add_plot([chi(1), chi(n_points)], [1.0_dp, 1.0_dp]*M_pol/nfp*pi, &
+                          label="", &
+                          linestyle="k-", &
+                          linewidth=linewidth)
+        call plt%add_plot(-pi*[1.0_dp, 1.0_dp], [xi(1), xi(n_points)], &
+                          label="", &
+                          linestyle="k-", &
+                          linewidth=linewidth)
+        call plt%add_plot([chi(1), chi(n_points)], -[1.0_dp, 1.0_dp]*M_pol/nfp*pi, &
+                          label="", &
+                          linestyle="k-", &
+                          linewidth=linewidth)
+        call plt%add_plot(pi*[1.0_dp, 1.0_dp], [xi(1), xi(n_points)], &
+                          label="", &
+                          linestyle="k-", &
+                          linewidth=linewidth)
         call plt%show()
 
     end subroutine plot_fieldlines_over_field_chi_xi
