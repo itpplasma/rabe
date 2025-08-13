@@ -132,17 +132,4 @@ contains
         end if
     end function has_sin_modes
 
-    function get_B_squared_sqrtg_psi_edge(field) result(B_squared_sqrtg_psi_edge)
-        use field_base, only: field_t
-
-        class(field_t), intent(in) :: field
-
-        real(dp) :: B_squared_sqrtg_psi_edge
-        real(dp), parameter :: theta = 0.0_dp, phi = 0.0_dp
-        real(dp) :: sqrtg, B_mod, dummy_dB_dx(3)
-
-        call field%compute_B_sqrtg_dB_dx(theta, phi, B_mod, sqrtg, dummy_dB_dx)
-        B_squared_sqrtg_psi_edge = abs(B_mod**2.0_dp*sqrtg)
-    end function get_B_squared_sqrtg_psi_edge
-
 end module deviation
