@@ -99,19 +99,19 @@ contains
         real(dp), dimension(size(fieldlines)) :: well_lengths
 
         integer :: n_fieldlines
-        real(dp) :: dtheta_0
+        real(dp) :: dxi_0
 
         n_fieldlines = size(fieldlines)
-        dtheta_0 = (fieldlines(n_fieldlines)%theta_0 - fieldlines(1)%theta_0)/ &
-                   real(n_fieldlines - 1, kind=dp)
+        dxi_0 = (fieldlines(n_fieldlines)%xi_0 - fieldlines(1)%xi_0)/ &
+                real(n_fieldlines - 1, kind=dp)
 
         well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
         surface_average%normalization = sum(fieldlines%integral_one_over_B_squared)* &
-                                        dtheta_0
-        surface_average%B_squared = sum(well_lengths)*dtheta_0/ &
+                                        dxi_0
+        surface_average%B_squared = sum(well_lengths)*dxi_0/ &
                                     surface_average%normalization
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
-                                   dtheta_0/surface_average%normalization
+                                   dxi_0/surface_average%normalization
     end subroutine calc_surface_averages
 
     function has_sin_modes(modes)
