@@ -10,6 +10,7 @@ module neo_field
         real(dp) :: psi_tor_edge
         real(dp) :: B_theta_covariant, B_phi_covariant
         real(dp) :: R
+        real(dp) :: nfp
     contains
         procedure :: neo_field_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -23,7 +24,7 @@ contains
     subroutine neo_field_init(self, bc_filename, stor)
         use neo_magfie, only: magfie_newspline
         use neo_control, only: in_file
-        use neo_input, only: psi_pr
+        use neo_input, only: psi_pr, nfp
         use neo_exchange, only: rt0
 
         class(neo_field_t), intent(out) :: self
@@ -50,6 +51,7 @@ contains
                           self%B_phi_covariant)
         self%psi_tor_edge = psi_pr
         self%R = rt0
+        self%nfp = nfp
     end subroutine neo_field_init
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
