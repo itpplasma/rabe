@@ -27,6 +27,7 @@ program rabe
     real(dp) :: dr_dpsi ![rad/Tm/]
     real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota
+    real(dp) :: nfp
 
     real(dp), dimension(:), allocatable :: theta_0
     real(dp), dimension(:), allocatable :: temp
@@ -53,6 +54,7 @@ program rabe
 
     call field%neo_field_init(bc_filename, s_tor)
     iota = field%iota
+    nfp = field%nfp
 
     allocate (fieldlines(n_fieldlines))
     allocate (theta_0(n_fieldlines))
@@ -67,6 +69,7 @@ program rabe
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     call calc_deviation(fieldlines, deviation_A, deviation_B)

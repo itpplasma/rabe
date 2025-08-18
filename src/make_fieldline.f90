@@ -8,17 +8,17 @@ module make_fieldline
 contains
 
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
-                                        field, M_pol, N_tor, phi_tol)
+                                        field, M_pol, N_tor, nfp, phi_tol)
         use fieldline_integrals, only: calc_fieldline_integrals
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
-        real(dp) :: nfp, normalization, sign_N
+        real(dp) :: normalization, sign_N
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
@@ -29,10 +29,9 @@ contains
         fieldlines%xi_0 = xi_0
         fieldlines%iota = iota
 
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, fieldlines, &
+        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)
 
-        nfp = max(1.0_dp, abs(N_tor))
         sign_N = sign(1.0_dp, N_tor)
         normalization = N_tor**2.0_dp + M_pol**2.0_dp
         fieldlines%iota_p = sign(pi, iota*M_pol - N_tor)/normalization* &
@@ -87,15 +86,15 @@ contains
 
     end subroutine make_flock_of_fieldlines
 
-    subroutine set_fieldline_labels_along_chi_min(field, M_pol, N_tor, &
+    subroutine set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
                                                   fieldlines, phi_tol)
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), intent(in), optional :: phi_tol
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
         real(dp) :: chi_min, tol
-        real(dp) :: nfp, sign_N
+        real(dp) :: sign_N
 
         call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
 
@@ -112,7 +111,6 @@ contains
             error stop
         end if
 
-        nfp = max(1.0_dp, abs(N_tor))
         sign_N = sign(1.0_dp, N_tor)
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp*sign_N
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp*sign_N
