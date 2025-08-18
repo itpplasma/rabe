@@ -31,7 +31,7 @@ program compare_distribution_function_neo2
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp) :: iota
+    real(dp) :: iota, nfp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     type(external_data_t) :: g_neo2
@@ -45,6 +45,7 @@ program compare_distribution_function_neo2
 
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
+    nfp = field%nfp
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
@@ -54,6 +55,7 @@ program compare_distribution_function_neo2
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     g_neo2%label = "NEO-2: $\hat{g}_0 \frac{\mathrm{bmod0}}{100}$"

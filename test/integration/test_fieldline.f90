@@ -7,6 +7,7 @@ program test_fieldline
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     !The minimum/maximum chi of a single mode field
     !-cos(chi) with chi = M*theta - N*phi
     real(dp), parameter :: chi_max = pi
@@ -140,7 +141,7 @@ contains
         fieldlines(:)%theta_0 = theta_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, &
+        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
                                                 fieldlines)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &

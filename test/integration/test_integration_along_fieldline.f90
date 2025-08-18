@@ -13,6 +13,7 @@ program test_integration_along_fieldline
     real(dp), parameter :: reltol = 2*phi_tol
 
     real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = -0.5_dp
     real(dp), parameter :: integral = 2.0_dp*pi*B_0
     type(mock_field_t) :: field
@@ -29,7 +30,7 @@ program test_integration_along_fieldline
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
-    call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, fieldline)
+    call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldline)
 
     interval = [0.0_dp, 4*pi] + fieldline(1)%phi_0
     call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)

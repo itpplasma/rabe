@@ -44,6 +44,7 @@ program test_I_integral_helical_anti_sigma
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.0_dp
+    real(dp), parameter :: nfp = max(1.0_dp, N_tor)
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
@@ -66,6 +67,7 @@ program test_I_integral_helical_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     test_failed = .false.

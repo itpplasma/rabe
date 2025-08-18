@@ -16,12 +16,12 @@ program test_set_fieldline_labels
 
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.01, eps_1 = -0.0001_dp
     type(anti_sigma_field_t) :: base_field
-    real(dp), parameter :: B_pert = 0.0003_dp, N_pert = 0.0_dp, M_pert = 1.0_dp
+    real(dp), parameter :: B_pert = 0.0006_dp, N_pert = 2.0_dp, M_pert = 1.0_dp
     type(mock_perturbed_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 3e-5
+    real(dp), parameter :: phi_tol = 6e-5
 
-    integer, parameter :: n_fieldlines = 20
+    integer, parameter :: n_fieldlines = 100
     real(dp), dimension(2) :: phi_max
 
     real(dp), dimension(n_fieldlines) :: xi_0
@@ -30,8 +30,8 @@ program test_set_fieldline_labels
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     integer, parameter :: n_cases = 4
-    real(dp), dimension(n_cases) :: M_pols, N_tors, iotas
-    real(dp) :: M_pol, N_tor, iota
+    real(dp), dimension(n_cases) :: M_pols, N_tors, iotas, nfps
+    real(dp) :: M_pol, N_tor, iota, nfp
 
     real(dp) :: chi_0
     real(dp) :: expected_chi_0
@@ -43,6 +43,7 @@ program test_set_fieldline_labels
     M_pols = [1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp]
     N_tors = [1.0_dp, -1.0_dp, 0.0_dp, -1.0_dp]
     iotas = [-2.3_dp, 1.0_dp, -1.5_dp, 0.8_dp]
+    nfps = [1.0_dp, 1.0_dp, 2.0_dp, 1.0_dp]
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
@@ -55,13 +56,14 @@ program test_set_fieldline_labels
         M_pol = M_pols(case)
         N_tor = N_tors(case)
         iota = iotas(case)
+        nfp = nfps(case)
         print *, "--------------------------------------------------------------"
         print *, "case: M_pol=", M_pol, " N_tor=", N_tor, "iota=", iota
 
         fieldlines%iota = iota
         call base_field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
         call field%mock_perturbed_field_init(base_field, M_pert, N_pert, B_pert)
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, fieldlines, &
+        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)
         do current = 1, n_fieldlines
             chi_0 = M_pol*fieldlines(current)%theta_0 - N_tor*fieldlines(current)%phi_0
@@ -77,8 +79,9 @@ program test_set_fieldline_labels
         end do
         if (should_plot) then
             call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, &
-                                          phi_tol=phi_tol)
-            call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor)
+                                          nfp, phi_tol=phi_tol)
+            call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor, &
+                                                   nfp)
             call plot_maxima_over_label(fieldlines)
             call plot_fieldlines_over_field(fieldlines, field, N_tor)
             call plot_delta_A(fieldlines)

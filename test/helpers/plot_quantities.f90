@@ -234,11 +234,12 @@ contains
 
     end subroutine plot_fieldlines_over_field
 
-    subroutine plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor)
+    subroutine plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor, &
+                                                 nfp)
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in) :: M_pol, N_tor, nfp
 
         type(myplot) :: plt
         integer :: current
@@ -250,7 +251,7 @@ contains
         integer, parameter :: n_points = 300, linewidth = 2
         real(dp), dimension(n_points) :: phi, theta
         real(dp), dimension(n_points) :: chi, xi
-        real(dp) :: phi_temp, theta_temp, nfp
+        real(dp) :: phi_temp, theta_temp
         real(dp), dimension(n_points, n_points) :: B_mesh
         integer :: xi_idx, chi_idx
         character(len=100) :: label
@@ -271,8 +272,6 @@ contains
         call convert_to_chi_xi(theta_limits, phi_limits, &
                                M_pol, N_tor, &
                                xi_limits, chi_limits)
-        print *, xi_limits
-        print *, phi_limits
         do current = 1, size(fieldlines)
             phi_max = fieldlines(current)%phi_max
             call linspace(phi_max(1), &
@@ -310,7 +309,6 @@ contains
                              colorbar=.true., &
                              filled=.true.)
 
-        nfp = max(1.0_dp, abs(N_tor))
         call plt%add_plot([chi(1), chi(n_points)], [1.0_dp, 1.0_dp]*M_pol/nfp*pi, &
                           label="", &
                           linestyle="k-", &

@@ -77,7 +77,7 @@ program plot_deviation_landreman_paul_helical
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp) :: iota
+    real(dp) :: iota, nfp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
@@ -88,6 +88,7 @@ program plot_deviation_landreman_paul_helical
 
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
+    nfp = field%nfp
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
@@ -97,6 +98,7 @@ program plot_deviation_landreman_paul_helical
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     if (should_plot_others) then

@@ -17,7 +17,7 @@ program test_lambda_helical_anti_sigma
 
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.0_dp
+    real(dp), parameter :: iota = 0.0_dp, nfp = max(1.0_dp, abs(N_tor))
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_t) :: current_fieldline
 
@@ -38,6 +38,7 @@ program test_lambda_helical_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     lambda_integral_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &

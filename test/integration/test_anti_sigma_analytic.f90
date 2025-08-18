@@ -31,6 +31,7 @@ program test_anti_sigma_analytic
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
+    real(dp), parameter :: nfp = 1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
     integer :: n_modes
@@ -51,7 +52,7 @@ program test_anti_sigma_analytic
     theta_0 = temp(1:n_fieldlines)
 
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
-                                  phi_tol)
+                                  nfp, phi_tol)
 
     do current = 1, n_fieldlines
         if (not_same(phi_0, modulo(fieldlines(current)%phi_0, 2.0_dp*pi), &

@@ -34,6 +34,7 @@ program test_pert_anti_sigma_analytic
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
+    real(dp), parameter :: nfp = 1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
 
@@ -42,7 +43,7 @@ program test_pert_anti_sigma_analytic
     real(dp), dimension(:), allocatable :: zeros
     real(dp) :: expected_deviation
 
-    logical, parameter :: should_plot = .true.
+    logical, parameter :: should_plot = .false.
     logical :: test_failed
 
     test_failed = .false.
@@ -61,6 +62,7 @@ program test_pert_anti_sigma_analytic
                                   perturbed_field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
     call fourier_transform_over_label(fieldlines, &
                                       fieldline_modes)
