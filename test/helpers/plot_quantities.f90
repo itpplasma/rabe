@@ -118,7 +118,7 @@ contains
         type(fieldline_modes_t) :: fieldline_modes
 
         integer, parameter :: n_points = 100
-        real(dp), dimension(:), allocatable :: theta_mid, theta, delta_eta
+        real(dp), dimension(:), allocatable :: xi_mid, xi, delta_eta
         integer :: max_mode
         integer, parameter :: skip = 3
 
@@ -127,31 +127,31 @@ contains
 
         call fourier_transform_over_label(fieldlines, fieldline_modes)
 
-        allocate (theta_mid(n_points), theta(n_points), delta_eta(n_points))
-        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
-        theta = theta_mid - fieldlines(1)%iota_p
+        allocate (xi_mid(n_points), xi(n_points), delta_eta(n_points))
+        call linspace(0.0_dp, 2.0_dp*pi, n_points, xi_mid)
+        xi = xi_mid - fieldlines(1)%iota_p
 
-        call plt%initialize(xlabel="$\vartheta_{mid}[\pi]$", &
+        call plt%initialize(xlabel="$\xi_{mid}[\pi]$", &
                             ylabel="$\Delta \eta$", &
                             legend=.true.)
 
         do max_mode = 1, size(fieldline_modes%delta_eta%cos_coeffs), skip
-            delta_eta = eval_modes(theta, fieldline_modes%delta_eta, max_mode)
+            delta_eta = eval_modes(xi, fieldline_modes%delta_eta, max_mode)
             write (label, "(I3,A6)") max_mode, " modes"
-            call plt%add_plot(theta_mid/pi, &
+            call plt%add_plot(xi_mid/pi, &
                               delta_eta, &
                               label=label, &
                               linestyle="-")
         end do
 
-        call plt%add_plot(fieldlines%theta_0/pi, &
+        call plt%add_plot(fieldlines%xi_0/pi, &
                           fieldlines%delta_eta, &
                           label="original", &
                           linestyle="ko")
 
         call plt%show()
 
-        deallocate (theta_mid, delta_eta)
+        deallocate (xi_mid, delta_eta)
     end subroutine plot_delta_eta_modes
 
     elemental function eval_modes(x, modes, max_mode)
@@ -658,8 +658,8 @@ contains
                             legend=.true., &
                             figsize=[10, 10])
 
-        write (label, "(A25,ES10.3E2,A7)") "$\vartheta_\mathrm{mid}=$", &
-            fieldline%theta_0/pi, "[$\pi$]"
+        write (label, "(A25,ES10.3E2,A7)") "$\xi_\mathrm{mid}=$", &
+            fieldline%xi_0/pi, "[$\pi$]"
 
         call plt%add_plot(phi/pi, &
                           B, &
