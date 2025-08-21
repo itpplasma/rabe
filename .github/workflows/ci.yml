@@ -71,25 +71,12 @@ jobs:
           pip install -e python/
         fi
 
-    - name: Configure CMake
-      run: |
-        cmake -B build \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-          -DCMAKE_Fortran_COMPILER=gfortran \
-          -DCMAKE_VERBOSE_MAKEFILE=ON
-
     - name: Build
-      run: |
-        cmake --build build \
-          --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      run: make CONFIG=${{ matrix.build-type }}
 
     - name: Run quick tests
       # Run tests labeled 'quick', exclude plot/per_hand/external
-      run: |
-        cd build
-        ctest --output-on-failure -L quick \
-          -E "(plot|per_hand|external)" \
-          --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      run: make test
       timeout-minutes: 10
 
     - name: Run Python tests
@@ -137,20 +124,9 @@ jobs:
           pip install -e python/
         fi
 
-    - name: Configure CMake
-      run: |
-        cmake -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_Fortran_COMPILER=gfortran \
-          -DCMAKE_VERBOSE_MAKEFILE=ON
-
     - name: Build
-      run: cmake --build build --parallel $(nproc)
+      run: make CONFIG=Release
 
     - name: Run slow tests
       # Run tests labeled 'slow', exclude plot/per_hand/external
-      run: |
-        cd build
-        ctest --output-on-failure -L slow \
-          -E "(plot|per_hand|external)" \
-          --parallel $(nproc)
+      run: make test_slow
