@@ -72,7 +72,7 @@ jobs:
         fi
 
     - name: Build
-      run: make CONFIG=${{ matrix.build-type }}
+      run: make CONFIG=${{ matrix.build-type }} GENERATOR="Unix Makefiles"
 
     - name: Run quick tests
       # Run tests labeled 'quick', exclude plot/per_hand/external
@@ -125,7 +125,7 @@ jobs:
         fi
 
     - name: Build
-      run: make CONFIG=Release
+      run: make CONFIG=Release GENERATOR="Unix Makefiles"
 
     - name: Run slow tests
       # Run tests labeled 'slow', exclude plot/per_hand/external
