@@ -72,6 +72,43 @@ contains
         deallocate (theta, phi, B)
     end subroutine plot_field_along_chi_line
 
+    subroutine plot_spectra(fieldlines)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+
+        type(fieldline_modes_t) :: modes
+
+        integer :: n_modes
+        real(dp), dimension(:), allocatable :: deviation_B
+        integer :: current
+        real(dp) :: iota_p
+
+        type(myplot) :: plt
+        character(len=1024) :: label
+
+        call fourier_transform_over_label(fieldlines, modes)
+        n_modes = size(modes%delta_eta%cos_coeffs)
+
+        call plt%initialize(xlabel="mode", &
+                            ylabel="amplitude", &
+                            legend=.true.)
+
+        call plt%add_plot(modes%delta_aspect_ratio%mode_numbers, &
+                          modes%delta_aspect_ratio%cos_coeffs, &
+                          label="cos $\Delta A$", &
+                          linestyle="-ro")
+        call plt%add_plot(modes%delta_eta%mode_numbers, &
+                          modes%delta_eta%cos_coeffs, &
+                          label="cos $\Delta \eta$", &
+                          linestyle="-bo")
+        call plt%add_plot(modes%radial_drift%mode_numbers, &
+                          modes%radial_drift%sin_coeffs, &
+                          label="sin $I_\mathcal{V}$", &
+                          linestyle="-ko")
+
+        call plt%show()
+
+    end subroutine plot_spectra
+
     subroutine plot_deviation_spectrum(fieldlines)
         use misc, only: S_B
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
@@ -270,7 +307,7 @@ contains
                             fieldlines(n_fieldlines)%phi_max)
 
         call convert_to_chi_xi(theta_limits, phi_limits, &
-                               M_pol, N_tor, &
+                               M_pol, N_tor, nfp, &
                                xi_limits, chi_limits)
         do current = 1, size(fieldlines)
             phi_max = fieldlines(current)%phi_max
@@ -279,14 +316,15 @@ contains
                           n_points, &
                           phi)
             theta = fieldlines(current)%get_theta(phi)
-            call convert_to_chi_xi(theta, phi, M_pol, N_tor, xi, chi)
+            call convert_to_chi_xi(theta, phi, M_pol, N_tor, nfp, xi, chi)
             write (label, '(F0.1)') fieldlines(current)%xi_0
             call plt%add_plot(chi, xi, &
                               label=label, &
                               linestyle="k.", &
                               linewidth=1)
             theta_max = fieldlines(current)%get_theta(phi_max)
-            call convert_to_chi_xi(theta_max, phi_max, M_pol, N_tor, xi_max, chi_max)
+            call convert_to_chi_xi(theta_max, phi_max, M_pol, N_tor, nfp, xi_max, &
+                                   chi_max)
             call plt%add_plot(chi_max, xi_max, &
                               label=label, &
                               linestyle="ro", &
@@ -297,7 +335,7 @@ contains
         call linspace(minval(xi_limits), maxval(xi_limits), n_points, xi)
         do xi_idx = 1, n_points
             do chi_idx = 1, n_points
-                call convert_to_theta_phi(xi(xi_idx), chi(chi_idx), M_pol, N_tor, &
+                call convert_to_theta_phi(xi(xi_idx), chi(chi_idx), M_pol, N_tor, nfp, &
                                           theta_temp, phi_temp)
                 call field%compute_B_mod(theta_temp, &
                                          phi_temp, &
@@ -329,25 +367,32 @@ contains
 
     end subroutine plot_fieldlines_over_field_chi_xi
 
-    subroutine convert_to_chi_xi(theta, phi, M_pol, N_tor, xi, chi)
+    subroutine convert_to_chi_xi(theta, phi, M_pol, N_tor, nfp, xi, chi)
         real(dp), dimension(:), intent(in) :: theta, phi
-        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), dimension(:), intent(out) :: xi, chi
 
-        xi = N_tor*theta + M_pol*phi
+        real(dp) :: normalization, sign_N
+
+        normalization = M_pol**2.0_dp + N_tor**2.0_dp
+        sign_N = sign(1.0_dp, N_tor)
+
+        xi = sign_N*(N_tor*theta + M_pol*phi)/normalization*nfp
         chi = M_pol*theta - N_tor*phi
     end subroutine convert_to_chi_xi
 
-    subroutine convert_to_theta_phi(xi, chi, M_pol, N_tor, theta, phi)
+    subroutine convert_to_theta_phi(xi, chi, M_pol, N_tor, nfp, theta, phi)
         real(dp), intent(in) :: xi, chi
-        real(dp), intent(in) :: M_pol, N_tor
+        real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), intent(out) :: theta, phi
 
-        real(dp) :: normalization
+        real(dp) :: normalization, sign_N
 
         normalization = M_pol**2.0_dp + N_tor**2.0_dp
-        theta = (N_tor*xi + M_pol*chi)/normalization
-        phi = (M_pol*xi - N_tor*chi)/normalization
+        sign_N = sign(1.0_dp, N_tor)
+
+        theta = sign_N*N_tor*xi/nfp + M_pol*chi/normalization
+        phi = sign_N*M_pol*xi/nfp - N_tor*chi/normalization
     end subroutine convert_to_theta_phi
 
     subroutine plot_delta_eta(fieldlines, delta_eta_1)
