@@ -7,6 +7,13 @@ target_link_libraries(plot_deviation_landreman_paul_helical.x myplot_lib
 add_test(PlotDeviationLandremanPaulHelical plot_deviation_landreman_paul_helical.x)
 set_tests_properties(PlotDeviationLandremanPaulHelical PROPERTIES LABELS "external")
 
+add_executable(plot_deviation_landreman_paul_axi.x plot_deviation_landreman_paul_axi.f90)
+target_link_libraries(plot_deviation_landreman_paul_axi.x myplot_lib
+                                                          rabe_lib
+                                                          helpers_lib)
+add_test(PlotDeviationLandremanPaulAxi plot_deviation_landreman_paul_axi.x)
+set_tests_properties(PlotDeviationLandremanPaulAxi PROPERTIES LABELS "external")
+
 add_executable(plot_deviation_goodman_nautilus.x plot_deviation_goodman_nautilus.f90)
 target_link_libraries(plot_deviation_goodman_nautilus.x myplot_lib
                                                           rabe_lib
