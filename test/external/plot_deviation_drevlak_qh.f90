@@ -21,7 +21,7 @@ program plot_deviation_drevlak_qh
     character(len=*), parameter :: bc_filename = "input/drevlak_qh.bc"
 
     !------------------Taken from .bc file-------------------------------------!
-    real(dp), parameter :: M_pol = 1.0_dp, N_tor = -5.0_dp
+    real(dp), parameter :: M_pol = -1.0_dp, N_tor = 5.0_dp
     real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 

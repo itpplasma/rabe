@@ -6,6 +6,7 @@ program test_set_fieldline_labels
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: set_fieldline_labels_along_chi_min
     use make_fieldline, only: make_flock_of_fieldlines
+    use deviation, only: calc_deviation
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_fieldlines_over_field_chi_xi
@@ -35,15 +36,16 @@ program test_set_fieldline_labels
 
     real(dp) :: chi_0
     real(dp) :: expected_chi_0
+    real(dp) :: dummy_A, dummy_B
     integer :: case, current
     logical :: test_failed
 
     logical, parameter :: should_plot = .false.
 
-    M_pols = [1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp]
-    N_tors = [1.0_dp, -1.0_dp, 0.0_dp, -1.0_dp]
-    iotas = [-2.3_dp, 1.0_dp, -1.5_dp, 0.8_dp]
-    nfps = [1.0_dp, 1.0_dp, 2.0_dp, 1.0_dp]
+    M_pols = [1.0_dp, -1.0_dp, 1.0_dp, 0.0_dp]
+    N_tors = [1.0_dp, 2.0_dp, 0.0_dp, 1.0_dp]
+    iotas = [-2.3_dp, 1.0_dp, -1.5_dp, -0.8_dp]
+    nfps = [1.0_dp, 2.0_dp, 2.0_dp, 1.0_dp]
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
@@ -77,6 +79,9 @@ program test_set_fieldline_labels
                 test_failed = .true.
             end if
         end do
+        call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, &
+                                      nfp, phi_tol=phi_tol)
+        call calc_deviation(fieldlines, dummy_A, dummy_B)
         if (should_plot) then
             call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, &
                                           nfp, phi_tol=phi_tol)

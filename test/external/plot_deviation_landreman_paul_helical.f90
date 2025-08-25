@@ -18,7 +18,7 @@ program plot_deviation_landreman_paul_helical
     character(len=*), parameter :: bc_filename = "input/landreman_paul_helical.bc"
 
     !------------------Taken from .bc file-------------------------------------!
-    real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: M_pol = -1.0_dp, N_tor = 4.0_dp
     real(dp), parameter :: sign_sqrtg = -1.0_dp ! theta goes counter-clockwise
     !--------------------------------------------------------------------------!
 

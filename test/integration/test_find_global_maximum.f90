@@ -8,7 +8,7 @@ program test_find_global_maximum
 
     implicit none
 
-    real(dp), parameter :: theta_mode = 1.0_dp, phi_mode = -4.0_dp
+    real(dp), parameter :: theta_mode = -1.0_dp, phi_mode = 4.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, abs(phi_mode))
     real(dp), parameter :: B_0 = 1.0_dp, B_amplitude = -0.5_dp, B_pert = -0.15_dp
     real(dp), parameter :: global_B_max = B_0 + abs(B_amplitude) + abs(B_pert)
