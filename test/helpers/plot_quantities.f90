@@ -372,12 +372,11 @@ contains
         real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), dimension(:), intent(out) :: xi, chi
 
-        real(dp) :: normalization, sign_N
+        real(dp) :: normalization
 
         normalization = M_pol**2.0_dp + N_tor**2.0_dp
-        sign_N = sign(1.0_dp, N_tor)
 
-        xi = sign_N*(N_tor*theta + M_pol*phi)/normalization*nfp
+        xi = (N_tor*theta + M_pol*phi)/normalization*nfp
         chi = M_pol*theta - N_tor*phi
     end subroutine convert_to_chi_xi
 
@@ -386,13 +385,12 @@ contains
         real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), intent(out) :: theta, phi
 
-        real(dp) :: normalization, sign_N
+        real(dp) :: normalization
 
         normalization = M_pol**2.0_dp + N_tor**2.0_dp
-        sign_N = sign(1.0_dp, N_tor)
 
-        theta = sign_N*N_tor*xi/nfp + M_pol*chi/normalization
-        phi = sign_N*M_pol*xi/nfp - N_tor*chi/normalization
+        theta = N_tor*xi/nfp + M_pol*chi/normalization
+        phi = M_pol*xi/nfp - N_tor*chi/normalization
     end subroutine convert_to_theta_phi
 
     subroutine plot_delta_eta(fieldlines, delta_eta_1)

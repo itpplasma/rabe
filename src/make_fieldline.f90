@@ -18,11 +18,13 @@ contains
         real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
-        real(dp) :: normalization, sign_N
+        real(dp) :: normalization
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
         logical :: more_than_2_maxima, too_strong_violation
+
+        call check_if_valid_input(M_pol, N_tor, nfp)
 
         n_fieldlines = size(fieldlines)
 
@@ -32,11 +34,10 @@ contains
         call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)
 
-        sign_N = sign(1.0_dp, N_tor)
         normalization = N_tor**2.0_dp + M_pol**2.0_dp
         fieldlines%iota_p = sign(pi, iota*M_pol - N_tor)/normalization* &
                             (M_pol + &
-                             nfp*sign_N*(N_tor*iota + M_pol)/(iota*M_pol - N_tor))
+                             nfp*(N_tor*iota + M_pol)/(iota*M_pol - N_tor))
 
         too_strong_violation = .false.
         do current = 1, n_fieldlines
@@ -86,6 +87,59 @@ contains
 
     end subroutine make_flock_of_fieldlines
 
+    subroutine check_if_valid_input(M_pol, N_tor, nfp)
+        use utils, only: not_same
+        real(dp), intent(in) :: M_pol, N_tor, nfp
+
+        real(dp), parameter :: tol = 1e-15
+        logical :: is_valid
+
+        is_valid = .true.
+
+        if (is_not_integer(M_pol, tol)) then
+            print *, "M_pol must be integer"
+            is_valid = .false.
+        end if
+        if (is_not_integer(N_tor, tol)) then
+            print *, "N_tor must be integer"
+            is_valid = .false.
+        end if
+        if (is_not_integer(nfp, tol)) then
+            print *, "nfp must be integer"
+            is_valid = .false.
+        end if
+        if (nint(nfp) <= 0) then
+            print *, "nfp must be positiv"
+            is_valid = .false.
+        end if
+        if (nint(N_tor) /= 0) then
+            if (not_same(N_tor, nfp, reltol_in=tol, abstol_in=0.0_dp)) then
+                print *, "nonzero N_tor must be equal nfp"
+                is_valid = .false.
+            end if
+        else
+            if (nint(M_pol) /= 1) then
+                is_valid = .false.
+                print *, "M_pol must be 1 if N_tor=0"
+            end if
+        end if
+
+        if (.not. is_valid) then
+            print *, "Error: not valid input:"
+            print *, "M_pol: ", M_pol
+            print *, "N_tor: ", N_tor
+            print *, "nfp: ", nfp
+            error stop
+        end if
+
+    end subroutine check_if_valid_input
+
+    logical function is_not_integer(x, tol)
+        real(dp), intent(in) :: x, tol
+
+        is_not_integer = abs(x - nint(x)) > tol
+    end function is_not_integer
+
     subroutine set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
                                                   fieldlines, phi_tol)
         class(field_t), intent(in) :: field
@@ -94,7 +148,6 @@ contains
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
         real(dp) :: chi_min, tol
-        real(dp) :: sign_N
 
         call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
 
@@ -111,9 +164,8 @@ contains
             error stop
         end if
 
-        sign_N = sign(1.0_dp, N_tor)
-        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp*sign_N
-        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp*sign_N
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
     end subroutine set_fieldline_labels_along_chi_min
 
     subroutine guess_chi_min(field, chi_min, N_tor, M_pol, tol)
