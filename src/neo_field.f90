@@ -34,7 +34,8 @@ contains
         real(dp) :: x(3), dummy_B_mod, dummy_sqrtg, dummy_dB_dx(3)
 
         if (magfie_newspline .ne. 1) then
-            error stop "There can only be one neo_field instance at a time"
+            error stop "There can only be one neo_field and only for one &
+                &fluxsurface at a time! Change the fluxsurface with neo_change_stor!"
         end if
 
         in_file = bc_filename

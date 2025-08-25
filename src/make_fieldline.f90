@@ -193,7 +193,8 @@ contains
         elseif (nint(M_pol) /= 0) then
             call find_local_minima(B_mod_along_theta_axis, interval, location, tol)
         else
-            error stop "error in guess_chi_min: M_pol and N_tor must not be both zero"
+            error stop "error in guess_chi_min: M_pol=N_tor=0. &
+                &M_pol and N_tor must not be both zero!"
         end if
 
         chi_min = location(1)
