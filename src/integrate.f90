@@ -51,18 +51,14 @@ contains
                       + abs_error_tol_quadpack
 
         if (abs_error > error_limit) then
-            print *, "Integration warning: absolute error =", abs_error
-            print *, "bigger than required ", error_limit
-            print *, "relative error", abs_error/abs(result_quadpack)
-            write(errmsg, '(A,ES12.4,A,ES12.4,A,ES12.4)') &
+            write(errmsg, '(A,ES12.4,/,A,ES12.4,/,A,ES12.4)') &
                 "Integration warning: absolute error = ", abs_error, &
-                " bigger than required ", error_limit, &
-                ", relative error = ", abs_error/abs(result_quadpack)
+                "bigger than required ", error_limit, &
+                "relative error ", abs_error/abs(result_quadpack)
             error stop trim(errmsg)
         end if
 
         if (error_flag /= 0) then
-            print *, "Integration warning: error =", error_flag
             write(errmsg, '(A,I0)') &
                 "Integration warning: error = ", error_flag
             error stop trim(errmsg)
