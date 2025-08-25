@@ -56,6 +56,7 @@ contains
         real(dp), dimension(size(x) - 1) :: dx
         real(dp) :: tol
         integer :: N
+        character(len=256) :: errmsg
 
         N = size(x)
 
@@ -63,9 +64,11 @@ contains
         is_equidistant = all(abs(dx - dx(1)) < retol*dx(1) + abstol)
 
         if (.not. is_equidistant) then
-            print *, "Input x has to be equidistant for real_ft!"
-            print *, "violation by ", maxval(abs(dx - dx(1)))
-            error stop "Input x has to be equidistant for real_ft"
+            write(errmsg, '(A,ES12.4)') &
+                "Input x not equidistant for real_ft. Max violation=", &
+                maxval(abs(dx - dx(1)))
+            flush(6)  ! Flush stdout
+            error stop trim(errmsg)
         end if
     end subroutine check_is_equidistant
 
@@ -76,16 +79,18 @@ contains
         real(dp), parameter :: tol = 1e-13
         real(dp) :: correct_range, range
         integer :: N
+        character(len=256) :: errmsg
 
         N = size(x)
         range = x(N) - x(1)
         correct_range = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
         has_correct_range = abs(correct_range - range) < tol*correct_range
         if (.not. has_correct_range) then
-            print *, "Input x has wrong endpoints for real_ft!"
-            print *, "actual: ", x(1), x(N)
-            print *, "required: ", x(1), x(1) + correct_range
-            error stop "Input x has wrong endpoints for real_ft"
+            write(errmsg, '(A,2F10.4,A,2F10.4)') &
+                "Input x wrong endpoints. Actual=[", x(1), x(N), &
+                "], Required=[", x(1), x(1) + correct_range, "]"
+            flush(6)  ! Flush stdout
+            error stop trim(errmsg)
         end if
     end subroutine check_has_correct_endpoints
 

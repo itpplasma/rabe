@@ -51,6 +51,7 @@ contains
         real(dp) :: subinterval(2)
         real(dp), dimension(1) :: sublocation
         integer, parameter :: n_substeps = 11
+        character(len=256) :: errmsg
 
         if (present(abstol)) then
             do_recursion = .true.
@@ -79,10 +80,11 @@ contains
                 if (value(current_location + 1) <= value(current_location)) then
                     current_region = [-1, 0, 1] + current_location
                     if (cannot_resolve(value(current_region))) then
-                        print *, "find_local_maxima: can not resolve maxima"
-                        print *, "requested abstol: ", abstol
-                        print *, "reached error: ", error*(n_steps - 1)*0.5_dp
-                        error stop "find_local_maxima: can not resolve maxima"
+                        write(errmsg, '(A,ES12.4,A,ES12.4)') &
+                            "find_local_maxima: cannot resolve maxima. abstol=", &
+                            abstol, ", reached error=", error*(n_steps - 1)*0.5_dp
+                        flush(6)  ! Flush stdout
+                        error stop trim(errmsg)
                     end if
                     current_maximum = current_maximum + 1
                     if (do_recursion) then
