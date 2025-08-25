@@ -53,12 +53,11 @@ contains
             print *, "Integration warning: absolute error =", abs_error
             print *, "bigger than required ", error_limit
             print *, "relative error", abs_error/abs(result_quadpack)
-            error stop
+            error stop "Integration: absolute error exceeds tolerance"
         end if
 
         if (error_flag /= 0) then
-            print *, "Integration warning: error =", error_flag
-            error stop
+            error stop "Integration: quadpack error flag non-zero"
         end if
 
         result = convert_to_dp(result_quadpack)
@@ -87,8 +86,7 @@ contains
         real(dp) :: left_result, right_result
 
         if (b < a) then
-            print *, "Error in integrate_1d_substituted: b < a"
-            error stop
+            error stop "Error in integrate_1d_substituted: b < a"
         end if
 
         ! integration by globally adaptive interval subdivision (quadpack import)

@@ -109,8 +109,7 @@ contains
         do line = 1, n_lines
             read (file_unit, '(A)', iostat=ios)
             if (ios /= 0) then
-                print *, "Error when skipping lines."
-                error stop
+                error stop "Error when skipping lines"
             end if
         end do
     end subroutine

@@ -65,7 +65,7 @@ contains
         if (.not. is_equidistant) then
             print *, "Input x has to be equidistant for real_ft!"
             print *, "violation by ", maxval(abs(dx - dx(1)))
-            error stop
+            error stop "Input x has to be equidistant for real_ft"
         end if
     end subroutine check_is_equidistant
 
@@ -85,7 +85,7 @@ contains
             print *, "Input x has wrong endpoints for real_ft!"
             print *, "actual: ", x(1), x(N)
             print *, "required: ", x(1), x(1) + correct_range
-            error stop
+            error stop "Input x has wrong endpoints for real_ft"
         end if
     end subroutine check_has_correct_endpoints
 

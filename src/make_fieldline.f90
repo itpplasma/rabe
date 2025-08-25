@@ -161,7 +161,7 @@ contains
             print *, "chi_min: ", chi_min/pi, "[pi]"
             print *, "The minima contour of the ideal omnigenous configuration"
             print *, "must pass through (theta=0,phi=0)!"
-            error stop
+            error stop "chi_min is not multiple of 2pi"
         end if
 
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
@@ -193,9 +193,7 @@ contains
         elseif (nint(M_pol) /= 0) then
             call find_local_minima(B_mod_along_theta_axis, interval, location, tol)
         else
-            print *, "error in guess_chi_min: M_pol=N_tor=0"
-            print *, "M_pol and N_tor must not be both zero!"
-            error stop
+            error stop "error in guess_chi_min: M_pol and N_tor must not be both zero"
         end if
 
         chi_min = location(1)
@@ -273,7 +271,7 @@ contains
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
-            error stop
+            error stop "find_maxima_along_fieldline: Found less than two maxima"
         elseif (found_maxima > 2) then
             if (present(more_than_2_maxima)) more_than_2_maxima = .true.
             call B_mod_along_fieldline(phi_max(1:found_maxima), B_max(1:found_maxima))

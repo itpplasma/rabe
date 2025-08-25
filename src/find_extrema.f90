@@ -82,7 +82,7 @@ contains
                         print *, "find_local_maxima: can not resolve maxima"
                         print *, "requested abstol: ", abstol
                         print *, "reached error: ", error*(n_steps - 1)*0.5_dp
-                        error stop
+                        error stop "find_local_maxima: can not resolve maxima"
                     end if
                     current_maximum = current_maximum + 1
                     if (do_recursion) then
@@ -107,8 +107,7 @@ contains
         end do
 
         if (current_maximum < 1) then
-            print *, "find_local_maxima: found no local maxima"
-            error stop
+            error stop "find_local_maxima: found no local maxima"
         end if
 
     end subroutine find_local_maxima
