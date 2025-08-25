@@ -64,8 +64,8 @@ contains
         is_equidistant = all(abs(dx - dx(1)) < retol*dx(1) + abstol)
 
         if (.not. is_equidistant) then
-            write(errmsg, '(A,/,A,ES12.4)') &
-                "Input x has to be equidistant for real_ft!", &
+            write(errmsg, '(A,A,ES12.4)') &
+                "Input x has to be equidistant for real_ft! ", &
                 "violation by ", maxval(abs(dx - dx(1)))
             error stop trim(errmsg)
         end if
@@ -85,10 +85,10 @@ contains
         correct_range = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
         has_correct_range = abs(correct_range - range) < tol*correct_range
         if (.not. has_correct_range) then
-            write(errmsg, '(A,/,A,2F10.4,/,A,2F10.4)') &
-                "Input x has wrong endpoints for real_ft!", &
+            write(errmsg, '(A,A,2F10.4,A,2F10.4)') &
+                "Input x has wrong endpoints for real_ft! ", &
                 "actual: ", x(1), x(N), &
-                "required: ", x(1), x(1) + correct_range
+                " required: ", x(1), x(1) + correct_range
             error stop trim(errmsg)
         end if
     end subroutine check_has_correct_endpoints
