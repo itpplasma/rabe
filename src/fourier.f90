@@ -67,7 +67,6 @@ contains
             write(errmsg, '(A,ES12.4)') &
                 "Input x not equidistant for real_ft. Max violation=", &
                 maxval(abs(dx - dx(1)))
-            flush(6)  ! Flush stdout
             error stop trim(errmsg)
         end if
     end subroutine check_is_equidistant
