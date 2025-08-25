@@ -47,7 +47,7 @@ contains
             print *, "cos part: ", sum(abs(modes%delta_eta%cos_coeffs))
             any_has_sin_part = .true.
         end if
-        if (any_has_sin_part) error stop "Non-vanishing sin part in delta quantities"
+        if (any_has_sin_part) error stop 1
 
         call calc_surface_averages(fieldlines, average)
 
