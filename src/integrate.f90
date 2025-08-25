@@ -57,6 +57,7 @@ contains
         end if
 
         if (error_flag /= 0) then
+            print *, "Integration warning: error flag =", error_flag
             error stop "Integration: quadpack error flag non-zero"
         end if
 
