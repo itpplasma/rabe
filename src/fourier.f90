@@ -88,7 +88,6 @@ contains
             write(errmsg, '(A,2F10.4,A,2F10.4)') &
                 "Input x wrong endpoints. Actual=[", x(1), x(N), &
                 "], Required=[", x(1), x(1) + correct_range, "]"
-            flush(6)  ! Flush stdout
             error stop trim(errmsg)
         end if
     end subroutine check_has_correct_endpoints
