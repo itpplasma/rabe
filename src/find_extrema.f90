@@ -83,7 +83,6 @@ contains
                         write(errmsg, '(A,ES12.4,A,ES12.4)') &
                             "find_local_maxima: cannot resolve maxima. abstol=", &
                             abstol, ", reached error=", error*(n_steps - 1)*0.5_dp
-                        flush(6)  ! Flush stdout
                         error stop trim(errmsg)
                     end if
                     current_maximum = current_maximum + 1
