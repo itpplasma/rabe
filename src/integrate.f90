@@ -55,14 +55,12 @@ contains
                 "Integration: abs error=", abs_error, &
                 " exceeds limit=", error_limit, &
                 ", rel error=", abs_error/abs(result_quadpack)
-            flush(6)  ! Flush stdout
             error stop trim(errmsg)
         end if
 
         if (error_flag /= 0) then
             write(errmsg, '(A,I0)') &
                 "Integration: quadpack error flag=", error_flag
-            flush(6)  ! Flush stdout
             error stop trim(errmsg)
         end if
 
