@@ -24,7 +24,7 @@ contains
 
         integer :: font_size
 
-        font_size = 18
+        font_size = 30
 
         call self%plt%initialize(grid=.true., &
                                  xlabel=xlabel, &
