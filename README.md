@@ -1,6 +1,6 @@
 # rabe
 
-A minimalistic implementation of **R**edls **a**nalytial **b**ootstrap **e**stimation for stellarators [1-3].
+An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap d**e**viations formula of Ref. [1].
 
 ## Build
 
@@ -15,6 +15,13 @@ to build the executable and
 ```bash
 make test
 ```
+
+or
+
+```bash
+make test_all
+```
+
 to execute tests.
 
 ## Third Party
@@ -22,8 +29,11 @@ to execute tests.
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (license under `plot`)
 
 ## References
-[1] M. Landreman et al., Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
 
-[2] A. Redl et al., A new set of analytical formulae for the computation of the bootstrap current and the neoclassical conductivity in tokamaks, Phys. Plasmas 28, [doi:10.1063/5.0012664](https://doi.org/10.1063/5.0012664) (2021)
+[1] C.G Albert et al. On the convergence of bootstrap current to the Shaing–Callen limit in stellarators, Journal of Plasma Physics, 91(3), p. E77. [doi:10.1017/S0022377825000200](https://doi.org/10.1017/S0022377825000200) (2025)
 
-[3] O. Sauter et al., Neoclassical conductivity and bootstrap current formulas for general axisymmetric equilibria and arbitrary collisionality regime, Phys. Plasma 6, [doi:10.1063/1.873240](https://doi.org/10.1063/1.873240) (1999)
+[2] M. Landreman et al., Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
+
+[3] A. Redl et al., A new set of analytical formulae for the computation of the bootstrap current and the neoclassical conductivity in tokamaks, Phys. Plasmas 28, [doi:10.1063/5.0012664](https://doi.org/10.1063/5.0012664) (2021)
+
+[4] O. Sauter et al., Neoclassical conductivity and bootstrap current formulas for general axisymmetric equilibria and arbitrary collisionality regime, Phys. Plasma 6, [doi:10.1063/1.873240](https://doi.org/10.1063/1.873240) (1999)
