@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ main, feat/ci-pipeline ]
+    branches:
+      - '**'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   test:
@@ -22,4 +24,4 @@ jobs:
       run: make
 
     - name: Run tests
-      run: make test
+      run: make test_all
