@@ -5,7 +5,7 @@ module netcdf_output
     implicit none
     private
 
-    public :: netcdf_output_t
+    public :: netcdf_output_t, read_netcdf_values
 
     type :: netcdf_output_t
         integer :: ncid = -1
@@ -107,5 +107,29 @@ contains
         end if
     end subroutine check_netcdf_status
 
+    subroutine read_netcdf_values(filename, factor_a, factor_b)
+        character(len=*), intent(in) :: filename
+        real(dp), intent(out) :: factor_a, factor_b
+
+        integer :: ncid, var_id_a, var_id_b, status
+
+        status = nf90_open(filename, NF90_NOWRITE, ncid)
+        call check_netcdf_status(status, "opening file: " // filename)
+
+        status = nf90_inq_varid(ncid, "off_factor_a", var_id_a)
+        call check_netcdf_status(status, "finding variable off_factor_a")
+
+        status = nf90_get_var(ncid, var_id_a, factor_a)
+        call check_netcdf_status(status, "reading off_factor_a")
+
+        status = nf90_inq_varid(ncid, "off_factor_b", var_id_b)
+        call check_netcdf_status(status, "finding variable off_factor_b")
+
+        status = nf90_get_var(ncid, var_id_b, factor_b)
+        call check_netcdf_status(status, "reading off_factor_b")
+
+        status = nf90_close(ncid)
+        call check_netcdf_status(status, "closing NetCDF file")
+    end subroutine read_netcdf_values
 
 end module netcdf_output
