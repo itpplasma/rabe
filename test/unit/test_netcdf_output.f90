@@ -30,10 +30,15 @@ program test_netcdf_output
 contains
 
     subroutine cleanup_test_file()
+        logical :: file_exists
         integer :: unit, iostat
-        open(newunit=unit, file=test_file, iostat=iostat)
-        if (iostat == 0) then
-            close(unit, status="delete")
+
+        inquire(file=test_file, exist=file_exists)
+        if (file_exists) then
+            open(newunit=unit, file=test_file, iostat=iostat)
+            if (iostat == 0) then
+                close(unit, status="delete")
+            end if
         end if
     end subroutine cleanup_test_file
 
