@@ -1,8 +1,6 @@
 module netcdf_output
     use constants, only: dp
-#ifdef HAVE_NETCDF
     use netcdf
-#endif
 
     implicit none
     private
@@ -12,10 +10,8 @@ module netcdf_output
     type :: netcdf_output_t
         integer :: ncid = -1
         logical :: is_open = .false.
-#ifdef HAVE_NETCDF
         integer :: var_id_a = -1
         integer :: var_id_b = -1
-#endif
     contains
         procedure :: create => netcdf_output_create
         procedure :: write_results => netcdf_output_write_results
@@ -28,7 +24,6 @@ contains
     subroutine netcdf_output_create(this, filename)
         class(netcdf_output_t), intent(inout) :: this
         character(len=*), intent(in) :: filename
-#ifdef HAVE_NETCDF
         integer :: status
 
         if (this%is_open) then
@@ -62,17 +57,11 @@ contains
         call check_netcdf_status(status, "ending definition mode")
 
         this%is_open = .true.
-#else
-        print *, "Warning: NetCDF support not available, cannot create ", filename
-        print *, "         Consider installing NetCDF Fortran library"
-#endif
     end subroutine netcdf_output_create
 
     subroutine netcdf_output_write_results(this, off_factor_a, off_factor_b)
         class(netcdf_output_t), intent(inout) :: this
         real(dp), intent(in) :: off_factor_a, off_factor_b
-
-#ifdef HAVE_NETCDF
         integer :: status
 
         if (.not. this%is_open) then
@@ -84,16 +73,11 @@ contains
 
         status = nf90_put_var(this%ncid, this%var_id_b, off_factor_b)
         call check_netcdf_status(status, "writing off_factor_b")
-#else
-        print *, "Warning: NetCDF support not available, cannot write results"
-        print *, "         Values: off_factor_a=", off_factor_a, " off_factor_b=", off_factor_b
-#endif
 
     end subroutine netcdf_output_write_results
 
     subroutine netcdf_output_close(this)
         class(netcdf_output_t), intent(inout) :: this
-#ifdef HAVE_NETCDF
         integer :: status
 
         if (this%is_open) then
@@ -102,7 +86,6 @@ contains
             this%is_open = .false.
             this%ncid = -1
         end if
-#endif
     end subroutine netcdf_output_close
 
     subroutine netcdf_output_final(this)
@@ -113,7 +96,6 @@ contains
         end if
     end subroutine netcdf_output_final
 
-#ifdef HAVE_NETCDF
     subroutine check_netcdf_status(status, operation)
         integer, intent(in) :: status
         character(len=*), intent(in) :: operation
@@ -124,6 +106,5 @@ contains
             error stop "NetCDF operation failed"
         end if
     end subroutine check_netcdf_status
-#endif
 
 end module netcdf_output

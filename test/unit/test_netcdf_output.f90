@@ -1,9 +1,7 @@
 program test_netcdf_output
     use constants, only: dp
     use netcdf_output, only: netcdf_output_t
-#ifdef HAVE_NETCDF
     use netcdf
-#endif
 
     implicit none
 
@@ -13,15 +11,11 @@ program test_netcdf_output
     real(dp), parameter :: test_factor_b = 9.87654321_dp
     real(dp), parameter :: tolerance = 1.0e-12_dp
 
-#ifdef HAVE_NETCDF
     real(dp) :: read_factor_a, read_factor_b
     integer :: ncid, var_id, status
     logical :: file_exists
-#endif
 
     print *, "Testing NetCDF output module..."
-
-#ifdef HAVE_NETCDF
 
     call output%create(test_file)
     call output%write_results(test_factor_a, test_factor_b)
@@ -86,24 +80,15 @@ program test_netcdf_output
     call cleanup_test_file()
 
     print *, "PASS: All NetCDF output tests passed"
-#else
-    print *, "SKIP: NetCDF support not available - testing stub functionality"
-    call output%create(test_file)
-    call output%write_results(test_factor_a, test_factor_b)
-    call output%close()
-    print *, "PASS: NetCDF stub functionality works"
-#endif
 
 contains
 
     subroutine cleanup_test_file()
-#ifdef HAVE_NETCDF
         integer :: unit, iostat
         open(newunit=unit, file=test_file, iostat=iostat)
         if (iostat == 0) then
             close(unit, status="delete")
         end if
-#endif
     end subroutine cleanup_test_file
 
 end program test_netcdf_output
