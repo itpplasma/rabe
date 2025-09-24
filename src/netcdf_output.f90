@@ -5,7 +5,7 @@ module netcdf_output
     implicit none
     private
 
-    public :: netcdf_output_t
+    public :: netcdf_output_t, verify_netcdf_file
 
     type :: netcdf_output_t
         integer :: ncid = -1
@@ -106,5 +106,76 @@ contains
             error stop "NetCDF operation failed"
         end if
     end subroutine check_netcdf_status
+
+    function verify_netcdf_file(filename, expected_a, expected_b, tolerance) result(success)
+        character(len=*), intent(in) :: filename
+        real(dp), intent(in) :: expected_a, expected_b, tolerance
+        logical :: success
+
+        integer :: ncid, var_id_a, var_id_b, status
+        real(dp) :: read_a, read_b
+        logical :: file_exists
+
+        success = .false.
+
+        inquire(file=filename, exist=file_exists)
+        if (.not. file_exists) then
+            print *, "FAIL: NetCDF file does not exist: ", filename
+            return
+        end if
+
+        status = nf90_open(filename, NF90_NOWRITE, ncid)
+        if (status /= NF90_NOERR) then
+            print *, "FAIL: Cannot open NetCDF file: ", filename
+            return
+        end if
+
+        status = nf90_inq_varid(ncid, "off_factor_a", var_id_a)
+        if (status /= NF90_NOERR) then
+            print *, "FAIL: Variable off_factor_a not found"
+            status = nf90_close(ncid)
+            return
+        end if
+
+        status = nf90_get_var(ncid, var_id_a, read_a)
+        if (status /= NF90_NOERR) then
+            print *, "FAIL: Cannot read off_factor_a"
+            status = nf90_close(ncid)
+            return
+        end if
+
+        status = nf90_inq_varid(ncid, "off_factor_b", var_id_b)
+        if (status /= NF90_NOERR) then
+            print *, "FAIL: Variable off_factor_b not found"
+            status = nf90_close(ncid)
+            return
+        end if
+
+        status = nf90_get_var(ncid, var_id_b, read_b)
+        if (status /= NF90_NOERR) then
+            print *, "FAIL: Cannot read off_factor_b"
+            status = nf90_close(ncid)
+            return
+        end if
+
+        status = nf90_close(ncid)
+        if (status /= NF90_NOERR) then
+            print *, "WARNING: Error closing NetCDF file"
+        end if
+
+        if (abs(read_a - expected_a) > tolerance) then
+            print *, "FAIL: off_factor_a mismatch"
+            print *, "Expected:", expected_a, "Got:", read_a
+            return
+        end if
+
+        if (abs(read_b - expected_b) > tolerance) then
+            print *, "FAIL: off_factor_b mismatch"
+            print *, "Expected:", expected_b, "Got:", read_b
+            return
+        end if
+
+        success = .true.
+    end function verify_netcdf_file
 
 end module netcdf_output

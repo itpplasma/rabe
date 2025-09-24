@@ -1,7 +1,6 @@
 program test_netcdf_output
     use constants, only: dp
-    use netcdf_output, only: netcdf_output_t
-    use netcdf
+    use netcdf_output, only: netcdf_output_t, verify_netcdf_file
 
     implicit none
 
@@ -11,9 +10,7 @@ program test_netcdf_output
     real(dp), parameter :: test_factor_b = 9.87654321_dp
     real(dp), parameter :: tolerance = 1.0e-12_dp
 
-    real(dp) :: read_factor_a, read_factor_b
-    integer :: ncid, var_id, status
-    logical :: file_exists
+    logical :: verification_success
 
     print *, "Testing NetCDF output module..."
 
@@ -21,59 +18,8 @@ program test_netcdf_output
     call output%write_results(test_factor_a, test_factor_b)
     call output%close()
 
-    inquire(file=test_file, exist=file_exists)
-    if (.not. file_exists) then
-        print *, "FAIL: NetCDF file was not created"
-        error stop "Test failed"
-    end if
-
-    status = nf90_open(test_file, NF90_NOWRITE, ncid)
-    if (status /= NF90_NOERR) then
-        print *, "FAIL: Cannot open test file for reading"
-        print *, trim(nf90_strerror(status))
-        error stop "Test failed"
-    end if
-
-    status = nf90_inq_varid(ncid, "off_factor_a", var_id)
-    if (status /= NF90_NOERR) then
-        print *, "FAIL: Variable off_factor_a not found"
-        error stop "Test failed"
-    end if
-
-    status = nf90_get_var(ncid, var_id, read_factor_a)
-    if (status /= NF90_NOERR) then
-        print *, "FAIL: Cannot read off_factor_a"
-        error stop "Test failed"
-    end if
-
-    status = nf90_inq_varid(ncid, "off_factor_b", var_id)
-    if (status /= NF90_NOERR) then
-        print *, "FAIL: Variable off_factor_b not found"
-        error stop "Test failed"
-    end if
-
-    status = nf90_get_var(ncid, var_id, read_factor_b)
-    if (status /= NF90_NOERR) then
-        print *, "FAIL: Cannot read off_factor_b"
-        error stop "Test failed"
-    end if
-
-    status = nf90_close(ncid)
-    if (status /= NF90_NOERR) then
-        print *, "WARNING: Cannot close test file"
-    end if
-
-    if (abs(read_factor_a - test_factor_a) > tolerance) then
-        print *, "FAIL: off_factor_a mismatch"
-        print *, "Expected:", test_factor_a
-        print *, "Got:", read_factor_a
-        error stop "Test failed"
-    end if
-
-    if (abs(read_factor_b - test_factor_b) > tolerance) then
-        print *, "FAIL: off_factor_b mismatch"
-        print *, "Expected:", test_factor_b
-        print *, "Got:", read_factor_b
+    verification_success = verify_netcdf_file(test_file, test_factor_a, test_factor_b, tolerance)
+    if (.not. verification_success) then
         error stop "Test failed"
     end if
 
