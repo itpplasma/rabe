@@ -1,6 +1,8 @@
 module netcdf_output
     use constants, only: dp
+#ifdef HAVE_NETCDF
     use netcdf
+#endif
 
     implicit none
     private
@@ -22,6 +24,7 @@ contains
     subroutine netcdf_output_create(this, filename)
         class(netcdf_output_t), intent(inout) :: this
         character(len=*), intent(in) :: filename
+#ifdef HAVE_NETCDF
         integer :: status
 
         if (this%is_open) then
@@ -32,12 +35,17 @@ contains
         call check_netcdf_status(status, "creating file: " // filename)
 
         this%is_open = .true.
+#else
+        print *, "Warning: NetCDF support not available, cannot create ", filename
+        print *, "         Consider installing NetCDF Fortran library"
+#endif
     end subroutine netcdf_output_create
 
     subroutine netcdf_output_write_results(this, off_factor_a, off_factor_b)
         class(netcdf_output_t), intent(inout) :: this
         real(dp), intent(in) :: off_factor_a, off_factor_b
 
+#ifdef HAVE_NETCDF
         integer :: var_id_a, var_id_b
         integer :: status
 
@@ -45,14 +53,14 @@ contains
             error stop "NetCDF file not open for writing"
         end if
 
-        status = nf90_def_var(this%ncid, "off_factor_a", NF90_DOUBLE, var_id_a)
+        status = nf90_def_var(this%ncid, "off_factor_a", NF90_DOUBLE, varid=var_id_a)
         call check_netcdf_status(status, "defining variable off_factor_a")
 
         status = nf90_put_att(this%ncid, var_id_a, "long_name", &
                               "1/sqrt(nu_star) factor")
         call check_netcdf_status(status, "setting attribute for off_factor_a")
 
-        status = nf90_def_var(this%ncid, "off_factor_b", NF90_DOUBLE, var_id_b)
+        status = nf90_def_var(this%ncid, "off_factor_b", NF90_DOUBLE, varid=var_id_b)
         call check_netcdf_status(status, "defining variable off_factor_b")
 
         status = nf90_put_att(this%ncid, var_id_b, "long_name", &
@@ -71,11 +79,16 @@ contains
 
         status = nf90_put_var(this%ncid, var_id_b, off_factor_b)
         call check_netcdf_status(status, "writing off_factor_b")
+#else
+        print *, "Warning: NetCDF support not available, cannot write results"
+        print *, "         Values: off_factor_a=", off_factor_a, " off_factor_b=", off_factor_b
+#endif
 
     end subroutine netcdf_output_write_results
 
     subroutine netcdf_output_close(this)
         class(netcdf_output_t), intent(inout) :: this
+#ifdef HAVE_NETCDF
         integer :: status
 
         if (this%is_open) then
@@ -84,6 +97,7 @@ contains
             this%is_open = .false.
             this%ncid = -1
         end if
+#endif
     end subroutine netcdf_output_close
 
     subroutine netcdf_output_final(this)
@@ -94,6 +108,7 @@ contains
         end if
     end subroutine netcdf_output_final
 
+#ifdef HAVE_NETCDF
     subroutine check_netcdf_status(status, operation)
         integer, intent(in) :: status
         character(len=*), intent(in) :: operation
@@ -104,5 +119,6 @@ contains
             error stop "NetCDF operation failed"
         end if
     end subroutine check_netcdf_status
+#endif
 
 end module netcdf_output
