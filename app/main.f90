@@ -5,11 +5,12 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
+    use netcdf_output, only: netcdf_output_t
 
     implicit none
 
     character(len=*), parameter :: input_file = "rabe.in"
-    character(len=*), parameter :: output_file = "rabe.out"
+    character(len=*), parameter :: output_file = "rabe.nc"
 
     character(len=100) :: bc_filename
     real(dp) :: M_pol
@@ -38,7 +39,7 @@ program rabe
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
 
-    integer :: output
+    type(netcdf_output_t) :: nc_output
 
     namelist /rabe_config/ &
         bc_filename, &
@@ -84,12 +85,9 @@ program rabe
     print *, "1/sqrt(nu_star) factor: ", off_factor_A
     print *, "1/nu_star factor: ", off_factor_B
 
-    open (newunit=output, file=output_file, status="replace", action="write")
-
-    write (output, "(A15,1x,A9)") "1/sqrt(nu_star)", "1/nu_star"
-    write (output, "(ES10.3E2,1x,ES10.3E2)") off_factor_A, off_factor_B
-
-    close (output)
+    call nc_output%create(output_file)
+    call nc_output%write_results(off_factor_A, off_factor_B)
+    call nc_output%close()
 
     deallocate (fieldlines)
     deallocate (theta_0)

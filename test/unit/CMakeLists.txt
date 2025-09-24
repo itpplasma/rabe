@@ -28,6 +28,12 @@ target_link_libraries(test_misc.x rabe_lib)
 add_test(TestMisc test_misc.x)
 set_tests_properties(TestMisc PROPERTIES LABELS "quick")
 
+add_executable(test_netcdf_output.x test_netcdf_output.f90)
+target_include_directories(test_netcdf_output.x PRIVATE /usr/include)
+target_link_libraries(test_netcdf_output.x rabe_lib)
+add_test(TestNetcdfOutput test_netcdf_output.x)
+set_tests_properties(TestNetcdfOutput PROPERTIES LABELS "quick")
+
 add_executable(plot_misc.x plot_misc.f90)
 target_link_libraries(plot_misc.x rabe_lib
                                   myplot_lib)

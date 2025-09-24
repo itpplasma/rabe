@@ -6,9 +6,15 @@ add_library(rabe_lib STATIC
 
 include(Util)
 
+# Find NetCDF Fortran
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(NetCDF_Fortran REQUIRED IMPORTED_TARGET netcdf-fortran)
+target_include_directories(rabe_lib PRIVATE /usr/include)
+
 find_or_fetch(quadpack)
 target_compile_options(quadpack PRIVATE -w) # No warnings as library is not modified
 target_link_libraries(rabe_lib PRIVATE quadpack)
+target_link_libraries(rabe_lib PRIVATE PkgConfig::NetCDF_Fortran)
 
 add_subdirectory(neo)
 target_link_libraries(rabe_lib PRIVATE neo_lib)
