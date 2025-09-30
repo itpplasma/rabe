@@ -14,6 +14,9 @@ program test_netcdf
 
     real(dp) :: read_factor_a, read_factor_b
 
+    logical :: file_exists
+    integer :: unit, iostat
+
     call nc_out%create(test_file)
     call nc_out%add_global_attribute("title", &
                                      "RABE Bootstrap Current Analysis Results")
@@ -48,21 +51,12 @@ program test_netcdf
         error stop
     end if
 
-    call cleanup_test_file()
-
-contains
-
-    subroutine cleanup_test_file()
-        logical :: file_exists
-        integer :: unit, iostat
-
-        inquire (file=test_file, exist=file_exists)
-        if (file_exists) then
-            open (newunit=unit, file=test_file, iostat=iostat)
-            if (iostat == 0) then
-                close (unit, status="delete")
-            end if
+    inquire (file=test_file, exist=file_exists)
+    if (file_exists) then
+        open (newunit=unit, file=test_file, iostat=iostat)
+        if (iostat == 0) then
+            close (unit, status="delete")
         end if
-    end subroutine cleanup_test_file
+    end if
 
 end program test_netcdf
