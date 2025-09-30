@@ -5,7 +5,7 @@ module netcdf_mod
     implicit none
     private
 
-    public :: netcdf_output_t, read_netcdf_values
+    public :: netcdf_output_t, netcdf_input_t, read_netcdf_values
 
     integer, parameter :: MAX_VARS = 100
 
@@ -30,6 +30,16 @@ module netcdf_mod
         procedure :: close => netcdf_output_close
         final :: netcdf_output_final
     end type netcdf_output_t
+
+    type :: netcdf_input_t
+        integer :: ncid = -1
+        logical :: is_open = .false.
+    contains
+        procedure :: open => netcdf_input_open
+        procedure :: read_real => netcdf_input_read_real
+        procedure :: close => netcdf_input_close
+        final :: netcdf_input_final
+    end type netcdf_input_t
 
 contains
 
@@ -201,6 +211,58 @@ contains
         end if
     end subroutine netcdf_output_final
 
+    subroutine netcdf_input_open(this, filename)
+        class(netcdf_input_t), intent(inout) :: this
+        character(len=*), intent(in) :: filename
+        integer :: status
+
+        if (this%is_open) then
+            call this%close()
+        end if
+
+        status = nf90_open(filename, NF90_NOWRITE, this%ncid)
+        call check_netcdf_status(status, "opening file: "//filename)
+
+        this%is_open = .true.
+    end subroutine netcdf_input_open
+
+    subroutine netcdf_input_read_real(this, var_name, value)
+        class(netcdf_input_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), intent(out) :: value
+        integer :: status, var_id
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open for reading"
+        end if
+
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+
+        status = nf90_get_var(this%ncid, var_id, value)
+        call check_netcdf_status(status, "reading variable: "//var_name)
+    end subroutine netcdf_input_read_real
+
+    subroutine netcdf_input_close(this)
+        class(netcdf_input_t), intent(inout) :: this
+        integer :: status
+
+        if (this%is_open) then
+            status = nf90_close(this%ncid)
+            call check_netcdf_status(status, "closing NetCDF file")
+            this%is_open = .false.
+            this%ncid = -1
+        end if
+    end subroutine netcdf_input_close
+
+    subroutine netcdf_input_final(this)
+        type(netcdf_input_t), intent(inout) :: this
+
+        if (this%is_open) then
+            call this%close()
+        end if
+    end subroutine netcdf_input_final
+
     subroutine check_netcdf_status(status, operation)
         integer, intent(in) :: status
         character(len=*), intent(in) :: operation
@@ -216,25 +278,12 @@ contains
         character(len=*), intent(in) :: filename
         real(dp), intent(out) :: factor_a, factor_b
 
-        integer :: ncid, var_id_a, var_id_b, status
+        type(netcdf_input_t) :: input
 
-        status = nf90_open(filename, NF90_NOWRITE, ncid)
-        call check_netcdf_status(status, "opening file: "//filename)
-
-        status = nf90_inq_varid(ncid, "off_factor_a", var_id_a)
-        call check_netcdf_status(status, "finding variable off_factor_a")
-
-        status = nf90_get_var(ncid, var_id_a, factor_a)
-        call check_netcdf_status(status, "reading off_factor_a")
-
-        status = nf90_inq_varid(ncid, "off_factor_b", var_id_b)
-        call check_netcdf_status(status, "finding variable off_factor_b")
-
-        status = nf90_get_var(ncid, var_id_b, factor_b)
-        call check_netcdf_status(status, "reading off_factor_b")
-
-        status = nf90_close(ncid)
-        call check_netcdf_status(status, "closing NetCDF file")
+        call input%open(filename)
+        call input%read_real("off_factor_a", factor_a)
+        call input%read_real("off_factor_b", factor_b)
+        call input%close()
     end subroutine read_netcdf_values
 
 end module netcdf_mod
