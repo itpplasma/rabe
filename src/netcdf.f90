@@ -1,4 +1,4 @@
-module netcdf_output
+module netcdf_mod
     use constants, only: dp
     use netcdf
 
@@ -132,4 +132,4 @@ contains
         call check_netcdf_status(status, "closing NetCDF file")
     end subroutine read_netcdf_values
 
-end module netcdf_output
+end module netcdf_mod

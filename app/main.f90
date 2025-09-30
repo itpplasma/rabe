@@ -5,7 +5,7 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use netcdf_output, only: netcdf_output_t
+    use netcdf_mod, only: netcdf_output_t
 
     implicit none
 
