@@ -44,7 +44,7 @@ contains
             call this%close()
         end if
 
-        status = nf90_create(filename, NF90_CLASSIC_MODEL, this%ncid)
+        status = nf90_create(filename, ior(NF90_CLOBBER, NF90_CLASSIC_MODEL), this%ncid)
         call check_netcdf_status(status, "creating file: "//filename)
 
         this%is_open = .true.
