@@ -37,7 +37,7 @@ program rabe
 
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
-    real(dp) :: off_factor_A, off_factor_B
+    real(dp) :: C_A, C_B
 
     type(netcdf_t) :: nc_output
 
@@ -79,23 +79,27 @@ program rabe
     dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/field%psi_tor_edge
     dr_dAtheta = dr_dpsi*sign_sqrtg
     R = field%R
-    off_factor_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-    off_factor_B = deviation_B*0.5*R*pi*dr_dAtheta
+    C_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+    C_B = deviation_B*0.5*R*pi*dr_dAtheta
 
-    print *, "1/sqrt(nu_star) factor: ", off_factor_A
-    print *, "1/nu_star factor: ", off_factor_B
+    print *, "1/sqrt(nu_star) factor: ", C_A
+    print *, "1/nu_star factor: ", C_B
 
     call nc_output%create(output_file)
     call nc_output%add_global_attribute("title", &
-                                        "RABE Bootstrap Current Analysis Results")
-    call nc_output%add_real("off_factor_a")
-    call nc_output%add_real_attr("off_factor_a", "long_name", &
+                                        "asymptotic bootstrap coefficient lambda_bB")
+    call nc_output%add_global_attribute("definition", &
+                                        "lambda_bB = C_A/sqrt(nu_star) + C_B/nu_star")
+    call nc_output%add_real("C_A")
+    call nc_output%add_real_attr("C_A", "long_name", &
                                  "1/sqrt(nu_star) factor")
-    call nc_output%add_real("off_factor_b")
-    call nc_output%add_real_attr("off_factor_b", "long_name", &
-                                 "1/nu_star factor")
-    call nc_output%write_real("off_factor_a", off_factor_A)
-    call nc_output%write_real("off_factor_b", off_factor_B)
+    call nc_output%add_real_attr("C_A", "unit", &
+                                 "[1]")
+    call nc_output%add_real("C_B")
+    call nc_output%add_real_attr("C_B", "unit", &
+                                 "[1]")
+    call nc_output%write_real("C_A", C_A)
+    call nc_output%write_real("C_B", C_B)
     call nc_output%close()
 
     deallocate (fieldlines)
