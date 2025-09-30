@@ -7,7 +7,7 @@ module netcdf_mod
 
     public :: netcdf_t
 
-    integer, parameter :: MAX_VARS = 100
+    integer, parameter :: max_vars = 100
 
     type :: var_info_t
         character(len=100) :: name
@@ -19,7 +19,7 @@ module netcdf_mod
         logical :: is_open = .false.
         logical :: in_define_mode = .false.
         integer :: n_vars = 0
-        type(var_info_t) :: vars(MAX_VARS)
+        type(var_info_t) :: vars(max_vars)
     contains
         procedure :: create => netcdf_create
         procedure :: open => netcdf_open
@@ -84,7 +84,7 @@ contains
             error stop "Not in define mode"
         end if
 
-        if (this%n_vars >= MAX_VARS) then
+        if (this%n_vars >= max_vars) then
             error stop "Maximum number of variables exceeded"
         end if
 
