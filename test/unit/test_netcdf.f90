@@ -13,6 +13,7 @@ program test_netcdf
     real(dp), parameter :: test_factor_b = 9.87654321_dp
 
     real(dp) :: read_factor_a, read_factor_b
+    character(len=100) :: read_title, read_long_name_a, read_long_name_b
 
     logical :: file_exists
     integer :: unit, iostat
@@ -33,6 +34,9 @@ program test_netcdf
     call nc_in%open(test_file)
     call nc_in%read_real("off_factor_a", read_factor_a)
     call nc_in%read_real("off_factor_b", read_factor_b)
+    call nc_in%read_global_attribute("title", read_title)
+    call nc_in%read_real_attr("off_factor_a", "long_name", read_long_name_a)
+    call nc_in%read_real_attr("off_factor_b", "long_name", read_long_name_b)
     call nc_in%close()
 
     if (not_same(test_factor_a, read_factor_a, reltol)) then
@@ -48,6 +52,30 @@ program test_netcdf
         print *, "test_netcdf failed: off_factor_b mismatch"
         print *, "found: ", read_factor_b
         print *, "expected: ", test_factor_b
+        error stop
+    end if
+
+    if (trim(read_title) /= "RABE Bootstrap Current Analysis Results") then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: global title mismatch"
+        print *, "found: ", trim(read_title)
+        print *, "expected: RABE Bootstrap Current Analysis Results"
+        error stop
+    end if
+
+    if (trim(read_long_name_a) /= "1/sqrt(nu_star) factor") then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: off_factor_a long_name mismatch"
+        print *, "found: ", trim(read_long_name_a)
+        print *, "expected: 1/sqrt(nu_star) factor"
+        error stop
+    end if
+
+    if (trim(read_long_name_b) /= "1/nu_star factor") then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: off_factor_b long_name mismatch"
+        print *, "found: ", trim(read_long_name_b)
+        print *, "expected: 1/nu_star factor"
         error stop
     end if
 

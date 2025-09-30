@@ -24,8 +24,10 @@ module netcdf_mod
         procedure :: create => netcdf_create
         procedure :: open => netcdf_open
         procedure :: add_global_attribute => netcdf_add_global_attr
+        procedure :: read_global_attribute => netcdf_read_global_attr
         procedure :: add_real => netcdf_add_real
         procedure :: add_real_attr => netcdf_add_real_attr
+        procedure :: read_real_attr => netcdf_read_real_attr
         procedure :: end_define => netcdf_end_define
         procedure :: write_real => netcdf_write_real
         procedure :: read_real => netcdf_read_real
@@ -228,6 +230,40 @@ contains
         status = nf90_get_var(this%ncid, var_id, value)
         call check_netcdf_status(status, "reading variable: "//var_name)
     end subroutine netcdf_read_real
+
+    subroutine netcdf_read_global_attr(this, attr_name, attr_value)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: attr_name
+        character(len=*), intent(out) :: attr_value
+        integer :: status
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open for reading"
+        end if
+
+        status = nf90_get_att(this%ncid, NF90_GLOBAL, attr_name, attr_value)
+        call check_netcdf_status(status, "reading global attribute: " &
+                                 //attr_name)
+    end subroutine netcdf_read_global_attr
+
+    subroutine netcdf_read_real_attr(this, var_name, attr_name, attr_value)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        character(len=*), intent(in) :: attr_name
+        character(len=*), intent(out) :: attr_value
+        integer :: status, var_id
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open for reading"
+        end if
+
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+
+        status = nf90_get_att(this%ncid, var_id, attr_name, attr_value)
+        call check_netcdf_status(status, "reading attribute "//attr_name &
+                                 //" for variable: "//var_name)
+    end subroutine netcdf_read_real_attr
 
     subroutine netcdf_final(this)
         type(netcdf_t), intent(inout) :: this
