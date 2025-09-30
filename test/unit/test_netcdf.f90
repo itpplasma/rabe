@@ -1,6 +1,6 @@
 program test_netcdf
     use constants, only: dp
-    use netcdf_mod, only: netcdf_t, read_netcdf_values
+    use netcdf_mod, only: netcdf_t
     use utils, only: not_same
 
     implicit none
@@ -16,13 +16,13 @@ program test_netcdf
 
     call nc_out%create(test_file)
     call nc_out%add_global_attribute("title", &
-                                      "RABE Bootstrap Current Analysis Results")
+                                     "RABE Bootstrap Current Analysis Results")
     call nc_out%add_real("off_factor_a")
     call nc_out%add_real_attr("off_factor_a", "long_name", &
-                               "1/sqrt(nu_star) factor")
+                              "1/sqrt(nu_star) factor")
     call nc_out%add_real("off_factor_b")
     call nc_out%add_real_attr("off_factor_b", "long_name", &
-                               "1/nu_star factor")
+                              "1/nu_star factor")
     call nc_out%write_real("off_factor_a", test_factor_a)
     call nc_out%write_real("off_factor_b", test_factor_b)
     call nc_out%close()

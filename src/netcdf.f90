@@ -5,7 +5,7 @@ module netcdf_mod
     implicit none
     private
 
-    public :: netcdf_t, read_netcdf_values
+    public :: netcdf_t
 
     integer, parameter :: MAX_VARS = 100
 
@@ -247,17 +247,5 @@ contains
             error stop "NetCDF operation failed"
         end if
     end subroutine check_netcdf_status
-
-    subroutine read_netcdf_values(filename, factor_a, factor_b)
-        character(len=*), intent(in) :: filename
-        real(dp), intent(out) :: factor_a, factor_b
-
-        type(netcdf_t) :: nc
-
-        call nc%open(filename)
-        call nc%read_real("off_factor_a", factor_a)
-        call nc%read_real("off_factor_b", factor_b)
-        call nc%close()
-    end subroutine read_netcdf_values
 
 end module netcdf_mod
