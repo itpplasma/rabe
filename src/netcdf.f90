@@ -31,7 +31,7 @@ contains
         end if
 
         status = nf90_create(filename, NF90_CLASSIC_MODEL, this%ncid)
-        call check_netcdf_status(status, "creating file: " // filename)
+        call check_netcdf_status(status, "creating file: "//filename)
 
         status = nf90_def_var(this%ncid, "off_factor_a", NF90_DOUBLE, &
                               varid=this%var_id_a)
@@ -114,7 +114,7 @@ contains
         integer :: ncid, var_id_a, var_id_b, status
 
         status = nf90_open(filename, NF90_NOWRITE, ncid)
-        call check_netcdf_status(status, "opening file: " // filename)
+        call check_netcdf_status(status, "opening file: "//filename)
 
         status = nf90_inq_varid(ncid, "off_factor_a", var_id_a)
         call check_netcdf_status(status, "finding variable off_factor_a")
