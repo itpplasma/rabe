@@ -11,6 +11,9 @@ program test_netcdf
     character(len=*), parameter :: test_file = "test_output.nc"
     real(dp), parameter :: test_factor_a = 1.23456789_dp
     real(dp), parameter :: test_factor_b = 9.87654321_dp
+    character(len=*), parameter :: title = "RABE Bootstrap Current Analysis Results"
+    character(len=*), parameter :: long_name_a = "1/sqrt(nu_star) factor"
+    character(len=*), parameter :: long_name_b = "1/nu_star factor"
 
     real(dp) :: read_factor_a, read_factor_b
     character(len=100) :: read_title, read_long_name_a, read_long_name_b
@@ -19,17 +22,21 @@ program test_netcdf
     integer :: unit, iostat
 
     call nc_out%create(test_file)
-    call nc_out%add_global_attribute("title", &
-                                     "RABE Bootstrap Current Analysis Results")
+    call nc_out%add_global_attribute("title", title)
     call nc_out%add_real("off_factor_a")
-    call nc_out%add_real_attr("off_factor_a", "long_name", &
-                              "1/sqrt(nu_star) factor")
+    call nc_out%add_real_attr("off_factor_a", "long_name", long_name_a)
     call nc_out%add_real("off_factor_b")
-    call nc_out%add_real_attr("off_factor_b", "long_name", &
-                              "1/nu_star factor")
+    call nc_out%add_real_attr("off_factor_b", "long_name", long_name_b)
     call nc_out%write_real("off_factor_a", test_factor_a)
     call nc_out%write_real("off_factor_b", test_factor_b)
     call nc_out%close()
+
+    inquire (file=test_file, exist=file_exists)
+    if (.not. file_exists) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: file does not exist after creation"
+        error stop
+    end if
 
     call nc_in%open(test_file)
     call nc_in%read_real("off_factor_a", read_factor_a)
@@ -55,7 +62,7 @@ program test_netcdf
         error stop
     end if
 
-    if (trim(read_title) /= "RABE Bootstrap Current Analysis Results") then
+    if (trim(read_title) /= title) then
         print *, "-------------------------------------------------------------"
         print *, "test_netcdf failed: global title mismatch"
         print *, "found: ", trim(read_title)
@@ -63,19 +70,19 @@ program test_netcdf
         error stop
     end if
 
-    if (trim(read_long_name_a) /= "1/sqrt(nu_star) factor") then
+    if (trim(read_long_name_a) /= long_name_a) then
         print *, "-------------------------------------------------------------"
         print *, "test_netcdf failed: off_factor_a long_name mismatch"
         print *, "found: ", trim(read_long_name_a)
-        print *, "expected: 1/sqrt(nu_star) factor"
+        print *, "expected: ", trim(long_name_a)
         error stop
     end if
 
-    if (trim(read_long_name_b) /= "1/nu_star factor") then
+    if (trim(read_long_name_b) /= long_name_b) then
         print *, "-------------------------------------------------------------"
         print *, "test_netcdf failed: off_factor_b long_name mismatch"
         print *, "found: ", trim(read_long_name_b)
-        print *, "expected: 1/nu_star factor"
+        print *, "expected: ", trim(long_name_b)
         error stop
     end if
 
@@ -85,6 +92,10 @@ program test_netcdf
         if (iostat == 0) then
             close (unit, status="delete")
         end if
+    else
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: file does not exist after reading"
+        error stop
     end if
 
 end program test_netcdf
