@@ -5,7 +5,7 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use netcdf_mod, only: netcdf_output_t
+    use netcdf_mod, only: netcdf_t
 
     implicit none
 
@@ -39,7 +39,7 @@ program rabe
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
 
-    type(netcdf_output_t) :: nc_output
+    type(netcdf_t) :: nc_output
 
     namelist /rabe_config/ &
         bc_filename, &
@@ -87,13 +87,13 @@ program rabe
 
     call nc_output%create(output_file)
     call nc_output%add_global_attribute("title", &
-        "RABE Bootstrap Current Analysis Results")
+                                        "RABE Bootstrap Current Analysis Results")
     call nc_output%add_real("off_factor_a")
     call nc_output%add_real_attr("off_factor_a", "long_name", &
-        "1/sqrt(nu_star) factor")
+                                 "1/sqrt(nu_star) factor")
     call nc_output%add_real("off_factor_b")
     call nc_output%add_real_attr("off_factor_b", "long_name", &
-        "1/nu_star factor")
+                                 "1/nu_star factor")
     call nc_output%write_real("off_factor_a", off_factor_A)
     call nc_output%write_real("off_factor_b", off_factor_B)
     call nc_output%close()
