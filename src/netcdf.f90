@@ -5,7 +5,7 @@ module netcdf_mod
     implicit none
     private
 
-    public :: netcdf_output_t, netcdf_input_t, read_netcdf_values
+    public :: netcdf_t, netcdf_input_t, read_netcdf_values
 
     integer, parameter :: MAX_VARS = 100
 
@@ -14,22 +14,22 @@ module netcdf_mod
         integer :: var_id
     end type var_info_t
 
-    type :: netcdf_output_t
+    type :: netcdf_t
         integer :: ncid = -1
         logical :: is_open = .false.
         logical :: in_define_mode = .false.
         integer :: n_vars = 0
         type(var_info_t) :: vars(MAX_VARS)
     contains
-        procedure :: create => netcdf_output_create
-        procedure :: add_global_attribute => netcdf_output_add_global_attr
-        procedure :: add_real => netcdf_output_add_real
-        procedure :: add_real_attr => netcdf_output_add_real_attr
-        procedure :: end_define => netcdf_output_end_define
-        procedure :: write_real => netcdf_output_write_real
-        procedure :: close => netcdf_output_close
-        final :: netcdf_output_final
-    end type netcdf_output_t
+        procedure :: create => netcdf_create
+        procedure :: add_global_attribute => netcdf_add_global_attr
+        procedure :: add_real => netcdf_add_real
+        procedure :: add_real_attr => netcdf_add_real_attr
+        procedure :: end_define => netcdf_end_define
+        procedure :: write_real => netcdf_write_real
+        procedure :: close => netcdf_close
+        final :: netcdf_final
+    end type netcdf_t
 
     type :: netcdf_input_t
         integer :: ncid = -1
@@ -43,8 +43,8 @@ module netcdf_mod
 
 contains
 
-    subroutine netcdf_output_create(this, filename)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_create(this, filename)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: filename
         integer :: status
 
@@ -58,10 +58,10 @@ contains
         this%is_open = .true.
         this%in_define_mode = .true.
         this%n_vars = 0
-    end subroutine netcdf_output_create
+    end subroutine netcdf_create
 
-    subroutine netcdf_output_add_global_attr(this, attr_name, attr_value)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_add_global_attr(this, attr_name, attr_value)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: attr_name
         character(len=*), intent(in) :: attr_value
         integer :: status
@@ -76,11 +76,11 @@ contains
 
         status = nf90_put_att(this%ncid, NF90_GLOBAL, attr_name, attr_value)
         call check_netcdf_status(status, "setting global attribute: " &
-            //attr_name)
-    end subroutine netcdf_output_add_global_attr
+                                 //attr_name)
+    end subroutine netcdf_add_global_attr
 
-    subroutine netcdf_output_add_real(this, var_name)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_add_real(this, var_name)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: var_name
         integer :: status, var_id
 
@@ -102,11 +102,11 @@ contains
         this%n_vars = this%n_vars + 1
         this%vars(this%n_vars)%name = var_name
         this%vars(this%n_vars)%var_id = var_id
-    end subroutine netcdf_output_add_real
+    end subroutine netcdf_add_real
 
-    subroutine netcdf_output_add_real_attr(this, var_name, attr_name, &
-        attr_value)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_add_real_attr(this, var_name, attr_name, &
+                                    attr_value)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: var_name
         character(len=*), intent(in) :: attr_name
         character(len=*), intent(in) :: attr_value
@@ -134,11 +134,11 @@ contains
 
         status = nf90_put_att(this%ncid, var_id, attr_name, attr_value)
         call check_netcdf_status(status, "setting attribute "//attr_name &
-            //" for variable: "//var_name)
-    end subroutine netcdf_output_add_real_attr
+                                 //" for variable: "//var_name)
+    end subroutine netcdf_add_real_attr
 
-    subroutine netcdf_output_end_define(this)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_end_define(this)
+        class(netcdf_t), intent(inout) :: this
         integer :: status
 
         if (.not. this%is_open) then
@@ -153,10 +153,10 @@ contains
         call check_netcdf_status(status, "ending definition mode")
 
         this%in_define_mode = .false.
-    end subroutine netcdf_output_end_define
+    end subroutine netcdf_end_define
 
-    subroutine netcdf_output_write_real(this, var_name, value)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_write_real(this, var_name, value)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: var_name
         real(dp), intent(in) :: value
         integer :: status, var_id, i
@@ -183,10 +183,10 @@ contains
 
         status = nf90_put_var(this%ncid, var_id, value)
         call check_netcdf_status(status, "writing variable: "//var_name)
-    end subroutine netcdf_output_write_real
+    end subroutine netcdf_write_real
 
-    subroutine netcdf_output_close(this)
-        class(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_close(this)
+        class(netcdf_t), intent(inout) :: this
         integer :: status
 
         if (this%is_open) then
@@ -201,15 +201,15 @@ contains
             this%ncid = -1
             this%n_vars = 0
         end if
-    end subroutine netcdf_output_close
+    end subroutine netcdf_close
 
-    subroutine netcdf_output_final(this)
-        type(netcdf_output_t), intent(inout) :: this
+    subroutine netcdf_final(this)
+        type(netcdf_t), intent(inout) :: this
 
         if (this%is_open) then
             call this%close()
         end if
-    end subroutine netcdf_output_final
+    end subroutine netcdf_final
 
     subroutine netcdf_input_open(this, filename)
         class(netcdf_input_t), intent(inout) :: this

@@ -1,13 +1,13 @@
-program test_netcdf_output
+program test_netcdf
     use constants, only: dp
-    use netcdf_mod, only: netcdf_output_t, netcdf_input_t, read_netcdf_values
+    use netcdf_mod, only: netcdf_t, netcdf_input_t, read_netcdf_values
     use utils, only: not_same
 
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-12_dp
 
-    type(netcdf_output_t) :: output
+    type(netcdf_t) :: output
     type(netcdf_input_t) :: input
     character(len=*), parameter :: test_file = "test_output.nc"
     real(dp), parameter :: test_factor_a = 1.23456789_dp
@@ -17,13 +17,13 @@ program test_netcdf_output
 
     call output%create(test_file)
     call output%add_global_attribute("title", &
-        "RABE Bootstrap Current Analysis Results")
+                                     "RABE Bootstrap Current Analysis Results")
     call output%add_real("off_factor_a")
     call output%add_real_attr("off_factor_a", "long_name", &
-        "1/sqrt(nu_star) factor")
+                              "1/sqrt(nu_star) factor")
     call output%add_real("off_factor_b")
     call output%add_real_attr("off_factor_b", "long_name", &
-        "1/nu_star factor")
+                              "1/nu_star factor")
     call output%write_real("off_factor_a", test_factor_a)
     call output%write_real("off_factor_b", test_factor_b)
     call output%close()
@@ -35,7 +35,7 @@ program test_netcdf_output
 
     if (not_same(test_factor_a, read_factor_a, reltol)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_netcdf_output failed: off_factor_a mismatch"
+        print *, "test_netcdf failed: off_factor_a mismatch"
         print *, "found: ", read_factor_a
         print *, "expected: ", test_factor_a
         error stop
@@ -43,7 +43,7 @@ program test_netcdf_output
 
     if (not_same(test_factor_b, read_factor_b, reltol)) then
         print *, "-------------------------------------------------------------"
-        print *, "test_netcdf_output failed: off_factor_b mismatch"
+        print *, "test_netcdf failed: off_factor_b mismatch"
         print *, "found: ", read_factor_b
         print *, "expected: ", test_factor_b
         error stop
@@ -66,4 +66,4 @@ contains
         end if
     end subroutine cleanup_test_file
 
-end program test_netcdf_output
+end program test_netcdf
