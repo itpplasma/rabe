@@ -7,14 +7,26 @@ module netcdf_mod
 
     public :: netcdf_output_t, read_netcdf_values
 
+    integer, parameter :: MAX_VARS = 100
+
+    type :: var_info_t
+        character(len=100) :: name
+        integer :: var_id
+    end type var_info_t
+
     type :: netcdf_output_t
         integer :: ncid = -1
         logical :: is_open = .false.
-        integer :: var_id_a = -1
-        integer :: var_id_b = -1
+        logical :: in_define_mode = .false.
+        integer :: n_vars = 0
+        type(var_info_t) :: vars(MAX_VARS)
     contains
         procedure :: create => netcdf_output_create
-        procedure :: write_results => netcdf_output_write_results
+        procedure :: add_global_attribute => netcdf_output_add_global_attr
+        procedure :: add_real => netcdf_output_add_real
+        procedure :: add_real_attr => netcdf_output_add_real_attr
+        procedure :: end_define => netcdf_output_end_define
+        procedure :: write_real => netcdf_output_write_real
         procedure :: close => netcdf_output_close
         final :: netcdf_output_final
     end type netcdf_output_t
@@ -33,58 +45,151 @@ contains
         status = nf90_create(filename, NF90_CLASSIC_MODEL, this%ncid)
         call check_netcdf_status(status, "creating file: "//filename)
 
-        status = nf90_def_var(this%ncid, "off_factor_a", NF90_DOUBLE, &
-                              varid=this%var_id_a)
-        call check_netcdf_status(status, "defining variable off_factor_a")
+        this%is_open = .true.
+        this%in_define_mode = .true.
+        this%n_vars = 0
+    end subroutine netcdf_output_create
 
-        status = nf90_put_att(this%ncid, this%var_id_a, "long_name", &
-                              "1/sqrt(nu_star) factor")
-        call check_netcdf_status(status, "setting attribute for off_factor_a")
+    subroutine netcdf_output_add_global_attr(this, attr_name, attr_value)
+        class(netcdf_output_t), intent(inout) :: this
+        character(len=*), intent(in) :: attr_name
+        character(len=*), intent(in) :: attr_value
+        integer :: status
 
-        status = nf90_def_var(this%ncid, "off_factor_b", NF90_DOUBLE, &
-                              varid=this%var_id_b)
-        call check_netcdf_status(status, "defining variable off_factor_b")
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open"
+        end if
 
-        status = nf90_put_att(this%ncid, this%var_id_b, "long_name", &
-                              "1/nu_star factor")
-        call check_netcdf_status(status, "setting attribute for off_factor_b")
+        if (.not. this%in_define_mode) then
+            error stop "Not in define mode"
+        end if
 
-        status = nf90_put_att(this%ncid, NF90_GLOBAL, "title", &
-                              "RABE Bootstrap Current Analysis Results")
-        call check_netcdf_status(status, "setting global title")
+        status = nf90_put_att(this%ncid, NF90_GLOBAL, attr_name, attr_value)
+        call check_netcdf_status(status, "setting global attribute: " &
+            //attr_name)
+    end subroutine netcdf_output_add_global_attr
+
+    subroutine netcdf_output_add_real(this, var_name)
+        class(netcdf_output_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        integer :: status, var_id
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open"
+        end if
+
+        if (.not. this%in_define_mode) then
+            error stop "Not in define mode"
+        end if
+
+        if (this%n_vars >= MAX_VARS) then
+            error stop "Maximum number of variables exceeded"
+        end if
+
+        status = nf90_def_var(this%ncid, var_name, NF90_DOUBLE, varid=var_id)
+        call check_netcdf_status(status, "defining variable: "//var_name)
+
+        this%n_vars = this%n_vars + 1
+        this%vars(this%n_vars)%name = var_name
+        this%vars(this%n_vars)%var_id = var_id
+    end subroutine netcdf_output_add_real
+
+    subroutine netcdf_output_add_real_attr(this, var_name, attr_name, &
+        attr_value)
+        class(netcdf_output_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        character(len=*), intent(in) :: attr_name
+        character(len=*), intent(in) :: attr_value
+        integer :: status, var_id, i
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open"
+        end if
+
+        if (.not. this%in_define_mode) then
+            error stop "Not in define mode"
+        end if
+
+        var_id = -1
+        do i = 1, this%n_vars
+            if (trim(this%vars(i)%name) == trim(var_name)) then
+                var_id = this%vars(i)%var_id
+                exit
+            end if
+        end do
+
+        if (var_id == -1) then
+            error stop "Variable not found: "//var_name
+        end if
+
+        status = nf90_put_att(this%ncid, var_id, attr_name, attr_value)
+        call check_netcdf_status(status, "setting attribute "//attr_name &
+            //" for variable: "//var_name)
+    end subroutine netcdf_output_add_real_attr
+
+    subroutine netcdf_output_end_define(this)
+        class(netcdf_output_t), intent(inout) :: this
+        integer :: status
+
+        if (.not. this%is_open) then
+            error stop "NetCDF file not open"
+        end if
+
+        if (.not. this%in_define_mode) then
+            return
+        end if
 
         status = nf90_enddef(this%ncid)
         call check_netcdf_status(status, "ending definition mode")
 
-        this%is_open = .true.
-    end subroutine netcdf_output_create
+        this%in_define_mode = .false.
+    end subroutine netcdf_output_end_define
 
-    subroutine netcdf_output_write_results(this, off_factor_a, off_factor_b)
+    subroutine netcdf_output_write_real(this, var_name, value)
         class(netcdf_output_t), intent(inout) :: this
-        real(dp), intent(in) :: off_factor_a, off_factor_b
-        integer :: status
+        character(len=*), intent(in) :: var_name
+        real(dp), intent(in) :: value
+        integer :: status, var_id, i
 
         if (.not. this%is_open) then
             error stop "NetCDF file not open for writing"
         end if
 
-        status = nf90_put_var(this%ncid, this%var_id_a, off_factor_a)
-        call check_netcdf_status(status, "writing off_factor_a")
+        if (this%in_define_mode) then
+            call this%end_define()
+        end if
 
-        status = nf90_put_var(this%ncid, this%var_id_b, off_factor_b)
-        call check_netcdf_status(status, "writing off_factor_b")
+        var_id = -1
+        do i = 1, this%n_vars
+            if (trim(this%vars(i)%name) == trim(var_name)) then
+                var_id = this%vars(i)%var_id
+                exit
+            end if
+        end do
 
-    end subroutine netcdf_output_write_results
+        if (var_id == -1) then
+            error stop "Variable not found: "//var_name
+        end if
+
+        status = nf90_put_var(this%ncid, var_id, value)
+        call check_netcdf_status(status, "writing variable: "//var_name)
+    end subroutine netcdf_output_write_real
 
     subroutine netcdf_output_close(this)
         class(netcdf_output_t), intent(inout) :: this
         integer :: status
 
         if (this%is_open) then
+            if (this%in_define_mode) then
+                call this%end_define()
+            end if
+
             status = nf90_close(this%ncid)
             call check_netcdf_status(status, "closing NetCDF file")
             this%is_open = .false.
+            this%in_define_mode = .false.
             this%ncid = -1
+            this%n_vars = 0
         end if
     end subroutine netcdf_output_close
 
