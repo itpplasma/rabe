@@ -1,37 +1,36 @@
 program test_netcdf
     use constants, only: dp
-    use netcdf_mod, only: netcdf_t, netcdf_input_t, read_netcdf_values
+    use netcdf_mod, only: netcdf_t, read_netcdf_values
     use utils, only: not_same
 
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-12_dp
 
-    type(netcdf_t) :: output
-    type(netcdf_input_t) :: input
+    type(netcdf_t) :: nc_out, nc_in
     character(len=*), parameter :: test_file = "test_output.nc"
     real(dp), parameter :: test_factor_a = 1.23456789_dp
     real(dp), parameter :: test_factor_b = 9.87654321_dp
 
     real(dp) :: read_factor_a, read_factor_b
 
-    call output%create(test_file)
-    call output%add_global_attribute("title", &
-                                     "RABE Bootstrap Current Analysis Results")
-    call output%add_real("off_factor_a")
-    call output%add_real_attr("off_factor_a", "long_name", &
-                              "1/sqrt(nu_star) factor")
-    call output%add_real("off_factor_b")
-    call output%add_real_attr("off_factor_b", "long_name", &
-                              "1/nu_star factor")
-    call output%write_real("off_factor_a", test_factor_a)
-    call output%write_real("off_factor_b", test_factor_b)
-    call output%close()
+    call nc_out%create(test_file)
+    call nc_out%add_global_attribute("title", &
+                                      "RABE Bootstrap Current Analysis Results")
+    call nc_out%add_real("off_factor_a")
+    call nc_out%add_real_attr("off_factor_a", "long_name", &
+                               "1/sqrt(nu_star) factor")
+    call nc_out%add_real("off_factor_b")
+    call nc_out%add_real_attr("off_factor_b", "long_name", &
+                               "1/nu_star factor")
+    call nc_out%write_real("off_factor_a", test_factor_a)
+    call nc_out%write_real("off_factor_b", test_factor_b)
+    call nc_out%close()
 
-    call input%open(test_file)
-    call input%read_real("off_factor_a", read_factor_a)
-    call input%read_real("off_factor_b", read_factor_b)
-    call input%close()
+    call nc_in%open(test_file)
+    call nc_in%read_real("off_factor_a", read_factor_a)
+    call nc_in%read_real("off_factor_b", read_factor_b)
+    call nc_in%close()
 
     if (not_same(test_factor_a, read_factor_a, reltol)) then
         print *, "-------------------------------------------------------------"
