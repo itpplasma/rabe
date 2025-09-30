@@ -5,7 +5,7 @@ module netcdf_mod
     implicit none
     private
 
-    public :: netcdf_t, netcdf_input_t, read_netcdf_values
+    public :: netcdf_t, read_netcdf_values
 
     integer, parameter :: MAX_VARS = 100
 
@@ -22,24 +22,16 @@ module netcdf_mod
         type(var_info_t) :: vars(MAX_VARS)
     contains
         procedure :: create => netcdf_create
+        procedure :: open => netcdf_open
         procedure :: add_global_attribute => netcdf_add_global_attr
         procedure :: add_real => netcdf_add_real
         procedure :: add_real_attr => netcdf_add_real_attr
         procedure :: end_define => netcdf_end_define
         procedure :: write_real => netcdf_write_real
+        procedure :: read_real => netcdf_read_real
         procedure :: close => netcdf_close
         final :: netcdf_final
     end type netcdf_t
-
-    type :: netcdf_input_t
-        integer :: ncid = -1
-        logical :: is_open = .false.
-    contains
-        procedure :: open => netcdf_input_open
-        procedure :: read_real => netcdf_input_read_real
-        procedure :: close => netcdf_input_close
-        final :: netcdf_input_final
-    end type netcdf_input_t
 
 contains
 
@@ -203,16 +195,8 @@ contains
         end if
     end subroutine netcdf_close
 
-    subroutine netcdf_final(this)
-        type(netcdf_t), intent(inout) :: this
-
-        if (this%is_open) then
-            call this%close()
-        end if
-    end subroutine netcdf_final
-
-    subroutine netcdf_input_open(this, filename)
-        class(netcdf_input_t), intent(inout) :: this
+    subroutine netcdf_open(this, filename)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: filename
         integer :: status
 
@@ -224,10 +208,12 @@ contains
         call check_netcdf_status(status, "opening file: "//filename)
 
         this%is_open = .true.
-    end subroutine netcdf_input_open
+        this%in_define_mode = .false.
+        this%n_vars = 0
+    end subroutine netcdf_open
 
-    subroutine netcdf_input_read_real(this, var_name, value)
-        class(netcdf_input_t), intent(inout) :: this
+    subroutine netcdf_read_real(this, var_name, value)
+        class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: var_name
         real(dp), intent(out) :: value
         integer :: status, var_id
@@ -241,27 +227,15 @@ contains
 
         status = nf90_get_var(this%ncid, var_id, value)
         call check_netcdf_status(status, "reading variable: "//var_name)
-    end subroutine netcdf_input_read_real
+    end subroutine netcdf_read_real
 
-    subroutine netcdf_input_close(this)
-        class(netcdf_input_t), intent(inout) :: this
-        integer :: status
-
-        if (this%is_open) then
-            status = nf90_close(this%ncid)
-            call check_netcdf_status(status, "closing NetCDF file")
-            this%is_open = .false.
-            this%ncid = -1
-        end if
-    end subroutine netcdf_input_close
-
-    subroutine netcdf_input_final(this)
-        type(netcdf_input_t), intent(inout) :: this
+    subroutine netcdf_final(this)
+        type(netcdf_t), intent(inout) :: this
 
         if (this%is_open) then
             call this%close()
         end if
-    end subroutine netcdf_input_final
+    end subroutine netcdf_final
 
     subroutine check_netcdf_status(status, operation)
         integer, intent(in) :: status
@@ -278,12 +252,12 @@ contains
         character(len=*), intent(in) :: filename
         real(dp), intent(out) :: factor_a, factor_b
 
-        type(netcdf_input_t) :: input
+        type(netcdf_t) :: nc
 
-        call input%open(filename)
-        call input%read_real("off_factor_a", factor_a)
-        call input%read_real("off_factor_b", factor_b)
-        call input%close()
+        call nc%open(filename)
+        call nc%read_real("off_factor_a", factor_a)
+        call nc%read_real("off_factor_b", factor_b)
+        call nc%close()
     end subroutine read_netcdf_values
 
 end module netcdf_mod
