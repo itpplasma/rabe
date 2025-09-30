@@ -86,7 +86,16 @@ program rabe
     print *, "1/nu_star factor: ", off_factor_B
 
     call nc_output%create(output_file)
-    call nc_output%write_results(off_factor_A, off_factor_B)
+    call nc_output%add_global_attribute("title", &
+        "RABE Bootstrap Current Analysis Results")
+    call nc_output%add_real("off_factor_a")
+    call nc_output%add_real_attr("off_factor_a", "long_name", &
+        "1/sqrt(nu_star) factor")
+    call nc_output%add_real("off_factor_b")
+    call nc_output%add_real_attr("off_factor_b", "long_name", &
+        "1/nu_star factor")
+    call nc_output%write_real("off_factor_a", off_factor_A)
+    call nc_output%write_real("off_factor_b", off_factor_B)
     call nc_output%close()
 
     deallocate (fieldlines)

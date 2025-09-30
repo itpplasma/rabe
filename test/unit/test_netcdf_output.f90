@@ -15,7 +15,16 @@ program test_netcdf_output
     real(dp) :: read_factor_a, read_factor_b
 
     call output%create(test_file)
-    call output%write_results(test_factor_a, test_factor_b)
+    call output%add_global_attribute("title", &
+        "RABE Bootstrap Current Analysis Results")
+    call output%add_real("off_factor_a")
+    call output%add_real_attr("off_factor_a", "long_name", &
+        "1/sqrt(nu_star) factor")
+    call output%add_real("off_factor_b")
+    call output%add_real_attr("off_factor_b", "long_name", &
+        "1/nu_star factor")
+    call output%write_real("off_factor_a", test_factor_a)
+    call output%write_real("off_factor_b", test_factor_b)
     call output%close()
 
     call read_netcdf_values(test_file, read_factor_a, read_factor_b)
