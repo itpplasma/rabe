@@ -1,6 +1,6 @@
 program test_netcdf_output
     use constants, only: dp
-    use netcdf_output, only: netcdf_output_t, read_netcdf_values
+    use netcdf_mod, only: netcdf_output_t, read_netcdf_values
     use utils, only: not_same
 
     implicit none
@@ -44,11 +44,11 @@ contains
         logical :: file_exists
         integer :: unit, iostat
 
-        inquire(file=test_file, exist=file_exists)
+        inquire (file=test_file, exist=file_exists)
         if (file_exists) then
-            open(newunit=unit, file=test_file, iostat=iostat)
+            open (newunit=unit, file=test_file, iostat=iostat)
             if (iostat == 0) then
-                close(unit, status="delete")
+                close (unit, status="delete")
             end if
         end if
     end subroutine cleanup_test_file
