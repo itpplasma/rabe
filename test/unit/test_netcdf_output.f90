@@ -1,6 +1,6 @@
 program test_netcdf_output
     use constants, only: dp
-    use netcdf_mod, only: netcdf_output_t, read_netcdf_values
+    use netcdf_mod, only: netcdf_output_t, netcdf_input_t, read_netcdf_values
     use utils, only: not_same
 
     implicit none
@@ -8,6 +8,7 @@ program test_netcdf_output
     real(dp), parameter :: reltol = 1.0e-12_dp
 
     type(netcdf_output_t) :: output
+    type(netcdf_input_t) :: input
     character(len=*), parameter :: test_file = "test_output.nc"
     real(dp), parameter :: test_factor_a = 1.23456789_dp
     real(dp), parameter :: test_factor_b = 9.87654321_dp
@@ -27,7 +28,10 @@ program test_netcdf_output
     call output%write_real("off_factor_b", test_factor_b)
     call output%close()
 
-    call read_netcdf_values(test_file, read_factor_a, read_factor_b)
+    call input%open(test_file)
+    call input%read_real("off_factor_a", read_factor_a)
+    call input%read_real("off_factor_b", read_factor_b)
+    call input%close()
 
     if (not_same(test_factor_a, read_factor_a, reltol)) then
         print *, "-------------------------------------------------------------"
