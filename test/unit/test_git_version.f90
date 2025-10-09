@@ -1,5 +1,4 @@
 program test_git_version
-    use constants, only: dp
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
@@ -8,14 +7,9 @@ program test_git_version
     type(netcdf_t) :: nc_out, nc_in
     character(len=*), parameter :: test_file = "test_git_version.nc"
     character(len=100) :: read_git_hash
-    character(len=100) :: expected_hash
 
     logical :: file_exists
     integer :: unit, iostat
-
-    call execute_command_line("git rev-parse HEAD", &
-                              wait=.true., &
-                              cmdstat=iostat)
 
     call nc_out%create(test_file)
     call nc_out%add_global_attribute("git_hash", git_hash)
@@ -47,16 +41,15 @@ program test_git_version
         error stop
     end if
 
-    inquire (file=test_file, exist=file_exists)
-    if (file_exists) then
-        open (newunit=unit, file=test_file, iostat=iostat)
-        if (iostat == 0) then
-            close (unit, status="delete")
-        end if
+    open (newunit=unit, file=test_file, status="old", iostat=iostat)
+    if (iostat == 0) then
+        close (unit, status="delete")
     else
         print *, "-------------------------------------------------------------"
-        print *, "test_git_version failed: file does not exist after reading"
+        print *, "test_git_version failed: could not clean up test file"
         error stop
     end if
+
+    print *, "test_git_version passed"
 
 end program test_git_version

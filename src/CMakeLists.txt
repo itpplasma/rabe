@@ -5,6 +5,8 @@ add_library(rabe_lib STATIC
   ${CMAKE_BINARY_DIR}/src/git_version.f90
   )
 
+add_dependencies(rabe_lib git_version_target)
+
 include(Util)
 
 # Find NetCDF Fortran

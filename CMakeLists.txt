@@ -7,20 +7,22 @@ enable_language(Fortran)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(compiler)
 
-execute_process(
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/src/git_version.f90
+    COMMAND ${CMAKE_COMMAND}
+        -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/src/git_version.f90
+        -P ${CMAKE_SOURCE_DIR}/cmake/git_version.cmake
+    DEPENDS
+        ${CMAKE_SOURCE_DIR}/src/git_version.f90.in
+        ${CMAKE_SOURCE_DIR}/.git/HEAD
+        ${CMAKE_SOURCE_DIR}/.git/index
+    COMMENT "Generating git_version.f90 with current git hash"
+    VERBATIM
 )
-if(NOT GIT_HASH)
-    set(GIT_HASH "unknown")
-endif()
-configure_file(
-    src/git_version.f90.in
-    ${CMAKE_BINARY_DIR}/src/git_version.f90
-    @ONLY
+
+add_custom_target(git_version_target
+    DEPENDS ${CMAKE_BINARY_DIR}/src/git_version.f90
 )
 
 include_directories(${CMAKE_BINARY_DIR}/src)
