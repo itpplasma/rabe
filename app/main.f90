@@ -6,6 +6,7 @@ program rabe
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use netcdf_mod, only: netcdf_t
+    use git_version, only: git_hash
 
     implicit none
 
@@ -90,6 +91,7 @@ program rabe
                                         "asymptotic bootstrap coefficient lambda_bB")
     call nc_output%add_global_attribute("definition", &
                                         "lambda_bB = C_A/sqrt(nu_star) + C_B/nu_star")
+    call nc_output%add_global_attribute("git_hash", git_hash)
     call nc_output%add_real("C_A")
     call nc_output%add_real_attr("C_A", "long_name", &
                                  "1/sqrt(nu_star) factor")
