@@ -5,6 +5,9 @@ authors:
   - family-names: "Grassler"
     given-names: "Georg"
     affiliation: "Fusion@ÖAW, Institute for Theoretical and Computational Physics, Graz University of Technology"
+  - family-names: "Albert"
+    given-names: "Christopher"
+    affiliation: "Fusion@ÖAW, Institute for Theoretical and Computational Physics, Graz University of Technology"
   - family-names: "Kasilov"
     given-names: "Sergei"
     affiliation:
@@ -14,3 +17,10 @@ version: "v10.10.2025"
 doi: "10.1017/S0022377825000200"
 date-released: "2025-10-10"
 url: "https://github.com/itpplasma/rabe"
+references:
+  - type: software
+    title: "Claude"
+    authors:
+      - name: "Anthropic"
+    version: "Sonnet 4/ Opus 4"
+    url: "https://www.anthropic.com/"
