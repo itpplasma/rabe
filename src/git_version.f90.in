@@ -1,0 +1,4 @@
+module git_version
+    implicit none
+    character(len=*), parameter :: git_hash = "@GIT_HASH@"
+end module git_version
