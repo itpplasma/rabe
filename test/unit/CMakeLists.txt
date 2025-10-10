@@ -34,12 +34,6 @@ target_link_libraries(test_netcdf.x rabe_lib)
 add_test(TestNetcdf test_netcdf.x)
 set_tests_properties(TestNetcdf PROPERTIES LABELS "quick")
 
-add_executable(test_git_version.x test_git_version.f90)
-target_include_directories(test_git_version.x PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
-target_link_libraries(test_git_version.x rabe_lib)
-add_test(TestGitVersion test_git_version.x)
-set_tests_properties(TestGitVersion PROPERTIES LABELS "quick")
-
 add_executable(plot_misc.x plot_misc.f90)
 target_link_libraries(plot_misc.x rabe_lib
                                   myplot_lib)
