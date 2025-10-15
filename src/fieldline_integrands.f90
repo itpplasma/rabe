@@ -11,16 +11,16 @@ contains
         real(dp), intent(in) :: theta, phi, eta
         real(dp) :: local_radial_drift
 
-        real(dp) :: B, dB_dx(3), lambda_squared, dB_dtheta_0
+        real(dp) :: B, dB_dx(3), lambda_squared, dB_dtheta
 
         call field%compute_B_and_dB_dx(theta, phi, B, dB_dx)
-        lambda_squared = pitchparameter_squared(B, eta)
+        lambda_squared = calc_lambda_squared(B, eta)
 
-        dB_dtheta_0 = dB_dx(2)
+        dB_dtheta = dB_dx(2)
 
         local_radial_drift = 0.5_dp*sqrt(lambda_squared)/B**3.0_dp &
                              *(3.0_dp + lambda_squared) &
-                             *dB_dtheta_0
+                             *dB_dtheta
     end function local_radial_drift
 
     function lambda_over_B_squared(field, theta, phi, eta)
@@ -31,7 +31,7 @@ contains
         real(dp) :: B
 
         call field%compute_B_mod(theta, phi, B)
-        lambda_over_B_squared = sqrt(pitchparameter_squared(B, eta))/B**2.0_dp
+        lambda_over_B_squared = sqrt(calc_lambda_squared(B, eta))/B**2.0_dp
     end function lambda_over_B_squared
 
     function B_squared(field, theta, phi)
@@ -45,19 +45,19 @@ contains
         B_squared = B**2.0_dp
     end function B_squared
 
-    function pitchparameter_squared(B, eta)
+    function calc_lambda_squared(B, eta) result(lambda_squared)
         real(dp), intent(in) :: B, eta
-        real(dp) :: pitchparameter_squared
+        real(dp) :: lambda_squared
 
-        pitchparameter_squared = 1.0_dp - B*eta
+        lambda_squared = 1.0_dp - B*eta
 
-        if (pitchparameter_squared .lt. 0.0_dp) then
+        if (lambda_squared .lt. 0.0_dp) then
             print *, "Square of pitch parameter (1 - B*eta) is negative!"
             print *, "B: ", B
             print *, "eta: ", eta
-            print *, "(1 - B*eta): ", pitchparameter_squared
+            print *, "(1 - B*eta): ", lambda_squared
             error stop
         end if
-    end function pitchparameter_squared
+    end function calc_lambda_squared
 
 end module fieldline_integrands

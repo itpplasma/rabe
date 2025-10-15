@@ -60,7 +60,7 @@ contains
         dB_dx(1) = 0.0_dp
         dB_dx(2) = self%B_0*( &
                    -self%M_pol*self%eps_0*sin(chi) &
-                   + self%M_pol*self%eps_1*cos(theta)*sin(chi) &
+                   + self%sign*self%M_pol*self%eps_1*cos(theta)*sin(chi) &
                    - self%eps_1*sin(theta)*(1 - self%sign*cos(chi)) &
                    )
         dB_dx(3) = self%B_0*( &
