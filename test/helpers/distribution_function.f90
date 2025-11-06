@@ -4,7 +4,7 @@ module distribution_function
     use fieldline_integrals, only: fourier_transform_over_label
     use fieldline_integrals, only: modes_t, allocate_modes
     use fieldline_integrals, only: fieldline_modes_t
-    use deviation, only: surface_average_t, calc_surface_averages
+    use surface_average_mod, only: surface_average_t, calc_surface_averages
 
     implicit none
 

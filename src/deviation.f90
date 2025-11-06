@@ -5,18 +5,14 @@ module deviation
 
     implicit none
 
-    type :: surface_average_t
-        real(dp) :: normalization
-        real(dp) :: B_squared
-        real(dp) :: lambda_b
-    end type surface_average_t
-
 contains
 
     subroutine calc_deviation(fieldlines, deviation_A, deviation_B)
         use fieldline_integrals, only: fieldline_modes_t
         use fieldline_integrals, only: allocate_modes
         use fieldline_integrals, only: fourier_transform_over_label
+        use surface_average_mod, only: surface_average_t
+        use surface_average_mod, only: calc_surface_averages
         use misc, only: S_A, S_B
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
@@ -91,28 +87,6 @@ contains
                       average%normalization
 
     end subroutine calc_deviation
-
-    subroutine calc_surface_averages(fieldlines, surface_average)
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        type(surface_average_t), intent(out) :: surface_average
-
-        real(dp), dimension(size(fieldlines)) :: well_lengths
-
-        integer :: n_fieldlines
-        real(dp) :: dxi_0
-
-        n_fieldlines = size(fieldlines)
-        dxi_0 = (fieldlines(n_fieldlines)%xi_0 - fieldlines(1)%xi_0)/ &
-                real(n_fieldlines - 1, kind=dp)
-
-        well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
-        surface_average%normalization = sum(fieldlines%integral_one_over_B_squared)* &
-                                        dxi_0
-        surface_average%B_squared = sum(well_lengths)*dxi_0/ &
-                                    surface_average%normalization
-        surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
-                                   dxi_0/surface_average%normalization
-    end subroutine calc_surface_averages
 
     function has_sin_modes(modes)
         use fieldline_integrals, only: modes_t

@@ -30,6 +30,8 @@ contains
 
         fieldlines%xi_0 = xi_0
         fieldlines%iota = iota
+        fieldlines%M_pol = M_pol
+        fieldlines%N_tor = N_tor
 
         call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)

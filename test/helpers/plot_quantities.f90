@@ -628,7 +628,7 @@ contains
     end subroutine plot_deviation
 
     subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
-        use deviation, only: surface_average_t, calc_surface_averages
+        use surface_average_mod, only: surface_average_t, calc_surface_averages
         use misc, only: S_A, S_B
         use neo_field, only: neo_field_t
         use distribution_function, only: get_g_modes_from_fieldlines
