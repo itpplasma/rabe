@@ -14,7 +14,7 @@ program plot_deviation_helical_anti_sigma
 
     implicit none
 
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
+    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp, nfp = N_tor
     character(len=*), parameter :: bc_filename = "input/helical_anti.bc"
     real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi) !Tm^2
     real(dp), parameter :: dr_dpsi = 1.0_dp/0.0661777_dp/psi_edge/100.0_dp
@@ -51,6 +51,7 @@ program plot_deviation_helical_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     call plot_fieldlines_over_field(fieldlines, field, N_tor)

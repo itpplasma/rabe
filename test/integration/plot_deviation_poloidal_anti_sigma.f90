@@ -15,7 +15,7 @@ program plot_deviation_poloidal_anti_sigma
 
     implicit none
 
-    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
+    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp, nfp = N_tor
     character(len=*), parameter :: bc_filename = "input/poloidal_anti_minuspert.bc"
     real(dp), parameter :: psi_edge = abs(-0.00785398_dp)/(2.0_dp*pi) !Tm^2
     real(dp), parameter :: R = 1.00_dp
@@ -31,7 +31,7 @@ program plot_deviation_poloidal_anti_sigma
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
     real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*abs(eps_0))
     real(dp), parameter :: B_max = B_0*(1.0_dp + abs(eps_0)) + abs(delta_B_1)
-    real(dp), parameter :: delta_eta_1 = delta_B_1/B_max**2.0_dp
+    real(dp), parameter :: delta_eta_1 = -delta_B_1/B_max**2.0_dp
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 4e-6
@@ -48,7 +48,6 @@ program plot_deviation_poloidal_anti_sigma
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
 
-    real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     real(dp), parameter :: iota_p = sign(pi, N_tor)* &
                            (N_tor*iota + M_pol)/(N_tor - iota*M_pol)* &
                            nfp/(N_tor**2.0_dp + M_pol**2.0_dp)
@@ -66,12 +65,13 @@ program plot_deviation_poloidal_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     if (should_plot_others) then
         call plot_fieldlines_over_field(fieldlines, field, N_tor)
         call plot_delta_eta(fieldlines, delta_eta_1)
-        !call plot_delta_A(fieldlines, delta_A_1)
+        call plot_delta_A(fieldlines, delta_A_1)
     end if
 
     call calc_deviation(fieldlines, deviation_A, deviation_B)

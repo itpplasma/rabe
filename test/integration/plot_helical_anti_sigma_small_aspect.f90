@@ -15,7 +15,7 @@ program plot_helical_anti_sigma_small_aspect
 
     implicit none
 
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp
+    real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp, nfp = N_tor
     character(len=*), parameter :: bc_filename = "input/helical_anti_small_aspect.bc"
     real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi)/160000.0_dp !Tm^2
     real(dp), parameter :: R = 8.0_dp
@@ -60,6 +60,7 @@ program plot_helical_anti_sigma_small_aspect
                                   field, &
                                   M_pol, &
                                   N_tor, &
+                                  nfp, &
                                   phi_tol)
 
     if (should_plot_others) then
