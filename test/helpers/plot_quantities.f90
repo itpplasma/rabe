@@ -410,7 +410,8 @@ contains
 
         if (present(delta_eta_1)) then
             call plt%add_plot(fieldlines%xi_0/pi, &
-                              abs(delta_eta_1) + delta_eta_1*cos(fieldlines%xi_0), &
+                              abs(delta_eta_1) + &
+                              delta_eta_1*cos(fieldlines%xi_0 - fieldlines%iota_p), &
                               label="$\Delta \eta$ approx analytic", &
                               linestyle="--")
         end if
