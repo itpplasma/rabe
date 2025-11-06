@@ -5,6 +5,9 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
+    use shaing_callen_mod, only: shaing_callen_t
+    use shaing_callen_mod, only: calc_shaing_callen
+    use shaing_callen_integration, only: get_eta_integration_grid
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
@@ -39,6 +42,12 @@ program rabe
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: C_A, C_B
+
+    logical, parameter :: should_calc_shaing_callen = .true.
+    integer, parameter :: n_eta = 50
+    real(dp), dimension(:), allocatable :: eta_grid
+    type(shaing_callen_t) :: shaing_callen
+    real(dp) :: lambda_SC
 
     type(netcdf_t) :: nc_output
 
@@ -83,6 +92,15 @@ program rabe
     C_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     C_B = deviation_B*0.5*R*pi*dr_dAtheta
 
+    if (should_calc_shaing_callen) then
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        shaing_callen = calc_shaing_callen(field, fieldlines, eta_grid)
+        lambda_SC = shaing_callen%modified_trapped_fraction*covariant_factor - &
+                    shaing_callen%trapped_fraction*field%B_theta_covariant
+        lambda_SC = lambda_SC*dr_dAtheta
+        print *, "lambda_SC: ", lambda_SC
+    end if
+
     print *, "1/sqrt(nu_star) factor: ", C_A
     print *, "1/nu_star factor: ", C_B
 
@@ -90,7 +108,7 @@ program rabe
     call nc_output%add_global_attribute("title", &
                                         "asymptotic bootstrap coefficient lambda_bB")
     call nc_output%add_global_attribute("definition", &
-                                        "lambda_bB = C_A/sqrt(nu_star) + C_B/nu_star")
+                                    "lambda^{off}_bB = C_A/sqrt(nu_star) + C_B/nu_star")
     call nc_output%add_global_attribute("git_hash", git_hash)
     call nc_output%add_real("C_A")
     call nc_output%add_real_attr("C_A", "long_name", &

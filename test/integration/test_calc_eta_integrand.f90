@@ -5,8 +5,8 @@ program test_calc_eta_integrand
     use constants, only: dp, pi
     use utils, only: linspace
     use shaing_callen_mod, only: calc_eta_integrand, eta_integrand_t
-    use shaing_callen_mod, only: get_eta_integration_grid
-    use test_calc_eta_integrand_mod, only: average_eta_integrands_sum_equal_average_F
+    use shaing_callen_integration, only: get_eta_integration_grid
+    use test_calc_eta_integrand_mod, only: average_eta_integrands_sum_equal_F
     use test_calc_eta_integrand_mod, only: plot_eta_integrands
 
     implicit none
@@ -74,29 +74,22 @@ program test_calc_eta_integrand
             print *, "test_calc_eta_integrand failed: size(F3) =/= size(eta)"
             test_failed = .true.
         end if
-        if (.not. size(eta_integrands(this)%integral_lambda_over_B_squared) &
-            .eq. n_eta) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_calc_eta_integrand failed: ", &
-                "size(integral_lambda_over_B_squared) =/= size(eta)"
-            test_failed = .true.
-        end if
     end do
 
     deallocate (eta_grid)
 
     if (should_plot) then
-        call plot_eta_integrands(eta_integrands, M_pol, N_tor, iota)
+        call plot_eta_integrands(eta_integrands, fieldlines)
     end if
 
     if (test_failed) then
         error stop
     else
-        if (.not. average_eta_integrands_sum_equal_average_F(field, &
-                                                             fieldlines, &
-                                                             M_pol, &
-                                                             N_tor, &
-                                                             eta_integrands)) then
+        if (.not. average_eta_integrands_sum_equal_F(field, &
+                                                     fieldlines, &
+                                                     M_pol, &
+                                                     N_tor, &
+                                                     eta_integrands)) then
             test_failed = .true.
         end if
     end if

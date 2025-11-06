@@ -6,15 +6,16 @@ module test_shaing_callen_mod
 contains
 
     function calc_quasi_symmetric_trapped_fraction(field, &
-                                                   eta_b) result(trapped_fraction)
+                                                   eta_b, &
+                                                   n_eta) result(trapped_fraction)
         use field_base, only: field_t
-        use shaing_callen_mod, only: get_eta_integration_grid
-        use shaing_callen_mod, only: integrate_over_eta_grid
+        use shaing_callen_integration, only: get_eta_integration_grid
+        use shaing_callen_integration, only: integrate_over_eta_grid
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: eta_b
+        integer, intent(in) :: n_eta
         real(dp) :: trapped_fraction
 
-        integer, parameter :: n_eta = 1000
         real(dp), dimension(:), allocatable :: eta_grid
         real(dp), dimension(n_eta) :: integrand
         real(dp) :: eta, average

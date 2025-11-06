@@ -1,8 +1,8 @@
 program test_integrate_over_eta_grid
     use constants, only: dp
     use utils, only: not_same
-    use shaing_callen_mod, only: get_eta_integration_grid
-    use shaing_callen_mod, only: integrate_over_eta_grid
+    use shaing_callen_integration, only: get_eta_integration_grid
+    use shaing_callen_integration, only: integrate_over_eta_grid
 
     implicit none
 
