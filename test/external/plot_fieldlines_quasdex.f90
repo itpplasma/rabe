@@ -6,6 +6,9 @@ program plot_fieldlines_quasdex
     use make_fieldline, only: make_flock_of_fieldlines
 
     use plot_quantities, only: plot_fieldlines_over_field
+    use plot_quantities, only: plot_phi_max_over_xi_0
+    use test_shaing_callen_mod, only: test_calc_avg_normalized_lambda_dphimax_dxi0
+    use test_shaing_callen_mod, only: test_calc_avg_normalized_B_squared_dphimax_dxi0
 
     implicit none
 
@@ -27,7 +30,11 @@ program plot_fieldlines_quasdex
     real(dp) :: iota, nfp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
-    logical, parameter :: should_plot_others = .true.
+    logical, parameter :: should_plot = .false.
+
+    logical :: test_failed
+
+    test_failed = .false.
 
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
@@ -44,6 +51,14 @@ program plot_fieldlines_quasdex
                                   nfp, &
                                   phi_tol)
 
-    call plot_fieldlines_over_field(fieldlines, field)
+    if (should_plot) then
+        call plot_fieldlines_over_field(fieldlines, field)
+        call plot_phi_max_over_xi_0(fieldlines)
+    end if
+
+    call test_calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines, test_failed)
+    call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
+
+    if (test_failed) error stop
 
 end program plot_fieldlines_quasdex

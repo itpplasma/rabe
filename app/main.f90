@@ -7,6 +7,7 @@ program rabe
     use deviation, only: calc_deviation
     use shaing_callen_mod, only: shaing_callen_t
     use shaing_callen_mod, only: calc_shaing_callen
+    use shaing_callen_mod, only: get_non_omnigenous_remainder
     use shaing_callen_integration, only: get_eta_integration_grid
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
@@ -47,7 +48,7 @@ program rabe
     integer, parameter :: n_eta = 50
     real(dp), dimension(:), allocatable :: eta_grid
     type(shaing_callen_t) :: shaing_callen
-    real(dp) :: lambda_SC
+    real(dp) :: lambda_SC, remainder
 
     type(netcdf_t) :: nc_output
 
@@ -98,7 +99,10 @@ program rabe
         lambda_SC = shaing_callen%modified_trapped_fraction*covariant_factor - &
                     shaing_callen%trapped_fraction*field%B_theta_covariant
         lambda_SC = lambda_SC*dr_dAtheta
+        remainder = get_non_omnigenous_remainder(field, fieldlines, eta_grid)
+        remainder = remainder*covariant_factor*dr_dAtheta
         print *, "lambda_SC: ", lambda_SC
+        print *, "non-omnigneous remainder: ", remainder
     end if
 
     print *, "1/sqrt(nu_star) factor: ", C_A

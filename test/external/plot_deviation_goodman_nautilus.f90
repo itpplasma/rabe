@@ -17,6 +17,7 @@ program plot_deviation_goodman_squid
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
     use plot_quantities, only: plot_deviation, external_data_t
+    use plot_quantities, only: plot_phi_max_over_xi_0
 
     implicit none
 
@@ -86,6 +87,7 @@ program plot_deviation_goodman_squid
         call plot_maxima_over_label(fieldlines)
         call plot_delta_eta(fieldlines)
         call plot_delta_A(fieldlines)
+        call plot_phi_max_over_xi_0(fieldlines)
     end if
 
     call calc_deviation(fieldlines, deviation_A, deviation_B)

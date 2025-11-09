@@ -48,3 +48,11 @@ target_link_libraries(compare_deviations.x myplot_lib
                                            helpers_lib)
 add_test(CompareDeviations compare_deviations.x)
 set_tests_properties(CompareDeviations PROPERTIES LABELS "external")
+
+
+add_executable(plot_helical_omnigenous.x plot_helical_omnigenous.f90)
+target_link_libraries(plot_helical_omnigenous.x myplot_lib
+                                                rabe_lib
+                                                helpers_lib)
+add_test(PlotHelicalOmnigenous plot_helical_omnigenous.x)
+set_tests_properties(PlotHelicalOmnigenous PROPERTIES LABELS "current")

@@ -49,6 +49,11 @@ target_link_libraries(test_integrate_over_eta_grid.x rabe_lib)
 add_test(TestIntegrateOverEtaGrid test_integrate_over_eta_grid.x)
 set_tests_properties(TestIntegrateOverEtaGrid PROPERTIES LABELS "quick")
 
+add_executable(test_calc_periodic_dydx.x test_calc_periodic_dydx.f90)
+target_link_libraries(test_calc_periodic_dydx.x rabe_lib)
+add_test(TestCalcPeriodicDerivative test_calc_periodic_dydx.x)
+set_tests_properties(TestCalcPeriodicDerivative PROPERTIES LABELS "quick")
+
 add_executable(plot_misc.x plot_misc.f90)
 target_link_libraries(plot_misc.x rabe_lib
                                   myplot_lib)
