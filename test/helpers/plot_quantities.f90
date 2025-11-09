@@ -553,7 +553,7 @@ contains
         call plt%initialize(xlabel="$\nu_*$", &
                             ylabel="$|\lambda_{bB}|$", &
                             legend=.true., &
-                            figsize=[10, 10])
+                            figsize=[15, 10])
 
         if (present(lambda_off_external)) then
             call plt%add_plot(lambda_off_external%x, &
@@ -581,8 +581,8 @@ contains
                           yscale="log")
 
         if (present(off_factor_A_analytic)) then
-            write (label, "(A42,ES10.3E2,A1)") &
-                "analytic estimate (relative difference =", &
+            write (label, "(A31,ES10.3E2,A1)") &
+                "analytic estimate (rel. diff. =", &
                 abs(off_factor_A_analytic/off_factor_A - 1.0_dp), ")"
             call plt%add_plot(nu_star, &
                               abs(off_factor_A_analytic)/sqrt(nu_star), &
@@ -603,8 +603,8 @@ contains
                           yscale="log")
 
         if (present(off_factor_B_analytic)) then
-            write (label, "(A42,ES10.3E2,A1)") &
-                "analytic estimate (relative difference =", &
+            write (label, "(A31,ES10.3E2,A1)") &
+                "analytic estimate (rel. diff. =", &
                 abs(off_factor_B_analytic/off_factor_B - 1.0_dp), ")"
             call plt%add_plot(nu_star, &
                               abs(off_factor_B_analytic)/nu_star, &

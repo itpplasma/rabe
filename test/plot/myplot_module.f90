@@ -23,20 +23,29 @@ contains
         integer, dimension(2), intent(in), optional :: figsize
 
         integer :: font_size
+        integer, dimension(2) :: figsize_internal
+        logical, parameter :: tight_layout = .true.
 
         font_size = 30
+
+        if (present(figsize)) then
+            figsize_internal = figsize
+        else
+            figsize_internal = [10, 8]
+        end if
 
         call self%plt%initialize(grid=.true., &
                                  xlabel=xlabel, &
                                  ylabel=ylabel, &
                                  legend=legend, &
-                                 figsize=figsize, &
+                                 figsize=figsize_internal, &
                                  raw_strings=.true., &
                                  font_size=font_size, &
                                  legend_fontsize=font_size, &
                                  axes_labelsize=font_size, &
                                  xtick_labelsize=font_size, &
-                                 ytick_labelsize=font_size)
+                                 ytick_labelsize=font_size, &
+                                 tight_layout=tight_layout)
     end subroutine initialize
 
     subroutine add_plot(self, x, f, label, linestyle, linewidth, markersize, &
