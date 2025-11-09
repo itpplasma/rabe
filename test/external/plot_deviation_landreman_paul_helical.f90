@@ -102,7 +102,7 @@ program plot_deviation_landreman_paul_helical
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_maxima_over_label(fieldlines)
         call plot_delta_eta(fieldlines)
         call plot_delta_A(fieldlines)

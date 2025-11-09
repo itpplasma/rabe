@@ -204,11 +204,10 @@ contains
                          *sin(modes%mode_numbers(1:max_mode)*x))
     end function eval_modes
 
-    subroutine plot_fieldlines_over_field(fieldlines, field, N_tor)
+    subroutine plot_fieldlines_over_field(fieldlines, field)
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: N_tor
 
         type(myplot) :: plt
         integer :: current

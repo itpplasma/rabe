@@ -42,6 +42,6 @@ program test_plot_anti_sigma
                                   nfp, &
                                   phi_tol)
 
-    call plot_fieldlines_over_field(fieldlines, perturbed_field, N_tor)
+    call plot_fieldlines_over_field(fieldlines, perturbed_field)
 
 end program test_plot_anti_sigma

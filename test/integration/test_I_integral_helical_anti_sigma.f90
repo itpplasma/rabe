@@ -127,7 +127,7 @@ program test_I_integral_helical_anti_sigma
     if (test_failed) error stop
 
     if (should_plot) then
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_delta_eta(fieldlines)
         call plot_I_factor(fieldlines, eps_0, eps_1)
         call plot_I(fieldlines, I_0_analytic, I_1_analytic, eps_0, eps_1)

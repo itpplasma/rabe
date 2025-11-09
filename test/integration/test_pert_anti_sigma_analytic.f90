@@ -117,7 +117,7 @@ program test_pert_anti_sigma_analytic
     end do
 
     if (should_plot) then
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_delta_A(fieldlines)
         call plot_delta_eta(fieldlines, delta_eta_1)
     end if

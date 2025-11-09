@@ -85,7 +85,7 @@ program test_set_fieldline_labels
             call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor, &
                                                    nfp)
             call plot_maxima_over_label(fieldlines)
-            call plot_fieldlines_over_field(fieldlines, field, N_tor)
+            call plot_fieldlines_over_field(fieldlines, field)
             call plot_delta_A(fieldlines)
         end if
         call calc_deviation(fieldlines, dummy_A, dummy_B)

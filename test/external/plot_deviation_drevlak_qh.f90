@@ -73,7 +73,7 @@ program plot_deviation_drevlak_qh
         interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
                    fieldlines(current)%phi_0
         call plot_B_along_fieldline(field, fieldlines(current), interval)
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)
         call plot_maxima_over_label(fieldlines)

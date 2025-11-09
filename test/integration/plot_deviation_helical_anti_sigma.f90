@@ -54,7 +54,7 @@ program plot_deviation_helical_anti_sigma
                                   nfp, &
                                   phi_tol)
 
-    call plot_fieldlines_over_field(fieldlines, field, N_tor)
+    call plot_fieldlines_over_field(fieldlines, field)
     call plot_delta_eta(fieldlines)
     call plot_delta_A(fieldlines, delta_A_1)
 

@@ -82,7 +82,7 @@ program plot_deviation_goodman_squid
         call plot_distribution_function(fieldlines, field, nu_star, g_neo2)
         call plot_deviation_spectrum(fieldlines)
         call plot_delta_eta_modes(fieldlines)
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_maxima_over_label(fieldlines)
         call plot_delta_eta(fieldlines)
         call plot_delta_A(fieldlines)

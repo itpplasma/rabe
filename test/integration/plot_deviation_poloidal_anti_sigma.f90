@@ -69,7 +69,7 @@ program plot_deviation_poloidal_anti_sigma
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_delta_eta(fieldlines, delta_eta_1)
         call plot_delta_A(fieldlines, delta_A_1)
     end if

@@ -64,7 +64,7 @@ program plot_helical_anti_sigma_small_aspect
                                   phi_tol)
 
     if (should_plot_others) then
-        call plot_fieldlines_over_field(fieldlines, field, N_tor)
+        call plot_fieldlines_over_field(fieldlines, field)
         call plot_delta_eta(fieldlines)
         call plot_delta_A(fieldlines, delta_A_1)
     end if
