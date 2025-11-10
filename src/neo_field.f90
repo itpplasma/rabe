@@ -2,6 +2,7 @@ module neo_field
     use constants, only: dp
     use field_base, only: field_t
     use neo_magfie, only: neo_magfie_a
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
 
@@ -67,6 +68,18 @@ contains
         dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
         dB_dx(3) = dB_dx_neo2(2) !neo convention of x=(r, phi, theta)
 
+        if (ieee_is_nan(B_mod)) then
+            print *, "B_mod is NaN!"
+            error stop
+        end if
+        if (any(ieee_is_nan(dB_dx))) then
+            print *, "dB_dx is NaN!"
+            error stop
+        end if
+        if (ieee_is_nan(sqrtg)) then
+            print *, "sqrtg is NaN!"
+            error stop
+        end if
     end subroutine compute_B_sqrtg_dB_dx
 
     subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
@@ -82,6 +95,14 @@ contains
         dB_dx(2) = dB_dx_neo2(3) !neo convention of x=(r, phi, theta)
         dB_dx(3) = dB_dx_neo2(2) !neo convention of x=(r, phi, theta)
 
+        if (ieee_is_nan(B_mod)) then
+            print *, "B_mod is NaN!"
+            error stop
+        end if
+        if (any(ieee_is_nan(dB_dx))) then
+            print *, "dB_dx is NaN!"
+            error stop
+        end if
     end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
@@ -94,6 +115,10 @@ contains
         x = [0.0_dp, phi, theta] !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, B_mod, dummy_sqrtg, dummy_dB_dx, dummy_iota)
 
+        if (ieee_is_nan(B_mod)) then
+            print *, "B_mod is NaN!"
+            error stop
+        end if
     end subroutine compute_B_mod
 
     subroutine neo_change_stor(self, stor)

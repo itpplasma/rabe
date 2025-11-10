@@ -1,5 +1,6 @@
 module integrate
     use constants, only: dp
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
 
@@ -62,6 +63,11 @@ contains
         end if
 
         result = convert_to_dp(result_quadpack)
+
+        if (ieee_is_nan(result)) then
+            print *, "Integration result is NaN!"
+            error stop
+        end if
 
     contains
 
