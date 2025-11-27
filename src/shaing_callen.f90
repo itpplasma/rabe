@@ -68,6 +68,32 @@ contains
 
     end function calc_shaing_callen
 
+    function calc_trapped_fraction(field, &
+                                   fieldlines, &
+                                   eta_grid) result(trapped_fraction)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp) :: trapped_fraction
+
+        integer :: n_eta
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+        real(dp), dimension(:), allocatable :: integrand
+
+        n_eta = size(eta_grid)
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+        allocate (integrand(n_eta))
+        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
+                                                                           fieldlines, &
+                                                                           eta_grid)
+        integrand = eta_grid*avg_B_squared_over_avg_lambda
+        trapped_fraction = 1.0_dp - 0.75_dp*integrate_over_eta_grid(eta_grid, &
+                                                                    integrand)
+        deallocate (integrand)
+        deallocate (avg_B_squared_over_avg_lambda)
+
+    end function calc_trapped_fraction
+
     function calc_F(field, fieldlines, eta_grid) result(F)
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(in) :: fieldlines

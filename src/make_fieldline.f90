@@ -86,7 +86,7 @@ contains
         fieldlines%delta_aspect_ratio = sqrt( &
                                         fieldlines%I_ref/ &
                                         fieldlines%integral_lambda_b_over_B_squared &
-                                        ) - 1
+                                        ) - 1.0_dp
 
     end subroutine make_flock_of_fieldlines
 

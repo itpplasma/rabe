@@ -122,6 +122,13 @@ program rabe
     call nc_output%add_real("C_B")
     call nc_output%add_real_attr("C_B", "unit", &
                                  "[1]")
+    if (should_calc_shaing_callen) then
+        call nc_output%add_real("lambda_SC")
+        call nc_output%add_real_attr("lambda_SC", "long_name", &
+                                     "omnigenous Shaing-Callen coefficient")
+        call nc_output%add_real_attr("lambda_SC", "unit", "[1]")
+        call nc_output%write_real("lambda_SC", lambda_SC)
+    end if
     call nc_output%write_real("C_A", C_A)
     call nc_output%write_real("C_B", C_B)
     call nc_output%close()
