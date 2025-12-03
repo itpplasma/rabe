@@ -16,7 +16,7 @@ contains
 
     function cumint_not_equal_antideriv(trial_func, interval, antiderivative_func)
         use utils, only: not_same, linspace
-        use shaing_callen_mod, only: cumint
+        use shaing_callen_integration, only: cumint
         procedure(func) :: trial_func, antiderivative_func
         real(dp), intent(in) :: interval(2)
         logical :: cumint_not_equal_antideriv

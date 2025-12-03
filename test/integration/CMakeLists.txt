@@ -73,11 +73,6 @@ target_link_libraries(test_shaing_callen_against_quasi_symmetric.x rabe_lib help
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 
-add_executable(test_calc_eta_integrand.x test_calc_eta_integrand.f90)
-target_link_libraries(test_calc_eta_integrand.x rabe_lib helpers_lib myplot_lib)
-add_test(TestEtaIntegrand test_calc_eta_integrand.x)
-set_tests_properties(TestEtaIntegrand PROPERTIES LABELS "slow")
-
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
 add_test(TestPlot test_plot.x)

@@ -1,7 +1,7 @@
 module shaing_callen_integration
     use constants, only: dp, pi
     use fieldline_mod, only: fieldline_t
-    use integrate, only: integrate_1d_substituted, sum_trapez_1d
+    use integrate, only: sum_trapez_1d
     use utils, only: linspace
     implicit none
 
@@ -11,14 +11,6 @@ module shaing_callen_integration
             real(dp), intent(in) :: x_start, x_end
             real(dp) :: defined_integral_i
         end function defined_integral_i
-    end interface
-
-    abstract interface
-        function func_i(x)
-            use constants, only: dp
-            real(dp), intent(in) :: x
-            real(dp) :: func_i
-        end function func_i
     end interface
 
 contains
@@ -102,32 +94,6 @@ contains
         integral = sum_trapez_1d(t, integrand*dphi_dt)
     end function integrate_over_phi_grid
 
-    function cumintegrate_over_phi_grid(phi_grid, func) result(cumintegral)
-        real(dp), dimension(:), intent(in) :: phi_grid
-        procedure(func_i) :: func
-        real(dp), dimension(size(phi_grid)) :: cumintegral
-
-        integer :: n_phi
-        real(dp) :: integrand_start, integrand_end
-        real(dp) :: delta_phi, dt
-        real(dp), dimension(size(phi_grid)) :: dphi_dt, t
-
-        integer :: this
-
-        n_phi = size(phi_grid)
-        call linspace(0.0_dp, pi, n_phi, t)
-        delta_phi = 0.5_dp*(phi_grid(1) - phi_grid(n_phi))
-        dphi_dt = -delta_phi*sin(t)
-        dt = t(2) - t(1)
-        cumintegral(1) = 0.0_dp ! as integral limits are same for first element
-        do this = 2, n_phi
-            integrand_start = func(phi_grid(this - 1))*dphi_dt(this - 1)
-            integrand_end = func(phi_grid(this))*dphi_dt(this)
-            cumintegral(this) = cumintegral(this - 1) + &
-                                0.5_dp*(integrand_start + integrand_end)*dt
-        end do
-    end function cumintegrate_over_phi_grid
-
     function cumint(x, defined_integral)
         real(dp), dimension(:), intent(in) :: x
         procedure(defined_integral_i) :: defined_integral
@@ -144,44 +110,5 @@ contains
             cumint(current) = defined_integral(x_start, x_end) + cumint(current - 1)
         end do
     end function cumint
-
-    function integral_one_over_lambda(phi_start, phi_end)
-        use shaing_callen_wrappers, only: wrapper_one_over_lambda
-        real(dp), intent(in) :: phi_start, phi_end
-        real(dp) :: integral_one_over_lambda
-
-        integral_one_over_lambda = 0.5_dp*(phi_end - phi_start)* &
-                                   (wrapper_one_over_lambda(phi_start) + &
-                                    wrapper_one_over_lambda(phi_end))
-
-    end function integral_one_over_lambda
-
-    function integral_dBdtheta_over_B_cubed(phi_start, phi_end)
-        use integrate, only: integrate_1d_substituted
-        use shaing_callen_wrappers, only: wrapper_dBdtheta_over_B_cubed
-
-        real(dp), intent(in) :: phi_start, phi_end
-        real(dp) :: integral_dBdtheta_over_B_cubed
-
-        call integrate_1d_substituted(wrapper_dBdtheta_over_B_cubed, &
-                                      phi_start, &
-                                      phi_end, &
-                                      integral_dBdtheta_over_B_cubed)
-
-    end function integral_dBdtheta_over_B_cubed
-
-    function integral_dBdtheta_over_lambda_cubed(phi_start, phi_end)
-        use integrate, only: integrate_1d_substituted
-        use shaing_callen_wrappers, only: wrapper_dBdtheta_over_lambda_cubed
-
-        real(dp), intent(in) :: phi_start, phi_end
-        real(dp) :: integral_dBdtheta_over_lambda_cubed
-
-        call integrate_1d_substituted(wrapper_dBdtheta_over_lambda_cubed, &
-                                      phi_start, &
-                                      phi_end, &
-                                      integral_dBdtheta_over_lambda_cubed)
-
-    end function integral_dBdtheta_over_lambda_cubed
 
 end module shaing_callen_integration

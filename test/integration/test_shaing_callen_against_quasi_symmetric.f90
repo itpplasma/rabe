@@ -4,17 +4,11 @@ program test_shaing_callen_against_quasi_symmetric
     use make_fieldline, only: make_flock_of_fieldlines
     use constants, only: dp, pi
     use utils, only: linspace, not_same
-    use test_shaing_callen_mod, only: test_F_against_quasi_symmetric
-    use test_shaing_callen_mod, only: test_alternative_F_against_quasi_symmetric
-    use test_shaing_callen_mod, only: test_trapped_fractions_against_quasi_symmetric
+
     use test_shaing_callen_mod, only: test_calc_avg_normalized_B_squared_dphimax_dxi0
     use test_shaing_callen_mod, only: test_calc_avg_normalized_lambda_dphimax_dxi0
     use test_shaing_callen_mod, only: test_get_non_omnigenous_remainder
 
-    use shaing_callen_integration, only: get_eta_integration_grid
-    use shaing_callen_mod, only: eta_integrand_t
-    use shaing_callen_mod, only: calc_eta_integrand
-    use test_calc_eta_integrand_mod, only: plot_eta_integrands
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
 
@@ -36,7 +30,6 @@ program test_shaing_callen_against_quasi_symmetric
     integer :: this
     integer, parameter :: n_eta = 10
     real(dp), dimension(n_eta) :: eta_grid
-    type(eta_integrand_t), dimension(n_fieldlines) :: eta_integrands
 
     logical :: test_failed
 
@@ -57,21 +50,10 @@ program test_shaing_callen_against_quasi_symmetric
                                   phi_tol)
 
     if (should_plot) then
-        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
-        do this = 1, n_fieldlines
-            call calc_eta_integrand(field, &
-                                    fieldlines(this), &
-                                    eta_grid, &
-                                    eta_integrands(this))
-        end do
-        call plot_eta_integrands(eta_integrands, fieldlines)
         call plot_fieldlines_over_field(fieldlines, field)
         call plot_phi_max_over_xi_0(fieldlines)
     end if
 
-    call test_F_against_quasi_symmetric(field, fieldlines, test_failed)
-    call test_alternative_F_against_quasi_symmetric(field, fieldlines, test_failed)
-    call test_trapped_fractions_against_quasi_symmetric(field, fieldlines, test_failed)
     call test_calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines, test_failed)
     call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
     call test_get_non_omnigenous_remainder(field, fieldlines, test_failed)

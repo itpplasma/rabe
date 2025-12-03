@@ -5,8 +5,7 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use shaing_callen_mod, only: shaing_callen_t
-    use shaing_callen_mod, only: calc_shaing_callen
+    use shaing_callen_mod, only: calc_trapped_fraction
     use shaing_callen_mod, only: get_non_omnigenous_remainder
     use shaing_callen_integration, only: get_eta_integration_grid
     use netcdf_mod, only: netcdf_t
@@ -25,6 +24,8 @@ program rabe
     real(dp) :: sign_sqrtg
     real(dp) :: phi_tol
     integer :: n_fieldlines
+    logical :: should_calc_shaing_callen
+    integer :: n_eta
 
     type(neo_field_t) :: field
 
@@ -44,10 +45,8 @@ program rabe
     real(dp) :: covariant_factor
     real(dp) :: C_A, C_B
 
-    logical, parameter :: should_calc_shaing_callen = .true.
-    integer, parameter :: n_eta = 50
     real(dp), dimension(:), allocatable :: eta_grid
-    type(shaing_callen_t) :: shaing_callen
+    real(dp) :: trapped_fraction
     real(dp) :: lambda_SC, remainder
 
     type(netcdf_t) :: nc_output
@@ -60,7 +59,12 @@ program rabe
         ds_dr, &
         sign_sqrtg, &
         phi_tol, &
-        n_fieldlines
+        n_fieldlines, &
+        should_calc_shaing_callen, &
+        n_eta
+
+    should_calc_shaing_callen = .false.
+    n_eta = 100
 
     call read_namelist(input_file)
 
@@ -95,9 +99,9 @@ program rabe
 
     if (should_calc_shaing_callen) then
         eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
-        shaing_callen = calc_shaing_callen(field, fieldlines, eta_grid)
-        lambda_SC = shaing_callen%modified_trapped_fraction*covariant_factor - &
-                    shaing_callen%trapped_fraction*field%B_theta_covariant
+        trapped_fraction = calc_trapped_fraction(field, fieldlines, eta_grid)
+        lambda_SC = (field%B_phi_covariant*M_pol + field%B_theta_covariant*N_tor)/ &
+                    (M_pol*iota - N_tor)*trapped_fraction
         lambda_SC = lambda_SC*dr_dAtheta
         remainder = get_non_omnigenous_remainder(field, fieldlines, eta_grid)
         remainder = remainder*covariant_factor*dr_dAtheta
