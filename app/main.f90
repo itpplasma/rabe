@@ -7,7 +7,6 @@ program rabe
     use deviation, only: calc_deviation
     use shaing_callen_mod, only: calc_trapped_fraction
     use shaing_callen_mod, only: get_non_omnigenous_remainder
-    use shaing_callen_integration, only: get_eta_integration_grid
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
@@ -45,7 +44,6 @@ program rabe
     real(dp) :: covariant_factor
     real(dp) :: C_A, C_B
 
-    real(dp), dimension(:), allocatable :: eta_grid
     real(dp) :: trapped_fraction
     real(dp) :: lambda_SC, remainder
 
@@ -98,14 +96,13 @@ program rabe
     C_B = deviation_B*0.5*R*pi*dr_dAtheta
 
     if (should_calc_shaing_callen) then
-        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
-        trapped_fraction = calc_trapped_fraction(field, fieldlines, eta_grid)
+        trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
         lambda_SC = (field%B_phi_covariant*M_pol + field%B_theta_covariant*N_tor)/ &
                     (M_pol*iota - N_tor)*trapped_fraction
         lambda_SC = lambda_SC*dr_dAtheta
-        remainder = get_non_omnigenous_remainder(field, fieldlines, eta_grid)
+        remainder = get_non_omnigenous_remainder(field, fieldlines, n_eta)
         remainder = remainder*covariant_factor*dr_dAtheta
-        print *, "lambda_SC: ", lambda_SC
+        print *, "lambda^SC_bB: ", lambda_SC
         print *, "non-omnigneous remainder: ", remainder
     end if
 
@@ -127,11 +124,11 @@ program rabe
     call nc_output%add_real_attr("C_B", "unit", &
                                  "[1]")
     if (should_calc_shaing_callen) then
-        call nc_output%add_real("lambda_SC")
-        call nc_output%add_real_attr("lambda_SC", "long_name", &
+        call nc_output%add_real("lambda^S_bB")
+        call nc_output%add_real_attr("lambda^SC_bB", "long_name", &
                                      "omnigenous Shaing-Callen coefficient")
-        call nc_output%add_real_attr("lambda_SC", "unit", "[1]")
-        call nc_output%write_real("lambda_SC", lambda_SC)
+        call nc_output%add_real_attr("lambda^SC_bB", "unit", "[1]")
+        call nc_output%write_real("lambda^SC_bB", lambda_SC)
     end if
     call nc_output%write_real("C_A", C_A)
     call nc_output%write_real("C_B", C_B)

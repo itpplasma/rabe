@@ -8,7 +8,7 @@ program plot_helical_omnigenous
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
     use plot_quantities, only: plot_delta_A, plot_delta_eta
-    use plot_quantities, only: plot_deviation_spectrum
+    use plot_quantities, only: plot_spectra
 
     implicit none
 
@@ -45,6 +45,6 @@ program plot_helical_omnigenous
     call plot_phi_max_over_xi_0(fieldlines)
     call plot_delta_A(fieldlines)
     call plot_delta_eta(fieldlines)
-    call plot_deviation_spectrum(fieldlines)
+    call plot_spectra(fieldlines)
 
 end program plot_helical_omnigenous

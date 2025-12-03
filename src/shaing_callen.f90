@@ -2,26 +2,25 @@ module shaing_callen_mod
     use constants, only: dp
     use fieldline_mod, only: fieldline_t
     use field_base, only: field_t
-    use integrate, only: integrate_1d_substituted
+    use shaing_callen_integration, only: get_eta_integration_grid
     use shaing_callen_integration, only: integrate_over_eta_grid
-    use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
     implicit none
 
 contains
 
     function calc_trapped_fraction(field, &
                                    fieldlines, &
-                                   eta_grid) result(trapped_fraction)
+                                   n_eta) result(trapped_fraction)
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), dimension(:), intent(in) :: eta_grid
+        integer, intent(in) :: n_eta
         real(dp) :: trapped_fraction
 
-        integer :: n_eta
+        real(dp), dimension(:), allocatable :: eta_grid
         real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
         real(dp), dimension(:), allocatable :: integrand
 
-        n_eta = size(eta_grid)
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
         allocate (avg_B_squared_over_avg_lambda(n_eta))
         allocate (integrand(n_eta))
         avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
@@ -73,6 +72,8 @@ contains
 
     function calc_avg_lambda_over_B_squared(fieldline, eta_grid) &
         result(avg_lambda_over_B_squared)
+        use integrate, only: integrate_1d_substituted
+        use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
         use shaing_callen_wrappers, only: this_eta, null_eta
         use shaing_callen_wrappers, only: this_fieldline, null_fieldline
         type(fieldline_t), intent(in) :: fieldline
@@ -96,15 +97,21 @@ contains
 
     end function calc_avg_lambda_over_B_squared
 
-    function get_non_omnigenous_remainder(field, fieldlines, eta_grid) result(remainder)
+    function get_non_omnigenous_remainder(field, fieldlines, n_eta) result(remainder)
+        use shaing_callen_integration, only: get_eta_integration_grid
         use shaing_callen_integration, only: integrate_over_eta_grid
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp), dimension(:) :: eta_grid
+        integer, intent(in) :: n_eta
         real(dp) :: remainder
 
-        real(dp), dimension(size(eta_grid)) :: integrand, B_squared_over_avg_lambda
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: integrand
+        real(dp), dimension(:), allocatable :: B_squared_over_avg_lambda
 
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        allocate (integrand(n_eta))
+        allocate (B_squared_over_avg_lambda(n_eta))
         B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
                                                                        fieldlines, &
                                                                        eta_grid)
@@ -114,6 +121,9 @@ contains
         integrand = integrand*B_squared_over_avg_lambda*eta_grid
         remainder = calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
                     0.75_dp*integrate_over_eta_grid(eta_grid, integrand)
+        deallocate (eta_grid)
+        deallocate (integrand)
+        deallocate (B_squared_over_avg_lambda)
 
     end function get_non_omnigenous_remainder
 
@@ -178,6 +188,7 @@ contains
     end function calc_avg_normalized_lambda_dphimax_dxi0
 
     function calc_periodic_dydx(x, y) result(dydx)
+        use fourier, only: check_is_equidistant, check_has_correct_endpoints
         real(dp), dimension(:), intent(in) :: x, y
         real(dp), dimension(:), allocatable :: dydx
 
@@ -187,7 +198,7 @@ contains
         integer :: n
 
         call check_is_equidistant(x)
-        call check_has_periodic_endpoints(x)
+        call check_has_correct_endpoints(x)
         n = size(x)
         if (n < 3) then
             print *, "calc_periodic_dydx needs n > 3 points!"
@@ -207,47 +218,5 @@ contains
         deallocate (y_periodic)
 
     end function calc_periodic_dydx
-
-    subroutine check_is_equidistant(x)
-        real(dp), dimension(:), intent(in) :: x
-        logical :: is_equidistant
-
-        real(dp), parameter :: retol = 1e-13, abstol = 1e-14
-        real(dp), dimension(size(x) - 1) :: dx
-        real(dp) :: tol
-        integer :: N
-
-        N = size(x)
-
-        dx = x(2:N) - x(1:N - 1)
-        is_equidistant = all(abs(dx - dx(1)) < retol*dx(1) + abstol)
-
-        if (.not. is_equidistant) then
-            print *, "Input x has to be equidistant!"
-            print *, "violation by ", maxval(abs(dx - dx(1)))
-            error stop
-        end if
-    end subroutine check_is_equidistant
-
-    subroutine check_has_periodic_endpoints(x)
-        use constants, only: pi
-        real(dp), dimension(:), intent(in) :: x
-        logical :: has_correct_range
-
-        real(dp), parameter :: tol = 1e-13
-        real(dp) :: correct_range, range
-        integer :: N
-
-        N = size(x)
-        range = x(N) - x(1)
-        correct_range = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
-        has_correct_range = abs(correct_range - range) < tol*correct_range
-        if (.not. has_correct_range) then
-            print *, "Input x has wrong endpoints!"
-            print *, "actual: ", x(1), x(N)
-            print *, "required: ", x(1), x(1) + correct_range
-            error stop
-        end if
-    end subroutine check_has_periodic_endpoints
 
 end module shaing_callen_mod
