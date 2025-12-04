@@ -107,23 +107,23 @@ contains
 
         real(dp), dimension(:), allocatable :: eta_grid
         real(dp), dimension(:), allocatable :: integrand
-        real(dp), dimension(:), allocatable :: B_squared_over_avg_lambda
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
 
         eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
         allocate (integrand(n_eta))
-        allocate (B_squared_over_avg_lambda(n_eta))
-        B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
-                                                                       fieldlines, &
-                                                                       eta_grid)
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
+                                                                           fieldlines, &
+                                                                           eta_grid)
         integrand = calc_avg_normalized_lambda_dphimax_dxi0(field, &
                                                             fieldlines, &
                                                             eta_grid)
-        integrand = integrand*B_squared_over_avg_lambda*eta_grid
-        remainder = calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
-                    0.75_dp*integrate_over_eta_grid(eta_grid, integrand)
+        integrand = integrand*avg_B_squared_over_avg_lambda*eta_grid
+        remainder = -(calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
+                      0.75_dp*integrate_over_eta_grid(eta_grid, integrand))
         deallocate (eta_grid)
         deallocate (integrand)
-        deallocate (B_squared_over_avg_lambda)
+        deallocate (avg_B_squared_over_avg_lambda)
 
     end function get_non_omnigenous_remainder
 

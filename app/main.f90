@@ -101,8 +101,8 @@ program rabe
                     (M_pol*iota - N_tor)*trapped_fraction
         lambda_SC = lambda_SC*dr_dAtheta
         remainder = get_non_omnigenous_remainder(field, fieldlines, n_eta)
-        remainder = remainder*covariant_factor*dr_dAtheta
-        print *, "lambda^SC_bB: ", lambda_SC
+        remainder = remainder*covariant_factor*dr_dAtheta*nfp/(M_pol*iota - N_tor)
+        print *, "omnigenous lambda^SC_bB: ", lambda_SC
         print *, "non-omnigneous remainder: ", remainder
     end if
 
@@ -124,11 +124,17 @@ program rabe
     call nc_output%add_real_attr("C_B", "unit", &
                                  "[1]")
     if (should_calc_shaing_callen) then
-        call nc_output%add_real("lambda^S_bB")
+        call nc_output%add_real("lambda^SC_bB")
         call nc_output%add_real_attr("lambda^SC_bB", "long_name", &
                                      "omnigenous Shaing-Callen coefficient")
         call nc_output%add_real_attr("lambda^SC_bB", "unit", "[1]")
+        call nc_output%add_real("remainder")
+        call nc_output%add_real_attr("remainder", "long_name", &
+                                "non-omnigenous remainder of Shaing-Callen coefficient")
+        call nc_output%add_real_attr("remainder", "unit", "[1]")
+
         call nc_output%write_real("lambda^SC_bB", lambda_SC)
+        call nc_output%write_real("remainder", remainder)
     end if
     call nc_output%write_real("C_A", C_A)
     call nc_output%write_real("C_B", C_B)
