@@ -61,13 +61,20 @@ contains
         deallocate (d_eta_dt)
     end function integrate_over_eta_grid
 
-    function get_phi_integration_grid(fieldline) result(phi_grid)
+    function get_phi_integration_grid(fieldline, n_phi_in) result(phi_grid)
         type(fieldline_t), intent(in) :: fieldline
         real(dp), dimension(:), allocatable :: phi_grid
+        integer, optional :: n_phi_in
 
-        integer, parameter :: n_phi = 200
+        integer :: n_phi
         real(dp), dimension(:), allocatable :: t
         real(dp) :: delta_phi, middle_phi
+
+        if (present(n_phi_in)) then
+            n_phi = n_phi_in
+        else
+            n_phi = 200
+        end if
 
         allocate (phi_grid(n_phi), t(n_phi))
         ! transform integral to variable t -> phi = middle + delta * cos(t)

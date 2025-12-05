@@ -55,4 +55,4 @@ target_link_libraries(plot_helical_omnigenous.x myplot_lib
                                                 rabe_lib
                                                 helpers_lib)
 add_test(PlotHelicalOmnigenous plot_helical_omnigenous.x)
-set_tests_properties(PlotHelicalOmnigenous PROPERTIES LABELS "current")
+set_tests_properties(PlotHelicalOmnigenous PROPERTIES LABELS "external")

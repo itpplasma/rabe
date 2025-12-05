@@ -9,6 +9,90 @@ module test_shaing_callen_mod
 
 contains
 
+    subroutine test_trapped_fraction_against_circular_tokamak(test_failed)
+        use shaing_callen_mod, only: calc_trapped_fraction
+        use mock_field, only: mock_field_t
+        use make_fieldline, only: make_flock_of_fieldlines
+        use utils, only: linspace
+
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: phi_tol = 4e-5
+
+        integer, parameter :: n_fieldlines = 50
+        real(dp), dimension(n_fieldlines + 1) :: temp
+        real(dp), dimension(n_fieldlines) :: xi_0
+        type(mock_field_t) :: circular_tok_field
+        type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+
+        real(dp), parameter :: B_0 = 1.0_dp, eps = -0.001_dp
+        real(dp), parameter :: M_pol = 1.0_dp, N_tor = 0.0_dp, nfp = 1.0_dp
+        real(dp), parameter :: iota = 1.05_dp
+        integer, parameter :: n_eta = 100
+
+        real(dp), parameter :: reltol = 24.0_dp/real(n_eta, kind=dp)**2.0_dp
+        real(dp), parameter :: abstol = 0.0_dp
+        real(dp) :: found
+        real(dp), parameter :: analytical_approx = 1.462_dp*sqrt(abs(eps))
+
+        call circular_tok_field%mock_field_init(M_pol, N_tor, B_0, eps)
+
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
+        xi_0 = temp(1:n_fieldlines)
+
+        call make_flock_of_fieldlines(fieldlines, &
+                                      xi_0, &
+                                      iota, &
+                                      circular_tok_field, &
+                                      M_pol, &
+                                      N_tor, &
+                                      nfp, &
+                                      phi_tol)
+        found = calc_trapped_fraction(circular_tok_field, fieldlines, n_eta)
+
+        if (not_same(found, analytical_approx, &
+                     reltol_in=reltol, abstol_in=abstol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_trapped_fraction_circular_tokamak failed:", &
+                "trapped fraction expression"
+            print *, "found = ", found
+            print *, "approx analytic = ", analytical_approx
+            print *, "relative error = ", abs(1.0_dp - found/analytical_approx)
+            print *, "expected error = ", reltol
+            test_failed = .true.
+        end if
+    end subroutine test_trapped_fraction_against_circular_tokamak
+
+    subroutine test_trapped_fraction_against_qs(qs_field, qs_fieldlines, test_failed)
+        use shaing_callen_mod, only: calc_trapped_fraction
+        class(field_t), intent(in) :: qs_field
+        type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: reltol = 1e-6, abstol = 0.0_dp
+
+        real(dp) :: eta_b
+        integer, parameter :: n_eta = 100
+        real(dp) :: trapped_fraction, trapped_fraction_qs
+
+        eta_b = qs_fieldlines(1)%eta_b
+        trapped_fraction = calc_trapped_fraction(qs_field, qs_fieldlines, n_eta)
+        trapped_fraction_qs = calc_quasi_symmetric_trapped_fraction(qs_field, &
+                                                                    eta_b, &
+                                                                    n_eta)
+        if (not_same(trapped_fraction, trapped_fraction_qs, &
+                     reltol_in=reltol, abstol_in=abstol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_trapped_fraction_against_qs failed:", &
+                "trapped fraction expression"
+            print *, "general = ", trapped_fraction
+            print *, "quasi-symmetric = ", trapped_fraction_qs
+            print *, "relative error = ", abs(1.0_dp - &
+                                              trapped_fraction/trapped_fraction_qs)
+            test_failed = .true.
+        end if
+    end subroutine test_trapped_fraction_against_qs
+
     function calc_quasi_symmetric_trapped_fraction(field, &
                                                    eta_b, &
                                                    n_eta) result(trapped_fraction)
