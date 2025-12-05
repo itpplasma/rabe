@@ -63,6 +63,13 @@ contains
         deallocate (this_field)
         allocate (avg_B_squared_over_avg_lambda(n_eta))
 
+        if (any(avg_lambda_over_B_squared <= 0.0_dp)) then
+            print *, "Error in calc_avg_B_squared_over_avg_lambda: ", &
+                "average lambda/B^2 is not positiv"
+            print *, "avg_lambda_over_B_squared: ", avg_lambda_over_B_squared
+            error stop
+        end if
+
         avg_B_squared_over_avg_lambda = avg_well_length/ &
                                         avg_lambda_over_B_squared
 

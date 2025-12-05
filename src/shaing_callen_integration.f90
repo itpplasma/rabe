@@ -39,13 +39,45 @@ contains
         real(dp), dimension(:), intent(in) :: integrand
         real(dp) :: integral
 
+        real(dp), parameter :: tol = 1e-15
         integer :: n_eta
         real(dp), dimension(:), allocatable :: d_eta_dt
         real(dp) :: eta_b, dt
 
         n_eta = size(eta_grid)
+
+        if (n_eta < 2) then
+            print *, "Error in integrate_over_eta_grid: ", &
+                "need at least 2 eta points."
+            error stop
+        end if
+        if (size(integrand) /= n_eta) then
+            print *, "Error in integrate_over_eta_grid: ", &
+                "size mismatch between eta_grid and integrand."
+            error stop
+        end if
+
         ! As last eta value = eta_b (1 - 1/n_eta**4) according to above grid
         eta_b = n_eta**4.0_dp/(n_eta**4.0_dp - 1.0_dp)*eta_grid(n_eta)
+        if (eta_b <= maxval(eta_grid)) then
+            print *, "Error in integrate_over_eta_grid: ", &
+                "reconstructed eta_b not larger than all eta_grid."
+            print *, "eta_b = ", eta_b, ", max(eta_grid) = ", maxval(eta_grid)
+            error stop
+        end if
+        if (eta_b <= 0.0_dp) then
+            print *, "Error in integrate_over_eta_grid: ", &
+                "reconstructed eta_b must be postitiv."
+            print *, "eta_b = ", eta_b
+            error stop
+        end if
+        if (any(eta_grid < -tol*eta_b)) then
+            print *, "Error in integrate_over_eta_grid: ", &
+                "eta_grid must be non-negativ."
+            print *, "eta_grid = ", eta_grid
+            error stop
+        end if
+
         allocate (d_eta_dt(n_eta))
         d_eta_dt = 4.0_dp*(eta_b - eta_grid)**0.75_dp
         dt = eta_b**0.25_dp/n_eta
