@@ -149,4 +149,23 @@ contains
         val_dp = real(val_quadpack, kind=dp)
     end function convert_to_dp
 
+    function sum_trapez_1d(x, y)
+        real(dp), dimension(:), intent(in) :: x, y
+        real(dp) :: sum_trapez_1d
+
+        integer :: n
+
+        n = size(x)
+        if (.not. n == size(y)) then
+            print *, "Error in sum_trapez_1d: x and y need to have same length!"
+            error stop
+        end if
+        if (n < 2) then
+            print *, "Error in sum_trapez_1d: len(x) must be at least 2!"
+            error stop
+        end if
+
+        sum_trapez_1d = 0.5_dp*sum((x(2:n) - x(1:n - 1))*(y(2:n) + y(1:n - 1)))
+    end function sum_trapez_1d
+
 end module integrate

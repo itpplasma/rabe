@@ -5,6 +5,8 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
+    use shaing_callen_mod, only: calc_trapped_fraction
+    use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
@@ -21,6 +23,8 @@ program rabe
     real(dp) :: sign_sqrtg
     real(dp) :: phi_tol
     integer :: n_fieldlines
+    logical :: should_calc_shaing_callen
+    integer :: n_eta
 
     type(neo_field_t) :: field
 
@@ -40,6 +44,9 @@ program rabe
     real(dp) :: covariant_factor
     real(dp) :: C_A, C_B
 
+    real(dp) :: trapped_fraction
+    real(dp) :: lambda_SC, remainder
+
     type(netcdf_t) :: nc_output
 
     namelist /rabe_config/ &
@@ -50,7 +57,12 @@ program rabe
         ds_dr, &
         sign_sqrtg, &
         phi_tol, &
-        n_fieldlines
+        n_fieldlines, &
+        should_calc_shaing_callen, &
+        n_eta
+
+    should_calc_shaing_callen = .false.
+    n_eta = 100
 
     call read_namelist(input_file)
 
@@ -83,6 +95,17 @@ program rabe
     C_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     C_B = deviation_B*0.5*R*pi*dr_dAtheta
 
+    if (should_calc_shaing_callen) then
+        trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
+        lambda_SC = (field%B_phi_covariant*M_pol + field%B_theta_covariant*N_tor)/ &
+                    (M_pol*iota - N_tor)*trapped_fraction
+        lambda_SC = lambda_SC*dr_dAtheta
+        remainder = get_non_omnigenous_remainder(field, fieldlines, n_eta)
+        remainder = remainder*covariant_factor*dr_dAtheta*nfp/(M_pol*iota - N_tor)
+        print *, "omnigenous lambda^SC_bB: ", lambda_SC
+        print *, "non-omnigneous remainder: ", remainder
+    end if
+
     print *, "1/sqrt(nu_star) factor: ", C_A
     print *, "1/nu_star factor: ", C_B
 
@@ -90,7 +113,7 @@ program rabe
     call nc_output%add_global_attribute("title", &
                                         "asymptotic bootstrap coefficient lambda_bB")
     call nc_output%add_global_attribute("definition", &
-                                        "lambda_bB = C_A/sqrt(nu_star) + C_B/nu_star")
+                                    "lambda^{off}_bB = C_A/sqrt(nu_star) + C_B/nu_star")
     call nc_output%add_global_attribute("git_hash", git_hash)
     call nc_output%add_real("C_A")
     call nc_output%add_real_attr("C_A", "long_name", &
@@ -100,6 +123,19 @@ program rabe
     call nc_output%add_real("C_B")
     call nc_output%add_real_attr("C_B", "unit", &
                                  "[1]")
+    if (should_calc_shaing_callen) then
+        call nc_output%add_real("lambda^SC_bB")
+        call nc_output%add_real_attr("lambda^SC_bB", "long_name", &
+                                     "omnigenous Shaing-Callen coefficient")
+        call nc_output%add_real_attr("lambda^SC_bB", "unit", "[1]")
+        call nc_output%add_real("remainder")
+        call nc_output%add_real_attr("remainder", "long_name", &
+                                "non-omnigenous remainder of Shaing-Callen coefficient")
+        call nc_output%add_real_attr("remainder", "unit", "[1]")
+
+        call nc_output%write_real("lambda^SC_bB", lambda_SC)
+        call nc_output%write_real("remainder", remainder)
+    end if
     call nc_output%write_real("C_A", C_A)
     call nc_output%write_real("C_B", C_B)
     call nc_output%close()

@@ -24,12 +24,15 @@ contains
         integer :: current
         logical :: more_than_2_maxima, too_strong_violation
 
-        call check_if_valid_input(M_pol, N_tor, nfp)
+        call check_if_valid_input(M_pol, N_tor, nfp, iota)
 
         n_fieldlines = size(fieldlines)
 
         fieldlines%xi_0 = xi_0
         fieldlines%iota = iota
+        fieldlines%M_pol = M_pol
+        fieldlines%N_tor = N_tor
+        fieldlines%nfp = nfp
 
         call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)
@@ -83,13 +86,13 @@ contains
         fieldlines%delta_aspect_ratio = sqrt( &
                                         fieldlines%I_ref/ &
                                         fieldlines%integral_lambda_b_over_B_squared &
-                                        ) - 1
+                                        ) - 1.0_dp
 
     end subroutine make_flock_of_fieldlines
 
-    subroutine check_if_valid_input(M_pol, N_tor, nfp)
+    subroutine check_if_valid_input(M_pol, N_tor, nfp, iota)
         use utils, only: not_same
-        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp), intent(in) :: M_pol, N_tor, nfp, iota
 
         real(dp), parameter :: tol = 1e-15
         logical :: is_valid
@@ -124,11 +127,18 @@ contains
             end if
         end if
 
+        if (abs(M_pol*iota - N_tor) < tol) then
+            print *, "Error: (M_pol*iota - N_tor) must not be (close) zero."
+            print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*iota - N_tor)
+            is_valid = .false.
+        end if
+
         if (.not. is_valid) then
             print *, "Error: not valid input:"
             print *, "M_pol: ", M_pol
             print *, "N_tor: ", N_tor
             print *, "nfp: ", nfp
+            print *, "iota: ", iota
             error stop
         end if
 

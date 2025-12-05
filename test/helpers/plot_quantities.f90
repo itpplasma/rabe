@@ -392,6 +392,44 @@ contains
         phi = M_pol*xi/nfp - N_tor*chi/normalization
     end subroutine convert_to_theta_phi
 
+    subroutine plot_phi_max_over_xi_0(fieldlines)
+        type(fieldline_t), dimension(:) :: fieldlines
+        type(myplot) :: plt
+
+        real(dp), dimension(size(fieldlines)) :: xi_0, phi_l, phi_r
+        real(dp) :: M_pol, nfp
+
+        M_pol = fieldlines(1)%M_pol
+        nfp = fieldlines(1)%nfp
+        xi_0 = fieldlines%xi_0
+        phi_l = fieldlines%phi_max(1)
+        phi_r = fieldlines%phi_max(2)
+
+        call plt%initialize(xlabel="$\xi_0$", &
+                            ylabel="$\varphi_\mathrm{max}$", &
+                            legend=.true.)
+
+        call plt%add_plot(xi_0, phi_l, &
+                          label="$\varphi_l$", &
+                          linestyle="bo-", &
+                          linewidth=1)
+        call plt%add_plot(xi_0, phi_r, &
+                          label="$\varphi_r$", &
+                          linestyle="ro-", &
+                          linewidth=1)
+        call plt%add_plot(xi_0, phi_l - M_pol/nfp*xi_0, &
+                          label="$\varphi_l - M/N_p \xi_0$", &
+                          linestyle="b--", &
+                          linewidth=1)
+        call plt%add_plot(xi_0, phi_r - M_pol/nfp*xi_0, &
+                          label="$\varphi_r - M/N_p \xi_0$", &
+                          linestyle="r--", &
+                          linewidth=1)
+
+        call plt%show()
+
+    end subroutine plot_phi_max_over_xi_0
+
     subroutine plot_delta_eta(fieldlines, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in), optional :: delta_eta_1
@@ -628,7 +666,7 @@ contains
     end subroutine plot_deviation
 
     subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
-        use deviation, only: surface_average_t, calc_surface_averages
+        use surface_average_mod, only: surface_average_t, calc_surface_averages
         use misc, only: S_A, S_B
         use neo_field, only: neo_field_t
         use distribution_function, only: get_g_modes_from_fieldlines

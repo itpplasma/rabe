@@ -68,6 +68,7 @@ program test_integrate_1d_substituted
         print *, "test_integrate_1d_substituted failed: integral 4"
         print *, "found: ", found_integral
         print *, "analytic: ", integral_4
+        print *, "relative error: ", found_integral/integral_4 - 1.0_dp
         failed_test = .true.
     end if
 

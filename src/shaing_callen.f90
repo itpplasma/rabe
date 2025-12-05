@@ -1,0 +1,229 @@
+module shaing_callen_mod
+    use constants, only: dp
+    use fieldline_mod, only: fieldline_t
+    use field_base, only: field_t
+    use shaing_callen_integration, only: get_eta_integration_grid
+    use shaing_callen_integration, only: integrate_over_eta_grid
+    implicit none
+
+contains
+
+    function calc_trapped_fraction(field, &
+                                   fieldlines, &
+                                   n_eta) result(trapped_fraction)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        integer, intent(in) :: n_eta
+        real(dp) :: trapped_fraction
+
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+        real(dp), dimension(:), allocatable :: integrand
+
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+        allocate (integrand(n_eta))
+        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
+                                                                           fieldlines, &
+                                                                           eta_grid)
+        integrand = eta_grid*avg_B_squared_over_avg_lambda
+        trapped_fraction = 1.0_dp - 0.75_dp*integrate_over_eta_grid(eta_grid, &
+                                                                    integrand)
+        deallocate (integrand)
+        deallocate (avg_B_squared_over_avg_lambda)
+
+    end function calc_trapped_fraction
+
+    function calc_avg_B_squared_over_avg_lambda(field, fieldlines, eta_grid) &
+        result(avg_B_squared_over_avg_lambda)
+        use shaing_callen_wrappers, only: this_field
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+
+        integer :: this
+        integer :: n_eta, n_fieldlines
+        real(dp) :: avg_well_length
+        real(dp), dimension(:), allocatable :: avg_lambda_over_B_squared
+
+        n_eta = size(eta_grid)
+        n_fieldlines = size(fieldlines)
+        allocate (avg_lambda_over_B_squared(n_eta))
+        avg_well_length = 0.0_dp
+        avg_lambda_over_B_squared = 0.0_dp
+        allocate (this_field, source=field)
+        do this = 1, n_fieldlines
+            avg_lambda_over_B_squared = avg_lambda_over_B_squared + &
+                              calc_avg_lambda_over_B_squared(fieldlines(this), eta_grid)
+            avg_well_length = avg_well_length + &
+                              fieldlines(this)%phi_max(2) - &
+                              fieldlines(this)%phi_max(1)
+        end do
+        deallocate (this_field)
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+
+        if (any(avg_lambda_over_B_squared <= 0.0_dp)) then
+            print *, "Error in calc_avg_B_squared_over_avg_lambda: ", &
+                "average lambda/B^2 is not positiv"
+            print *, "avg_lambda_over_B_squared: ", avg_lambda_over_B_squared
+            error stop
+        end if
+
+        avg_B_squared_over_avg_lambda = avg_well_length/ &
+                                        avg_lambda_over_B_squared
+
+        deallocate (avg_lambda_over_B_squared)
+
+    end function calc_avg_B_squared_over_avg_lambda
+
+    function calc_avg_lambda_over_B_squared(fieldline, eta_grid) &
+        result(avg_lambda_over_B_squared)
+        use integrate, only: integrate_1d_substituted
+        use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
+        use shaing_callen_wrappers, only: this_eta, null_eta
+        use shaing_callen_wrappers, only: this_fieldline, null_fieldline
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp), dimension(size(eta_grid)) :: avg_lambda_over_B_squared
+
+        integer :: this
+
+        this_fieldline = fieldline
+
+        do this = 1, size(eta_grid)
+            this_eta = eta_grid(this)
+            call integrate_1d_substituted(wrapper_lambda_over_B_squared, &
+                                          fieldline%phi_max(1), &
+                                          fieldline%phi_max(2), &
+                                          avg_lambda_over_B_squared(this))
+            this_eta = null_eta
+        end do
+
+        this_fieldline = null_fieldline
+
+    end function calc_avg_lambda_over_B_squared
+
+    function get_non_omnigenous_remainder(field, fieldlines, n_eta) result(remainder)
+        use shaing_callen_integration, only: get_eta_integration_grid
+        use shaing_callen_integration, only: integrate_over_eta_grid
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        integer, intent(in) :: n_eta
+        real(dp) :: remainder
+
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: integrand
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        allocate (integrand(n_eta))
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
+                                                                           fieldlines, &
+                                                                           eta_grid)
+        integrand = calc_avg_normalized_lambda_dphimax_dxi0(field, &
+                                                            fieldlines, &
+                                                            eta_grid)
+        integrand = integrand*avg_B_squared_over_avg_lambda*eta_grid
+        remainder = -(calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
+                      0.75_dp*integrate_over_eta_grid(eta_grid, integrand))
+        deallocate (eta_grid)
+        deallocate (integrand)
+        deallocate (avg_B_squared_over_avg_lambda)
+
+    end function get_non_omnigenous_remainder
+
+    function calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) &
+        result(res)
+        use fourier, only: real_ft
+        use fieldline_integrals, only: allocate_modes
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: res
+
+        real(dp), dimension(size(fieldlines)) :: w_l, phi_l, xi_0
+        real(dp), dimension(size(fieldlines)) :: dphimax_dxi0, well_lengths
+        real(dp) :: M_pol, nfp
+
+        M_pol = fieldlines(1)%M_pol
+        nfp = fieldlines(1)%nfp
+        phi_l = fieldlines%phi_max(1)
+        xi_0 = fieldlines%xi_0
+        w_l = phi_l - M_pol/nfp*xi_0
+        dphimax_dxi0 = M_pol/nfp + calc_periodic_dydx(xi_0, w_l)
+        well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
+        res = sum(well_lengths*dphimax_dxi0/fieldlines%B_max(1)**2.0_dp)
+        res = res/sum(fieldlines%integral_one_over_B_squared)
+    end function calc_avg_normalized_B_squared_dphimax_dxi0
+
+    function calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, eta_grid) &
+        result(res)
+        use fourier, only: real_ft
+        use fieldline_integrals, only: allocate_modes
+        use shaing_callen_wrappers, only: this_field
+        use fieldline_integrands, only: calc_lambda_squared
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp), dimension(size(eta_grid)) :: res
+
+        real(dp), dimension(size(fieldlines)) :: w_l, phi_l, xi_0, B_l
+        real(dp), dimension(size(fieldlines)) :: dphimax_dxi0
+        real(dp), dimension(size(eta_grid)) :: lambda_l
+        real(dp) :: M_pol, nfp
+        integer :: this, that
+
+        M_pol = fieldlines(1)%M_pol
+        nfp = fieldlines(1)%nfp
+        phi_l = fieldlines%phi_max(1)
+        xi_0 = fieldlines%xi_0
+        w_l = phi_l - M_pol/nfp*xi_0
+        dphimax_dxi0 = M_pol/nfp + calc_periodic_dydx(xi_0, w_l)
+        B_l = fieldlines%B_max(1)
+        allocate (this_field, source=field)
+        res = 0.0_dp
+        do this = 1, size(fieldlines)
+            do that = 1, size(eta_grid)
+                lambda_l(that) = sqrt(calc_lambda_squared(B_l(this), eta_grid(that)))
+            end do
+            res = res + &
+                  calc_avg_lambda_over_B_squared(fieldlines(this), eta_grid)* &
+                  dphimax_dxi0(this)/lambda_l
+        end do
+        deallocate (this_field)
+        res = res/sum(fieldlines%integral_one_over_B_squared)
+    end function calc_avg_normalized_lambda_dphimax_dxi0
+
+    function calc_periodic_dydx(x, y) result(dydx)
+        use fourier, only: check_is_equidistant, check_has_correct_endpoints
+        real(dp), dimension(:), intent(in) :: x, y
+        real(dp), dimension(:), allocatable :: dydx
+
+        real(dp), dimension(:), allocatable :: y_periodic
+        real(dp) :: dx
+
+        integer :: n
+
+        call check_is_equidistant(x)
+        call check_has_correct_endpoints(x)
+        n = size(x)
+        if (n < 3) then
+            print *, "calc_periodic_dydx needs n > 3 points!"
+            print *, "provided n: ", n
+            error stop
+        end if
+
+        dx = x(2) - x(1)
+
+        allocate (y_periodic(n + 2))
+        y_periodic(1) = y(n)
+        y_periodic(2:n + 1) = y
+        y_periodic(n + 2) = y(1)
+
+        allocate (dydx(n))
+        dydx = 0.5_dp*(y_periodic(3:n + 2) - y_periodic(1:n))/dx
+        deallocate (y_periodic)
+
+    end function calc_periodic_dydx
+
+end module shaing_callen_mod

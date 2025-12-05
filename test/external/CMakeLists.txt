@@ -28,6 +28,13 @@ target_link_libraries(plot_deviation_drevlak_qh.x myplot_lib
 add_test(PlotDeviationDrevlakQH plot_deviation_drevlak_qh.x)
 set_tests_properties(PlotDeviationDrevlakQH PROPERTIES LABELS "external")
 
+add_executable(plot_fieldlines_quasdex.x plot_fieldlines_quasdex.f90)
+target_link_libraries(plot_fieldlines_quasdex.x myplot_lib
+                                                rabe_lib
+                                                helpers_lib)
+add_test(PlotFieldlinesQuASDEX plot_fieldlines_quasdex.x)
+set_tests_properties(PlotFieldlinesQuASDEX PROPERTIES LABELS "external")
+
 add_executable(compare_distribution_function_neo2.x compare_distribution_function_neo2.f90)
 target_link_libraries(compare_distribution_function_neo2.x myplot_lib
                                                           rabe_lib
@@ -41,3 +48,11 @@ target_link_libraries(compare_deviations.x myplot_lib
                                            helpers_lib)
 add_test(CompareDeviations compare_deviations.x)
 set_tests_properties(CompareDeviations PROPERTIES LABELS "external")
+
+
+add_executable(plot_helical_omnigenous.x plot_helical_omnigenous.f90)
+target_link_libraries(plot_helical_omnigenous.x myplot_lib
+                                                rabe_lib
+                                                helpers_lib)
+add_test(PlotHelicalOmnigenous plot_helical_omnigenous.x)
+set_tests_properties(PlotHelicalOmnigenous PROPERTIES LABELS "external")

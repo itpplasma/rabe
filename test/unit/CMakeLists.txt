@@ -13,6 +13,16 @@ target_link_libraries(test_integrate_1d_substituted.x rabe_lib)
 add_test(TestIntegrate1dSubstituted test_integrate_1d_substituted.x)
 set_tests_properties(TestIntegrate1dSubstituted PROPERTIES LABELS "quick")
 
+add_executable(test_sum_trapez_1d.x test_sum_trapez_1d.f90)
+target_link_libraries(test_sum_trapez_1d.x rabe_lib)
+add_test(TestISumTrapez test_sum_trapez_1d.x)
+set_tests_properties(TestISumTrapez PROPERTIES LABELS "quick")
+
+add_executable(test_cumint.x test_cumint.f90)
+target_link_libraries(test_cumint.x rabe_lib helpers_lib)
+add_test(TestICumint test_cumint.x)
+set_tests_properties(TestICumint PROPERTIES LABELS "quick")
+
 add_executable(test_integrate_wrapper.x test_integrate_wrapper.f90)
 target_link_libraries(test_integrate_wrapper.x rabe_lib)
 add_test(TestIntegrateWrapper test_integrate_wrapper.x)
@@ -33,6 +43,21 @@ target_include_directories(test_netcdf.x PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
 target_link_libraries(test_netcdf.x rabe_lib)
 add_test(TestNetcdf test_netcdf.x)
 set_tests_properties(TestNetcdf PROPERTIES LABELS "quick")
+
+add_executable(test_integrate_over_eta_grid.x test_integrate_over_eta_grid.f90)
+target_link_libraries(test_integrate_over_eta_grid.x rabe_lib)
+add_test(TestIntegrateOverEtaGrid test_integrate_over_eta_grid.x)
+set_tests_properties(TestIntegrateOverEtaGrid PROPERTIES LABELS "quick")
+
+add_executable(test_integrate_over_phi_grid.x test_integrate_over_phi_grid.f90)
+target_link_libraries(test_integrate_over_phi_grid.x rabe_lib)
+add_test(TestIntegrateOverPhiGrid test_integrate_over_phi_grid.x)
+set_tests_properties(TestIntegrateOverPhiGrid PROPERTIES LABELS "quick")
+
+add_executable(test_calc_periodic_dydx.x test_calc_periodic_dydx.f90)
+target_link_libraries(test_calc_periodic_dydx.x rabe_lib)
+add_test(TestCalcPeriodicDerivative test_calc_periodic_dydx.x)
+set_tests_properties(TestCalcPeriodicDerivative PROPERTIES LABELS "quick")
 
 add_executable(plot_misc.x plot_misc.f90)
 target_link_libraries(plot_misc.x rabe_lib

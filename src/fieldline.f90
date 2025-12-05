@@ -19,6 +19,9 @@ module fieldline_mod
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
+        real(dp) :: M_pol
+        real(dp) :: N_tor
+        real(dp) :: nfp
     contains
         generic :: get_theta => get_theta_scalar, get_theta_array
         procedure, private :: get_theta_scalar
