@@ -141,6 +141,12 @@ contains
 
         allocate (a_bmnc(ns, mnmax), b_bmnc(ns, mnmax))
         allocate (c_bmnc(ns, mnmax), d_bmnc(ns, mnmax))
+        allocate (a_rmnc(ns, mnmax), b_rmnc(ns, mnmax))
+        allocate (c_rmnc(ns, mnmax), d_rmnc(ns, mnmax))
+        allocate (a_zmns(ns, mnmax), b_zmns(ns, mnmax))
+        allocate (c_zmns(ns, mnmax), d_zmns(ns, mnmax))
+        allocate (a_vmns(ns, mnmax), b_vmns(ns, mnmax))
+        allocate (c_vmns(ns, mnmax), d_vmns(ns, mnmax))
 
         allocate (a_iota(ns), b_iota(ns))
         allocate (c_iota(ns), d_iota(ns))
@@ -170,6 +176,12 @@ contains
         ! 1-d splines of 2-d arrays
         call splinecof3_hi_driv(es, bmnc, r_mhalf, &
             & a_bmnc, b_bmnc, c_bmnc, d_bmnc, sp_index, tf)
+        call splinecof3_hi_driv(es, rmnc, r_mhalf, &
+            & a_rmnc, b_rmnc, c_rmnc, d_rmnc, sp_index, tf)
+        call splinecof3_hi_driv(es, zmns, r_mhalf, &
+            & a_zmns, b_zmns, c_zmns, d_zmns, sp_index, tf)
+        call splinecof3_hi_driv(es, vmns, r_mhalf, &
+            & a_vmns, b_vmns, c_vmns, d_vmns, sp_index, tf)
 
         ! boundary types (natural spline)
         sw1 = 2
@@ -259,6 +271,7 @@ contains
         character(45) :: cdum
         real(kind=dp) :: xra, xrm
         real(kind=dp) :: r_small, r_big
+        integer :: first_poloidal_mode
         !***********************************************************************
         ! Open input-unit and read first quantities
         !***********************************************************************
@@ -296,6 +309,12 @@ contains
 
             allocate (rmnc(ns, mnmax), stat=i_alloc)
             if (i_alloc /= 0) stop 'Allocation for fourier arrays rmnc failed!'
+
+            allocate (zmns(ns, mnmax), stat=i_alloc)
+            if (i_alloc /= 0) stop 'Allocation for fourier arrays zmns failed!'
+
+            allocate (vmns(ns, mnmax), stat=i_alloc)
+            if (i_alloc /= 0) stop 'Allocation for fourier arrays vmns failed!'
             !***********************************************************************
             ! Read input arrays
             !***********************************************************************
@@ -321,9 +340,11 @@ contains
                         ixn(j) = -extra_count
                         bmnc(i, j) = 0.0d0
                         rmnc(i, j) = 0.0d0
+                        zmns(i, j) = 0.0d0
+                        vmns(i, j) = 0.0d0
                     else
                         read (r_u1, *) ixm(j), ixn(j), &
-                            rmnc(i, j), dummy, dummy, &
+                            rmnc(i, j), zmns(i, j), vmns(i, j), &
                             bmnc(i, j)
                     end if
                 end do
@@ -386,6 +407,15 @@ contains
         psi_pr = flux/twopi
 
         close (unit=r_u1)
+
+        first_poloidal_mode = findloc((ixm == 1) .and. (ixn == 0), .true., dim=1)
+        if (minval(rmnc(:, first_poloidal_mode)*zmns(:, first_poloidal_mode)) &
+            < 0.0_dp) then
+            print *, "Error in neo_magfie:"
+            print *, "rmnc(m=1,n=0)*zmns(m=1,n=0) < 0"
+            print *, "theta angle must go upwards on the outer midplane!"
+            error stop
+        end if
 
         return
     end subroutine neo_read

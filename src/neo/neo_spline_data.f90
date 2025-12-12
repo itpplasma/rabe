@@ -2,6 +2,9 @@ module neo_spline_data
     ! Splines along s
     use nrtype, only: dp, I4B
     real(kind=dp), dimension(:, :), allocatable :: a_bmnc, b_bmnc, c_bmnc, d_bmnc
+    real(kind=dp), dimension(:, :), allocatable :: a_rmnc, b_rmnc, c_rmnc, d_rmnc
+    real(kind=dp), dimension(:, :), allocatable :: a_zmns, b_zmns, c_zmns, d_zmns
+    real(kind=dp), dimension(:, :), allocatable :: a_vmns, b_vmns, c_vmns, d_vmns
 
     real(kind=dp), dimension(:), allocatable :: a_iota, b_iota
     real(kind=dp), dimension(:), allocatable :: c_iota, d_iota
