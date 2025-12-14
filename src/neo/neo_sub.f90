@@ -409,12 +409,18 @@ contains
         close (unit=r_u1)
 
         first_poloidal_mode = findloc((ixm == 1) .and. (ixn == 0), .true., dim=1)
-        if (minval(rmnc(:, first_poloidal_mode)*zmns(:, first_poloidal_mode)) &
-            < 0.0_dp) then
+        if (first_poloidal_mode < 1) then
+            if (minval(rmnc(:, first_poloidal_mode)*zmns(:, first_poloidal_mode)) &
+                < 0.0_dp) then
+                print *, "Error in neo_magfie:"
+                print *, "rmnc(m=1,n=0)*zmns(m=1,n=0) < 0"
+                print *, "theta angle must go upwards on the outer midplane!"
+                error stop
+            end if
+        else
             print *, "Error in neo_magfie:"
-            print *, "rmnc(m=1,n=0)*zmns(m=1,n=0) < 0"
-            print *, "theta angle must go upwards on the outer midplane!"
-            error stop
+            print *, "no first poloidal mode present"
+            print *, "to verify the angle orientations first poloida mode is needed"
         end if
 
         return
