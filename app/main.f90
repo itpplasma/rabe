@@ -5,6 +5,7 @@ program rabe
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
+    use surface_average_mod, only: surface_average_t, calc_surface_averages
     use shaing_callen_mod, only: calc_trapped_fraction
     use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
@@ -29,8 +30,7 @@ program rabe
     type(neo_field_t) :: field
 
     real(dp) :: R ![m]
-    real(dp) :: psi_edge ![Tm^2/rad]
-    real(dp) :: dr_dpsi ![rad/Tm/]
+    type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota
     real(dp) :: nfp
@@ -54,7 +54,6 @@ program rabe
         M_pol, &
         N_tor, &
         s_tor, &
-        ds_dr, &
         sign_sqrtg, &
         phi_tol, &
         n_fieldlines, &
@@ -89,8 +88,8 @@ program rabe
     call calc_deviation(fieldlines, deviation_A, deviation_B)
 
     covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
-    dr_dpsi = 1.0_dp/(ds_dr*100.0_dp)/field%psi_tor_edge
-    dr_dAtheta = dr_dpsi*sign_sqrtg
+    call calc_surface_averages(fieldlines, average)
+    dr_dAtheta = sign_sqrtg*sign(1.0_dp, field%psi_tor_edge)/average%sqrt_g11
     R = field%R
     C_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     C_B = deviation_B*0.5*R*pi*dr_dAtheta

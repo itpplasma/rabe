@@ -9,13 +9,8 @@ module neo_input
     real(kind=dp), dimension(:), allocatable :: pprime
     real(kind=dp), dimension(:), allocatable :: sqrtg00
 
-    real(kind=dp), dimension(:, :), allocatable :: rmnc, zmnc, lmnc
+    real(kind=dp), dimension(:, :), allocatable :: rmnc, zmns, vmns
     real(kind=dp), dimension(:, :), allocatable :: bmnc
-      !! Modifications by Andreas F. Martitsch (06.08.2014)
-    ! Additional data from Boozer files without Stellarator symmetry
-    real(kind=dp), dimension(:, :), allocatable :: rmns, zmns, lmns
-    real(kind=dp), dimension(:, :), allocatable :: bmns
-      !! End Modifications by Andreas F. Martitsch (06.08.2014)
     real(kind=dp), dimension(:), allocatable :: b00
 
     real(kind=dp) :: flux, psi_pr

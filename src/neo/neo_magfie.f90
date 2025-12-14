@@ -2,7 +2,7 @@ module neo_magfie
 
     use nrtype
     use neo_input, &
-        only: es, ixm, ixn, mnmax, psi_pr, pixm, pixn
+        only: es, ixm, ixn, mnmax, psi_pr, pixm, pixn, nfp
     use neo_control, &
         only: fluxs_interp, phi_n, theta_n
     use neo_sub_mod, &
@@ -10,6 +10,9 @@ module neo_magfie
     use neo_spline_data, &
         only: r_mhalf, &
               a_bmnc, b_bmnc, c_bmnc, d_bmnc, &
+              a_rmnc, b_rmnc, c_rmnc, d_rmnc, &
+              a_zmns, b_zmns, c_zmns, d_zmns, &
+              a_vmns, b_vmns, c_vmns, d_vmns, &
               a_iota, b_iota, c_iota, d_iota, &
               a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, &
               a_curr_pol, b_curr_pol, c_curr_pol, d_curr_pol
@@ -35,6 +38,7 @@ module neo_magfie
     real(dp), dimension(:, :, :, :, :), allocatable, target :: bb_s_spl
     real(dp), dimension(:, :, :, :, :), allocatable, target :: bb_tb_spl
     real(dp), dimension(:, :, :, :, :), allocatable, target :: bb_pb_spl
+    real(dp), dimension(:, :, :, :, :), allocatable, target :: gval_spl
 
 contains
 
@@ -50,7 +54,7 @@ contains
     !> sqrtg: float, square root of metric determinant at given location?
     !> dB_dx: vector of floats, same size as x.
     subroutine neo_magfie_a(x, bmod, sqrtg, dB_dx, iota, &
-                            B_theta_covariant, B_phi_covariant)
+                            B_theta_covariant, B_phi_covariant, sqrt_g11)
 
         use neo_exchange, only: b_min, b_max, theta_bmin, theta_bmax, &
             & phi_bmin, phi_bmax
@@ -64,6 +68,7 @@ contains
         real(dp), intent(out) :: iota
 
         real(dp), intent(out), optional :: B_theta_covariant, B_phi_covariant
+        real(dp), intent(out), optional :: sqrt_g11
 
         integer(i4b) :: swd = 1
         integer :: i, m, n
@@ -71,7 +76,6 @@ contains
         real(dp) :: m0 = 0.0_dp
         real(dp) :: yp, ypp, yppp
 
-        real(dp) :: bmnc, bmnc_s
         real(dp) :: sinv, cosv
         real(dp) :: curr_tor
         real(dp) :: curr_pol
@@ -87,16 +91,23 @@ contains
         integer, dimension(2) :: b_minpos, b_maxpos
 
         real(dp) :: s
-        real(dp) :: bi, bi_s
+        real(dp) :: bi, bi_s, ri, zi, vi
 
         real(dp) :: theta_d, phi_d
 
         real(dp), dimension(:), allocatable :: s_bmnc, s_bmnc_s
+        real(dp), dimension(:), allocatable :: s_rmnc, s_zmns, s_vmns
 
         real(dp), dimension(:, :), allocatable :: bmod_a
         real(dp), dimension(:, :), allocatable :: bb_s_a
         real(dp), dimension(:, :), allocatable :: bb_tb_a
         real(dp), dimension(:, :), allocatable :: bb_pb_a
+
+        real(dp), dimension(:, :), allocatable :: r
+        real(dp), dimension(:, :), allocatable :: r_tb, z_tb, v_tb, p_tb
+        real(dp), dimension(:, :), allocatable :: r_pb, z_pb, v_pb, p_pb
+        real(dp), dimension(:, :), allocatable :: gtbtb, gpbpb, gtbpb
+        real(dp), dimension(:, :), allocatable :: sqrg11_met
 
         real(dp), dimension(:, :, :, :), pointer :: p_spl
         real(dp), dimension(1) :: magfie_sarray
@@ -123,10 +134,12 @@ contains
             if (allocated(bb_s_spl)) deallocate (bb_s_spl)
             if (allocated(bb_tb_spl)) deallocate (bb_tb_spl)
             if (allocated(bb_pb_spl)) deallocate (bb_pb_spl)
+            if (allocated(gval_spl)) deallocate (gval_spl)
             allocate (bmod_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_s_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_tb_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
             allocate (bb_pb_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
+            allocate (gval_spl(4, 4, theta_n, phi_n, magfie_sarray_len))
 
             if (allocated(curr_tor_array)) deallocate (curr_tor_array)
             if (allocated(curr_pol_array)) deallocate (curr_pol_array)
@@ -139,6 +152,9 @@ contains
 
             allocate (s_bmnc(mnmax))
             allocate (s_bmnc_s(mnmax))
+            allocate (s_rmnc(mnmax))
+            allocate (s_zmns(mnmax))
+            allocate (s_vmns(mnmax))
 
             do imn = 1, mnmax
                 ! Switch swd turns on (1) / off (0) the computation of the
@@ -149,6 +165,21 @@ contains
                 & c_bmnc(:, imn), d_bmnc(:, imn), &
                 & swd, r_mhalf(imn),            &
                 & s, s_bmnc(imn), s_bmnc_s(imn), ypp, yppp)
+                call spline_1d(es, &
+                & a_rmnc(:, imn), b_rmnc(:, imn), &
+                & c_rmnc(:, imn), d_rmnc(:, imn), &
+                & swd, r_mhalf(imn),            &
+                & s, s_rmnc(imn), yp, ypp, yppp)
+                call spline_1d(es, &
+                & a_zmns(:, imn), b_zmns(:, imn), &
+                & c_zmns(:, imn), d_zmns(:, imn), &
+                & swd, r_mhalf(imn),            &
+                & s, s_zmns(imn), yp, ypp, yppp)
+                call spline_1d(es, &
+                & a_vmns(:, imn), b_vmns(:, imn), &
+                & c_vmns(:, imn), d_vmns(:, imn), &
+                & swd, r_mhalf(imn),            &
+                & s, s_vmns(imn), yp, ypp, yppp)
             end do
 
             !*************************************************************
@@ -163,9 +194,31 @@ contains
             bb_tb_a = 0.0_dp
             bb_pb_a = 0.0_dp
 
+            allocate (r(theta_n, phi_n))
+            allocate (r_tb(theta_n, phi_n))
+            allocate (z_tb(theta_n, phi_n))
+            allocate (v_tb(theta_n, phi_n))
+            allocate (p_tb(theta_n, phi_n))
+            allocate (r_pb(theta_n, phi_n))
+            allocate (z_pb(theta_n, phi_n))
+            allocate (v_pb(theta_n, phi_n))
+            allocate (p_pb(theta_n, phi_n))
+            r = 0.0_dp
+            r_tb = 0.0_dp
+            z_tb = 0.0_dp
+            v_tb = 0.0_dp
+            p_tb = 0.0_dp
+            r_pb = 0.0_dp
+            z_pb = 0.0_dp
+            v_pb = 0.0_dp
+            p_pb = 0.0_dp
+
             do imn = 1, mnmax
                 bi = s_bmnc(imn)
                 bi_s = s_bmnc_s(imn)
+                ri = s_rmnc(imn)
+                zi = s_zmns(imn)
+                vi = s_vmns(imn)
 
                 m = ixm(imn)
                 n = ixn(imn)
@@ -184,11 +237,22 @@ contains
                         bb_tb_a(it, ip) = bb_tb_a(it, ip) - m*bi*sinv
                         bb_pb_a(it, ip) = bb_pb_a(it, ip) + n*bi*sinv
 
+                        r(it, ip) = r(it, ip) + ri*cosv
+                        r_tb(it, ip) = r_tb(it, ip) - m*ri*sinv
+                        r_pb(it, ip) = r_pb(it, ip) + n*ri*sinv
+                        z_tb(it, ip) = z_tb(it, ip) + m*zi*cosv
+                        z_pb(it, ip) = z_pb(it, ip) - n*zi*cosv
+                        v_tb(it, ip) = v_tb(it, ip) + m*vi*cosv
+                        v_pb(it, ip) = v_pb(it, ip) - n*vi*cosv
+
                     end do
                 end do
             end do
             deallocate (s_bmnc)
             deallocate (s_bmnc_s)
+            deallocate (s_rmnc)
+            deallocate (s_zmns)
+            deallocate (s_vmns)
 
             ! **********************************************************************
             ! Ensure periodicity boundaries to be the same
@@ -205,6 +269,28 @@ contains
             bb_pb_a(theta_n, :) = bb_pb_a(1, :)
             bb_pb_a(:, phi_n) = bb_pb_a(:, 1)
 
+            r_tb(theta_n, :) = r_tb(1, :)
+            r_tb(:, phi_n) = r_tb(:, 1)
+            r_pb(theta_n, :) = r_pb(1, :)
+            r_pb(:, phi_n) = r_pb(:, 1)
+            z_tb(theta_n, :) = z_tb(1, :)
+            z_tb(:, phi_n) = z_tb(:, 1)
+            z_pb(theta_n, :) = z_pb(1, :)
+            z_pb(:, phi_n) = z_pb(:, 1)
+            v_tb(theta_n, :) = v_tb(1, :)
+            v_tb(:, phi_n) = v_tb(:, 1)
+            v_pb(theta_n, :) = v_pb(1, :)
+            v_pb(:, phi_n) = v_pb(:, 1)
+
+            ! phi_cyl = phi_boozer - 2pi/nfp * v
+            p_tb = -v_tb*twopi/nfp
+            p_pb = 1.0_dp - v_pb*twopi/nfp
+
+            gtbtb = r_tb*r_tb + z_tb*z_tb + r*r*p_tb*p_tb
+            gpbpb = r_pb*r_pb + z_pb*z_pb + r*r*p_pb*p_pb
+            gtbpb = r_tb*r_pb + z_tb*z_pb + r*r*p_tb*p_pb
+            sqrg11_met = sqrt(abs(gtbtb*gpbpb - gtbpb*gtbpb))
+
             p_spl => bmod_spl(:, :, :, :, k_es)
             call spl2d(theta_n, phi_n, theta_int, phi_int, mt, mp, &
                        bmod_a, p_spl)
@@ -217,10 +303,14 @@ contains
             p_spl => bb_pb_spl(:, :, :, :, k_es)
             call spl2d(theta_n, phi_n, theta_int, phi_int, mt, mp, &
                        bb_pb_a, p_spl)
+            p_spl => gval_spl(:, :, :, :, k_es)
+            call spl2d(theta_n, phi_n, theta_int, phi_int, mt, mp, &
+                       sqrg11_met, p_spl)
 
             deallocate (bb_s_a)
             deallocate (bb_tb_a)
             deallocate (bb_pb_a)
+            deallocate (sqrg11_met)
 
             swd = 0
             call spline_1d(es, a_curr_tor, b_curr_tor, c_curr_tor, d_curr_tor, &
@@ -271,8 +361,13 @@ contains
         p_spl => bb_pb_spl(:, :, :, :, k_es)
         call eva2d(theta_n, phi_n, theta_ind, phi_ind, theta_d, phi_d, &
                    p_spl, bb_pb)
-
-        sqrtg = psi_pr*(curr_pol + iota*curr_tor)/bmod**2*1d6
+        if (present(sqrt_g11)) then
+            p_spl => gval_spl(:, :, :, :, k_es)
+            call eva2d(theta_n, phi_n, theta_ind, phi_ind, theta_d, phi_d, &
+                       p_spl, sqrt_g11)
+            sqrt_g11 = sqrt_g11*bmod**2.0_dp/abs(curr_pol + iota*curr_tor)
+        end if
+        sqrtg = psi_pr*(curr_pol + iota*curr_tor)/bmod**2.0_dp*1d6
 
         dB_dx(1) = bb_s
         dB_dx(3) = bb_tb
