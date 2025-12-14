@@ -6,6 +6,7 @@ module surface_average_mod
         real(dp) :: normalization
         real(dp) :: B_squared
         real(dp) :: lambda_b
+        real(dp) :: sqrt_g11
     end type surface_average_t
 
 contains
@@ -30,6 +31,8 @@ contains
         surface_average%B_squared = sum(well_lengths)*dxi_0/ &
                                     surface_average%normalization
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
+                                   dxi_0/surface_average%normalization
+        surface_average%sqrt_g11 = sum(fieldlines%integral_sqrt_g11_over_B_squared)* &
                                    dxi_0/surface_average%normalization
     end subroutine calc_surface_averages
 

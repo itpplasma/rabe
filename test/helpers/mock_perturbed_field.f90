@@ -13,6 +13,7 @@ module mock_perturbed_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
+        procedure :: compute_sqrt_g11
     end type mock_perturbed_field_t
 
 contains
@@ -65,5 +66,14 @@ contains
         call self%pert_field%compute_B_mod(theta, phi, B_pert_mod)
         B_mod = B_mod + B_pert_mod
     end subroutine compute_B_mod
+
+    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+        class(mock_perturbed_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: sqrt_g11
+
+        sqrt_g11 = 1.0_dp
+
+    end subroutine compute_sqrt_g11
 
 end module mock_perturbed_field

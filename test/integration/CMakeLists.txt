@@ -24,7 +24,14 @@ add_executable(test_neo_sqrt_g11.x
 target_link_libraries(test_neo_sqrt_g11.x rabe_lib
                                           utils_lib)
 add_test(TestNeoSqrtG11 test_neo_sqrt_g11.x)
-set_tests_properties(TestNeoSqrtG11 PROPERTIES LABELS "current")
+set_tests_properties(TestNeoSqrtG11 PROPERTIES LABELS "slow")
+
+add_executable(test_neo_dr_dAtheta.x
+               test_neo_dr_dAtheta.f90)
+target_link_libraries(test_neo_dr_dAtheta.x rabe_lib
+                                          utils_lib)
+add_test(TestNeoDrDAtheta test_neo_dr_dAtheta.x)
+set_tests_properties(TestNeoDrDAtheta PROPERTIES LABELS "slow")
 
 add_executable(test_fieldline.x test_fieldline.f90)
 target_link_libraries(test_fieldline.x rabe_lib)

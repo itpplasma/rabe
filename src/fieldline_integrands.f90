@@ -60,4 +60,16 @@ contains
         end if
     end function calc_lambda_squared
 
+    function sqrt_g11_over_B_squared(field, theta, phi)
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: theta, phi
+        real(dp) :: sqrt_g11_over_B_squared
+
+        real(dp) :: B, sqrt_g11
+
+        call field%compute_B_mod(theta, phi, B)
+        call field%compute_sqrt_g11(theta, phi, sqrt_g11)
+        sqrt_g11_over_B_squared = sqrt_g11/B**2.0_dp
+    end function sqrt_g11_over_B_squared
+
 end module fieldline_integrands

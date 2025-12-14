@@ -19,6 +19,7 @@ module fieldline_mod
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
+        real(dp) :: integral_sqrt_g11_over_B_squared
         real(dp) :: M_pol
         real(dp) :: N_tor
         real(dp) :: nfp

@@ -12,6 +12,7 @@ module mock_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
+        procedure :: compute_sqrt_g11
     end type mock_field_t
 
 contains
@@ -60,5 +61,14 @@ contains
         B_mod = self%B_0 + &
                 self%B_amplitude*cos(self%theta_mode*theta - self%phi_mode*phi)
     end subroutine compute_B_mod
+
+    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+        class(mock_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: sqrt_g11
+
+        sqrt_g11 = 1.0_dp
+
+    end subroutine compute_sqrt_g11
 
 end module mock_field
