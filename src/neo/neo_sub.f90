@@ -409,7 +409,7 @@ contains
         close (unit=r_u1)
 
         first_poloidal_mode = findloc((ixm == 1) .and. (ixn == 0), .true., dim=1)
-        if (first_poloidal_mode < 1) then
+        if (first_poloidal_mode > 1) then
             if (minval(rmnc(:, first_poloidal_mode)*zmns(:, first_poloidal_mode)) &
                 < 0.0_dp) then
                 print *, "Error in neo_magfie:"
@@ -421,6 +421,8 @@ contains
             print *, "Error in neo_magfie:"
             print *, "no first poloidal mode present"
             print *, "to verify the angle orientations first poloida mode is needed"
+            print *, "index of first_poloidal_mode = ", first_poloidal_mode
+            error stop
         end if
 
         return
