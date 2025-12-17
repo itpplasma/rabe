@@ -1,0 +1,78 @@
+program test_cumintegrate_over_phi_grid
+    use constants, only: dp, pi
+    use utils, only: not_same
+    use shaing_callen_integration, only: get_phi_integration_grid
+    use shaing_callen_integration, only: cumintegrate_over_phi_grid
+    use fieldline_mod, only: fieldline_t
+    use myplot_module, only: myplot
+
+    implicit none
+
+    type(fieldline_t) :: fieldline
+    real(dp), dimension(2), parameter :: phi_limits = [0.0_dp, pi]
+    real(dp), dimension(:), allocatable :: phi_grid, integrand
+    real(dp), dimension(:), allocatable :: antiderivative
+    real(dp), dimension(:), allocatable :: found_antiderivative
+
+    integer :: this, that
+
+    real(dp), parameter :: abstol = 1e-10
+    integer, parameter :: n_phis(7) = [100, 200, 400, 800, 1600, 3200, 6400]
+    integer :: n_phi
+    real(dp) :: reltol
+    logical :: test_failed
+
+    test_failed = .false.
+    fieldline%phi_max = phi_limits
+
+    reltol = 6.6e-5
+    do this = 1, size(n_phis)
+        n_phi = n_phis(this)
+
+        allocate (phi_grid(n_phi), antiderivative(n_phi), found_antiderivative(n_phi))
+        phi_grid = get_phi_integration_grid(fieldline, n_phi)
+        found_antiderivative = cumintegrate_over_phi_grid(phi_grid, trial_func)
+        do that = 1, n_phi
+            antiderivative(that) = trial_antideriv(phi_grid(that))
+        end do
+        if (not_same(antiderivative, &
+                     found_antiderivative, &
+                     reltol_in=reltol, &
+                     abstol_in=abstol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_cumintegrate_over_phi_grid failed: n_phi = ", n_phi
+            print *, "found value at endpoint: ", found_antiderivative(n_phi)
+            print *, "analytic value at endpoint: ", antiderivative(n_phi)
+            print *, "max relative error: ", maxval(abs(1.0_dp - &
+                                                   found_antiderivative/antiderivative))
+            print *, "expected error: ", reltol
+        end if
+        deallocate (phi_grid, antiderivative, found_antiderivative)
+
+        if (this < size(n_phis)) then
+            reltol = reltol* &
+                     real(n_phis(this), kind=dp)**2.0_dp/ &
+                     real(n_phis(this + 1), kind=dp)**2.0_dp
+        end if
+    end do
+
+    if (test_failed) error stop
+
+contains
+
+    function trial_func(phi) result(res)
+        real(dp), intent(in) :: phi
+        real(dp) :: res
+
+        res = sin(phi)/sqrt(1.0_dp - cos(phi))
+        res = sqrt(2.0_dp)*cos(0.5_dp*phi)
+    end function trial_func
+
+    function trial_antideriv(phi) result(res)
+        real(dp), intent(in) :: phi
+        real(dp) :: res
+
+        res = 2.0_dp*sqrt(1.0_dp - cos(phi))
+    end function trial_antideriv
+
+end program test_cumintegrate_over_phi_grid

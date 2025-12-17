@@ -3,6 +3,7 @@ module shaing_callen_integration
     use fieldline_mod, only: fieldline_t
     use integrate, only: sum_trapez_1d
     use utils, only: linspace
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
     implicit none
 
     abstract interface
@@ -11,6 +12,14 @@ module shaing_callen_integration
             real(dp), intent(in) :: x_start, x_end
             real(dp) :: defined_integral_i
         end function defined_integral_i
+    end interface
+
+    abstract interface
+        function func_i(x)
+            use constants, only: dp
+            real(dp), intent(in) :: x
+            real(dp) :: func_i
+        end function func_i
     end interface
 
 contains
@@ -125,13 +134,88 @@ contains
         real(dp) :: delta_phi
         integer :: n_phi
         real(dp), dimension(size(phi_grid)) :: dphi_dt, t
+        real(dp), dimension(size(phi_grid)) :: integrand_in_t
 
         n_phi = size(phi_grid)
         call linspace(0.0_dp, pi, n_phi, t)
         delta_phi = 0.5_dp*(phi_grid(1) - phi_grid(n_phi))
         dphi_dt = -delta_phi*sin(t)
-        integral = sum_trapez_1d(t, integrand*dphi_dt)
+        integrand_in_t = integrand*dphi_dt
+        if (ieee_is_nan(integrand(1))) then
+            print *, "Warning in cumintegrate_over_phi_grid:"
+            print *, "integrand is NaN at lower limit!"
+            print *, "set to zero as weight dphi_dt=0 there!"
+            integrand_in_t(1) = 0.0_dp
+        end if
+        if (ieee_is_nan(integrand(n_phi))) then
+            print *, "Warning in cumintegrate_over_phi_grid:"
+            print *, "integrand is NaN at upper limit!"
+            print *, "set to zero as weight dphi_dt=0 there!"
+            integrand_in_t(n_phi) = 0.0_dp
+        end if
+        integral = sum_trapez_1d(t, integrand_in_t)
+        if (ieee_is_nan(integral)) then
+            print *, "Error in cumintegrate_over_phi_grid:"
+            print *, "integral is NaN!"
+            error stop
+        end if
     end function integrate_over_phi_grid
+
+    function cumintegrate_over_phi_grid(phi_grid, func) result(cumintegral)
+        real(dp), dimension(:), intent(in) :: phi_grid
+        procedure(func_i) :: func
+        real(dp), dimension(size(phi_grid)) :: cumintegral
+
+        integer :: n_phi
+        real(dp) :: integrand_start, integrand_end
+        real(dp) :: delta_phi, dt
+        real(dp), dimension(size(phi_grid)) :: dphi_dt, t
+
+        integer :: this
+
+        n_phi = size(phi_grid)
+        call linspace(0.0_dp, pi, n_phi, t)
+        delta_phi = 0.5_dp*(phi_grid(1) - phi_grid(n_phi))
+        print *, delta_phi + pi*0.5_dp
+        dphi_dt = -delta_phi*sin(t)
+        dt = t(2) - t(1)
+        cumintegral(1) = 0.0_dp ! as integral limits are same for first element
+        do this = 2, n_phi
+            integrand_start = func(phi_grid(this - 1))*dphi_dt(this - 1)
+            integrand_end = func(phi_grid(this))*dphi_dt(this)
+            if (ieee_is_nan(integrand_start)) then
+                if (this - 1 == 1) then
+                    print *, "Warning in cumintegrate_over_phi_grid:"
+                    print *, "integrand_start is NaN at lower limit!"
+                    print *, "set to zero as weight dphi_dt=0 there!"
+                    integrand_start = 0.0_dp
+                else
+                    print *, "Error in cumintegrate_over_phi_grid:"
+                    print *, "integrand_start is NaN inside interval!"
+                    error stop
+                end if
+            end if
+            if (ieee_is_nan(integrand_end)) then
+                if (this == n_phi) then
+                    print *, "Warning in cumintegrate_over_phi_grid:"
+                    print *, "integrand_end is NaN at upper limit!"
+                    print *, "set to zero as weight dphi_dt=0 there!"
+                    integrand_end = 0.0_dp
+                else
+                    print *, "Error in cumintegrate_over_phi_grid:"
+                    print *, "integrand_end is NaN inside interval!"
+                    error stop
+                end if
+            end if
+            cumintegral(this) = cumintegral(this - 1) + &
+                                0.5_dp*(integrand_start + integrand_end)*dt
+            if (this == n_phi) then
+                print *, func(phi_grid(this))
+                print *, phi_grid(this) - pi
+            end if
+        end do
+
+    end function cumintegrate_over_phi_grid
 
     function cumint(x, defined_integral)
         real(dp), dimension(:), intent(in) :: x
