@@ -176,7 +176,6 @@ contains
         n_phi = size(phi_grid)
         call linspace(0.0_dp, pi, n_phi, t)
         delta_phi = 0.5_dp*(phi_grid(1) - phi_grid(n_phi))
-        print *, delta_phi + pi*0.5_dp
         dphi_dt = -delta_phi*sin(t)
         dt = t(2) - t(1)
         cumintegral(1) = 0.0_dp ! as integral limits are same for first element
@@ -209,10 +208,6 @@ contains
             end if
             cumintegral(this) = cumintegral(this - 1) + &
                                 0.5_dp*(integrand_start + integrand_end)*dt
-            if (this == n_phi) then
-                print *, func(phi_grid(this))
-                print *, phi_grid(this) - pi
-            end if
         end do
 
     end function cumintegrate_over_phi_grid
