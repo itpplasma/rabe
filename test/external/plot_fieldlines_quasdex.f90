@@ -7,8 +7,8 @@ program plot_fieldlines_quasdex
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_lambda_dphimax_dxi0
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_B_squared_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_lambda_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_B_sq_dphimax_dxi0
 
     implicit none
 
@@ -56,7 +56,7 @@ program plot_fieldlines_quasdex
         call plot_phi_max_over_xi_0(fieldlines)
     end if
 
-    call test_calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines, test_failed)
+    call test_calc_avg_normalized_B_sq_dphimax_dxi0(fieldlines, test_failed)
     call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
 
     if (test_failed) error stop

@@ -6,12 +6,13 @@ program test_shaing_callen_against_quasi_symmetric
     use utils, only: linspace, not_same
 
     use test_shaing_callen_mod, only: test_trapped_fraction_against_qs
-    use test_shaing_callen_mod, only: test_avg_B_squared_antider_dBdtheta_over_B_cubed
-    use test_shaing_callen_mod, only: test_trapped_fraction_prime_against_qs
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_B_squared_dphimax_dxi0
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_lambda_dphimax_dxi0
-    use test_shaing_callen_mod, only: test_get_non_omnigenous_remainder
     use test_shaing_callen_mod, only: test_trapped_fraction_against_circular_tokamak
+
+    use test_shaing_callen_remainder, only: test_avg_B_sq_antider_dBdtheta_over_B_cubed
+    use test_shaing_callen_remainder, only: test_trapped_fraction_prime_against_qs
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_B_sq_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_lambda_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_get_non_omnigenous_remainder
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
@@ -60,11 +61,11 @@ program test_shaing_callen_against_quasi_symmetric
 
     call test_trapped_fraction_against_circular_tokamak(test_failed)
     call test_trapped_fraction_against_qs(field, fieldlines, test_failed)
-    call test_avg_B_squared_antider_dBdtheta_over_B_cubed(field, &
-                                                          fieldlines, &
-                                                          test_failed)
+    call test_avg_B_sq_antider_dBdtheta_over_B_cubed(field, &
+                                                     fieldlines, &
+                                                     test_failed)
     call test_trapped_fraction_prime_against_qs(field, fieldlines, test_failed)
-    call test_calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines, test_failed)
+    call test_calc_avg_normalized_B_sq_dphimax_dxi0(fieldlines, test_failed)
     call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
     call test_get_non_omnigenous_remainder(field, fieldlines, test_failed)
 

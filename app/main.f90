@@ -7,7 +7,8 @@ program rabe
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
     use shaing_callen_mod, only: calc_trapped_fraction
-    use shaing_callen_mod, only: get_non_omnigenous_remainder
+    use shaing_callen_remainder, only: calc_trapped_fraction_prime
+    use shaing_callen_remainder, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
@@ -47,8 +48,8 @@ program rabe
     real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: C_A, C_B
 
-    real(dp) :: trapped_fraction
-    real(dp), dimension(:), allocatable :: lambda_SC, remainder
+    real(dp) :: trapped_fraction, trapped_fraction_prime
+    real(dp), dimension(:), allocatable :: lambda_SC, remainder, total_lambda_SC
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
@@ -61,6 +62,7 @@ program rabe
     if (should_calc_shaing_callen) then
         allocate (lambda_SC(n_stor))
         allocate (remainder(n_stor))
+        allocate (total_lambda_SC(n_stor))
     end if
 
     allocate (fieldlines(n_fieldlines))
@@ -107,7 +109,12 @@ program rabe
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
             print *, "omnigenous lambda_SC_bB: ", lambda_SC(this)
-            print *, "non-omnigneous remainder: ", remainder(this)
+            print *, "guess of non-omnigneous remainder: ", remainder(this)
+            trapped_fraction_prime = calc_trapped_fraction_prime(field, fieldlines, n_eta)
+            total_lambda_SC(this) = -field%B_theta_covariant*trapped_fraction + &
+                          covariant_factor*trapped_fraction_prime
+            total_lambda_SC(this) = total_lambda_SC(this)*dr_dAtheta
+            print *, "total lambda^SC_bB: ", total_lambda_SC(this)
         end if
         print *, "1/sqrt(nu_star) factor: ", C_A(this)
         print *, "1/nu_star factor: ", C_B(this)

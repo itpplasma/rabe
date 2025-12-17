@@ -1,7 +1,7 @@
 program test_calc_periodic_dydx
     use constants, only: dp, pi
     use utils, only: not_same, linspace
-    use shaing_callen_mod, only: calc_periodic_dydx
+    use shaing_callen_remainder, only: calc_periodic_dydx
     implicit none
 
     integer, parameter :: ns(5) = [50, 100, 200, 400, 800]
