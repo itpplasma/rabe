@@ -82,8 +82,8 @@ contains
                                                                           eta_b, &
                                                                           n_eta)
         M_pol = qs_fieldlines(1)%M_pol
-        N_tor = qs_fieldlines(2)%N_tor
-        iota = qs_fieldlines(3)%iota
+        N_tor = qs_fieldlines(1)%N_tor
+        iota = qs_fieldlines(1)%iota
         trapped_fraction_prime_qs = M_pol/(M_pol*iota - N_tor)*trapped_fraction_prime_qs
         if (not_same(trapped_fraction_prime, trapped_fraction_prime_qs, &
                      reltol_in=reltol, abstol_in=abstol)) then
