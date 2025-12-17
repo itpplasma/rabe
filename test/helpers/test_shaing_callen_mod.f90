@@ -63,6 +63,55 @@ contains
         end if
     end subroutine test_trapped_fraction_against_circular_tokamak
 
+    subroutine test_avg_B_squared_antider_dBdtheta_over_B_cubed(qs_field, &
+                                                                qs_fieldlines, &
+                                                                test_failed)
+        use shaing_callen_mod, only: calc_avg_B_squared_antider_dBdtheta_over_B_cubed
+        class(field_t), intent(in) :: qs_field
+        type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: reltol = 1e-4, abstol = 0.0_dp
+
+        real(dp) :: average, average_qs
+        real(dp) :: avg_B_squared
+        real(dp) :: M_pol, N_tor, iota
+
+        average = calc_avg_B_squared_antider_dBdtheta_over_B_cubed(qs_field, &
+                                                                   qs_fieldlines)
+        avg_B_squared = calc_avg_B_squared(qs_field, qs_fieldlines)
+        average_qs = -0.5_dp*(1.0_dp - avg_B_squared*qs_fieldlines(1)%eta_b**2.0_dp)
+        M_pol = qs_fieldlines(1)%M_pol
+        N_tor = qs_fieldlines(1)%N_tor
+        iota = qs_fieldlines(1)%iota
+        average_qs = M_pol/(M_pol*iota - N_tor)*average_qs
+        if (not_same(average, average_qs, &
+                     reltol_in=reltol, abstol_in=abstol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_avg_B_squared_antider_dBdtheta_over_B_cubed failed: ", &
+                "<B^2 antider(dBdtheta/B^3)>"
+            print *, "general = ", average
+            print *, "quasi-symmetric = ", average_qs
+            print *, "relative error = ", abs(1.0_dp - average/average_qs)
+            test_failed = .true.
+        end if
+    end subroutine test_avg_B_squared_antider_dBdtheta_over_B_cubed
+
+    function calc_avg_B_squared(field, fieldlines) result(avg_B_squared)
+        use shaing_callen_mod, only: calc_avg_B_squared_over_avg_lambda
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: temp(1), avg_B_squared
+
+        real(dp), dimension(1) :: eta_grid
+
+        eta_grid = 0.0_dp
+
+        temp = calc_avg_B_squared_over_avg_lambda(field, fieldlines, eta_grid)
+        avg_B_squared = temp(1)
+
+    end function calc_avg_B_squared
+
     subroutine test_trapped_fraction_against_qs(qs_field, qs_fieldlines, test_failed)
         use shaing_callen_mod, only: calc_trapped_fraction
         class(field_t), intent(in) :: qs_field
@@ -83,7 +132,7 @@ contains
         if (not_same(trapped_fraction, trapped_fraction_qs, &
                      reltol_in=reltol, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_trapped_fraction_against_qs failed:", &
+            print *, "test_trapped_fraction_against_qs failed: ", &
                 "trapped fraction expression"
             print *, "general = ", trapped_fraction
             print *, "quasi-symmetric = ", trapped_fraction_qs
@@ -92,6 +141,45 @@ contains
             test_failed = .true.
         end if
     end subroutine test_trapped_fraction_against_qs
+
+    subroutine test_trapped_fraction_prime_against_qs(qs_field, &
+                                                      qs_fieldlines, &
+                                                      test_failed)
+        use shaing_callen_mod, only: calc_trapped_fraction_prime
+        class(field_t), intent(in) :: qs_field
+        type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: reltol = 1e-3, abstol = 0.0_dp
+
+        real(dp) :: eta_b
+        integer, parameter :: n_eta = 100
+        real(dp) :: trapped_fraction_prime, trapped_fraction_prime_qs
+        real(dp) :: M_pol, N_tor, iota
+
+        eta_b = qs_fieldlines(1)%eta_b
+        trapped_fraction_prime = calc_trapped_fraction_prime(qs_field, &
+                                                             qs_fieldlines, &
+                                                             n_eta)
+        trapped_fraction_prime_qs = calc_quasi_symmetric_trapped_fraction(qs_field, &
+                                                                          eta_b, &
+                                                                          n_eta)
+        M_pol = qs_fieldlines(1)%M_pol
+        N_tor = qs_fieldlines(2)%N_tor
+        iota = qs_fieldlines(3)%iota
+        trapped_fraction_prime_qs = M_pol/(M_pol*iota - N_tor)*trapped_fraction_prime_qs
+        if (not_same(trapped_fraction_prime, trapped_fraction_prime_qs, &
+                     reltol_in=reltol, abstol_in=abstol)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_trapped_fraction_prime_against_qs failed: ", &
+                "trapped fraction prime expression"
+            print *, "general = ", trapped_fraction_prime
+            print *, "quasi-symmetric = ", trapped_fraction_prime_qs
+            print *, "relative error = ", abs(1.0_dp - &
+                                       trapped_fraction_prime/trapped_fraction_prime_qs)
+            test_failed = .true.
+        end if
+    end subroutine test_trapped_fraction_prime_against_qs
 
     function calc_quasi_symmetric_trapped_fraction(field, &
                                                    eta_b, &

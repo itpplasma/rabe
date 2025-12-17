@@ -8,6 +8,151 @@ module shaing_callen_mod
 
 contains
 
+    function calc_trapped_fraction_prime(field, &
+                                         fieldlines, &
+                                         n_eta) result(trapped_fraction_prime)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        integer, intent(in) :: n_eta
+        real(dp) :: trapped_fraction_prime
+
+        integer :: this
+
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+        real(dp), dimension(:), allocatable :: F
+        real(dp), dimension(:), allocatable :: integrand
+        real(dp) :: avg_B_squared_antider_dBdtheta_over_B_cubed
+
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        allocate (avg_B_squared_over_avg_lambda(n_eta))
+        allocate (F(n_eta))
+        allocate (integrand(n_eta))
+        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
+                                                                           fieldlines, &
+                                                                           eta_grid)
+        F = calc_F_prime(field, fieldlines, eta_grid)
+        avg_B_squared_antider_dBdtheta_over_B_cubed = &
+            calc_avg_B_squared_antider_dBdtheta_over_B_cubed(field, fieldlines)
+
+        integrand = F*avg_B_squared_over_avg_lambda
+        trapped_fraction_prime = -2.0_dp*avg_B_squared_antider_dBdtheta_over_B_cubed - &
+                                 0.75_dp*integrate_over_eta_grid(eta_grid, &
+                                                                 integrand)
+        deallocate (integrand)
+        deallocate (F)
+        deallocate (avg_B_squared_over_avg_lambda)
+        deallocate (eta_grid)
+
+    end function calc_trapped_fraction_prime
+
+    function calc_F_prime(field, fieldlines, eta_grid) result(F_prime)
+        use shaing_callen_wrappers, only: this_field
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp), dimension(size(eta_grid)) :: F_prime
+
+        integer :: this, n_fieldlines
+
+        allocate (this_field, source=field)
+        n_fieldlines = size(fieldlines)
+        F_prime = 0.0_dp
+        do this = 1, n_fieldlines
+            F_prime = F_prime + calc_F_prime_for_fieldline(fieldlines(this), &
+                                                           eta_grid)
+        end do
+        F_prime = F_prime/sum(fieldlines%integral_one_over_B_squared)
+        deallocate (this_field)
+    end function calc_F_prime
+
+    function calc_F_prime_for_fieldline(fieldline, eta_grid) &
+        result(F_prime)
+        use shaing_callen_wrappers, only: wrapper_dBdtheta_over_lambda_cubed
+        use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
+        use shaing_callen_wrappers, only: this_eta, null_eta
+        use shaing_callen_wrappers, only: this_fieldline, null_fieldline
+        use fieldline_integrands, only: calc_lambda_squared
+        use integrate, only: sum_trapez_1d
+        use shaing_callen_integration, only: get_phi_integration_grid
+        use shaing_callen_integration, only: integrate_over_phi_grid
+        use shaing_callen_integration, only: cumintegrate_over_phi_grid
+
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), dimension(:), intent(in) :: eta_grid
+        real(dp), dimension(size(eta_grid)) :: F_prime
+
+        real(dp), dimension(:), allocatable :: phi_grid
+        real(dp) :: phi
+
+        integer :: this, that, n_phi
+
+        real(dp), dimension(:), allocatable :: antider_dBdtheta_over_lambda_cubed
+        real(dp), dimension(:), allocatable :: phi_integrand_F
+
+        this_fieldline = fieldline
+
+        phi_grid = get_phi_integration_grid(fieldline)
+
+        n_phi = size(phi_grid)
+        allocate (antider_dBdtheta_over_lambda_cubed(n_phi))
+        allocate (phi_integrand_F(n_phi))
+
+        do this = 1, size(eta_grid)
+            this_eta = eta_grid(this)
+            antider_dBdtheta_over_lambda_cubed = cumintegrate_over_phi_grid(phi_grid, &
+                                                     wrapper_dBdtheta_over_lambda_cubed)
+
+            phi_integrand_F = 0.5_dp*this_eta**2.0_dp*antider_dBdtheta_over_lambda_cubed
+            do that = 1, n_phi
+                phi_integrand_F(that) = wrapper_lambda_over_B_squared(phi_grid(that)) &
+                                        *phi_integrand_F(that)
+            end do
+            F_prime(this) = integrate_over_phi_grid(phi_grid, phi_integrand_F)
+            this_eta = null_eta
+        end do
+
+        this_fieldline = null_fieldline
+        deallocate (phi_grid)
+        deallocate (antider_dBdtheta_over_lambda_cubed, phi_integrand_F)
+
+    end function calc_F_prime_for_fieldline
+
+    function calc_avg_B_squared_antider_dBdtheta_over_B_cubed(field, fieldlines) &
+        result(res)
+        use shaing_callen_wrappers, only: wrapper_dBdtheta_over_B_cubed
+        use shaing_callen_wrappers, only: this_field
+        use shaing_callen_wrappers, only: this_fieldline, null_fieldline
+        use shaing_callen_integration, only: get_phi_integration_grid
+        use shaing_callen_integration, only: cumintegrate_over_phi_grid
+        use shaing_callen_integration, only: integrate_over_phi_grid
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: res
+
+        integer :: this
+        integer :: n_fieldlines
+        real(dp), dimension(:), allocatable :: antider_dBdtheta_over_B_cubed
+        real(dp), dimension(:), allocatable :: phi_grid
+
+        n_fieldlines = size(fieldlines)
+        allocate (this_field, source=field)
+        res = 0.0_dp
+        phi_grid = get_phi_integration_grid(fieldlines(1))
+        allocate (antider_dBdtheta_over_B_cubed(size(phi_grid)))
+        do this = 1, n_fieldlines
+            this_fieldline = fieldlines(this)
+            phi_grid = get_phi_integration_grid(this_fieldline)
+            antider_dBdtheta_over_B_cubed = cumintegrate_over_phi_grid(phi_grid, &
+                                                          wrapper_dBdtheta_over_B_cubed)
+            res = res + integrate_over_phi_grid(phi_grid, antider_dBdtheta_over_B_cubed)
+            this_fieldline = null_fieldline
+        end do
+        deallocate (antider_dBdtheta_over_B_cubed)
+        deallocate (this_field)
+        res = res/sum(fieldlines%integral_one_over_B_squared)
+    end function calc_avg_B_squared_antider_dBdtheta_over_B_cubed
+
     function calc_trapped_fraction(field, &
                                    fieldlines, &
                                    n_eta) result(trapped_fraction)
