@@ -185,6 +185,23 @@ contains
 
     end function get_non_omnigenous_remainder
 
+    function get_non_omnigenous_remainder_magnetic(field, fieldlines) result(remainder)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        integer, intent(in) :: n_eta
+        real(dp) :: remainder
+
+        integrand = calc_avg_normalized_lambda_dphimax_dxi0(field, &
+                                                            fieldlines, &
+                                                            eta_grid)
+        integrand = integrand*avg_B_squared_over_avg_lambda*eta_grid
+        remainder = -(calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
+                      0.75_dp*integrate_over_eta_grid(eta_grid, integrand))
+        deallocate (eta_grid)
+        deallocate (integrand)
+        deallocate (avg_B_squared_over_avg_lambda)
+    end function get_non_omnigenous_remainder_magnetic
+
     function calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) &
         result(res)
         use fourier, only: real_ft
