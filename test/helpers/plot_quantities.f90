@@ -396,32 +396,33 @@ contains
         type(fieldline_t), dimension(:) :: fieldlines
         type(myplot) :: plt
 
-        real(dp), dimension(size(fieldlines)) :: xi_0, phi_l, phi_r
+        real(dp), dimension(size(fieldlines)) :: xi_0, shifted_xi_0, phi_l, phi_r
         real(dp) :: M_pol, nfp
 
         M_pol = fieldlines(1)%M_pol
         nfp = fieldlines(1)%nfp
         xi_0 = fieldlines%xi_0
+        shifted_xi_0 = modulo(xi_0 - fieldlines(1)%iota_p, 2.0_dp*pi)
         phi_l = fieldlines%phi_max(1)
         phi_r = fieldlines%phi_max(2)
 
-        call plt%initialize(xlabel="$\xi_0$", &
-                            ylabel="$\varphi_\mathrm{max}$", &
+        call plt%initialize(xlabel="$\xi_0$ [$\pi$]", &
+                            ylabel="$\varphi_\mathrm{max}$ [$\pi$]", &
                             legend=.true.)
 
-        call plt%add_plot(xi_0, phi_l, &
+        call plt%add_plot(shifted_xi_0/pi, phi_l/pi, &
                           label="$\varphi_l$", &
                           linestyle="bo-", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_r, &
+        call plt%add_plot(shifted_xi_0/pi, phi_r/pi, &
                           label="$\varphi_r$", &
                           linestyle="ro-", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_l - M_pol/nfp*xi_0, &
+        call plt%add_plot(shifted_xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_l - M/N_p \xi_0$", &
                           linestyle="b--", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_r - M_pol/nfp*xi_0, &
+        call plt%add_plot(shifted_xi_0/pi, (phi_r - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_r - M/N_p \xi_0$", &
                           linestyle="r--", &
                           linewidth=1)
@@ -429,6 +430,43 @@ contains
         call plt%show()
 
     end subroutine plot_phi_max_over_xi_0
+
+    subroutine plot_chi_max_over_xi_0(fieldlines)
+        type(fieldline_t), dimension(:) :: fieldlines
+        type(myplot) :: plt
+
+        real(dp), dimension(2) :: theta_max
+        real(dp), dimension(size(fieldlines)) :: shifted_xi_0
+        real(dp), dimension(size(fieldlines)) :: chi_minus, chi_plus
+        real(dp) :: M_pol, N_tor
+
+        integer :: this
+
+        M_pol = fieldlines(1)%M_pol
+        N_tor = fieldlines(1)%N_tor
+        shifted_xi_0 = modulo(fieldlines%xi_0 - fieldlines%iota_p, 2.0_dp*pi)
+        do this = 1, size(fieldlines)
+            theta_max = fieldlines(this)%get_theta(fieldlines(this)%phi_max)
+            chi_minus(this) = M_pol*theta_max(2) - N_tor*fieldlines(this)%phi_max(2)
+            chi_plus(this) = M_pol*theta_max(1) - N_tor*fieldlines(this)%phi_max(1)
+        end do
+
+        call plt%initialize(xlabel="$\xi_0 - \iota_p$ [$\pi$]", &
+                            ylabel="$\chi_\mathrm{max}$ [$\pi$]", &
+                            legend=.true.)
+
+        call plt%add_plot(shifted_xi_0/pi, chi_minus/pi, &
+                          label="$\chi_-$", &
+                          linestyle="bo-", &
+                          linewidth=1)
+        call plt%add_plot(shifted_xi_0/pi, chi_plus/pi, &
+                          label="$\chi_+$", &
+                          linestyle="ro-", &
+                          linewidth=1)
+
+        call plt%show()
+
+    end subroutine plot_chi_max_over_xi_0
 
     subroutine plot_delta_eta(fieldlines, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines

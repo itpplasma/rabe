@@ -11,6 +11,8 @@ program plot_deviation_landreman_paul_helical
     use plot_quantities, only: plot_maxima_over_label
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
+    use plot_quantities, only: plot_phi_max_over_xi_0
+    use plot_quantities, only: plot_chi_max_over_xi_0
     use plot_quantities, only: plot_deviation, external_data_t
 
     implicit none
@@ -73,7 +75,7 @@ program plot_deviation_landreman_paul_helical
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 5e-7
-    integer, parameter :: n_fieldlines = 50
+    integer, parameter :: n_fieldlines = 101
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
@@ -102,6 +104,8 @@ program plot_deviation_landreman_paul_helical
                                   phi_tol)
 
     if (should_plot_others) then
+        call plot_chi_max_over_xi_0(fieldlines)
+        call plot_phi_max_over_xi_0(fieldlines)
         call plot_fieldlines_over_field(fieldlines, field)
         call plot_maxima_over_label(fieldlines)
         call plot_delta_eta(fieldlines)
