@@ -14,6 +14,7 @@ contains
                                                            qs_fieldlines, &
                                                            test_failed)
      use shaing_callen_remainder, only: calc_avg_B_squared_antider_dBdtheta_over_B_cubed
+        use shaing_callen_remainder, only: calc_avg_B_squared
         class(field_t), intent(in) :: qs_field
         type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
         logical, intent(inout) :: test_failed
@@ -26,7 +27,7 @@ contains
 
         average = calc_avg_B_squared_antider_dBdtheta_over_B_cubed(qs_field, &
                                                                    qs_fieldlines)
-        avg_B_squared = calc_avg_B_squared(qs_field, qs_fieldlines)
+        avg_B_squared = calc_avg_B_squared(qs_fieldlines)
         average_qs = -0.5_dp*(1.0_dp - avg_B_squared*qs_fieldlines(1)%eta_b**2.0_dp)
         M_pol = qs_fieldlines(1)%M_pol
         N_tor = qs_fieldlines(1)%N_tor
@@ -43,21 +44,6 @@ contains
             test_failed = .true.
         end if
     end subroutine test_avg_B_sq_antider_dBdtheta_over_B_cubed
-
-    function calc_avg_B_squared(field, fieldlines) result(avg_B_squared)
-        use shaing_callen_mod, only: calc_avg_B_squared_over_avg_lambda
-        class(field_t), intent(in) :: field
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        real(dp) :: temp(1), avg_B_squared
-
-        real(dp), dimension(1) :: eta_grid
-
-        eta_grid = 0.0_dp
-
-        temp = calc_avg_B_squared_over_avg_lambda(field, fieldlines, eta_grid)
-        avg_B_squared = temp(1)
-
-    end function calc_avg_B_squared
 
     subroutine test_trapped_fraction_prime_against_qs(qs_field, &
                                                       qs_fieldlines, &
@@ -105,7 +91,6 @@ contains
         logical, intent(inout) :: test_failed
 
         real(dp), parameter :: reltol = 1e-12, abstol = 0.0_dp
-        real(dp), dimension(size(qs_fieldlines)) :: well_lengths
         real(dp) :: avg_B_squared, found, analytic
 
         real(dp) :: M_pol, N_tor
@@ -231,5 +216,95 @@ contains
             end if
         end do
     end subroutine test_get_non_omnigenous_remainder
+
+    subroutine test_get_non_omnigenous_remainders(qs_field, &
+                                                  qs_fieldlines, &
+                                                  test_failed)
+        use shaing_callen_remainder, only: get_non_omnigenous_remainder_magnetic
+        use shaing_callen_remainder, only: get_non_omnigenous_remainder_pitch
+        class(field_t), intent(in) :: qs_field
+        type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: reltol = 0.0_dp
+        real(dp), parameter :: abstol_magnetics = 1e-16
+        real(dp), parameter :: abstol_pitch = 1e-14
+
+        integer, parameter :: n_eta = 100
+
+        real(dp) :: found, analytic
+        integer :: this
+
+        analytic = 0.0_dp
+
+        found = get_non_omnigenous_remainder_magnetic(qs_fieldlines)
+        if (not_same(found, analytic, &
+                     reltol_in=reltol, abstol_in=abstol_magnetics)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_get_non_omnigenous_remainders failed: magnetic part"
+            print *, "found = ", found
+            print *, "analytic = ", analytic
+            print *, "abs error = ", abs(analytic - found)
+            test_failed = .true.
+        end if
+
+        found = get_non_omnigenous_remainder_pitch(qs_field, &
+                                                   qs_fieldlines, &
+                                                   n_eta)
+        if (not_same(found, analytic, &
+                     reltol_in=reltol, abstol_in=abstol_pitch)) then
+            print *, "-------------------------------------------------------------"
+            print *, "test_get_non_omnigenous_remainders failed: pitch part"
+            print *, "found = ", found
+            print *, "analytic = ", analytic
+            print *, "abs error = ", abs(analytic - found)
+            test_failed = .true.
+        end if
+    end subroutine test_get_non_omnigenous_remainders
+
+    subroutine test_limit_cancelation(fieldlines, test_failed)
+        use shaing_callen_integration, only: get_eta_integration_grid
+        use shaing_callen_integration, only: integrate_over_eta_grid
+        use shaing_callen_remainder, only: calc_lambda_max
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        logical, intent(inout) :: test_failed
+
+        real(dp), parameter :: reltol = 0.0_dp, const = 1.23_dp
+        real(dp) :: abstol
+        integer, parameter, dimension(5) :: n_etas = [50, 100, 200, 400, 800]
+
+        integer :: n_eta
+        real(dp) :: eta_b
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: lambda_max
+        real(dp) :: remainder, analytic
+
+        integer :: this
+
+        analytic = 0.0_dp
+        eta_b = fieldlines(1)%eta_b
+        do this = 1, size(n_etas)
+            n_eta = n_etas(this)
+            abstol = const/real(n_eta, kind=dp)**2.0_dp
+            allocate (lambda_max(n_eta))
+            eta_grid = get_eta_integration_grid(eta_b, n_eta)
+            lambda_max = calc_lambda_max(eta_b, eta_grid)
+            remainder = 0.75_dp*integrate_over_eta_grid(eta_grid, eta_grid/lambda_max)
+            remainder = remainder - eta_b**2.0_dp
+            if (not_same(remainder, analytic, reltol_in=reltol, abstol_in=abstol)) then
+                print *, "-------------------------------------------------------------"
+                print *, "test_limit_cancelation failed:"
+                print *, "n_eta = ", n_eta
+                print *, "found = ", remainder
+                print *, "analytic = ", analytic
+                print *, "abs error = ", abs(analytic - remainder)
+                print *, "expected error = ", abstol
+                test_failed = .true.
+            end if
+            deallocate (lambda_max)
+            deallocate (eta_grid)
+        end do
+
+    end subroutine test_limit_cancelation
 
 end module test_shaing_callen_remainder

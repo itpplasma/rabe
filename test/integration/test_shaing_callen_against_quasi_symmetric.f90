@@ -13,6 +13,8 @@ program test_shaing_callen_against_quasi_symmetric
     use test_shaing_callen_remainder, only: test_calc_avg_normalized_B_sq_dphimax_dxi0
     use test_shaing_callen_remainder, only: test_calc_avg_normalized_lambda_dphimax_dxi0
     use test_shaing_callen_remainder, only: test_get_non_omnigenous_remainder
+    use test_shaing_callen_remainder, only: test_limit_cancelation
+    use test_shaing_callen_remainder, only: test_get_non_omnigenous_remainders
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
@@ -68,6 +70,8 @@ program test_shaing_callen_against_quasi_symmetric
     call test_calc_avg_normalized_B_sq_dphimax_dxi0(fieldlines, test_failed)
     call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
     call test_get_non_omnigenous_remainder(field, fieldlines, test_failed)
+    call test_limit_cancelation(fieldlines, test_failed)
+    call test_get_non_omnigenous_remainders(field, fieldlines, test_failed)
 
     if (test_failed) error stop
 

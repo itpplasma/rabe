@@ -185,22 +185,92 @@ contains
 
     end function get_non_omnigenous_remainder
 
-    function get_non_omnigenous_remainder_magnetic(field, fieldlines) result(remainder)
+    function get_non_omnigenous_remainder_magnetic(fieldlines) result(remainder)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: remainder
+
+        real(dp) :: avg_B_squared
+        real(dp) :: M_pol, nfp, B_max
+
+        avg_B_squared = sum(fieldlines%phi_max(2) - fieldlines%phi_max(1))
+        avg_B_squared = avg_B_squared/sum(fieldlines%integral_one_over_B_squared)
+
+        M_pol = fieldlines(1)%M_pol
+        nfp = fieldlines(1)%nfp
+        B_max = 1.0_dp/fieldlines(1)%eta_b
+
+        remainder = calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines)
+        remainder = remainder - avg_B_squared/B_max**2.0_dp*M_pol/nfp
+
+    end function get_non_omnigenous_remainder_magnetic
+
+    function get_non_omnigenous_remainder_pitch(field, fieldlines, n_eta) &
+        result(remainder)
+        use shaing_callen_integration, only: get_eta_integration_grid
+        use shaing_callen_integration, only: integrate_over_eta_grid
+        use shaing_callen_mod, only: calc_avg_B_squared_over_avg_lambda
         class(field_t), intent(in) :: field
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         integer, intent(in) :: n_eta
         real(dp) :: remainder
 
-        integrand = calc_avg_normalized_lambda_dphimax_dxi0(field, &
-                                                            fieldlines, &
-                                                            eta_grid)
-        integrand = integrand*avg_B_squared_over_avg_lambda*eta_grid
-        remainder = -(calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
-                      0.75_dp*integrate_over_eta_grid(eta_grid, integrand))
+        real(dp), dimension(:), allocatable :: eta_grid
+        real(dp), dimension(:), allocatable :: integrand
+        real(dp), dimension(:), allocatable :: lambda_max, omnigenous_integrand
+
+        real(dp) :: avg_B_squared
+        real(dp) :: M_pol, nfp, eta_b
+
+        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
+        allocate (integrand(n_eta))
+        allocate (lambda_max(n_eta), omnigenous_integrand(n_eta))
+
+        integrand = calc_avg_B_squared_over_avg_lambda(field, fieldlines, eta_grid)
+        integrand = integrand*calc_avg_normalized_lambda_dphimax_dxi0(field, &
+                                                                      fieldlines, &
+                                                                      eta_grid)
+        integrand = 0.75_dp*integrand*eta_grid
+
+        eta_b = fieldlines(1)%eta_b
+        lambda_max = calc_lambda_max(eta_b, eta_grid)
+
+        avg_B_squared = calc_avg_B_squared(fieldlines)
+
+        M_pol = fieldlines(1)%M_pol
+        nfp = fieldlines(1)%nfp
+        omnigenous_integrand = 0.75_dp*avg_B_squared*eta_grid/lambda_max*M_pol/nfp
+        remainder = integrate_over_eta_grid(eta_grid, integrand)
+        remainder = remainder - integrate_over_eta_grid(eta_grid, omnigenous_integrand)
+
         deallocate (eta_grid)
         deallocate (integrand)
-        deallocate (avg_B_squared_over_avg_lambda)
-    end function get_non_omnigenous_remainder_magnetic
+        deallocate (lambda_max)
+        deallocate (omnigenous_integrand)
+
+    end function get_non_omnigenous_remainder_pitch
+
+    function calc_lambda_max(eta_b, eta_grid) result(lambda_max)
+        real(dp), intent(in) :: eta_b
+        real(dp), dimension(:) :: eta_grid
+        real(dp), dimension(size(eta_grid)) :: lambda_max
+
+        lambda_max = 1.0_dp - eta_grid/eta_b
+        if (any(lambda_max < 0.0_dp)) then
+            print *, "Error in get_non_omnigenous_remainder_pitch:"
+            print *, "1.0_dp - eta_grid/eta_b < 0"
+            error stop
+        end if
+        lambda_max = sqrt(lambda_max)
+    end function calc_lambda_max
+
+    function calc_avg_B_squared(fieldlines) result(avg_B_squared)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: avg_B_squared
+
+        avg_B_squared = sum(fieldlines%phi_max(2) - fieldlines%phi_max(1))
+        avg_B_squared = avg_B_squared/sum(fieldlines%integral_one_over_B_squared)
+
+    end function calc_avg_B_squared
 
     function calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) &
         result(res)
