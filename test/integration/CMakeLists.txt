@@ -87,6 +87,11 @@ target_link_libraries(test_shaing_callen_against_quasi_symmetric.x rabe_lib help
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 
+add_executable(test_shaing_callen_remainder_scaling.x test_shaing_callen_remainder_scaling.f90)
+target_link_libraries(test_shaing_callen_remainder_scaling.x helpers_lib rabe_lib)
+add_test(TestShaingCallenRemainderScaling test_shaing_callen_remainder_scaling.x)
+set_tests_properties(TestShaingCallenRemainderScaling PROPERTIES LABELS "current")
+
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
 add_test(TestPlot test_plot.x)
