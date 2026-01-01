@@ -34,9 +34,6 @@ program test_shaing_callen_against_quasi_symmetric
     type(mock_field_t) :: field
 
     logical, parameter :: should_plot = .false.
-    integer :: this
-    integer, parameter :: n_eta = 10
-    real(dp), dimension(n_eta) :: eta_grid
 
     logical :: test_failed
 
