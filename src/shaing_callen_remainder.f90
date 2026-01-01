@@ -163,25 +163,8 @@ contains
         integer, intent(in) :: n_eta
         real(dp) :: remainder
 
-        real(dp), dimension(:), allocatable :: eta_grid
-        real(dp), dimension(:), allocatable :: integrand
-        real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
-
-        eta_grid = get_eta_integration_grid(fieldlines(1)%eta_b, n_eta)
-        allocate (integrand(n_eta))
-        allocate (avg_B_squared_over_avg_lambda(n_eta))
-        avg_B_squared_over_avg_lambda = calc_avg_B_squared_over_avg_lambda(field, &
-                                                                           fieldlines, &
-                                                                           eta_grid)
-        integrand = calc_avg_normalized_lambda_dphimax_dxi0(field, &
-                                                            fieldlines, &
-                                                            eta_grid)
-        integrand = integrand*avg_B_squared_over_avg_lambda*eta_grid
-        remainder = -(calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) - &
-                      0.75_dp*integrate_over_eta_grid(eta_grid, integrand))
-        deallocate (eta_grid)
-        deallocate (integrand)
-        deallocate (avg_B_squared_over_avg_lambda)
+        remainder = get_non_omnigenous_remainder_pitch(field, fieldlines, n_eta)
+        remainder = remainder + get_non_omnigenous_remainder_magnetic(fieldlines)
 
     end function get_non_omnigenous_remainder
 
@@ -200,7 +183,7 @@ contains
         B_max = 1.0_dp/fieldlines(1)%eta_b
 
         remainder = calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines)
-        remainder = remainder - avg_B_squared/B_max**2.0_dp*M_pol/nfp
+        remainder = avg_B_squared/B_max**2.0_dp*M_pol/nfp - remainder
 
     end function get_non_omnigenous_remainder_magnetic
 
