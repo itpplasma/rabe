@@ -412,11 +412,11 @@ contains
 
         call plt%add_plot(shifted_xi_0/pi, phi_l/pi, &
                           label="$\varphi_l$", &
-                          linestyle="bo-", &
+                          linestyle="bo", &
                           linewidth=1)
         call plt%add_plot(shifted_xi_0/pi, phi_r/pi, &
                           label="$\varphi_r$", &
-                          linestyle="ro-", &
+                          linestyle="ro", &
                           linewidth=1)
         call plt%add_plot(shifted_xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_l - M/N_p \xi_0$", &
@@ -840,5 +840,50 @@ contains
         call plt_sin%show()
 
     end subroutine compare_modes
+
+    subroutine plot_non_omnigenous_remainder(omnigenity_violation, remainder)
+        real(dp), dimension(:), intent(in) :: omnigenity_violation, remainder
+
+        type(myplot) :: plt
+        integer :: temp(1), min_idx
+        real(dp) :: estimated_scaling_factor
+
+        character(len=1024) :: label
+
+        if (any(omnigenity_violation <= 0.0_dp)) then
+            print *, "Error in plot_non_omnigenous_remainder:"
+            print *, "omnigenity_violation must be positive!"
+            error stop
+        end if
+
+        temp = minloc(abs(remainder))
+        min_idx = temp(1)
+        estimated_scaling_factor = abs(remainder(min_idx))/ &
+                                   sqrt(abs(omnigenity_violation(min_idx)))
+
+        call plt%initialize(xlabel="violation of omnigenity [1]", &
+                            ylabel="remainder [1]", &
+                            legend=.true., &
+                            figsize=[15, 10])
+
+        write (label, "(A19)") "pitch boundary term"
+        call plt%add_plot(omnigenity_violation, &
+                          remainder, &
+                          label=label, &
+                          linestyle="r-o", &
+                          xscale="log", &
+                          yscale="log")
+
+        write (label, "(ES10.2E2,A39)") estimated_scaling_factor, &
+            "$\sqrt{\text{violation of omnigenity}}$"
+        call plt%add_plot(omnigenity_violation, &
+                          estimated_scaling_factor*sqrt(omnigenity_violation), &
+                          label=label, &
+                          linestyle="k-", &
+                          xscale="log", &
+                          yscale="log")
+
+        call plt%show()
+    end subroutine plot_non_omnigenous_remainder
 
 end module plot_quantities
