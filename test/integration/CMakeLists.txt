@@ -90,7 +90,7 @@ set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 add_executable(test_shaing_callen_remainder_scaling.x test_shaing_callen_remainder_scaling.f90)
 target_link_libraries(test_shaing_callen_remainder_scaling.x helpers_lib rabe_lib)
 add_test(TestShaingCallenRemainderScaling test_shaing_callen_remainder_scaling.x)
-set_tests_properties(TestShaingCallenRemainderScaling PROPERTIES LABELS "current")
+set_tests_properties(TestShaingCallenRemainderScaling PROPERTIES LABELS "slow")
 
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
