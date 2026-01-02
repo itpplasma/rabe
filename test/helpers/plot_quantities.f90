@@ -411,11 +411,11 @@ contains
 
         call plt%add_plot(xi_0/pi, phi_l/pi, &
                           label="$\varphi_l$", &
-                          linestyle="bo", &
+                          linestyle="bo-", &
                           linewidth=1)
         call plt%add_plot(xi_0/pi, phi_r/pi, &
                           label="$\varphi_r$", &
-                          linestyle="ro", &
+                          linestyle="ro-", &
                           linewidth=1)
         call plt%add_plot(xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_l - M/N_p \xi_0$", &
