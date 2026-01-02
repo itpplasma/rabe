@@ -65,7 +65,6 @@ contains
         real(dp) :: res
 
         res = sin(phi)/sqrt(1.0_dp - cos(phi))
-        res = sqrt(2.0_dp)*cos(0.5_dp*phi)
     end function trial_func
 
     function trial_antideriv(phi) result(res)
