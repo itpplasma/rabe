@@ -841,12 +841,15 @@ contains
 
     end subroutine compare_modes
 
-    subroutine plot_non_omnigenous_remainder(omnigenity_violation, remainder)
+    subroutine plot_non_omnigenous_remainder(omnigenity_violation, remainder, kind, &
+                                             estimate)
         real(dp), dimension(:), intent(in) :: omnigenity_violation, remainder
+        character(len=*), intent(in) :: kind
+        real(dp), intent(in), optional :: estimate
 
         type(myplot) :: plt
         integer :: temp(1), min_idx
-        real(dp) :: estimated_scaling_factor
+        real(dp) :: fitted_scaling_factor
 
         character(len=1024) :: label
 
@@ -858,30 +861,40 @@ contains
 
         temp = minloc(abs(remainder))
         min_idx = temp(1)
-        estimated_scaling_factor = abs(remainder(min_idx))/ &
-                                   sqrt(abs(omnigenity_violation(min_idx)))
+        fitted_scaling_factor = abs(remainder(min_idx))/ &
+                                sqrt(abs(omnigenity_violation(min_idx)))
 
         call plt%initialize(xlabel="violation of omnigenity [1]", &
                             ylabel="remainder [1]", &
                             legend=.true., &
                             figsize=[15, 10])
 
-        write (label, "(A19)") "pitch boundary term"
         call plt%add_plot(omnigenity_violation, &
                           remainder, &
-                          label=label, &
-                          linestyle="r-o", &
+                          label=kind, &
+                          linestyle="k-o", &
                           xscale="log", &
                           yscale="log")
 
-        write (label, "(ES10.2E2,A39)") estimated_scaling_factor, &
-            "$\sqrt{\text{violation of omnigenity}}$"
+        write (label, "(A4,ES10.2E2,A25)") "fit:", fitted_scaling_factor, &
+            "$\sqrt{\text{violation}}$"
         call plt%add_plot(omnigenity_violation, &
-                          estimated_scaling_factor*sqrt(omnigenity_violation), &
+                          fitted_scaling_factor*sqrt(omnigenity_violation), &
                           label=label, &
-                          linestyle="k-", &
+                          linestyle="b-", &
                           xscale="log", &
                           yscale="log")
+
+        if (present(estimate)) then
+            write (label, "(A18,ES10.2E2,A25)") "analytic estimate:", estimate, &
+                "$\sqrt{\text{violation}}$"
+            call plt%add_plot(omnigenity_violation, &
+                              estimate*sqrt(omnigenity_violation), &
+                              label=label, &
+                              linestyle="r--", &
+                              xscale="log", &
+                              yscale="log")
+        end if
 
         call plt%show()
     end subroutine plot_non_omnigenous_remainder
