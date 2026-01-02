@@ -396,13 +396,12 @@ contains
         type(fieldline_t), dimension(:) :: fieldlines
         type(myplot) :: plt
 
-        real(dp), dimension(size(fieldlines)) :: xi_0, shifted_xi_0, phi_l, phi_r
+        real(dp), dimension(size(fieldlines)) :: xi_0, phi_l, phi_r
         real(dp) :: M_pol, nfp
 
         M_pol = fieldlines(1)%M_pol
         nfp = fieldlines(1)%nfp
         xi_0 = fieldlines%xi_0
-        shifted_xi_0 = modulo(xi_0 - fieldlines(1)%iota_p, 2.0_dp*pi)
         phi_l = fieldlines%phi_max(1)
         phi_r = fieldlines%phi_max(2)
 
@@ -410,19 +409,19 @@ contains
                             ylabel="$\varphi_\mathrm{max}$ [$\pi$]", &
                             legend=.true.)
 
-        call plt%add_plot(shifted_xi_0/pi, phi_l/pi, &
+        call plt%add_plot(xi_0/pi, phi_l/pi, &
                           label="$\varphi_l$", &
                           linestyle="bo", &
                           linewidth=1)
-        call plt%add_plot(shifted_xi_0/pi, phi_r/pi, &
+        call plt%add_plot(xi_0/pi, phi_r/pi, &
                           label="$\varphi_r$", &
                           linestyle="ro", &
                           linewidth=1)
-        call plt%add_plot(shifted_xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
+        call plt%add_plot(xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_l - M/N_p \xi_0$", &
                           linestyle="b--", &
                           linewidth=1)
-        call plt%add_plot(shifted_xi_0/pi, (phi_r - M_pol/nfp*xi_0)/pi, &
+        call plt%add_plot(xi_0/pi, (phi_r - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_r - M/N_p \xi_0$", &
                           linestyle="r--", &
                           linewidth=1)
