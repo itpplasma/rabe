@@ -110,9 +110,11 @@ program rabe
                               nfp/(M_pol*iota - N_tor)
             print *, "omnigenous lambda_SC_bB: ", lambda_SC(this)
             print *, "guess of non-omnigneous remainder: ", remainder(this)
-            trapped_fraction_prime = calc_trapped_fraction_prime(field, fieldlines, n_eta)
+            trapped_fraction_prime = calc_trapped_fraction_prime(field, &
+                                                                 fieldlines, &
+                                                                 n_eta)
             total_lambda_SC(this) = -field%B_theta_covariant*trapped_fraction + &
-                          covariant_factor*trapped_fraction_prime
+                                    covariant_factor*trapped_fraction_prime
             total_lambda_SC(this) = total_lambda_SC(this)*dr_dAtheta
             print *, "total lambda^SC_bB: ", total_lambda_SC(this)
         end if
@@ -150,9 +152,14 @@ program rabe
         call nc_output%add_real_attr("remainder", "long_name", &
                                 "non-omnigenous remainder of Shaing-Callen coefficient")
         call nc_output%add_real_attr("remainder", "unit", "[1]")
+        call nc_output%add_real_1d("total_lambda_SC_bB", dim_name)
+        call nc_output%add_real_attr("total_lambda_SC_bB", "long_name", &
+                                     "Shaing-Callen coefficient (truncated formula)")
+        call nc_output%add_real_attr("total_lambda_SC_bB", "unit", "[1]")
 
         call nc_output%write_real_1d("lambda_SC_bB", lambda_SC)
         call nc_output%write_real_1d("remainder", remainder)
+        call nc_output%write_real_1d("total_lambda_SC_bB", total_lambda_SC)
     end if
     call nc_output%write_real_1d("C_A", C_A)
     call nc_output%write_real_1d("C_B", C_B)
