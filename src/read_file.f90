@@ -1,118 +1,159 @@
 module read_file
     use constants, only: dp
+    use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
 
-    type :: modes
-        real(dp), dimension(:), allocatable :: s_tor
-        integer, dimension(:), allocatable :: m, n
-        real(dp), dimension(:, :), allocatable :: coef
-    end type modes
+    character(len=100), public, protected :: bc_filename
+    real(dp), public, protected :: M_pol
+    real(dp), public, protected :: N_tor
+    real(dp), dimension(:), allocatable, public, protected :: s_tor
+    real(dp), public, protected :: ds_dr ![1/cm]
+    real(dp), public, protected :: sign_sqrtg
+    real(dp), public, protected :: phi_tol
+    integer, public, protected :: n_fieldlines
+    logical, public, protected :: should_calc_shaing_callen
+    integer, public, protected :: n_eta
 
-    abstract interface
-        subroutine read_field_file(file_name, B)
-            use, intrinsic :: iso_fortran_env, only: dp => real64
-            import modes
-            character(len=256), intent(in) :: file_name
-            type(modes), intent(out) :: B
-        end subroutine read_field_file
-    end interface
+    namelist /rabe_config/ &
+        bc_filename, &
+        M_pol, &
+        N_tor, &
+        s_tor, &
+        sign_sqrtg, &
+        phi_tol, &
+        n_fieldlines, &
+        should_calc_shaing_callen, &
+        n_eta
 
 contains
 
-    subroutine read_boozer_file(file_name, B)
-        use constants, only: pi
+    subroutine read_namelist(filename)
+        implicit none
+        character(len=*), intent(in) :: filename
+        integer :: ios, unit
+        logical :: file_exists
 
-        character(len=*), intent(in) :: file_name
-        type(modes), intent(out) :: B
+        real(dp), dimension(:), allocatable :: s_tor_temp
+        integer, parameter :: n_stor_max = 1000
+        integer :: n_stor
+        real(dp) :: nan_value
 
-        integer :: m_max, n_max, n_s, nfp
-        integer :: num_pol_modes, num_tor_modes, num_modes
-        real(dp) :: tor_flux_separatrix, psi_tor_separatrix
-        integer :: file_unit
+        inquire (file=filename, exist=file_exists)
+        if (.not. file_exists) then
+            print *, "Error in read_namelist: file not found: ", filename
+            error stop
+        end if
 
-        integer, dimension(:), allocatable :: m, n
-        real(dp), dimension(:), allocatable :: s_tor, iota, curr_pol, curr_tor
-        real(dp), dimension(:), allocatable :: dp_ds, sqrtg_00
-        real(dp), dimension(:, :), allocatable :: rmnc, zmns, vmns
-        character(len=256) :: dummy
-        integer :: extra_count, i, j
-        logical :: extra_zero
-        integer :: ios, i_alloc
+        open (newunit=unit, file=filename, status="old", action="read", iostat=ios)
+        if (ios /= 0) then
+            print *, "Error in read_namelist: cannot open file: ", filename
+            error stop
+        end if
 
-        open (newunit=file_unit, file=file_name)
-        call skip_lines(file_unit, 5)
-        read (file_unit,"(I6, I6, I6, I6, F8.8)", iostat=ios) m_max, n_max, n_s, nfp, tor_flux_separatrix
-        num_pol_modes = m_max + 1
-        num_tor_modes = 2*n_max + 1
-        num_modes = num_pol_modes*num_tor_modes
+        ! Default values
+        should_calc_shaing_callen = .false.
+        n_eta = 100
+        if (allocated(s_tor)) deallocate (s_tor)
+        allocate (s_tor(n_stor_max))
+        nan_value = ieee_value(nan_value, ieee_quiet_nan)
+        s_tor = nan_value
 
-        allocate (m(num_modes), n(num_modes), stat=i_alloc)
-        if (i_alloc /= 0) stop 'Allocation for integer arrays failed!'
+        read (unit, nml=rabe_config, iostat=ios)
+        if (ios /= 0) then
+            print *, "Error in read_namelist:"
+            print *, "iostat = ", ios
+            error stop
+        end if
 
-        allocate(s_tor(n_s), iota(n_s), curr_pol(n_s), curr_tor(n_s), dp_ds(n_s), sqrtg_00(n_s), stat = i_alloc)
-        if (i_alloc /= 0) stop 'Allocation for real arrays failed!'
+        n_stor = count(.not. ieee_is_nan(s_tor))
+        if (n_stor == 0) then
+            print *, "Error in read_namelist: no s_tor values provided in namelist"
+            error stop
+        end if
+        if (n_stor >= n_stor_max) then
+           print *, "Error in read_namelist: too many s_tor values provided in namelist"
+            error stop
+        end if
+        ! Need temporary storage to reduce the size of s_tor to amount of inputs
+        if (allocated(s_tor_temp)) deallocate (s_tor_temp)
+        allocate (s_tor_temp(n_stor))
+        s_tor_temp = pack(s_tor,.not. ieee_is_nan(s_tor))
+        deallocate (s_tor)
+        allocate (s_tor(n_stor))
+        s_tor = s_tor_temp
+        deallocate (s_tor_temp)
 
-        allocate (B%m(num_modes), B%n(num_modes), stat=i_alloc)
-        allocate (B%s_tor(n_s))
-        allocate(rmnc(n_s,num_modes), zmns(n_s,num_modes), vmns(n_s,num_modes), B%coef(n_s,num_modes), stat = i_alloc)
+        call check_if_valid_namelist()
 
-        if (i_alloc /= 0) stop 'Allocation for fourier arrays (1) failed!'
-        do i = 1, n_s
-            read (file_unit, *) dummy
-            read (file_unit, *) dummy
-            read (file_unit, *) s_tor(i), iota(i), curr_pol(i), curr_tor(i), &
-                dp_ds(i), sqrtg_00(i)
-            read (file_unit, *) dummy
+        close (unit)
+    end subroutine read_namelist
 
-            extra_zero = .false.
-            extra_count = 0
-            do j = 1, num_modes
-                if (j .gt. 1) then
-                    if (m(j - 1) .eq. 0 .and. n(j - 1) .eq. 0) then
-                        extra_zero = .true.
-                    end if
-                end if
-                if (extra_zero) then
-                    extra_count = extra_count + 1
-                    if (extra_count .eq. n_max) extra_zero = .false.
-                    m(j) = 0
-                    n(j) = -extra_count
-                    rmnc(i, j) = 0.0d0
-                    zmns(i, j) = 0.0d0
-                    vmns(i, j) = 0.0d0
-                    B%coef(i, j) = 0.0d0
-                else
-                    read (file_unit, *) m(j), n(j), &
-                        rmnc(i, j), zmns(i, j), vmns(i, j), &
-                        B%coef(i, j)
-                end if
-            end do
-        end do
+    subroutine check_if_valid_namelist()
+        use make_fieldline, only: is_not_integer
+        use utils, only: not_same
 
-        curr_pol = curr_pol*2.d-7*nfp
-        curr_tor = -curr_tor*2.d-7
-        n_max = n_max*nfp
-        n = n*nfp
-        m = m
-        psi_tor_separatrix = abs(tor_flux_separatrix)/2.0_dp*pi
-        B%m = m
-        B%n = n
-        B%s_tor = s_tor
-    end subroutine read_boozer_file
+        real(dp), parameter :: tol = 1e-15
+        logical :: is_valid
 
-    subroutine skip_lines(file_unit, n_lines)
-        integer, intent(in) :: file_unit, n_lines
+        is_valid = .true.
 
-        integer :: ios, line
+        if (len(trim(bc_filename)) == 0) then
+            print *, "bc_filename is empty!"
+        end if
+        if (ieee_is_nan(M_pol)) then
+            print *, "M_pol is NaN!"
+            is_valid = .false.
+        end if
+        if (ieee_is_nan(N_tor)) then
+            print *, "N_tor is NaN!"
+            is_valid = .false.
+        end if
+        if (any(ieee_is_nan(s_tor))) then
+            print *, "s_tor is NaN!"
+            is_valid = .false.
+        end if
+        if (ieee_is_nan(sign_sqrtg)) then
+            print *, "sign_sqrtg is NaN!"
+            is_valid = .false.
+        end if
+        if (ieee_is_nan(phi_tol)) then
+            print *, "phi_tol is NaN!"
+            is_valid = .false.
+        end if
 
-        do line = 1, n_lines
-            read (file_unit, '(A)', iostat=ios)
-            if (ios /= 0) then
-                print *, "Error when skipping lines."
-                error stop
-            end if
-        end do
-    end subroutine
+        if (is_not_integer(M_pol, tol)) then
+            print *, "M_pol must be integer"
+            is_valid = .false.
+        end if
+        if (is_not_integer(N_tor, tol)) then
+            print *, "N_tor must be integer"
+            is_valid = .false.
+        end if
+        if (not_same(sign_sqrtg, 1.0_dp, reltol_in=0.0_dp, abstol_in=tol) .and. &
+            not_same(sign_sqrtg, -1.0_dp, reltol_in=0.0_dp, abstol_in=tol)) then
+            print *, "sign_sqrtg must be +-1"
+            is_valid = .false.
+        end if
+        if (any(s_tor <= 0.0_dp) .or. any(s_tor >= 1.0_dp)) then
+            print *, "s_tor must be in ]0.0, 1.0["
+            is_valid = .false.
+        end if
+        if (phi_tol <= 0.0_dp) then
+            print *, "phi_tol must be positiv"
+            is_valid = .false.
+        end if
+        if (n_fieldlines <= 1) then
+            print *, "n_fieldliens must be bigger than 1"
+            is_valid = .false.
+        end if
+        if (should_calc_shaing_callen .and. n_eta <= 3) then
+            print *, "n_eta must be bigger than 3"
+        end if
+
+        if (.not. is_valid) error stop
+
+    end subroutine check_if_valid_namelist
 
 end module read_file
