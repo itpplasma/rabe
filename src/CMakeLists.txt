@@ -1,7 +1,11 @@
 file(GLOB SRC_FILES "*.f90")
+file(GLOB FIELDLINE_FILES "fieldline/*.f90")
+file(GLOB SHAING_CALLEN_FILES "shaing_callen/*.f90")
 
 add_library(rabe_lib STATIC
   ${SRC_FILES}
+  ${FIELDLINE_FILES}
+  ${SHAING_CALLEN_FILES}
   ${CMAKE_BINARY_DIR}/src/git_version.f90
   )
 
