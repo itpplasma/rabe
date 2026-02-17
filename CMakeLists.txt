@@ -25,10 +25,7 @@ add_custom_target(git_version_target
     DEPENDS ${CMAKE_BINARY_DIR}/src/git_version.f90
 )
 
-include_directories(${CMAKE_BINARY_DIR}/src)
-include_directories(${CMAKE_BINARY_DIR}/src/neo)
-include_directories(${CMAKE_BINARY_DIR}/src/utils)
-add_subdirectory(src)
+add_subdirectory(src) # for rabe_lib
 
 add_executable(${PROJECT_NAME} app/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
