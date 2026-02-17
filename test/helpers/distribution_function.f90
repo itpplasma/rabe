@@ -30,7 +30,7 @@ contains
     end function get_offset_from_distribution
 
     subroutine get_g_modes_from_fieldlines(fieldlines, field, nu_star, g_off_modes)
-        use misc, only: S_A, S_B
+        use fit_functions, only: S_A, S_B
         use neo_field, only: neo_field_t
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         type(neo_field_t), intent(in) :: field

@@ -6,8 +6,7 @@ add_library(rabe_lib STATIC
   )
 
 add_dependencies(rabe_lib git_version_target)
-
-include(Util)
+target_include_directories(rabe_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 # Find NetCDF Fortran
 find_package(PkgConfig REQUIRED)
@@ -15,12 +14,11 @@ pkg_check_modules(NetCDF_Fortran REQUIRED IMPORTED_TARGET netcdf-fortran)
 target_include_directories(rabe_lib PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
 target_link_libraries(rabe_lib PRIVATE PkgConfig::NetCDF_Fortran)
 
-find_or_fetch(quadpack)
-target_compile_options(quadpack PRIVATE -w) # No warnings as library is not modified
-target_link_libraries(rabe_lib PRIVATE quadpack)
-
 add_subdirectory(neo)
-target_link_libraries(rabe_lib PRIVATE neo_lib)
-
 add_subdirectory(utils)
-target_link_libraries(rabe_lib PRIVATE utils_lib)
+add_subdirectory(field)
+add_subdirectory(fieldline)
+add_subdirectory(shaing_callen)
+
+target_link_libraries(rabe_lib PUBLIC
+  utils_lib neo_lib field_lib fieldline_lib shaing_callen_lib)

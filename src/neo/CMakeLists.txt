@@ -50,3 +50,4 @@ else()
 endif()
 
 target_compile_options(neo_lib PRIVATE -w) # No warnings as legacy code is not modified
+target_include_directories(neo_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

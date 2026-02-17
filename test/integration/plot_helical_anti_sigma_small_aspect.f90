@@ -6,7 +6,7 @@ program plot_helical_anti_sigma_small_aspect
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use misc, only: S_A
+    use fit_functions, only: S_A
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_delta_eta

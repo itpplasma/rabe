@@ -13,7 +13,7 @@ contains
         use fieldline_integrals, only: fourier_transform_over_label
         use surface_average_mod, only: surface_average_t
         use surface_average_mod, only: calc_surface_averages
-        use misc, only: S_A, S_B
+        use fit_functions, only: S_A, S_B
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(out) :: deviation_A, deviation_B

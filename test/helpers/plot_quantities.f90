@@ -110,7 +110,7 @@ contains
     end subroutine plot_spectra
 
     subroutine plot_deviation_spectrum(fieldlines)
-        use misc, only: S_B
+        use fit_functions, only: S_B
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
 
         type(fieldline_modes_t) :: modes
@@ -667,7 +667,7 @@ contains
 
     subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
         use surface_average_mod, only: surface_average_t, calc_surface_averages
-        use misc, only: S_A, S_B
+        use fit_functions, only: S_A, S_B
         use neo_field, only: neo_field_t
         use distribution_function, only: get_g_modes_from_fieldlines
         type(fieldline_t), dimension(:), intent(in) :: fieldlines

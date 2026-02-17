@@ -7,29 +7,25 @@ set_tests_properties(TestAgainstNeo2Field PROPERTIES LABELS "slow")
 
 add_executable(test_against_neo2_anti_sigma.x test_against_neo2_anti_sigma.f90)
 target_link_libraries(test_against_neo2_anti_sigma.x rabe_lib
-                                                     myplot_lib
-                                                     utils_lib)
+                                                     myplot_lib)
 add_test(TestAgainstNeo2AntiSigma test_against_neo2_anti_sigma.x)
 set_tests_properties(TestAgainstNeo2AntiSigma PROPERTIES LABELS "slow")
 
 add_executable(test_neo_covariant_components.x
                test_neo_covariant_components.f90)
-target_link_libraries(test_neo_covariant_components.x rabe_lib
-                                                      utils_lib)
+target_link_libraries(test_neo_covariant_components.x rabe_lib)
 add_test(TestNeoCovariantComponents test_neo_covariant_components.x)
 set_tests_properties(TestNeoCovariantComponents PROPERTIES LABELS "slow")
 
 add_executable(test_neo_sqrt_g11.x
                test_neo_sqrt_g11.f90)
-target_link_libraries(test_neo_sqrt_g11.x rabe_lib
-                                          utils_lib)
+target_link_libraries(test_neo_sqrt_g11.x rabe_lib)
 add_test(TestNeoSqrtG11 test_neo_sqrt_g11.x)
 set_tests_properties(TestNeoSqrtG11 PROPERTIES LABELS "slow")
 
 add_executable(test_neo_dr_dAtheta.x
                test_neo_dr_dAtheta.f90)
-target_link_libraries(test_neo_dr_dAtheta.x rabe_lib
-                                          utils_lib)
+target_link_libraries(test_neo_dr_dAtheta.x rabe_lib)
 add_test(TestNeoDrDAtheta test_neo_dr_dAtheta.x)
 set_tests_properties(TestNeoDrDAtheta PROPERTIES LABELS "slow")
 

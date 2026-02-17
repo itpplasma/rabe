@@ -5,7 +5,7 @@ program plot_deviation_goodman_squid
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use misc, only: S_A, S_B
+    use fit_functions, only: S_A, S_B
 
     use plot_quantities, only: plot_deviation_spectrum
     use plot_quantities, only: plot_distribution_function
