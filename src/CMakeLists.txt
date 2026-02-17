@@ -16,10 +16,9 @@ target_link_libraries(rabe_lib PRIVATE PkgConfig::NetCDF_Fortran)
 
 add_subdirectory(neo)
 add_subdirectory(utils)
-add_subdirectory(numerics)
 add_subdirectory(field)
 add_subdirectory(fieldline)
 add_subdirectory(shaing_callen)
 
 target_link_libraries(rabe_lib PUBLIC
-  utils_lib neo_lib numerics_lib field_lib fieldline_lib shaing_callen_lib)
+  utils_lib neo_lib field_lib fieldline_lib shaing_callen_lib)
