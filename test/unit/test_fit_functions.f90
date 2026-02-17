@@ -1,4 +1,4 @@
-program test_misc
+program test_fit_functions
     use constants, only: dp, pi
     use fit_functions, only: S_A, S_B
     use utils, only: not_same
@@ -47,7 +47,7 @@ contains
 
         if (not_same(expected_value, value, reltol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_misc failed: for S_A at angle ", x
+            print *, "test_fit_functions failed: for S_A at angle ", x
             print *, "found: ", value
             print *, "expected: ", expected_value
             error stop
@@ -59,11 +59,11 @@ contains
 
         if (not_same(expected_value, value, reltol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_misc failed: for S_B at angle ", x
+            print *, "test_fit_functions failed: for S_B at angle ", x
             print *, "found: ", value
             print *, "expected: ", expected_value
             error stop
         end if
     end subroutine check_S_B
 
-end program test_misc
+end program test_fit_functions

@@ -1,4 +1,4 @@
-program plot_misc
+program plot_fit_functions
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace
@@ -25,4 +25,4 @@ program plot_misc
                       linestyle="b--")
     call plt%show()
 
-end program plot_misc
+end program plot_fit_functions

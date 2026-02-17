@@ -33,10 +33,10 @@ target_link_libraries(test_real_ft.x rabe_lib)
 add_test(TestRealFt test_real_ft.x)
 set_tests_properties(TestRealFt PROPERTIES LABELS "quick")
 
-add_executable(test_misc.x test_misc.f90)
-target_link_libraries(test_misc.x rabe_lib)
-add_test(TestMisc test_misc.x)
-set_tests_properties(TestMisc PROPERTIES LABELS "quick")
+add_executable(test_fit_functions.x test_fit_functions.f90)
+target_link_libraries(test_fit_functions.x rabe_lib)
+add_test(TestFitFunctions test_fit_functions.x)
+set_tests_properties(TestFitFunctions PROPERTIES LABELS "quick")
 
 add_executable(test_netcdf.x test_netcdf.f90)
 target_include_directories(test_netcdf.x PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
@@ -64,8 +64,8 @@ target_link_libraries(test_read_namelist.x rabe_lib)
 add_test(TestReadNamelist test_read_namelist.x)
 set_tests_properties(TestReadNamelist PROPERTIES LABELS "quick")
 
-add_executable(plot_misc.x plot_misc.f90)
-target_link_libraries(plot_misc.x rabe_lib
+add_executable(plot_fit_functions.x plot_fit_functions.f90)
+target_link_libraries(plot_fit_functions.x rabe_lib
                                   myplot_lib)
-add_test(PlotMisc plot_misc.x)
-set_tests_properties(PlotMisc PROPERTIES LABELS "plot")
+add_test(PlotFitFunctions plot_fit_functions.x)
+set_tests_properties(PlotFitFunctions PROPERTIES LABELS "plot")
