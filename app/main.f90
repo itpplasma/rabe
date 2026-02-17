@@ -46,6 +46,7 @@ program rabe
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: C_A, C_B
+    real(dp), dimension(:), allocatable :: nu_star_limit
 
     real(dp) :: trapped_fraction
     real(dp), dimension(:), allocatable :: lambda_SC, remainder
@@ -58,6 +59,7 @@ program rabe
     n_stor = size(s_tor)
     allocate (C_A(n_stor))
     allocate (C_B(n_stor))
+    allocate (nu_star_limit(n_stor))
     if (should_calc_shaing_callen) then
         allocate (lambda_SC(n_stor))
         allocate (remainder(n_stor))
@@ -95,6 +97,10 @@ program rabe
         R = field%R
         C_A(this) = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         C_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
+        nu_star_limit(this) = R/fieldlines(1)%I_ref*(fieldlines(1)%eta_b - &
+                                          1.0_dp/minval(fieldlines%B_max(1)))**2.0_dp/ &
+                              fieldlines(1)%eta_b*0.25_dp*pi/3.0_dp
+        nu_star_limit(this) = nu_star_limit(this)/covariant_factor
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
@@ -132,7 +138,14 @@ program rabe
     call nc_output%add_real_attr("C_A", "unit", &
                                  "[1]")
     call nc_output%add_real_1d("C_B", dim_name)
+    call nc_output%add_real_attr("C_B", "long_name", &
+                                 "1/nu_star factor")
     call nc_output%add_real_attr("C_B", "unit", &
+                                 "[1]")
+    call nc_output%add_real_1d("nu_star_limit", dim_name)
+    call nc_output%add_real_attr("nu_star_limit", "long_name", &
+                                "collisionality limit for validity of asymptotic model")
+    call nc_output%add_real_attr("nu_star_limit", "unit", &
                                  "[1]")
     if (should_calc_shaing_callen) then
         call nc_output%add_real_1d("lambda_SC_bB", dim_name)
@@ -149,11 +162,13 @@ program rabe
     end if
     call nc_output%write_real_1d("C_A", C_A)
     call nc_output%write_real_1d("C_B", C_B)
+    call nc_output%write_real_1d("nu_star_limit", nu_star_limit)
     call nc_output%write_real_1d("s_tor", s_tor)
     call nc_output%close()
 
     if (allocated(C_A)) deallocate (C_A)
     if (allocated(C_B)) deallocate (C_B)
+    if (allocated(nu_star_limit)) deallocate (nu_star_limit)
     if (allocated(lambda_SC)) deallocate (lambda_SC)
     if (allocated(remainder)) deallocate (remainder)
 
