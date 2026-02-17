@@ -1,4 +1,4 @@
-module misc
+module fit_functions
     use constants, only: dp, pi, eps
     implicit none
 
@@ -30,4 +30,4 @@ contains
         if (abs(mod(angle, pi)) < eps) S_B = 0.0_dp
     end function S_B
 
-end module misc
+end module fit_functions

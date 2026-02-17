@@ -1,6 +1,6 @@
 program test_misc
     use constants, only: dp, pi
-    use misc, only: S_A, S_B
+    use fit_functions, only: S_A, S_B
     use utils, only: not_same
 
     implicit none

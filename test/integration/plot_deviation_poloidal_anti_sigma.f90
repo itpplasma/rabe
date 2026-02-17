@@ -6,7 +6,7 @@ program plot_deviation_poloidal_anti_sigma
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
-    use misc, only: S_A, S_B
+    use fit_functions, only: S_A, S_B
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_delta_eta

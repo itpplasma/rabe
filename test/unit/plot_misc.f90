@@ -2,7 +2,7 @@ program plot_misc
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace
-    use misc, only: S_A, S_B
+    use fit_functions, only: S_A, S_B
     implicit none
 
     type(myplot) :: plt
