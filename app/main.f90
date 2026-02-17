@@ -97,9 +97,6 @@ program rabe
         R = field%R
         C_A(this) = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         C_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        print *, R
-        print *, (fieldlines(1)%eta_b - 1.0_dp/minval(fieldlines%B_max(1)))
-        print *, fieldlines(1)%I_ref
         nu_star_limit(this) = R/fieldlines(1)%I_ref*(fieldlines(1)%eta_b - &
                                           1.0_dp/minval(fieldlines%B_max(1)))**2.0_dp/ &
                               fieldlines(1)%eta_b*0.25_dp*pi/3.0_dp
@@ -147,7 +144,7 @@ program rabe
                                  "[1]")
     call nc_output%add_real_1d("nu_star_limit", dim_name)
     call nc_output%add_real_attr("nu_star_limit", "long_name", &
-                                "collisionality limit for validity of C_B/nu_star term")
+                                "collisionality limit for validity of asymptotic model")
     call nc_output%add_real_attr("nu_star_limit", "unit", &
                                  "[1]")
     if (should_calc_shaing_callen) then
