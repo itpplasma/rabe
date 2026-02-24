@@ -73,6 +73,11 @@ target_link_libraries(test_lambda_helical_anti_sigma.x rabe_lib
 add_test(TestLambdaHelicalAntiSigma test_lambda_helical_anti_sigma.x)
 set_tests_properties(TestLambdaHelicalAntiSigma PROPERTIES LABELS "quick")
 
+add_executable(test_precession_analytic.x test_precession_analytic.f90)
+target_link_libraries(test_precession_analytic.x rabe_lib helpers_lib)
+add_test(TestPrecessionAnalytic test_precession_analytic.x)
+set_tests_properties(TestPrecessionAnalytic PROPERTIES LABELS "quick")
+
 add_executable(test_set_fieldline_labels.x test_set_fieldline_labels.f90)
 target_link_libraries(test_set_fieldline_labels.x rabe_lib helpers_lib)
 add_test(TestSetFieldlineLabels test_set_fieldline_labels.x)

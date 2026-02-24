@@ -7,10 +7,10 @@ module precession
 
 contains
 
-    subroutine compute_precession_correction(field, l_c, omega_hat, correction)
+    subroutine compute_precession_correction(field, l_c, Omega_hat, correction)
         class(field_t), intent(in) :: field
-        type(fieldline_t), intent(in) :: l_c
-        real(dp), intent(in) :: omega_hat
+        real(dp), intent(in) :: l_c
+        real(dp), intent(in) :: Omega_hat
         real(dp), intent(out) :: correction
 
         correction = 0.0_dp
