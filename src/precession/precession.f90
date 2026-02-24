@@ -28,7 +28,7 @@ contains
         precession%fieldline = get_fieldline_at_global_maximum(fieldlines)
         call find_magnetic_well_bottom(field, precession%fieldline, &
                                        phi_bottom, B_bottom)
-        correction = phi_bottom/B_bottom
+        correction = B_bottom
 
     end subroutine compute_precession_correction
 
@@ -84,7 +84,7 @@ contains
             print *, "---------------------------------------------------------"
         end if
 
-        call B_mod_along_fieldline(phi_min(1:found_minima), B_min(1:found_minima))
+        call B_along_fieldline(phi_min(1:found_minima), B_min(1:found_minima))
         of_smallest_B = minloc(B_min(1:found_minima), dim=1)
         phi_bottom = phi_min(of_smallest_B)
         B_bottom = B_min(of_smallest_B)
