@@ -15,6 +15,7 @@ add_subdirectory(vmec)
 add_subdirectory(field)
 add_subdirectory(fieldline)
 add_subdirectory(shaing_callen)
+add_subdirectory(precession)
 
 target_link_libraries(rabe_lib PUBLIC
   utils_lib
@@ -23,4 +24,5 @@ target_link_libraries(rabe_lib PUBLIC
   field_lib
   vmec_lib
   fieldline_lib
-  shaing_callen_lib)
+  shaing_callen_lib
+  precession_lib)
