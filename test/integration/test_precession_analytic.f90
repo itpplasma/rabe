@@ -49,7 +49,7 @@ program test_precession_analytic
                                   nfp, &
                                   phi_tol)
 
-    call compute_precession_correction(field, l_c, Omega_hat, correction)
+    call compute_precession_correction(field, fieldlines, l_c, Omega_hat, correction)
 
     if (not_same(correction, expected_correction, abstol_in=tol)) then
         print *, "-------------------------------------------------------------"
