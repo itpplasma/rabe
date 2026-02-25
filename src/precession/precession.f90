@@ -186,25 +186,34 @@ contains
 
     end subroutine compute_bounce_integrals
 
-    function find_turning_points(field, fieldline, eta) result(phi_turning)
+    function find_turning_points(field, fieldline, eta, reltol_in) result(phi_turning)
         use find_extrema, only: find_global_extrema
         class(field_t), intent(in) :: field
         type(fieldline_with_minimum_t), intent(in) :: fieldline
         real(dp), intent(in) :: eta
+        real(dp), intent(in), optional :: reltol_in
         real(dp), dimension(2) :: phi_turning, extremum_locations
         real(dp) :: interval(2)
 
-        real(dp) :: reltol = 1.0e-4_dp
+        real(dp) :: reltol
 
+        if (present(reltol_in)) then
+            reltol = reltol_in
+        else
+            reltol = 1e-4_dp
+        end if
+
+        ! turning points are shifted slightly away from the extrema to avoid
+        ! numerical issues with the integrand
         interval(1) = fieldline%phi_max(1)
         interval(2) = fieldline%phi_min
         extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
-        phi_turning(1) = extremum_locations(1)
+        phi_turning(1) = extremum_locations(1) + (interval(2) - interval(1))*reltol
 
         interval(1) = fieldline%phi_min
         interval(2) = fieldline%phi_max(2)
         extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
-        phi_turning(2) = extremum_locations(1)
+        phi_turning(2) = extremum_locations(1) - (interval(2) - interval(1))*reltol
 
     contains
 

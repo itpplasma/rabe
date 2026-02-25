@@ -49,6 +49,11 @@ target_link_libraries(test_find_global_maximum.x rabe_lib helpers_lib)
 add_test(TestGlobalMaximum test_find_global_maximum.x)
 set_tests_properties(TestGlobalMaximum PROPERTIES LABELS "quick")
 
+add_executable(test_find_turning_points.x test_find_turning_points.f90)
+target_link_libraries(test_find_turning_points.x rabe_lib helpers_lib)
+add_test(TestFindTurningPoints test_find_turning_points.x)
+set_tests_properties(TestFindTurningPoints PROPERTIES LABELS "quick")
+
 add_executable(test_anti_sigma_analytic.x test_anti_sigma_analytic.f90)
 target_link_libraries(test_anti_sigma_analytic.x rabe_lib helpers_lib)
 add_test(TestAntiSigmaAnalytic test_anti_sigma_analytic.x)
