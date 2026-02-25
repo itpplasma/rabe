@@ -5,12 +5,23 @@ module precession
 
     implicit none
 
+    type :: integration_grid_t
+        real(dp), dimension(:), allocatable :: eta
+        real(dp), dimension(:), allocatable :: t
+        real(dp), dimension(:), allocatable :: t_weight
+        real(dp), dimension(:), allocatable :: I_bounce
+        real(dp), dimension(:), allocatable :: I_pitch
+    end type integration_grid_t
+
+    type, extends(fieldline_t) :: fieldline_with_minimum_t
+        real(dp) :: phi_min
+        real(dp) :: B_min
+    end type fieldline_with_minimum_t
+
     type :: precession_t
-        real(dp), dimension(:), allocatable :: eta_grid
-        real(dp), dimension(:), allocatable :: t_grid
-        real(dp), dimension(:), allocatable :: bounce_time
-        type(fieldline_t) :: fieldline
-        real(dp), dimension(:, :), allocatable :: phi_turning
+        type(integration_grid_t) :: lower_grid
+        type(integration_grid_t) :: upper_grid
+        type(fieldline_with_minimum_t) :: fieldline
     end type precession_t
 
 contains
@@ -23,11 +34,21 @@ contains
         real(dp), intent(out) :: correction
 
         type(precession_t) :: precession
-        real(dp) :: phi_bottom, B_bottom
+        real(dp) :: phi_bottom, B_bottom, lowest_B_max, eta_t, eta_c
 
-        precession%fieldline = get_fieldline_at_global_maximum(fieldlines)
+        precession%fieldline%fieldline_t = get_fieldline_at_global_maximum(fieldlines)
         call find_magnetic_well_bottom(field, precession%fieldline, &
                                        phi_bottom, B_bottom)
+        lowest_B_max = minval(precession%fieldline%B_max)
+        eta_t = 1.0_dp/B_bottom
+        eta_c = 1.0_dp/lowest_B_max
+        precession%fieldline%phi_min = phi_bottom
+        precession%fieldline%B_min = B_bottom
+        call set_integration_grids(eta_t, eta_c, precession%lower_grid, &
+                                   precession%upper_grid)
+        call compute_bounce_integrals(field, precession%fieldline, &
+                                      precession%lower_grid)
+
         correction = B_bottom
 
     end subroutine compute_precession_correction
@@ -105,5 +126,102 @@ contains
         end subroutine B_along_fieldline
 
     end subroutine find_magnetic_well_bottom
+
+    subroutine set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
+        use utils, only: linspace
+        real(dp), intent(in) :: eta_t, eta_c
+        type(integration_grid_t), intent(out) :: lower_grid, upper_grid
+
+        real(dp) :: eta_mid
+        real(dp) :: t_start, t_end
+        integer, parameter :: n = 100
+        real(dp), dimension(n) :: t
+
+        if (allocated(lower_grid%eta)) deallocate (lower_grid%eta)
+        if (allocated(lower_grid%t)) deallocate (lower_grid%t)
+        if (allocated(lower_grid%t_weight)) deallocate (lower_grid%t_weight)
+
+        allocate (lower_grid%eta(n))
+        allocate (lower_grid%t(n))
+        allocate (lower_grid%t_weight(n))
+        eta_mid = 0.5_dp*(eta_c + eta_t)
+        t_start = 0.0_dp
+        t_end = (eta_t - eta_mid)**0.25_dp
+        call linspace(t_start, t_end, n, t)
+        lower_grid%eta = eta_c - t**4.0_dp
+        lower_grid%t_weight = -4.0_dp*t**3.0_dp
+        lower_grid%t = t
+
+        if (allocated(upper_grid%eta)) deallocate (upper_grid%eta)
+        if (allocated(upper_grid%t)) deallocate (upper_grid%t)
+        if (allocated(upper_grid%t_weight)) deallocate (upper_grid%t_weight)
+
+        allocate (upper_grid%eta(n))
+        allocate (upper_grid%t(n))
+        allocate (upper_grid%t_weight(n))
+        t_start = (eta_mid - eta_c)**0.25_dp
+        t_end = 0.0_dp
+        call linspace(t_start, t_end, n, t)
+        upper_grid%eta = eta_c + t**4.0_dp
+        upper_grid%t_weight = 4.0_dp*t**3.0_dp
+        upper_grid%t = t
+
+    end subroutine set_integration_grids
+
+    subroutine compute_bounce_integrals(field, fieldline, grid)
+        class(field_t), intent(in) :: field
+        type(fieldline_with_minimum_t), intent(in) :: fieldline
+        type(integration_grid_t), intent(inout) :: grid
+
+        integer :: idx
+        real(dp) :: phi_turning(2)
+
+        if (allocated(grid%I_bounce)) deallocate (grid%I_bounce)
+        if (allocated(grid%I_pitch)) deallocate (grid%I_pitch)
+
+        allocate (grid%I_bounce(size(grid%eta)))
+        allocate (grid%I_pitch(size(grid%eta)))
+
+        phi_turning = find_turning_points(field, fieldline, grid%eta(1))
+
+    end subroutine compute_bounce_integrals
+
+    function find_turning_points(field, fieldline, eta) result(phi_turning)
+        use find_extrema, only: find_global_extrema
+        class(field_t), intent(in) :: field
+        type(fieldline_with_minimum_t), intent(in) :: fieldline
+        real(dp), intent(in) :: eta
+        real(dp), dimension(2) :: phi_turning, extremum_locations
+        real(dp) :: interval(2)
+
+        real(dp) :: reltol = 1.0e-4_dp
+
+        interval(1) = fieldline%phi_max(1)
+        interval(2) = fieldline%phi_min
+        extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
+        phi_turning(1) = extremum_locations(1)
+
+        interval(1) = fieldline%phi_min
+        interval(2) = fieldline%phi_max(2)
+        extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
+        phi_turning(2) = extremum_locations(1)
+
+    contains
+
+        subroutine lambda_squared_along_fieldline(phi, lambda_squared)
+            real(dp), dimension(:), intent(in) :: phi
+            real(dp), dimension(:), intent(out) :: lambda_squared
+
+            real(dp), dimension(size(phi)) :: theta, B
+            integer :: idx
+
+            theta = fieldline%get_theta(phi)
+            do idx = 1, size(phi)
+                call field%compute_B_mod(theta(idx), phi(idx), B(idx))
+            end do
+            lambda_squared = abs(1 - B*eta)
+        end subroutine lambda_squared_along_fieldline
+
+    end function find_turning_points
 
 end module precession
