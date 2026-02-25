@@ -127,19 +127,19 @@ contains
 
     end function cannot_resolve
 
-    function find_global_extrema(func, interval, abstol) result(extrema)
+    function find_global_extrema(func, interval, reltol) result(extrema)
         use utils, only: linspace
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
-        real(dp), intent(in), optional :: abstol
+        real(dp), intent(in), optional :: reltol
         real(dp) :: extrema(2)
 
         integer :: n_steps
         real(dp), dimension(:), allocatable :: x, value
 
-        if (present(abstol)) then
-            n_steps = int(abs(interval(2) - interval(1))/abstol) + 2
+        if (present(reltol)) then
+            n_steps = int(1.0_dp/reltol) + 2
         else
             n_steps = 1000
         end if
