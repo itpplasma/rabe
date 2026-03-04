@@ -187,7 +187,7 @@ contains
     end subroutine compute_bounce_integrals
 
     function find_turning_points(field, fieldline, eta, reltol_in) result(phi_turning)
-        use find_extrema, only: find_global_extrema
+        use find_extrema, only: find_global_minimum
         class(field_t), intent(in) :: field
         type(fieldline_with_minimum_t), intent(in) :: fieldline
         real(dp), intent(in) :: eta
@@ -207,12 +207,12 @@ contains
         ! numerical issues with the integrand
         interval(1) = fieldline%phi_max(1)
         interval(2) = fieldline%phi_min
-        extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
+        extremum_locations = find_global_minimum(lambda_squared_along_fieldline, interval, reltol)
         phi_turning(1) = extremum_locations(1) + (interval(2) - interval(1))*reltol
 
         interval(1) = fieldline%phi_min
         interval(2) = fieldline%phi_max(2)
-        extremum_locations = find_global_extrema(lambda_squared_along_fieldline, interval, reltol)
+        extremum_locations = find_global_minimum(lambda_squared_along_fieldline, interval, reltol)
         phi_turning(2) = extremum_locations(1) - (interval(2) - interval(1))*reltol
 
     contains
@@ -228,7 +228,7 @@ contains
             do idx = 1, size(phi)
                 call field%compute_B_mod(theta(idx), phi(idx), B(idx))
             end do
-            lambda_squared = abs(1 - B*eta)
+            lambda_squared = abs(1.0_dp - B*eta)
         end subroutine lambda_squared_along_fieldline
 
     end function find_turning_points

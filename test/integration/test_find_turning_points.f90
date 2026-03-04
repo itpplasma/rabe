@@ -4,6 +4,7 @@ program test_find_turning_points
     use mock_field, only: mock_field_t
     use precession, only: fieldline_with_minimum_t
     use precession, only: find_turning_points
+    use myplot_module, only: myplot
 
     implicit none
 
@@ -20,9 +21,13 @@ program test_find_turning_points
     real(dp) :: acos_temp
 
     real(dp), parameter :: reltol = 1.0e-4_dp
+    real(dp) :: abstol
     integer :: current
     logical :: test_failed
     logical, parameter :: should_plot = .false.
+    type(myplot) :: plt
+    real(dp), dimension(100) :: phi, theta, B
+    integer :: n_phi, idx
 
     test_failed = .false.
 
@@ -38,19 +43,35 @@ program test_find_turning_points
     fieldline%theta_0 = theta_0
     fieldline%phi_max(1) = -2.0_dp*pi
     fieldline%phi_max(2) = 2.0_dp*pi
+    abstol = abs(fieldline%phi_max(2) - fieldline%phi_max(1))*reltol
 
     do current = 1, n_eta
         phi_turning = find_turning_points(field, fieldline, eta(current), reltol)
         acos_temp = acos((1.0_dp/eta(current) - B_0)/dB)
         expected(1) = (M_pol*theta_0 - acos_temp)/(N_tor - M_pol*iota) + phi_0
         expected(2) = (M_pol*theta_0 + acos_temp)/(N_tor - M_pol*iota) + phi_0
-        if (not_same(phi_turning, expected, reltol_in=reltol)) then
+        if (not_same(phi_turning, expected, abstol_in=abstol)) then
             print *, "test_find_turning_points failed: eta = ", eta(current)
             print *, "Expected: ", expected
             print *, "Got: ", phi_turning
+            print *, "Error: ", abs(phi_turning - expected)
+            print *, "Tolerance: ", abstol
             test_failed = .true.
         end if
     end do
+
+    if (should_plot) then
+        call plt%initialize(xlabel="phi", ylabel="B")
+        call linspace(fieldline%phi_max(1), fieldline%phi_max(2), size(phi), phi)
+        theta = fieldline%get_theta(phi)
+
+        n_phi = size(phi)
+        do idx = 1, n_phi
+            call field%compute_B_mod(theta(idx), phi(idx), B(idx))
+        end do
+        call plt%add_plot(phi, B, label="B(phi)", linestyle="-")
+        call plt%show()
+    end if
 
     if (test_failed) error stop
 
