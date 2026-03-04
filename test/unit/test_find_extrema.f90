@@ -6,7 +6,7 @@ program test_find_extrema
 
     call test_find_local_minima()
     call test_find_local_maxima()
-    call test_find_global_extrema()
+    call test_find_global_minimum()
 
 contains
 
@@ -102,22 +102,24 @@ contains
         value = cos(x) - sin(2*x)
     end subroutine sincos_func
 
-    subroutine test_find_global_extrema
-        use find_extrema, only: find_global_extrema
+    subroutine test_find_global_minimum
+        use find_extrema, only: find_global_minimum
 
-        real(dp) :: extrema(2), expected_extrema(2)
+        real(dp) :: min_loc, expected
         real(dp), parameter :: interval(2) = [0.0_dp, 2.0_dp*pi]
-        real(dp), parameter :: tol = 1e-3
+        real(dp), parameter :: reltol = 1e-3
 
-        expected_extrema = [-1.0_dp, 1.0_dp]
-        extrema = find_global_extrema(sin_func, interval)
+        expected = 1.5_dp*pi
+        min_loc = find_global_minimum(sin_func, interval, reltol)
 
-        if (any(abs(extrema/expected_extrema - 1) > tol)) then
+        if (not_same(min_loc, expected, reltol_in=reltol, abstol_in=0.0_dp)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_find_global_extrema"
+            print *, "test_find_global_minimum"
+            print *, "found location: ", min_loc
+            print *, "expected location: ", expected
             error stop
         end if
-    end subroutine test_find_global_extrema
+    end subroutine test_find_global_minimum
 
     subroutine sin_func(x, value)
         real(dp), dimension(:), intent(in) :: x

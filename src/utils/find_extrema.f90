@@ -127,13 +127,13 @@ contains
 
     end function cannot_resolve
 
-    function find_global_extrema(func, interval, reltol) result(extrema)
+    function find_global_minimum(func, interval, reltol) result(min_loc)
         use utils, only: linspace
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
         real(dp), intent(in), optional :: reltol
-        real(dp) :: extrema(2)
+        real(dp) :: min_loc
 
         integer :: n_steps
         real(dp), dimension(:), allocatable :: x, value
@@ -147,8 +147,7 @@ contains
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
-        extrema(1) = minval(value)
-        extrema(2) = maxval(value)
-    end function find_global_extrema
+        min_loc = x(minloc(value, dim=1))
+    end function find_global_minimum
 
 end module find_extrema
