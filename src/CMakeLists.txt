@@ -26,3 +26,7 @@ target_link_libraries(rabe_lib PUBLIC
   fieldline_lib
   shaing_callen_lib
   precession_lib)
+
+include(Util)
+find_or_fetch(libneo SUBDIR src/odeint)
+target_link_libraries(rabe_lib PRIVATE odeint)
