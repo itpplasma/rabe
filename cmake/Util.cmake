@@ -11,7 +11,7 @@ function(find_or_fetch DEPENDENCY)
     endif()
 
     add_subdirectory(${SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}
+        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}/${OPTIONAL_SUBDIR}
         EXCLUDE_FROM_ALL
     )
 endfunction()
