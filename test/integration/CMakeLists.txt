@@ -87,3 +87,5 @@ add_executable(test_shaing_callen_against_quasi_symmetric.x test_shaing_callen_a
 target_link_libraries(test_shaing_callen_against_quasi_symmetric.x rabe_lib helpers_lib myplot_lib)
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
+
+add_subdirectory(vmec)
