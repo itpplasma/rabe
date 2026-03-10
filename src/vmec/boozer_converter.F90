@@ -49,12 +49,36 @@ module boozer_sub
 contains
 
     !> Initialize Boozer coordinates using VMEC field (backward compatibility)
-    subroutine get_boozer_coordinates
+    subroutine get_boozer_coordinates(vmec_file, &
+                                      radial_spline_order, &
+                                      angular_spline_order, &
+                                      grid_refinment)
         use field_vmec, only: vmec_field_t, create_vmec_field
+        use new_vmec_stuff_mod, only: netcdffile, ns_s, ns_tp, multharm
+        use spline_vmec_sub, only: spline_vmec_data
 
-        type(vmec_field_t) :: vmec_field
-        call create_vmec_field(vmec_field)
-        call get_boozer_coordinates_with_field(vmec_field)
+        character(len=*), intent(in) :: vmec_file
+        integer, intent(in), optional :: radial_spline_order, angular_spline_order, grid_refinment
+
+        netcdffile = vmec_file
+        if (present(radial_spline_order)) then
+            ns_s = radial_spline_order
+        else
+            ns_s = 5
+        end if
+        if (present(angular_spline_order)) then
+            ns_tp = angular_spline_order
+        else
+            ns_tp = 5
+        end if
+        if (present(grid_refinment)) then
+            multharm = grid_refinment
+        else
+            multharm = 3
+        end if
+        call spline_vmec_data()
+        call reset_boozer_batch_splines()
+        call get_boozer_coordinates_impl()
 
     end subroutine get_boozer_coordinates
 
@@ -748,6 +772,7 @@ contains
                                    sqg, alam, dl_ds, dl_dt, dl_dp, &
                                    Bctrvr_vartheta, Bctrvr_varphi, &
                                    Bcovar_r, Bcovar_vartheta, Bcovar_varphi)
+        use spline_vmec_sub, only: vmec_field
         real(dp), intent(in) :: s, theta, varphi
         real(dp), intent(out) :: A_theta, A_phi, dA_theta_ds, dA_phi_ds
         real(dp), intent(out) :: aiota, sqg, alam

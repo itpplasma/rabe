@@ -1,71 +1,128 @@
 !> Test that the field implementation matches the SIMPLE code for a few points in the plasma.
 program test_against_simple
     use constants, only: dp
-    use new_vmec_stuff_mod, only: netcdffile, ns_s, ns_tp, multharm
-    use spline_vmec_sub, only: spline_vmec_data
     use boozer_sub, only: get_boozer_coordinates
-    use magfie_sub, only: init_magfie, BOOZER
+    use magfie_sub, only: init_magfie, BOOZER, magfie
+    use utils, only: not_same
 
     implicit none
 
-    real(dp) :: retol = 1e-11
+    !> Results of splines used depens on the compile options, so a higher tolerance is used here.
+    real(dp) :: reltol = 1e-7, abstol = 1e-11
     character(len=*), parameter :: nc_filename = "input/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc"
 
-    integer, parameter :: n_cases = 4
+    integer, parameter :: n_cases = 5
     real(dp) :: stor(n_cases), theta(n_cases), phi(n_cases)
-    real(dp) :: bmod, sqrtg, dB_dx(3)
-    real(dp) :: bmod_simple(n_cases), sqrtg_simple(n_cases), dB_dx_simple(n_cases, 3)
+    real(dp) :: x(3)
+    real(dp) :: bmod, sqrtg
+    real(dp) :: bder(3), hcovar(3)
+    real(dp) :: hctrvr(3), hcurl(3)
+    real(dp) :: bmod_ref(n_cases), sqrtg_ref(n_cases)
+    real(dp) :: bder_ref(n_cases, 3), hcovar_ref(n_cases, 3)
+    real(dp) :: hctrvr_ref(n_cases, 3), hcurl_ref(n_cases, 3)
     integer :: case
 
     logical :: test_failed
 
-    ! 1. Init VMEC splines
-    netcdffile = nc_filename
-    ns_s = 4
-    ns_tp = 4
-    multharm = 6
-    call spline_vmec_data()
-    call get_boozer_coordinates()
-    call init_magfie(BOOZER) test_failed = .false.
+    call get_boozer_coordinates(nc_filename, &
+                                radial_spline_order=5, &
+                                angular_spline_order=5, &
+                                grid_refinment=3)
+    call init_magfie(BOOZER)
+    test_failed = .false.
+    stor = [0.1_dp, 0.3_dp, 0.5_dp, 0.7_dp, 0.9_dp]
+    theta = [0.0_dp, 1.0_dp, 3.14_dp, 0.5_dp, 2.0_dp]
+    phi = [0.0_dp, 0.5_dp, 1.57_dp, 2.0_dp, 3.0_dp]
 
-    stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
-    theta = [-1.00_dp, 0.00_dp, 4.3498975203550980_dp, 1.00_dp]
-    phi = [1.00_dp, -1.00_dp, 0.56947933720590893_dp, 0.00_dp]
+    bmod_ref = [5.7024014488290690e+04_dp, &
+                5.7010408592594038e+04_dp, &
+                6.3742758213874906e+04_dp, &
+                5.4218536572575875e+04_dp, &
+                6.1083220187449493e+04_dp]
 
-    bmod_simple = [5.8461732541782538_dp, &
-                   6.3747018649171556_dp, &
-                   6.3402245795215624_dp, &
-                   5.4298976321806043_dp]
-    sqrtg_simple = [-19930779.196453653_dp, &
-                    -16763094.050708901_dp, &
-                    -16945898.197301224_dp, &
-                    -23104179.862998683_dp]
-    dB_dx_simple(1,:) = [-0.92227365739728728_dp,       0.13109042596457662_dp,      -0.52436170385830649_dp]
-    dB_dx_simple(2,:) = [0.53462460260148859_dp,      -0.55835449392655978_dp,        2.2334179757062391_dp]
-dB_dx_simple(3, :) = [0.340429548051560_dp, 0.784044027926972_dp, -3.136176111707888_dp]
-    dB_dx_simple(4,:) = [-0.20339965461773155_dp,       0.77633188889709603_dp,       -3.1053275555883841_dp]
+    sqrtg_ref = [-1.5711629692175472e+07_dp, &
+                 -1.5719091463432141e+07_dp, &
+                 -1.2574007504120229e+07_dp, &
+                 -1.7379594198471960e+07_dp, &
+                 -1.3692768685651677e+07_dp]
 
-    call field%neo_field_init(nc_filename)
+    bder_ref(1,:) = [-1.7906807464749691E-01_dp, -7.4166439213088501E-14_dp, -1.0958457393698770E-13_dp]
+    bder_ref(2,:) = [-6.5375422685029619E-02_dp,  4.8901137158983657E-02_dp, -4.2593419771991015E-04_dp]
+    bder_ref(3,:) = [ 7.3646069743459427E-02_dp,  1.3567156911686458E-04_dp, -2.4743000679278641E-05_dp]
+    bder_ref(4,:) = [-6.5308328098055424E-02_dp,  3.9538079263501176E-02_dp, -6.8133243699882112E-04_dp]
+    bder_ref(5,:) = [ 1.2755344859923703E-02_dp,  1.0110736983359410E-01_dp, -7.9541221413346563E-04_dp]
+
+    hcovar_ref(1,:) = [ 0.0000000000000000E+00_dp, -9.4970349047515505E-04_dp,  1.1151159177109234E+03_dp]
+    hcovar_ref(2,:) = [ 0.0000000000000000E+00_dp, -3.8520822192834354E-04_dp,  1.1153790773146934E+03_dp]
+    hcovar_ref(3,:) = [ 0.0000000000000000E+00_dp, -1.8842726486691493E-04_dp,  9.9757472565834667E+02_dp]
+    hcovar_ref(4,:) = [ 0.0000000000000000E+00_dp, -9.8956245690572466E-05_dp,  1.1728116578017384E+03_dp]
+    hcovar_ref(5,:) = [ 0.0000000000000000E+00_dp, -1.0129726085459463E-05_dp,  1.0410079194890063E+03_dp]
+
+    hctrvr_ref(1,:) = [0.0000000000000000E+00_dp,  3.7881309780855648E-04_dp,  8.9676807933375402E-04_dp]
+    hctrvr_ref(2,:) = [0.0000000000000000E+00_dp,  3.7723748043895933E-04_dp,  8.9655630597133623E-04_dp]
+    hctrvr_ref(3,:) = [0.0000000000000000E+00_dp,  4.2022807275813337E-04_dp,  1.0024312499722556E-03_dp]
+    hctrvr_ref(4,:) = [0.0000000000000000E+00_dp,  3.5621175223770338E-04_dp,  8.5265185470933104E-04_dp]
+    hctrvr_ref(5,:) = [0.0000000000000000E+00_dp,  4.0002199335749606E-04_dp,  9.6060748946365118E-04_dp]
+
+    hcurl_ref(1,:) = [-5.2638894003780156E-18_dp,  1.2709891638015171E-05_dp,  1.5769403006971614E-10_dp]
+    hcurl_ref(2,:) = [ 3.4698764369963150E-06_dp,  4.6384590776612628E-06_dp, -9.1597067639039990E-11_dp]
+    hcurl_ref(3,:) = [ 1.0763674479658840E-08_dp, -5.8430548976060074E-06_dp, -5.2040711293125020E-11_dp]
+    hcurl_ref(4,:) = [ 2.6681129427048551E-06_dp,  4.4072755802204980E-06_dp, -3.2761515796050763E-11_dp]
+    hcurl_ref(5,:) = [ 7.6867998812914078E-06_dp, -9.6986625274201992E-07_dp, -4.5236550526892759E-11_dp]
+
     do case = 1, n_cases
-        if (abs(bmod/bmod_simple(case) - 1) > retol) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_against_simple failed: B"
+        x = [stor(case), theta(case), phi(case)]
+        call magfie(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
+        if (not_same(bmod, bmod_ref(case), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: B for case ", case
             print *, "B: ", bmod
-            print *, "SIMPLE: ", bmod_simple(case)
+            print *, "SIMPLE: ", bmod_ref(case)
+            print *, "Relative error: ", abs(bmod - bmod_ref(case))/abs(bmod_ref(case))
+            print *, "Absolute error: ", abs(bmod - bmod_ref(case))
             test_failed = .true.
         end if
-        if (abs(sqrtg/sqrtg_simple(case) - 1) > retol) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_against_simple failed: sqrtg"
-            print *, "sqrtg: ", sqrtg
-            print *, "SIMPLE: ", sqrtg_simple(case)
+        if (not_same(sqrtg, sqrtg_ref(case), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: sqrt(g) for case ", case
+            print *, "sqrt(g): ", sqrtg
+            print *, "SIMPLE: ", sqrtg_ref(case)
+          print *, "Relative error: ", abs(sqrtg - sqrtg_ref(case))/abs(sqrtg_ref(case))
+            print *, "Absolute error: ", abs(sqrtg - sqrtg_ref(case))
             test_failed = .true.
         end if
-        if (any(abs(dB_dx/dB_dx_simple(case, :) - 1) > retol)) then
-            print *, "-------------------------------------------------------------"
-            print *, "test_against_simple failed: dB_dx"
-            print *, "dB_dx: ", dB_dx
-            print *, "SIMPLE: ", dB_dx_simple(case, :)
+        if (not_same(bder, bder_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: Bder for case ", case
+            print *, "Bder: ", bder
+            print *, "SIMPLE: ", bder_ref(case, :)
+       print *, "Relative error: ", abs(bder - bder_ref(case, :))/abs(bder_ref(case, :))
+            print *, "Absolute error: ", abs(bder - bder_ref(case, :))
+            test_failed = .true.
+        end if
+     if (not_same(hcovar, hcovar_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: hcovar for case ", case
+            print *, "hcovar: ", hcovar
+            print *, "SIMPLE: ", hcovar_ref(case, :)
+ print *, "Relative error: ", abs(hcovar - hcovar_ref(case, :))/abs(hcovar_ref(case, :))
+            print *, "Absolute error: ", abs(hcovar - hcovar_ref(case, :))
+            test_failed = .true.
+        end if
+     if (not_same(hctrvr, hctrvr_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: hctrvr for case ", case
+            print *, "hctrvr: ", hctrvr
+            print *, "SIMPLE: ", hctrvr_ref(case, :)
+ print *, "Relative error: ", abs(hctrvr - hctrvr_ref(case, :))/abs(hctrvr_ref(case, :))
+            print *, "Absolute error: ", abs(hctrvr - hctrvr_ref(case, :))
+            test_failed = .true.
+        end if
+       if (not_same(hcurl, hcurl_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
+            print *, "---------------------------------------------------"
+            print *, "test_against_simple failed: hcurl for case ", case
+            print *, "hcurl: ", hcurl
+            print *, "SIMPLE: ", hcurl_ref(case, :)
             test_failed = .true.
         end if
     end do
