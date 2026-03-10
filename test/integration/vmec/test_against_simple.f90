@@ -87,7 +87,8 @@ program test_against_simple
             print *, "test_against_simple failed: sqrt(g) for case ", case
             print *, "sqrt(g): ", sqrtg
             print *, "SIMPLE: ", sqrtg_ref(case)
-          print *, "Relative error: ", abs(sqrtg - sqrtg_ref(case))/abs(sqrtg_ref(case))
+            print *, "Relative error: ", abs(sqrtg - sqrtg_ref(case)) &
+                /abs(sqrtg_ref(case))
             print *, "Absolute error: ", abs(sqrtg - sqrtg_ref(case))
             test_failed = .true.
         end if
@@ -96,7 +97,8 @@ program test_against_simple
             print *, "test_against_simple failed: Bder for case ", case
             print *, "Bder: ", bder
             print *, "SIMPLE: ", bder_ref(case, :)
-       print *, "Relative error: ", abs(bder - bder_ref(case, :))/abs(bder_ref(case, :))
+            print *, "Relative error: ", abs(bder - bder_ref(case, :)) &
+                /abs(bder_ref(case, :))
             print *, "Absolute error: ", abs(bder - bder_ref(case, :))
             test_failed = .true.
         end if
@@ -105,7 +107,8 @@ program test_against_simple
             print *, "test_against_simple failed: hcovar for case ", case
             print *, "hcovar: ", hcovar
             print *, "SIMPLE: ", hcovar_ref(case, :)
- print *, "Relative error: ", abs(hcovar - hcovar_ref(case, :))/abs(hcovar_ref(case, :))
+            print *, "Relative error: ", abs(hcovar - hcovar_ref(case, :)) &
+                /abs(hcovar_ref(case, :))
             print *, "Absolute error: ", abs(hcovar - hcovar_ref(case, :))
             test_failed = .true.
         end if
@@ -114,7 +117,8 @@ program test_against_simple
             print *, "test_against_simple failed: hctrvr for case ", case
             print *, "hctrvr: ", hctrvr
             print *, "SIMPLE: ", hctrvr_ref(case, :)
- print *, "Relative error: ", abs(hctrvr - hctrvr_ref(case, :))/abs(hctrvr_ref(case, :))
+            print *, "Relative error: ", abs(hctrvr - hctrvr_ref(case, :)) &
+                /abs(hctrvr_ref(case, :))
             print *, "Absolute error: ", abs(hctrvr - hctrvr_ref(case, :))
             test_failed = .true.
         end if
