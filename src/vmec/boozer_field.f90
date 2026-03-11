@@ -7,6 +7,9 @@ module boozer_field
     implicit none
     private
 
+    real(dp), parameter :: cm2m = 1e-2_dp
+    real(dp), parameter :: gauss2tesla = 1e-4_dp
+
     public :: boozer_field_t
 
     type, extends(field_t) :: boozer_field_t
@@ -43,7 +46,7 @@ contains
                                     radial_spline_order, &
                                     angular_spline_order, &
                                     grid_refinement)
-        self%psi_tor_edge = torflux
+        self%psi_tor_edge = -torflux*cm2m**2*gauss2tesla
         self%nfp = real(nper, dp)
         self%initialized = .true.
     end subroutine boozer_field_init
@@ -94,7 +97,7 @@ contains
         bmod = Bmod_B
         bder = dBmod_B/Bmod_B
 
-        sqrtg = (aiota*B_vartheta_B + B_varphi_B)/bmod**2*torflux
+        sqrtg = (aiota*B_vartheta_B + B_varphi_B)/Bmod_B**2*torflux
 
         Bctrvr_phi = dA_theta_dr/sqrtg
         Bctrvr_theta = aiota*Bctrvr_phi
@@ -113,6 +116,12 @@ contains
                     + dB_r(3) - dB_varphi_B)/sqrtgbmod
         hcurl(3) = (B_r*bder(2) - B_vartheta_B*bder(1) &
                     + dB_vartheta_B - dB_r(2))/sqrtgbmod
+
+        bmod = bmod*gauss2tesla
+        sqrtg = sqrtg/cm2m**3.0_dp
+        hcovar = hcovar*cm2m
+        hctrvr = hctrvr/cm2m
+        hcurl = hcurl/cm2m**2.0_dp
 
     end subroutine evaluate
 
@@ -145,6 +154,8 @@ contains
                                  B_r, dB_r, d2B_r)
 
         iota = -dA_phi_dr/dA_theta_dr
+        B_phi_covariant = B_phi_covariant*cm2m*gauss2tesla
+        B_theta_covariant = B_theta_covariant*cm2m*gauss2tesla
     end subroutine get_iota_and_covariant_components
 
     subroutine fix_to_surface(self, stor)
@@ -160,28 +171,32 @@ contains
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
+        real(dp) :: dlnB_dx(3)
 
         real(dp) :: x(3), hcovar(3), hctrvr(3), hcurl(3)
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_B_sqrtg_dB_dx: call fix_stor first"
         x = [self%fixed_stor, theta, phi]
-        call self%evaluate(x, B_mod, sqrtg, dB_dx, hcovar, &
+        call self%evaluate(x, B_mod, sqrtg, dlnB_dx, hcovar, &
                            hctrvr, hcurl)
+        dB_dx = dlnB_dx*B_mod
     end subroutine compute_B_sqrtg_dB_dx
 
     subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, dB_dx(3)
+        real(dp) :: dlnB_dx(3)
 
         real(dp) :: x(3), dummy_sqrtg, hcovar(3), hctrvr(3), hcurl(3)
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_B_and_dB_dx: call fix_stor first"
         x = [self%fixed_stor, theta, phi]
-        call self%evaluate(x, B_mod, dummy_sqrtg, dB_dx, hcovar, &
+        call self%evaluate(x, B_mod, dummy_sqrtg, dlnB_dx, hcovar, &
                            hctrvr, hcurl)
+        dB_dx = dlnB_dx*B_mod
     end subroutine compute_B_and_dB_dx
 
     subroutine compute_B_mod(self, theta, phi, B_mod)
