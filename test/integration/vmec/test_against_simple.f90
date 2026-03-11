@@ -25,10 +25,10 @@ program test_against_simple
 
     logical :: test_failed
 
-    call field%init(nc_filename, &
-                    radial_spline_order=5, &
-                    angular_spline_order=5, &
-                    grid_refinement=3)
+    call field%boozer_field_init(nc_filename, s=0.5_dp, &
+                                 radial_spline_order=5, &
+                                 angular_spline_order=5, &
+                                 grid_refinement=3)
     test_failed = .false.
     stor = [0.1_dp, 0.3_dp, 0.5_dp, 0.7_dp, 0.9_dp]
     theta = [0.0_dp, 1.0_dp, 3.14_dp, 0.5_dp, 2.0_dp]
