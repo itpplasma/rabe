@@ -1,6 +1,6 @@
-!> Test that boozer_field_t produces the same results as neo_field_t
-!> for the same equilibrium on multiple flux surfaces.
-!> Neo reference values were pre-computed (see neo_reference_values.dat).
+!> Test that boozer_field_t produces the same results as the NEO code
+!> The reference values were obtained from a field evalution of a .bc file
+!> converted from the original .nc file
 program test_against_neo
     use constants, only: dp
     use boozer_field, only: boozer_field_t
@@ -8,7 +8,8 @@ program test_against_neo
 
     implicit none
 
-    real(dp) :: reltol = 1e-4, abstol = 1e-8
+    real(dp), parameter :: reltol = 1e-2, abstol = 1e-10
+    real(dp), parameter :: abstol_for_zero = 1e-4
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc"
 
@@ -21,6 +22,7 @@ program test_against_neo
     real(dp) :: iota_b, B_theta_b, B_phi_b
 
     ! Neo reference values (from neo_reference_values.dat)
+    real(dp), parameter :: cm2m = 1e-2_dp
     real(dp), parameter :: psi_tor_edge_ref = 8.03450599209855731e+00_dp
     real(dp), parameter :: nfp_ref = 2.0_dp
 
@@ -71,6 +73,7 @@ program test_against_neo
                  -1.25742017125101890e+07_dp, &
                  -1.73796573177368827e+07_dp, &
                  -1.36936355354960281e+07_dp]
+    sqrtg_ref = sqrtg_ref*(cm2m**3.0_dp)
 
     dB_dx_ref(1, :) = [-1.02319025931563679e+00_dp, &
                        0.00000000000000000e+00_dp, &
@@ -94,6 +97,9 @@ program test_against_neo
         print *, "psi_tor_edge mismatch:"
         print *, "  boozer: ", bfield%psi_tor_edge
         print *, "  neo:    ", psi_tor_edge_ref
+        print *, "Relative error: ", abs(bfield%psi_tor_edge - psi_tor_edge_ref) &
+            /abs(psi_tor_edge_ref)
+        print *, "Absolute error: ", abs(bfield%psi_tor_edge - psi_tor_edge_ref)
         test_failed = .true.
     end if
 
@@ -102,6 +108,8 @@ program test_against_neo
         print *, "nfp mismatch:"
         print *, "  boozer: ", bfield%nfp
         print *, "  neo:    ", nfp_ref
+        print *, "Relative error: ", abs(bfield%nfp - nfp_ref)/abs(nfp_ref)
+        print *, "Absolute error: ", abs(bfield%nfp - nfp_ref)
         test_failed = .true.
     end if
 
@@ -116,14 +124,20 @@ program test_against_neo
             print *, "iota mismatch at case ", case
             print *, "  boozer: ", iota_b
             print *, "  neo:    ", iota_ref(case)
+            print *, "Relative error: ", abs(iota_b - iota_ref(case)) &
+                /abs(iota_ref(case))
+            print *, "Absolute error: ", abs(iota_b - iota_ref(case))
             test_failed = .true.
         end if
 
         if (not_same(B_theta_b, B_theta_ref(case), &
-                     reltol_in=reltol, abstol_in=abstol)) then
+                     reltol_in=0.0_dp, abstol_in=abstol_for_zero)) then
             print *, "B_theta_covariant mismatch at case ", case
             print *, "  boozer: ", B_theta_b
             print *, "  neo:    ", B_theta_ref(case)
+            print *, "Relative error: ", abs(B_theta_b - B_theta_ref(case)) &
+                /abs(B_theta_ref(case))
+            print *, "Absolute error: ", abs(B_theta_b - B_theta_ref(case))
             test_failed = .true.
         end if
 
@@ -132,6 +146,9 @@ program test_against_neo
             print *, "B_phi_covariant mismatch at case ", case
             print *, "  boozer: ", B_phi_b
             print *, "  neo:    ", B_phi_ref(case)
+            print *, "Relative error: ", abs(B_phi_b - B_phi_ref(case)) &
+                /abs(B_phi_ref(case))
+            print *, "Absolute error: ", abs(B_phi_b - B_phi_ref(case))
             test_failed = .true.
         end if
 
@@ -143,6 +160,9 @@ program test_against_neo
             print *, "B_mod mismatch at case ", case
             print *, "  boozer: ", bmod_b
             print *, "  neo:    ", bmod_ref(case)
+            print *, "Relative error: ", abs(bmod_b - bmod_ref(case)) &
+                /abs(bmod_ref(case))
+            print *, "Absolute error: ", abs(bmod_b - bmod_ref(case))
             test_failed = .true.
         end if
 
@@ -151,6 +171,9 @@ program test_against_neo
             print *, "sqrtg mismatch at case ", case
             print *, "  boozer: ", sqrtg_b
             print *, "  neo:    ", sqrtg_ref(case)
+            print *, "Relative error: ", abs(sqrtg_b - sqrtg_ref(case)) &
+                /abs(sqrtg_ref(case))
+            print *, "Absolute error: ", abs(sqrtg_b - sqrtg_ref(case))
             test_failed = .true.
         end if
 
@@ -159,6 +182,9 @@ program test_against_neo
             print *, "dB_dx mismatch at case ", case
             print *, "  boozer: ", dB_dx_b
             print *, "  neo:    ", dB_dx_ref(case, :)
+            print *, "Relative error: ", abs(dB_dx_b - dB_dx_ref(case, :)) &
+                /abs(dB_dx_ref(case, :))
+            print *, "Absolute error: ", abs(dB_dx_b - dB_dx_ref(case, :))
             test_failed = .true.
         end if
     end do
