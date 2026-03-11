@@ -53,7 +53,6 @@ contains
                                       radial_spline_order, &
                                       angular_spline_order, &
                                       grid_refinment)
-        use field_vmec, only: vmec_field_t, create_vmec_field
         use new_vmec_stuff_mod, only: netcdffile, ns_s, ns_tp, multharm
         use spline_vmec_sub, only: spline_vmec_data
 
