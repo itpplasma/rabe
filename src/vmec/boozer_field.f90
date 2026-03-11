@@ -3,7 +3,6 @@ module boozer_field
     use, intrinsic :: iso_fortran_env, only: dp => real64
     use field_base, only: field_t
     use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
-    use vector_potentail_mod, only: torflux
 
     implicit none
     private
@@ -12,15 +11,15 @@ module boozer_field
 
     type, extends(field_t) :: boozer_field_t
         logical :: initialized = .false.
-        real(dp) :: s
-        real(dp) :: iota
+        logical :: fixed_to_surface = .false.
+        real(dp) :: fixed_stor
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
-        real(dp) :: B_theta_covariant, B_phi_covariant
     contains
         procedure :: boozer_field_init
-        procedure :: set_stor
         procedure :: evaluate
+        procedure :: get_iota_and_covariant_components
+        procedure :: fix_to_surface
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
@@ -29,12 +28,13 @@ module boozer_field
 
 contains
 
-    subroutine boozer_field_init(self, vmec_file, s, &
+    subroutine boozer_field_init(self, vmec_file, &
                                  radial_spline_order, &
                                  angular_spline_order, grid_refinement)
+        use vector_potentail_mod, only: torflux
+        use new_vmec_stuff_mod, only: nper
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: vmec_file
-        real(dp), intent(in) :: s
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
@@ -43,46 +43,14 @@ contains
                                     radial_spline_order, &
                                     angular_spline_order, &
                                     grid_refinement)
-        self%initialized = .true.
-        call self%set_stor(s)
-    end subroutine boozer_field_init
-
-    subroutine set_stor(self, s)
-        use new_vmec_stuff_mod, only: nper
-
-        class(boozer_field_t), intent(inout) :: self
-        real(dp), intent(in) :: s
-
-        real(dp) :: A_phi, A_theta, dA_phi_dr, dA_theta_dr
-        real(dp) :: d2A_phi_dr2, d3A_phi_dr3
-        real(dp) :: B_vartheta_B, dB_vartheta_B, d2B_vartheta_B
-        real(dp) :: B_varphi_B, dB_varphi_B, d2B_varphi_B
-        real(dp) :: Bmod_B, B_r
-        real(dp), dimension(3) :: dBmod_B, dB_r
-        real(dp), dimension(6) :: d2Bmod_B, d2B_r
-
-        self%s = s
-
-        call splint_boozer_coord(s, 0.0_dp, 0.0_dp, 0, &
-                                 A_theta, A_phi, dA_theta_dr, &
-                                 dA_phi_dr, d2A_phi_dr2, &
-                                 d3A_phi_dr3, &
-                                 B_vartheta_B, dB_vartheta_B, &
-                                 d2B_vartheta_B, &
-                                 B_varphi_B, dB_varphi_B, &
-                                 d2B_varphi_B, &
-                                 Bmod_B, dBmod_B, d2Bmod_B, &
-                                 B_r, dB_r, d2B_r)
-
-        self%iota = -dA_phi_dr/dA_theta_dr
-        self%B_theta_covariant = B_vartheta_B
-        self%B_phi_covariant = B_varphi_B
         self%psi_tor_edge = torflux
         self%nfp = real(nper, dp)
-    end subroutine set_stor
+        self%initialized = .true.
+    end subroutine boozer_field_init
 
     subroutine evaluate(self, x, bmod, sqrtg, bder, &
                         hcovar, hctrvr, hcurl)
+        use vector_potentail_mod, only: torflux
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: x(3)
         real(dp), intent(out) :: bmod, sqrtg
@@ -148,6 +116,45 @@ contains
 
     end subroutine evaluate
 
+    subroutine get_iota_and_covariant_components(self, stor, iota, &
+                                                 B_theta_covariant, &
+                                                 B_phi_covariant)
+        use new_vmec_stuff_mod, only: nper
+
+        class(boozer_field_t), intent(inout) :: self
+        real(dp), intent(in) :: stor
+        real(dp), intent(out) :: iota, B_theta_covariant, B_phi_covariant
+
+        real(dp) :: A_phi, A_theta, dA_phi_dr, dA_theta_dr
+        real(dp) :: d2A_phi_dr2, d3A_phi_dr3
+        real(dp) :: dB_vartheta_B, d2B_vartheta_B
+        real(dp) :: dB_varphi_B, d2B_varphi_B
+        real(dp) :: Bmod_B, B_r
+        real(dp), dimension(3) :: dBmod_B, dB_r
+        real(dp), dimension(6) :: d2Bmod_B, d2B_r
+
+        call splint_boozer_coord(stor, 0.0_dp, 0.0_dp, 0, &
+                                 A_theta, A_phi, dA_theta_dr, &
+                                 dA_phi_dr, d2A_phi_dr2, &
+                                 d3A_phi_dr3, &
+                                 B_theta_covariant, dB_vartheta_B, &
+                                 d2B_vartheta_B, &
+                                 B_phi_covariant, dB_varphi_B, &
+                                 d2B_varphi_B, &
+                                 Bmod_B, dBmod_B, d2Bmod_B, &
+                                 B_r, dB_r, d2B_r)
+
+        iota = -dA_phi_dr/dA_theta_dr
+    end subroutine get_iota_and_covariant_components
+
+    subroutine fix_to_surface(self, stor)
+        class(boozer_field_t), intent(inout) :: self
+        real(dp), intent(in) :: stor
+
+        self%fixed_stor = stor
+        self%fixed_to_surface = .true.
+    end subroutine fix_to_surface
+
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, &
                                      dB_dx)
         class(boozer_field_t), intent(in) :: self
@@ -156,7 +163,9 @@ contains
 
         real(dp) :: x(3), hcovar(3), hctrvr(3), hcurl(3)
 
-        x = [self%s, theta, phi]
+        if (.not. self%fixed_to_surface) &
+            error stop "compute_B_sqrtg_dB_dx: call fix_stor first"
+        x = [self%fixed_stor, theta, phi]
         call self%evaluate(x, B_mod, sqrtg, dB_dx, hcovar, &
                            hctrvr, hcurl)
     end subroutine compute_B_sqrtg_dB_dx
@@ -168,7 +177,9 @@ contains
 
         real(dp) :: x(3), dummy_sqrtg, hcovar(3), hctrvr(3), hcurl(3)
 
-        x = [self%s, theta, phi]
+        if (.not. self%fixed_to_surface) &
+            error stop "compute_B_and_dB_dx: call fix_stor first"
+        x = [self%fixed_stor, theta, phi]
         call self%evaluate(x, B_mod, dummy_sqrtg, dB_dx, hcovar, &
                            hctrvr, hcurl)
     end subroutine compute_B_and_dB_dx
@@ -181,7 +192,9 @@ contains
         real(dp) :: x(3), dummy_sqrtg, dummy_dB_dx(3)
         real(dp) :: hcovar(3), hctrvr(3), hcurl(3)
 
-        x = [self%s, theta, phi]
+        if (.not. self%fixed_to_surface) &
+            error stop "compute_B_mod: call fix_stor first"
+        x = [self%fixed_stor, theta, phi]
         call self%evaluate(x, B_mod, dummy_sqrtg, dummy_dB_dx, &
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod
