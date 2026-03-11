@@ -1,8 +1,6 @@
 add_library(vmec_lib STATIC
             boozer_converter.F90
-            magfie.f90
-            magfie_can_boozer.f90
-            field_vmec.f90
+            boozer_field.f90
             )
 
 find_or_fetch(libneo)
