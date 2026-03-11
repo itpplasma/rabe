@@ -10,6 +10,10 @@ program test_against_simple
     real(dp) :: reltol = 1e-7, abstol = 1e-11
     character(len=*), parameter :: nc_filename = "input/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc"
 
+    ! as SIMPLE uses CGS units, but we use SI
+    real(dp), parameter :: cm2m = 1e-2_dp
+    real(dp), parameter :: gauss2tesla = 1e-4_dp
+
     type(boozer_field_t) :: field
 
     integer, parameter :: n_cases = 5
@@ -73,6 +77,7 @@ program test_against_simple
     do case = 1, n_cases
         x = [stor(case), theta(case), phi(case)]
         call field%evaluate(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
+        bmod = bmod/gauss2tesla
         if (not_same(bmod, bmod_ref(case), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: B for case ", case
@@ -82,6 +87,7 @@ program test_against_simple
             print *, "Absolute error: ", abs(bmod - bmod_ref(case))
             test_failed = .true.
         end if
+        sqrtg = sqrtg*(cm2m**3.0_dp)
         if (not_same(sqrtg, sqrtg_ref(case), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: sqrt(g) for case ", case
@@ -102,6 +108,7 @@ program test_against_simple
             print *, "Absolute error: ", abs(bder - bder_ref(case, :))
             test_failed = .true.
         end if
+        hcovar = hcovar/cm2m
      if (not_same(hcovar, hcovar_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: hcovar for case ", case
@@ -112,6 +119,7 @@ program test_against_simple
             print *, "Absolute error: ", abs(hcovar - hcovar_ref(case, :))
             test_failed = .true.
         end if
+        hctrvr = hctrvr*cm2m
      if (not_same(hctrvr, hctrvr_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: hctrvr for case ", case
@@ -122,11 +130,15 @@ program test_against_simple
             print *, "Absolute error: ", abs(hctrvr - hctrvr_ref(case, :))
             test_failed = .true.
         end if
+        hcurl = hcurl*cm2m**2.0_dp
        if (not_same(hcurl, hcurl_ref(case, :), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: hcurl for case ", case
             print *, "hcurl: ", hcurl
             print *, "SIMPLE: ", hcurl_ref(case, :)
+            print *, "Relative error: ", abs(hcurl - hcurl_ref(case, :)) &
+                /abs(hcurl_ref(case, :))
+            print *, "Absolute error: ", abs(hcurl - hcurl_ref(case, :))
             test_failed = .true.
         end if
     end do
