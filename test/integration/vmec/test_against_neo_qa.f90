@@ -1,7 +1,7 @@
 !> Test that boozer_field_t produces the same results as the NEO code
 !> The reference values were obtained from a field evalution of a .bc file
 !> converted from the original .nc file
-program test_against_neo
+program test_against_neo_qa
     use constants, only: dp
     use boozer_field, only: boozer_field_t
     use utils, only: not_same
@@ -191,4 +191,4 @@ program test_against_neo
 
     if (test_failed) error stop
 
-end program test_against_neo
+end program test_against_neo_qa
