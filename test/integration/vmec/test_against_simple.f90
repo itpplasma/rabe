@@ -1,8 +1,7 @@
 !> Test that the field implementation matches the SIMPLE code for a few points in the plasma.
 program test_against_simple
     use constants, only: dp
-    use boozer_sub, only: get_boozer_coordinates
-    use magfie_sub, only: init_magfie, BOOZER, magfie
+    use boozer_field, only: boozer_field_t
     use utils, only: not_same
 
     implicit none
@@ -10,6 +9,8 @@ program test_against_simple
     !> Results of splines used depens on the compile options, so a higher tolerance is used here.
     real(dp) :: reltol = 1e-7, abstol = 1e-11
     character(len=*), parameter :: nc_filename = "input/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc"
+
+    type(boozer_field_t) :: field
 
     integer, parameter :: n_cases = 5
     real(dp) :: stor(n_cases), theta(n_cases), phi(n_cases)
@@ -24,11 +25,10 @@ program test_against_simple
 
     logical :: test_failed
 
-    call get_boozer_coordinates(nc_filename, &
-                                radial_spline_order=5, &
-                                angular_spline_order=5, &
-                                grid_refinment=3)
-    call init_magfie(BOOZER)
+    call field%init(nc_filename, &
+                    radial_spline_order=5, &
+                    angular_spline_order=5, &
+                    grid_refinement=3)
     test_failed = .false.
     stor = [0.1_dp, 0.3_dp, 0.5_dp, 0.7_dp, 0.9_dp]
     theta = [0.0_dp, 1.0_dp, 3.14_dp, 0.5_dp, 2.0_dp]
@@ -72,7 +72,7 @@ program test_against_simple
 
     do case = 1, n_cases
         x = [stor(case), theta(case), phi(case)]
-        call magfie(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
+        call field%evaluate(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
         if (not_same(bmod, bmod_ref(case), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: B for case ", case
