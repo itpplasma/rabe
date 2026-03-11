@@ -87,7 +87,7 @@ program test_against_simple
             print *, "Absolute error: ", abs(bmod - bmod_ref(case))
             test_failed = .true.
         end if
-        sqrtg = sqrtg*(cm2m**3.0_dp)
+        sqrtg = sqrtg/(cm2m**3.0_dp)
         if (not_same(sqrtg, sqrtg_ref(case), reltol_in=reltol, abstol_in=abstol)) then
             print *, "---------------------------------------------------"
             print *, "test_against_simple failed: sqrt(g) for case ", case

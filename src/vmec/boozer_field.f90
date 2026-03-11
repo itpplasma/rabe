@@ -118,7 +118,7 @@ contains
                     + dB_vartheta_B - dB_r(2))/sqrtgbmod
 
         bmod = bmod*gauss2tesla
-        sqrtg = sqrtg/cm2m**3.0_dp
+        sqrtg = sqrtg*cm2m**3.0_dp
         hcovar = hcovar*cm2m
         hctrvr = hctrvr/cm2m
         hcurl = hcurl/cm2m**2.0_dp
