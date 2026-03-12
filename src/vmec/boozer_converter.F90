@@ -15,8 +15,6 @@ module boozer_sub
     ! Public API
     public :: get_boozer_coordinates
     public :: splint_boozer_coord
-    public :: vmec_to_boozer, boozer_to_vmec
-    public :: delthe_delphi_BV
     public :: reset_boozer_batch_splines
 
     ! Constants
@@ -36,15 +34,6 @@ module boozer_sub
     ! Batch spline for B_theta, B_phi covariant components
     type(BatchSplineData1D), save :: bcovar_tp_batch_spline
     logical, save :: bcovar_tp_batch_spline_ready = .false.
-
-    ! Batch splines for coordinate transformations (VMEC <-> Boozer)
-    type(BatchSplineData3D), save :: delt_delp_V_batch_spline
-    logical, save :: delt_delp_V_batch_spline_ready = .false.
-    real(dp), allocatable, save :: delt_delp_V_grid(:, :, :, :)
-
-    type(BatchSplineData3D), save :: delt_delp_B_batch_spline
-    logical, save :: delt_delp_B_batch_spline_ready = .false.
-    real(dp), allocatable, save :: delt_delp_B_grid(:, :, :, :)
 
 contains
 
@@ -105,7 +94,6 @@ contains
         call build_boozer_aphi_batch_spline
         call build_boozer_bcovar_tp_batch_spline
         call build_boozer_bmod_br_batch_spline
-        call build_boozer_delt_delp_batch_splines
 
     end subroutine get_boozer_coordinates_impl
 
@@ -343,146 +331,12 @@ contains
 
     end subroutine splint_boozer_coord
 
-!> Computes delta_vartheta = vartheta_B - theta_V and delta_varphi = varphi_B - varphi_V
-    !> and their first derivatives over angles.
-    !> isw=0: given as functions of VMEC coordinates (r, vartheta, varphi)
-    !> isw=1: given as functions of Boozer coordinates (r, vartheta, varphi)
-    subroutine delthe_delphi_BV(isw, r, vartheta, varphi, deltheta_BV, delphi_BV, &
-                                ddeltheta_BV, ddelphi_BV)
-        use boozer_coordinates_mod, only: use_del_tp_B
-        use chamb_mod, only: rnegflag
-
-        integer, intent(in) :: isw
-        real(dp), intent(in) :: r, vartheta, varphi
-        real(dp), intent(out) :: deltheta_BV, delphi_BV
-        real(dp), dimension(2), intent(out) :: ddeltheta_BV, ddelphi_BV
-
-        real(dp) :: rho_tor, x_eval(3), y_eval(2), dy_eval(3, 2)
-        real(dp) :: r_local
-
-        r_local = r
-        if (r_local <= 0.0_dp) then
-            rnegflag = .true.
-            r_local = abs(r_local)
-        end if
-
-        rho_tor = sqrt(r_local)
-        x_eval(1) = rho_tor
-        x_eval(2) = vartheta
-        x_eval(3) = varphi
-
-        if (isw .eq. 0) then
-            if (.not. delt_delp_V_batch_spline_ready) then
-                error stop "delthe_delphi_BV: V batch spline not initialized"
-            end if
-            call evaluate_batch_splines_3d_der(delt_delp_V_batch_spline, x_eval, &
-                                               y_eval, dy_eval)
-        elseif (isw .eq. 1) then
-            if (.not. use_del_tp_B) then
-                print *, 'delthe_delphi_BV : Boozer data is not loaded'
-                return
-            end if
-            if (.not. delt_delp_B_batch_spline_ready) then
-                error stop "delthe_delphi_BV: B batch spline not initialized"
-            end if
-            call evaluate_batch_splines_3d_der(delt_delp_B_batch_spline, x_eval, &
-                                               y_eval, dy_eval)
-        else
-            print *, 'delthe_delphi_BV : unknown value of switch isw'
-            return
-        end if
-
-        deltheta_BV = y_eval(1)
-        delphi_BV = y_eval(2)
-
-        ddeltheta_BV(1) = dy_eval(2, 1)
-        ddelphi_BV(1) = dy_eval(2, 2)
-
-        ddeltheta_BV(2) = dy_eval(3, 1)
-        ddelphi_BV(2) = dy_eval(3, 2)
-
-    end subroutine delthe_delphi_BV
-
-!> Convert VMEC coordinates (r, theta, varphi) to Boozer coordinates (vartheta_B,
-!> varphi_B)
-    subroutine vmec_to_boozer(r, theta, varphi, vartheta_B, varphi_B)
-        use new_vmec_stuff_mod, only: nper
-
-        real(dp), intent(in) :: r, theta, varphi
-        real(dp), intent(out) :: vartheta_B, varphi_B
-        real(dp) :: deltheta_BV, delphi_BV
-        real(dp), dimension(2) :: ddeltheta_BV, ddelphi_BV
-
-        call delthe_delphi_BV(0, r, theta, varphi, deltheta_BV, delphi_BV, &
-                              ddeltheta_BV, ddelphi_BV)
-
-        vartheta_B = modulo(theta + deltheta_BV, TWOPI)
-        varphi_B = modulo(varphi + delphi_BV, TWOPI/real(nper, dp))
-
-    end subroutine vmec_to_boozer
-
-!> Convert Boozer coordinates (r, vartheta_B, varphi_B) to VMEC coordinates (theta,
-!> varphi)
-    subroutine boozer_to_vmec(r, vartheta_B, varphi_B, theta, varphi)
-        use boozer_coordinates_mod, only: use_del_tp_B
-
-        real(dp), intent(in) :: r, vartheta_B, varphi_B
-        real(dp), intent(out) :: theta, varphi
-
-        real(dp), parameter :: epserr = 1.0e-14_dp
-        integer, parameter :: niter = 100
-
-        integer :: iter
-        real(dp) :: deltheta_BV, delphi_BV
-        real(dp) :: f1, f2, f11, f12, f21, f22, delthe, delphi, det
-        real(dp), dimension(2) :: ddeltheta_BV, ddelphi_BV
-
-        if (use_del_tp_B) then
-
-            call delthe_delphi_BV(1, r, vartheta_B, varphi_B, deltheta_BV, delphi_BV, &
-                                  ddeltheta_BV, ddelphi_BV)
-
-            theta = vartheta_B - deltheta_BV
-            varphi = varphi_B - delphi_BV
-        else
-            theta = vartheta_B
-            varphi = varphi_B
-        end if
-
-! Newton method:
-
-        do iter = 1, niter
-
-            call delthe_delphi_BV(0, r, theta, varphi, deltheta_BV, delphi_BV, &
-                                  ddeltheta_BV, ddelphi_BV)
-
-            f1 = theta + deltheta_BV - vartheta_B
-            f2 = varphi + delphi_BV - varphi_B
-            f11 = 1.0_dp + ddeltheta_BV(1)
-            f12 = ddeltheta_BV(2)
-            f21 = ddelphi_BV(1)
-            f22 = 1.0_dp + ddelphi_BV(2)
-
-            det = f11*f22 - f12*f21
-            delthe = (f2*f12 - f1*f22)/det
-            delphi = (f1*f21 - f2*f11)/det
-
-            theta = theta + delthe
-            varphi = varphi + delphi
-            if (abs(delthe) + abs(delphi) .lt. epserr) exit
-        end do
-
-!  theta=modulo(theta,TWOPI)
-!  varphi=modulo(varphi,TWOPI/real(nper, dp))
-
-    end subroutine boozer_to_vmec
-
     subroutine compute_boozer_data
         ! Computes Boozer coordinate transformations and magnetic field data
         use boozer_coordinates_mod, only: ns_s_B, ns_tp_B, ns_B, n_theta_B, n_phi_B, &
                                           hs_B, h_theta_B, h_phi_B, &
                                           s_Bcovar_tp_B, &
-                                          use_B_r, use_del_tp_B
+                                          use_B_r
         use binsrc_sub, only: binsrc
         use plag_coeff_sub, only: plag_coeff
         use spline_vmec_sub
@@ -566,9 +420,6 @@ contains
         ! Allocate module-level grids
         call ensure_grid_3d(bmod_grid, ns_B, n_theta_B, n_phi_B)
         if (use_B_r) call ensure_grid_3d(br_grid, ns_B, n_theta_B, n_phi_B)
-        call ensure_grid_4d(delt_delp_V_grid, ns_B, n_theta_B, n_phi_B, 2)
-        if (use_del_tp_B) call ensure_grid_4d(delt_delp_B_grid, ns_B, n_theta_B, &
-                                              n_phi_B, 2)
 
         do i = 0, ns_tp_B
             wint_t(i) = h_theta_B**(i + 1)/real(i + 1, dp)
@@ -676,9 +527,6 @@ contains
 ! $\Delta \vartheta_{BV}=\vartheta_B-\theta$:
             deltheta_BV_Vg = aiota*delphi_BV_Vg + alam_2D
 
-            delt_delp_V_grid(i_rho, :, :, 1) = deltheta_BV_Vg
-            delt_delp_V_grid(i_rho, :, :, 2) = delphi_BV_Vg
-
 ! At this point, all quantities are specified on
 ! equidistant grid in VMEC angles $(\theta,\varphi)$
 
@@ -733,10 +581,6 @@ contains
                 end do
             end do
 
-            if (use_del_tp_B) then
-                delt_delp_B_grid(i_rho, :, :, 1) = perqua_2D(1, :, :)
-                delt_delp_B_grid(i_rho, :, :, 2) = perqua_2D(2, :, :)
-            end if
             bmod_grid(i_rho, :, :) = perqua_2D(3, :, :)
 
 ! End re-interpolate to equidistant grid in $(\vartheta_B,\varphi_B)$
@@ -845,19 +689,6 @@ contains
         end if
     end subroutine ensure_grid_3d
 
-    !> Ensure 4D grid is allocated with correct dimensions
-    subroutine ensure_grid_4d(grid, n1, n2, n3, n4)
-        real(dp), allocatable, intent(inout) :: grid(:, :, :, :)
-        integer, intent(in) :: n1, n2, n3, n4
-
-        if (.not. allocated(grid)) then
-            allocate (grid(n1, n2, n3, n4))
-        else if (any(shape(grid) /= [n1, n2, n3, n4])) then
-            deallocate (grid)
-            allocate (grid(n1, n2, n3, n4))
-        end if
-    end subroutine ensure_grid_4d
-
     subroutine reset_boozer_batch_splines
         if (aphi_batch_spline_ready) then
             call destroy_batch_splines_1d(aphi_batch_spline)
@@ -874,16 +705,6 @@ contains
         end if
         if (allocated(bmod_grid)) deallocate (bmod_grid)
         if (allocated(br_grid)) deallocate (br_grid)
-        if (delt_delp_V_batch_spline_ready) then
-            call destroy_batch_splines_3d(delt_delp_V_batch_spline)
-            delt_delp_V_batch_spline_ready = .false.
-        end if
-        if (allocated(delt_delp_V_grid)) deallocate (delt_delp_V_grid)
-        if (delt_delp_B_batch_spline_ready) then
-            call destroy_batch_splines_3d(delt_delp_B_batch_spline)
-            delt_delp_B_batch_spline_ready = .false.
-        end if
-        if (allocated(delt_delp_B_grid)) deallocate (delt_delp_B_grid)
     end subroutine reset_boozer_batch_splines
 
     subroutine build_boozer_aphi_batch_spline
@@ -999,67 +820,5 @@ contains
         bmod_br_num_quantities = nq
         deallocate (y_batch)
     end subroutine build_boozer_bmod_br_batch_spline
-
-    subroutine build_boozer_delt_delp_batch_splines
-        ! Use the simple 4D grids populated in compute_boozer_data
-        use boozer_coordinates_mod, only: ns_s_B, ns_tp_B, ns_B, n_theta_B, n_phi_B, &
-                                          hs_B, h_theta_B, h_phi_B, use_del_tp_B
-
-        integer :: order(3)
-        real(dp) :: x_min(3), x_max(3)
-        logical :: periodic(3)
-        real(dp), allocatable :: y_batch(:, :, :, :)
-
-        if (.not. allocated(delt_delp_V_grid)) then
-            error stop &
-                "build_boozer_delt_delp_batch_splines: delt_delp_V_grid not allocated"
-        end if
-
-        if (delt_delp_V_batch_spline_ready) then
-            call destroy_batch_splines_3d(delt_delp_V_batch_spline)
-            delt_delp_V_batch_spline_ready = .false.
-        end if
-
-        order = [ns_s_B, ns_tp_B, ns_tp_B]
-        if (any(order < 3) .or. any(order > 5)) then
-            error stop "build_boozer_delt_delp_batch_splines: order must be 3..5"
-        end if
-
-        x_min = [0.0_dp, 0.0_dp, 0.0_dp]
-        x_max(1) = hs_B*real(ns_B - 1, dp)
-        x_max(2) = h_theta_B*real(n_theta_B - 1, dp)
-        x_max(3) = h_phi_B*real(n_phi_B - 1, dp)
-
-        periodic = [.false., .true., .true.]
-
-        ! Build spline directly from 4D grid (already populated in compute_boozer_data)
-        allocate (y_batch(ns_B, n_theta_B, n_phi_B, 2))
-        y_batch(:, :, :, 1) = delt_delp_V_grid(:, :, :, 1)
-        y_batch(:, :, :, 2) = delt_delp_V_grid(:, :, :, 2)
-
-        call construct_batch_splines_3d(x_min, x_max, y_batch, order, periodic, &
-                                        delt_delp_V_batch_spline)
-        delt_delp_V_batch_spline_ready = .true.
-
-        if (use_del_tp_B) then
-            if (.not. allocated(delt_delp_B_grid)) then
-       error stop "build_boozer_delt_delp_batch_splines: delt_delp_B_grid not allocated"
-            end if
-
-            if (delt_delp_B_batch_spline_ready) then
-                call destroy_batch_splines_3d(delt_delp_B_batch_spline)
-                delt_delp_B_batch_spline_ready = .false.
-            end if
-
-            y_batch(:, :, :, 1) = delt_delp_B_grid(:, :, :, 1)
-            y_batch(:, :, :, 2) = delt_delp_B_grid(:, :, :, 2)
-
-            call construct_batch_splines_3d(x_min, x_max, y_batch, order, periodic, &
-                                            delt_delp_B_batch_spline)
-            delt_delp_B_batch_spline_ready = .true.
-        end if
-
-        deallocate (y_batch)
-    end subroutine build_boozer_delt_delp_batch_splines
 
 end module boozer_sub
