@@ -26,6 +26,7 @@ module boozer_sub
     integer, save :: bmod_br_num_quantities = 0
     real(dp), allocatable, save :: bmod_grid(:, :, :)
     real(dp), allocatable, save :: br_grid(:, :, :)
+    real(dp), allocatable, save :: sqrt_g_ss_grid(:, :, :)
 
     ! Batch spline for A_phi (vector potential)
     type(BatchSplineData1D), save :: aphi_batch_spline
@@ -124,6 +125,7 @@ contains
         real(dp), intent(out) :: dBmod_B(3), dB_r(3)
         real(dp), intent(out) :: d2Bmod_B(6), d2B_r(6)
 
+        integer :: i_br
         real(dp) :: r_eval, rho_tor, drhods, drhods2, d2rhods2m
         real(dp) :: qua, dqua_dr, dqua_dt, dqua_dp
         real(dp) :: d2qua_dr2, d2qua_drdt, d2qua_drdp, d2qua_dt2, &
@@ -181,6 +183,8 @@ contains
         x_eval(2) = theta_wrapped
         x_eval(3) = phi_wrapped
 
+        i_br = bmod_br_num_quantities
+
         ! Chain rule coefficients for rho -> s conversion
         drhods = 0.5_dp/rho_tor
         drhods2 = drhods**2
@@ -223,19 +227,19 @@ contains
             d2Bmod_B(5) = d2qua_dtdp
             d2Bmod_B(6) = d2qua_dp2
 
-            ! Extract B_r (quantity 2, if present)
+            ! Extract B_r (if present)
             if (use_B_r) then
-                qua = y_eval(2)
-                dqua_dr = dy_eval(1, 2)
-                dqua_dt = dy_eval(2, 2)
-                dqua_dp = dy_eval(3, 2)
+                qua = y_eval(i_br)
+                dqua_dr = dy_eval(1, i_br)
+                dqua_dt = dy_eval(2, i_br)
+                dqua_dp = dy_eval(3, i_br)
 
-                d2qua_dr2 = d2y_eval(1, 2)
-                d2qua_drdt = d2y_eval(2, 2)
-                d2qua_drdp = d2y_eval(3, 2)
-                d2qua_dt2 = d2y_eval(4, 2)
-                d2qua_dtdp = d2y_eval(5, 2)
-                d2qua_dp2 = d2y_eval(6, 2)
+                d2qua_dr2 = d2y_eval(1, i_br)
+                d2qua_drdt = d2y_eval(2, i_br)
+                d2qua_drdp = d2y_eval(3, i_br)
+                d2qua_dt2 = d2y_eval(4, i_br)
+                d2qua_dtdp = d2y_eval(5, i_br)
+                d2qua_dp2 = d2y_eval(6, i_br)
 
                 d2qua_dr2 = d2qua_dr2*drhods2 - dqua_dr*d2rhods2m
                 dqua_dr = dqua_dr*drhods
@@ -283,10 +287,10 @@ contains
             end if
 
             if (use_B_r) then
-                qua = y_eval(2)
-                dqua_dr = dy_eval(1, 2)
-                dqua_dt = dy_eval(2, 2)
-                dqua_dp = dy_eval(3, 2)
+                qua = y_eval(i_br)
+                dqua_dr = dy_eval(1, i_br)
+                dqua_dt = dy_eval(2, i_br)
+                dqua_dp = dy_eval(3, i_br)
 
                 dqua_dr = dqua_dr*drhods
                 B_r = qua*drhods
@@ -297,7 +301,7 @@ contains
 
                 d2B_r = 0.0_dp
                 if (mode_secders == 1) then
-                    d2qua_dr2 = d2y_eval(1, 2)*drhods2 - dy_eval(1, 2)*d2rhods2m
+                    d2qua_dr2 = d2y_eval(1, i_br)*drhods2 - dy_eval(1, i_br)*d2rhods2m
                     d2B_r(1) = d2qua_dr2*drhods - 2.0_dp*dqua_dr*d2rhods2m + &
                                qua*drhods*(3.0_dp/4.0_dp)/r_eval**2
                 end if
@@ -359,6 +363,7 @@ contains
         real(dp), allocatable :: phi_V(:), phi_B(:), aiota_arr(:), rho_tor(:)
         real(dp), allocatable :: Bcovar_theta_V(:, :), Bcovar_varphi_V(:, :)
         real(dp), allocatable :: bmod_Vg(:, :), alam_2D(:, :)
+        real(dp), allocatable :: sqrt_g_ss(:, :)
         real(dp), allocatable :: deltheta_BV_Vg(:, :), delphi_BV_Vg(:, :)
         real(dp), allocatable :: splcoe_t(:, :)
         real(dp), allocatable :: splcoe_p(:, :), coef(:, :)
@@ -366,7 +371,7 @@ contains
         real(dp), allocatable :: perqua_2D(:, :, :), Gfunc(:, :, :)
         real(dp), allocatable :: Bcovar_symfl(:, :, :, :)
 
-        nqua = 6
+        nqua = 7
         gridcellnum = real((n_theta_B - 1)*(n_phi_B - 1), dp)
 
         npoilag = ns_tp_B + 1
@@ -398,6 +403,7 @@ contains
         allocate (Bcovar_varphi_V(n_theta_B, n_phi_B))
         allocate (bmod_Vg(n_theta_B, n_phi_B))
         allocate (alam_2D(n_theta_B, n_phi_B))
+        allocate (sqrt_g_ss(n_theta_B, n_phi_B))
         allocate (deltheta_BV_Vg(n_theta_B, n_phi_B))
         allocate (delphi_BV_Vg(n_theta_B, n_phi_B))
         allocate (wint_t(0:ns_tp_B), wint_p(0:ns_tp_B))
@@ -419,6 +425,7 @@ contains
 
         ! Allocate module-level grids
         call ensure_grid_3d(bmod_grid, ns_B, n_theta_B, n_phi_B)
+        call ensure_grid_3d(sqrt_g_ss_grid, ns_B, n_theta_B, n_phi_B)
         if (use_B_r) call ensure_grid_3d(br_grid, ns_B, n_theta_B, n_phi_B)
 
         do i = 0, ns_tp_B
@@ -468,6 +475,10 @@ contains
                     Bcovar_theta_V(i_theta, i_phi) = Bcovar_vartheta*(1.0_dp + dl_dt)
                     Bcovar_varphi_V(i_theta, i_phi) = &
                         Bcovar_varphi + Bcovar_vartheta*dl_dp
+                    sqrt_g_ss(i_theta, i_phi) = get_sqrt_g_ss_contravariant(s, &
+                                                                            theta, &
+                                                                            varphi)
+
                     perqua_2D(4, i_theta, i_phi) = Bcovar_r
                     perqua_2D(5, i_theta, i_phi) = Bcovar_vartheta
                     perqua_2D(6, i_theta, i_phi) = Bcovar_varphi
@@ -537,6 +548,7 @@ contains
                 perqua_t(2, 1:n_theta_B) = delphi_BV_Vg(:, i_phi)
                 perqua_t(3, 1:n_theta_B) = bmod_Vg(:, i_phi)
                 perqua_t(4:6, 1:n_theta_B) = perqua_2D(4:6, :, i_phi)
+                perqua_t(7, 1:n_theta_B) = sqrt_g_ss(:, i_phi)
                 ! Extend range of theta values
                 perqua_t(:, 2 - n_theta_B:0) = perqua_t(:, 1:n_theta_B - 1)
                 perqua_t(:, n_theta_B + 1:2*n_theta_B - 1) = perqua_t(:, 2:n_theta_B)
@@ -582,6 +594,7 @@ contains
             end do
 
             bmod_grid(i_rho, :, :) = perqua_2D(3, :, :)
+            sqrt_g_ss_grid(i_rho, :, :) = perqua_2D(7, :, :)
 
 ! End re-interpolate to equidistant grid in $(\vartheta_B,\varphi_B)$
 
@@ -630,6 +643,35 @@ contains
                         Bctrvr_vartheta, Bctrvr_varphi, &
                         Bcovar_r, Bcovar_vartheta, Bcovar_varphi)
     end subroutine vmec_field_evaluate
+
+    !> Computes sqrt(g^{ss}) which is the same for Boozer (s, theta_B, varphi_B)
+    !> and VMEC (s, theta, varphi) coordinates
+    function get_sqrt_g_ss_contravariant(s, theta, varphi) result(sqrt_g_ss)
+        use spline_vmec_sub, only: splint_vmec_data
+        use spline_vmec_sub, only: metric_tensor_vmec
+        real(dp), intent(in) :: s, theta, varphi
+        real(dp) :: sqrt_g_ss
+
+        real(dp) :: dummy(10)
+        real(dp) :: R, dR_ds, dR_dtheta, dR_dphi
+        real(dp) :: dZ_ds, dZ_dtheta, dZ_dphi
+
+        real(dp) :: g_vmec(3, 3), sqrt_g_vmec
+
+        call splint_vmec_data(s, theta, varphi, &
+                              dummy(1), dummy(2), dummy(3), dummy(4), dummy(5), &
+                              R, &
+                              dummy(6), dummy(7), &
+                              dR_ds, dR_dtheta, dR_dphi, &
+                              dZ_ds, dZ_dtheta, dZ_dphi, &
+                              dummy(8), dummy(9), dummy(10))
+        call metric_tensor_vmec(R, dR_ds, dR_dtheta, dR_dphi, &
+                                dZ_ds, dZ_dtheta, dZ_dphi, g_vmec, sqrt_g_vmec)
+
+        !> contravariant metric component g^{ss} via cofactors of covariant components
+        sqrt_g_ss = sqrt(g_vmec(2, 2)*g_vmec(3, 3) - g_vmec(2, 3)**2.0_dp) &
+                    /abs(sqrt_g_vmec)
+    end function get_sqrt_g_ss_contravariant
 
     !> Compute radial covariant magnetic field B_rho from symmetry flux coordinates
     subroutine compute_br_from_symflux(rho_tor, aiota_arr, Gfunc, Bcovar_symfl)
@@ -704,6 +746,7 @@ contains
             bmod_br_num_quantities = 0
         end if
         if (allocated(bmod_grid)) deallocate (bmod_grid)
+        if (allocated(sqrt_g_ss_grid)) deallocate (sqrt_g_ss_grid)
         if (allocated(br_grid)) deallocate (br_grid)
     end subroutine reset_boozer_batch_splines
 
@@ -773,7 +816,7 @@ contains
 
         real(dp) :: x_min(3), x_max(3)
         real(dp), allocatable :: y_batch(:, :, :, :)
-        integer :: order(3), nq
+        integer :: order(3), nq, i_br
         logical :: periodic(3)
 
         if (.not. allocated(bmod_grid)) then
@@ -801,17 +844,16 @@ contains
 
         periodic = [.false., .true., .true.]
 
-        ! Determine number of quantities: 1 (Bmod only) or 2 (Bmod + Br)
+        nq = 1
         if (use_B_r) then
-            nq = 2
-        else
-            nq = 1
+            nq = nq + 1
+            i_br = nq
         end if
 
         allocate (y_batch(ns_B, n_theta_B, n_phi_B, nq))
         y_batch(:, :, :, 1) = bmod_grid(:, :, :)
         if (use_B_r) then
-            y_batch(:, :, :, 2) = br_grid(:, :, :)
+            y_batch(:, :, :, i_br) = br_grid(:, :, :)
         end if
 
         call construct_batch_splines_3d(x_min, x_max, y_batch, order, periodic, &
