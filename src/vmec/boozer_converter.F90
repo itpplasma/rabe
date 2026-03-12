@@ -19,11 +19,12 @@ module boozer_sub
 
     ! Constants
     real(dp), parameter :: TWOPI = 2.0_dp*3.14159265358979_dp
+    integer, parameter :: MAX_FIELD3D_QUANTITIES = 3
 
-    ! Batch spline data for Bmod and B_r interpolation
-    type(BatchSplineData3D), save :: bmod_br_batch_spline
-    logical, save :: bmod_br_batch_spline_ready = .false.
-    integer, save :: bmod_br_num_quantities = 0
+    ! Batch spline data for 3D field quantities (Bmod, sqrt_g_ss, optionally B_r)
+    type(BatchSplineData3D), save :: field3d_batch_spline
+    logical, save :: field3d_batch_spline_ready = .false.
+    integer, save :: field3d_num_quantities = 0
     real(dp), allocatable, save :: bmod_grid(:, :, :)
     real(dp), allocatable, save :: br_grid(:, :, :)
     real(dp), allocatable, save :: sqrt_g_ss_grid(:, :, :)
@@ -94,7 +95,7 @@ contains
 
         call build_boozer_aphi_batch_spline
         call build_boozer_bcovar_tp_batch_spline
-        call build_boozer_bmod_br_batch_spline
+        call build_boozer_field3d_batch_spline
 
     end subroutine get_boozer_coordinates_impl
 
@@ -104,6 +105,7 @@ contains
                                    B_vartheta_B, dB_vartheta_B, d2B_vartheta_B, &
                                    B_varphi_B, dB_varphi_B, d2B_varphi_B, &
                                    Bmod_B, dBmod_B, d2Bmod_B, &
+                                   sqrt_g_ss_B, &
                                    B_r, dB_r, d2B_r)
 
         use boozer_coordinates_mod, only: use_B_r
@@ -121,7 +123,7 @@ contains
         real(dp), intent(out) :: d2A_phi_dr2, d3A_phi_dr3
         real(dp), intent(out) :: B_vartheta_B, dB_vartheta_B, d2B_vartheta_B
         real(dp), intent(out) :: B_varphi_B, dB_varphi_B, d2B_varphi_B
-        real(dp), intent(out) :: Bmod_B, B_r
+        real(dp), intent(out) :: Bmod_B, sqrt_g_ss_B, B_r
         real(dp), intent(out) :: dBmod_B(3), dB_r(3)
         real(dp), intent(out) :: d2Bmod_B(6), d2B_r(6)
 
@@ -130,7 +132,10 @@ contains
         real(dp) :: qua, dqua_dr, dqua_dt, dqua_dp
         real(dp) :: d2qua_dr2, d2qua_drdt, d2qua_drdp, d2qua_dt2, &
                     d2qua_dtdp, d2qua_dp2
-        real(dp) :: x_eval(3), y_eval(2), dy_eval(3, 2), d2y_eval(6, 2)
+        real(dp) :: x_eval(3)
+        real(dp) :: y_eval(MAX_FIELD3D_QUANTITIES)
+        real(dp) :: dy_eval(3, MAX_FIELD3D_QUANTITIES)
+        real(dp) :: d2y_eval(6, MAX_FIELD3D_QUANTITIES)
         real(dp) :: theta_wrapped, phi_wrapped
         real(dp) :: y1d(2), dy1d(2), d2y1d(2)
 
@@ -175,7 +180,7 @@ contains
         theta_wrapped = modulo(vartheta_B, TWOPI)
         phi_wrapped = modulo(varphi_B, TWOPI/real(nper, dp))
 
-        if (.not. bmod_br_batch_spline_ready) then
+        if (.not. field3d_batch_spline_ready) then
             error stop "splint_boozer_coord: Bmod/Br batch spline not initialized"
         end if
 
@@ -183,7 +188,7 @@ contains
         x_eval(2) = theta_wrapped
         x_eval(3) = phi_wrapped
 
-        i_br = bmod_br_num_quantities
+        i_br = field3d_num_quantities
 
         ! Chain rule coefficients for rho -> s conversion
         drhods = 0.5_dp/rho_tor
@@ -191,10 +196,10 @@ contains
         d2rhods2m = drhods2/rho_tor  ! -d2rho/ds2 (negative of second derivative)
 
         if (mode_secders == 2) then
-            call evaluate_batch_splines_3d_der2(bmod_br_batch_spline, x_eval, &
-                                                y_eval(1:bmod_br_num_quantities), &
-                                                dy_eval(:, 1:bmod_br_num_quantities), &
-                                                d2y_eval(:, 1:bmod_br_num_quantities))
+            call evaluate_batch_splines_3d_der2(field3d_batch_spline, x_eval, &
+                                                y_eval(1:field3d_num_quantities), &
+                                                dy_eval(:, 1:field3d_num_quantities), &
+                                                d2y_eval(:, 1:field3d_num_quantities))
 
             ! Extract Bmod (quantity 1)
             qua = y_eval(1)
@@ -226,6 +231,8 @@ contains
             d2Bmod_B(4) = d2qua_dt2
             d2Bmod_B(5) = d2qua_dtdp
             d2Bmod_B(6) = d2qua_dp2
+
+            sqrt_g_ss_B = y_eval(2)
 
             ! Extract B_r (if present)
             if (use_B_r) then
@@ -265,24 +272,26 @@ contains
                 d2B_r = 0.0_dp
             end if
         else
-            call evaluate_batch_splines_3d_der(bmod_br_batch_spline, x_eval, &
-                                               y_eval(1:bmod_br_num_quantities), &
-                                               dy_eval(:, 1:bmod_br_num_quantities))
+            call evaluate_batch_splines_3d_der(field3d_batch_spline, x_eval, &
+                                               y_eval(1:field3d_num_quantities), &
+                                               dy_eval(:, 1:field3d_num_quantities))
 
             Bmod_B = y_eval(1)
             dBmod_B(1) = dy_eval(1, 1)*drhods
             dBmod_B(2) = dy_eval(2, 1)
             dBmod_B(3) = dy_eval(3, 1)
 
+            sqrt_g_ss_B = y_eval(2)
+
             d2Bmod_B = 0.0_dp
 
             if (mode_secders == 1) then
-                call evaluate_batch_splines_3d_der2(bmod_br_batch_spline, x_eval, &
-                                                    y_eval(1:bmod_br_num_quantities), &
+                call evaluate_batch_splines_3d_der2(field3d_batch_spline, x_eval, &
+                                                    y_eval(1:field3d_num_quantities), &
                                                     dy_eval(:, &
-                                                            1:bmod_br_num_quantities), &
+                                                            1:field3d_num_quantities), &
                                                     d2y_eval(:, &
-                                                             1:bmod_br_num_quantities))
+                                                             1:field3d_num_quantities))
                 d2Bmod_B(1) = d2y_eval(1, 1)*drhods2 - dy_eval(1, 1)*d2rhods2m
             end if
 
@@ -614,7 +623,7 @@ contains
         end if
 
         deallocate (Bcovar_theta_V, Bcovar_varphi_V, bmod_Vg, alam_2D, &
-                    deltheta_BV_Vg, delphi_BV_Vg, &
+                    sqrt_g_ss, deltheta_BV_Vg, delphi_BV_Vg, &
                     wint_t, wint_p, coef, theta_V, theta_B, phi_V, phi_B, &
                     perqua_t, perqua_p, perqua_2D)
 
@@ -740,10 +749,10 @@ contains
             call destroy_batch_splines_1d(bcovar_tp_batch_spline)
             bcovar_tp_batch_spline_ready = .false.
         end if
-        if (bmod_br_batch_spline_ready) then
-            call destroy_batch_splines_3d(bmod_br_batch_spline)
-            bmod_br_batch_spline_ready = .false.
-            bmod_br_num_quantities = 0
+        if (field3d_batch_spline_ready) then
+            call destroy_batch_splines_3d(field3d_batch_spline)
+            field3d_batch_spline_ready = .false.
+            field3d_num_quantities = 0
         end if
         if (allocated(bmod_grid)) deallocate (bmod_grid)
         if (allocated(sqrt_g_ss_grid)) deallocate (sqrt_g_ss_grid)
@@ -809,8 +818,8 @@ contains
         deallocate (y_batch)
     end subroutine build_boozer_bcovar_tp_batch_spline
 
-    subroutine build_boozer_bmod_br_batch_spline
-        ! Combined Bmod + Br batch spline (1 or 2 quantities depending on use_B_r)
+    subroutine build_boozer_field3d_batch_spline
+        ! Combined 3D field batch spline: Bmod, sqrt_g_ss, optionally Br
         use boozer_coordinates_mod, only: ns_s_B, ns_tp_B, ns_B, n_theta_B, n_phi_B, &
                                           hs_B, h_theta_B, h_phi_B, use_B_r
 
@@ -820,21 +829,24 @@ contains
         logical :: periodic(3)
 
         if (.not. allocated(bmod_grid)) then
-            error stop "build_boozer_bmod_br_batch_spline: bmod_grid not allocated"
+            error stop "build_boozer_field3d_batch_spline: bmod_grid not allocated"
+        end if
+        if (.not. allocated(sqrt_g_ss_grid)) then
+            error stop "build_boozer_field3d_batch_spline: sqrt_g_ss_grid not allocated"
         end if
         if (use_B_r .and. .not. allocated(br_grid)) then
-            error stop "build_boozer_bmod_br_batch_spline: br_grid not allocated"
+            error stop "build_boozer_field3d_batch_spline: br_grid not allocated"
         end if
 
-        if (bmod_br_batch_spline_ready) then
-            call destroy_batch_splines_3d(bmod_br_batch_spline)
-            bmod_br_batch_spline_ready = .false.
-            bmod_br_num_quantities = 0
+        if (field3d_batch_spline_ready) then
+            call destroy_batch_splines_3d(field3d_batch_spline)
+            field3d_batch_spline_ready = .false.
+            field3d_num_quantities = 0
         end if
 
         order = [ns_s_B, ns_tp_B, ns_tp_B]
         if (any(order < 3) .or. any(order > 5)) then
-            error stop "build_boozer_bmod_br_batch_spline: spline order must be 3..5"
+            error stop "build_boozer_field3d_batch_spline: spline order must be 3..5"
         end if
 
         x_min = [0.0_dp, 0.0_dp, 0.0_dp]
@@ -844,7 +856,7 @@ contains
 
         periodic = [.false., .true., .true.]
 
-        nq = 1
+        nq = 2  ! Bmod, sqrt_g_ss
         if (use_B_r) then
             nq = nq + 1
             i_br = nq
@@ -852,15 +864,16 @@ contains
 
         allocate (y_batch(ns_B, n_theta_B, n_phi_B, nq))
         y_batch(:, :, :, 1) = bmod_grid(:, :, :)
+        y_batch(:, :, :, 2) = sqrt_g_ss_grid(:, :, :)
         if (use_B_r) then
             y_batch(:, :, :, i_br) = br_grid(:, :, :)
         end if
 
         call construct_batch_splines_3d(x_min, x_max, y_batch, order, periodic, &
-                                        bmod_br_batch_spline)
-        bmod_br_batch_spline_ready = .true.
-        bmod_br_num_quantities = nq
+                                        field3d_batch_spline)
+        field3d_batch_spline_ready = .true.
+        field3d_num_quantities = nq
         deallocate (y_batch)
-    end subroutine build_boozer_bmod_br_batch_spline
+    end subroutine build_boozer_field3d_batch_spline
 
 end module boozer_sub
