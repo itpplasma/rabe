@@ -18,7 +18,7 @@ program test_against_neo_qa
     integer, parameter :: n_cases = 5
     real(dp) :: stor(n_cases), theta(n_cases), phi(n_cases)
 
-    real(dp) :: bmod_b, sqrtg_b, dB_dx_b(3)
+    real(dp) :: bmod_b, sqrtg_b, dB_dx_b(3), sqrt_g11_b
     real(dp) :: iota_b, B_theta_b, B_phi_b
 
     ! Neo reference values (from neo_reference_values.dat)
@@ -30,6 +30,7 @@ program test_against_neo_qa
     real(dp) :: B_theta_ref(n_cases), B_phi_ref(n_cases)
     real(dp) :: bmod_ref(n_cases), sqrtg_ref(n_cases)
     real(dp) :: dB_dx_ref(n_cases, 3)
+    real(dp) :: sqrt_g11_ref(n_cases)
 
     integer :: case
     logical :: test_failed
@@ -90,6 +91,12 @@ program test_against_neo_qa
     dB_dx_ref(5, :) = [7.75627349470958266e-02_dp, &
                        6.17949257583749190e-01_dp, &
                        -5.95561440956370904e-03_dp]
+
+    sqrt_g11_ref = [0.69190314914019782e+01_dp, &
+                    0.78340849662291232e+01_dp, &
+                    0.12852437144249926e+01_dp, &
+                    0.53259697504179320e+01_dp, &
+                    0.10693676025791250e+02_dp]
 
     ! Compare global quantities
     if (not_same(bfield%psi_tor_edge, psi_tor_edge_ref, &
@@ -186,6 +193,19 @@ program test_against_neo_qa
             print *, "Relative error: ", abs(dB_dx_b(1:2) - dB_dx_ref(case, 1:2)) &
                 /abs(dB_dx_ref(case, 1:2))
             print *, "Absolute error: ", abs(dB_dx_b(1:2) - dB_dx_ref(case, 1:2))
+            test_failed = .true.
+        end if
+
+        call bfield%compute_sqrt_g11(theta(case), phi(case), sqrt_g11_b)
+
+        if (not_same(sqrt_g11_b, sqrt_g11_ref(case), &
+                     reltol_in=reltol, abstol_in=abstol)) then
+            print *, "sqrt_g11 mismatch at case ", case
+            print *, "  boozer: ", sqrt_g11_b
+            print *, "  neo:    ", sqrt_g11_ref(case)
+            print *, "Relative error: ", abs(sqrt_g11_b - sqrt_g11_ref(case)) &
+                /abs(sqrt_g11_ref(case))
+            print *, "Absolute error: ", abs(sqrt_g11_b - sqrt_g11_ref(case))
             test_failed = .true.
         end if
     end do

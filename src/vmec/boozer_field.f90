@@ -48,7 +48,7 @@ contains
                                     radial_spline_order, &
                                     angular_spline_order, &
                                     grid_refinement)
-        self%psi_tor_edge = -torflux*cm2m**2*gauss2tesla
+        self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%initialized = .true.
     end subroutine boozer_field_init
@@ -66,7 +66,7 @@ contains
                     d2A_phi_dr2, d3A_phi_dr3, &
                     B_vartheta_B, dB_vartheta_B, d2B_vartheta_B, &
                     B_varphi_B, dB_varphi_B, d2B_varphi_B, &
-                    Bmod_B, B_r
+                    Bmod_B, sqrt_g_ss_B, B_r
         real(dp), dimension(3) :: dBmod_B, dB_r
         real(dp), dimension(6) :: d2Bmod_B, d2B_r
 
@@ -92,6 +92,7 @@ contains
                                  B_varphi_B, dB_varphi_B, &
                                  d2B_varphi_B, &
                                  Bmod_B, dBmod_B, d2Bmod_B, &
+                                 sqrt_g_ss_B, &
                                  B_r, dB_r, d2B_r)
 
         aiota = -dA_phi_dr/dA_theta_dr
@@ -140,7 +141,7 @@ contains
         real(dp) :: d2A_phi_dr2, d3A_phi_dr3
         real(dp) :: dB_vartheta_B, d2B_vartheta_B
         real(dp) :: dB_varphi_B, d2B_varphi_B
-        real(dp) :: Bmod_B, B_r
+        real(dp) :: Bmod_B, sqrt_g_ss_B, B_r
         real(dp), dimension(3) :: dBmod_B, dB_r
         real(dp), dimension(6) :: d2Bmod_B, d2B_r
 
@@ -153,6 +154,7 @@ contains
                                  B_phi_covariant, dB_varphi_B, &
                                  d2B_varphi_B, &
                                  Bmod_B, dBmod_B, d2Bmod_B, &
+                                 sqrt_g_ss_B, &
                                  B_r, dB_r, d2B_r)
 
         iota = -dA_phi_dr/dA_theta_dr
@@ -221,9 +223,21 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: sqrt_g11
 
-        sqrt_g11 = 0.0_dp
-        error stop "compute_sqrt_g11 not implemented for &
-            &boozer_field_t"
+        real(dp) :: dummy(32), sqrt_g_ss
+
+        if (.not. self%fixed_to_surface) &
+            error stop "compute_sqrt_g11: call fix_to_surface first"
+
+        call splint_boozer_coord(self%fixed_stor, theta, phi, 0, &
+                                 dummy(1), dummy(2), dummy(3), &
+                                 dummy(4), dummy(5), dummy(6), &
+                                 dummy(7), dummy(8), dummy(9), &
+                                 dummy(10), dummy(11), dummy(12), &
+                                 dummy(13), dummy(15:17), dummy(18:23), &
+                                 sqrt_g_ss, &
+                                 dummy(14), dummy(24:26), dummy(27:32))
+        sqrt_g11 = sqrt_g_ss/cm2m*self%psi_tor_edge
+
     end subroutine compute_sqrt_g11
 
 end module boozer_field
