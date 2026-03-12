@@ -36,12 +36,14 @@ contains
                                  angular_spline_order, grid_refinement)
         use vector_potentail_mod, only: torflux
         use new_vmec_stuff_mod, only: nper
+        use boozer_coordinates_mod, only: use_B_r
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: vmec_file
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
+        use_B_r = .true.
         call get_boozer_coordinates(vmec_file, &
                                     radial_spline_order, &
                                     angular_spline_order, &
