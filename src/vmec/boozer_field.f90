@@ -236,7 +236,7 @@ contains
                                  dummy(13), dummy(15:17), dummy(18:23), &
                                  sqrt_g_ss, &
                                  dummy(14), dummy(24:26), dummy(27:32))
-        sqrt_g11 = sqrt_g_ss/cm2m*abs(self%psi_tor_edge)
+        sqrt_g11 = sqrt_g_ss/cm2m*self%psi_tor_edge
 
     end subroutine compute_sqrt_g11
 
