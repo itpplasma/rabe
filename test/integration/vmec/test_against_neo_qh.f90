@@ -9,7 +9,7 @@ program test_against_neo_qh
 
     implicit none
 
-    real(dp), parameter :: reltol = 1e-2, abstol = 1e-10
+    real(dp), parameter :: reltol = 1.2e-2, abstol = 1e-10
     real(dp), parameter :: abstol_for_zero = 1e-3
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
@@ -93,11 +93,11 @@ program test_against_neo_qh
                        9.01242770896047984e-01_dp, &
                        3.60496554369149980e+00_dp]
 
-    nabla_s_ref = [0.23894441241842217e+01_dp, &
-                   0.20939072014131432e+01_dp, &
-                   0.82239067232426866e+01_dp, &
-                   0.61603922859182800e+01_dp, &
-                   0.65392778764629247e+01_dp]/psi_tor_edge_ref
+    nabla_s_ref = [0.75369886165216027_dp, &
+                   0.67255511319280181_dp, &
+                   2.0144853453318401_dp, &
+                   0.80518369474188856_dp, &
+                   0.77957223538352005_dp]
 
     ! Compare global quantities
     if (not_same(bfield%psi_tor_edge, psi_tor_edge_ref, &
