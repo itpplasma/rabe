@@ -26,7 +26,6 @@ program test_neo_dr_dAtheta
     real(dp), parameter :: neo_ds_dr = 0.00807615_dp ![1/cm]
     real(dp), parameter :: angle_screw_sign = -1.0_dp
 
-    real(dp) :: sqrt_g11
     logical :: test_failed
 
     test_failed = .false.
@@ -50,7 +49,7 @@ program test_neo_dr_dAtheta
 
     neo_dr_dAtheta = angle_screw_sign/(field%psi_tor_edge*neo_ds_dr*100.0_dp)
 
-    dr_dAtheta = angle_screw_sign*sign(1.0_dp, field%psi_tor_edge)/average%sqrt_g11
+    dr_dAtheta = angle_screw_sign/(field%psi_tor_edge*average%nabla_s)
 
     if (not_same(neo_dr_dAtheta, &
                  dr_dAtheta, &

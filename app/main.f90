@@ -98,7 +98,7 @@ program rabe
 
         covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
         call calc_surface_averages(fieldlines, average)
-        dr_dAtheta = sign_sqrtg*sign(1.0_dp, field%psi_tor_edge)/average%sqrt_g11
+        dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
         Lambda_bl(this) = deviation_A*dr_dAtheta* &
                           sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)

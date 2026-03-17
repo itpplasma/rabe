@@ -17,7 +17,7 @@ module neo_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_sqrt_g11
+        procedure :: compute_nabla_s
         procedure :: neo_change_stor
     end type neo_field_t
 
@@ -122,22 +122,23 @@ contains
         end if
     end subroutine compute_B_mod
 
-    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+    subroutine compute_nabla_s(self, theta, phi, nabla_s)
         class(neo_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: sqrt_g11
+        real(dp), intent(out) :: nabla_s
 
+        real(dp) :: nabla_psi
         real(dp) :: x(3), dummy_B_mod, dummy_iota, dummy_sqrtg, dummy_dB_dx(3)
 
         x = [0.0_dp, phi, theta] !neo convention of x=(r, phi, theta)
         call neo_magfie_a(x, dummy_B_mod, dummy_sqrtg, dummy_dB_dx, dummy_iota, &
-                          sqrt_g11=sqrt_g11)
-
-        if (ieee_is_nan(sqrt_g11)) then
-            print *, "sqrt_g11 is NaN!"
+                          sqrt_g11=nabla_psi)
+        nabla_s = nabla_psi/self%psi_tor_edge
+        if (ieee_is_nan(nabla_s)) then
+            print *, "nabla_s is NaN!"
             error stop
         end if
-    end subroutine compute_sqrt_g11
+    end subroutine compute_nabla_s
 
     subroutine neo_change_stor(self, stor)
         use neo_magfie, only: magfie_newspline

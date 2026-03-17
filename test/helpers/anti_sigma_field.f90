@@ -13,7 +13,7 @@ module anti_sigma_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_sqrt_g11
+        procedure :: compute_nabla_s
     end type anti_sigma_field_t
 
 contains
@@ -85,13 +85,13 @@ contains
                           )
     end subroutine compute_B_mod
 
-    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+    subroutine compute_nabla_s(self, theta, phi, nabla_s)
         class(anti_sigma_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: sqrt_g11
+        real(dp), intent(out) :: nabla_s
 
-        sqrt_g11 = 1.0_dp
+        nabla_s = 1.0_dp
 
-    end subroutine compute_sqrt_g11
+    end subroutine compute_nabla_s
 
 end module anti_sigma_field
