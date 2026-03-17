@@ -6,7 +6,7 @@ module surface_average_mod
         real(dp) :: normalization
         real(dp) :: B_squared
         real(dp) :: lambda_b
-        real(dp) :: sqrt_g11
+        real(dp) :: nabla_s
     end type surface_average_t
 
 contains
@@ -42,8 +42,8 @@ contains
                                     surface_average%normalization
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
                                    dxi_0/surface_average%normalization
-        surface_average%sqrt_g11 = sum(fieldlines%integral_sqrt_g11_over_B_squared)* &
-                                   dxi_0/surface_average%normalization
+        surface_average%nabla_s = sum(fieldlines%integral_nabla_s_over_B_squared)* &
+                                  dxi_0/surface_average%normalization
 
         if (surface_average%lambda_b < machine_eps) then
             print *, "error: average lambda_b <= 0."
@@ -53,7 +53,7 @@ contains
             print *, "error: average B_squared <= 0."
             error stop
         end if
-        if (ieee_is_nan(surface_average%sqrt_g11)) then
+        if (ieee_is_nan(surface_average%nabla_s)) then
             print *, "error: average sqrt_g11 is NaN."
             error stop
         end if

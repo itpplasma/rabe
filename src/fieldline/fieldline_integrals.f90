@@ -71,10 +71,10 @@ contains
                                       fieldline%phi_max(2), &
                                       fieldline%integral_one_over_B_squared)
 
-        call integrate_1d_substituted(wrapper_sqrt_g11_over_B_squared, &
+        call integrate_1d_substituted(wrapper_nabla_s_over_B_squared, &
                                       fieldline%phi_max(1), &
                                       fieldline%phi_max(2), &
-                                      fieldline%integral_sqrt_g11_over_B_squared)
+                                      fieldline%integral_nabla_s_over_B_squared)
 
     contains
 
@@ -120,19 +120,19 @@ contains
             wrapper_one_over_B_squared = 1.0_dp/B_squared(field, theta, phi)
         end function wrapper_one_over_B_squared
 
-        function wrapper_sqrt_g11_over_B_squared(phi)
-            use fieldline_integrands, only: sqrt_g11_over_B_squared
+        function wrapper_nabla_s_over_B_squared(phi)
+            use fieldline_integrands, only: nabla_s_over_B_squared
 
             real(dp), intent(in) :: phi
-            real(dp) :: wrapper_sqrt_g11_over_B_squared
+            real(dp) :: wrapper_nabla_s_over_B_squared
 
             real(dp) :: theta
 
             theta = fieldline%get_theta(phi)
-            wrapper_sqrt_g11_over_B_squared = sqrt_g11_over_B_squared(field, &
-                                                                      theta, &
-                                                                      phi)
-        end function wrapper_sqrt_g11_over_B_squared
+            wrapper_nabla_s_over_B_squared = nabla_s_over_B_squared(field, &
+                                                                    theta, &
+                                                                    phi)
+        end function wrapper_nabla_s_over_B_squared
 
     end subroutine calc_fieldline_integrals
 

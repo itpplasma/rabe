@@ -26,7 +26,7 @@ module boozer_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_sqrt_g11
+        procedure :: compute_nabla_s
     end type boozer_field_t
 
 contains
@@ -218,15 +218,15 @@ contains
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod
 
-    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+    subroutine compute_nabla_s(self, theta, phi, nabla_s)
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: sqrt_g11
+        real(dp), intent(out) :: nabla_s
 
         real(dp) :: dummy(32), sqrt_g_ss
 
         if (.not. self%fixed_to_surface) &
-            error stop "compute_sqrt_g11: call fix_to_surface first"
+            error stop "compute_nabla_s: call fix_to_surface first"
 
         call splint_boozer_coord(self%fixed_stor, theta, phi, 0, &
                                  dummy(1), dummy(2), dummy(3), &
@@ -236,8 +236,8 @@ contains
                                  dummy(13), dummy(15:17), dummy(18:23), &
                                  sqrt_g_ss, &
                                  dummy(14), dummy(24:26), dummy(27:32))
-        sqrt_g11 = sqrt_g_ss/cm2m*self%psi_tor_edge
+        nabla_s = sqrt_g_ss/cm2m
 
-    end subroutine compute_sqrt_g11
+    end subroutine compute_nabla_s
 
 end module boozer_field

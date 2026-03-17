@@ -7,7 +7,7 @@ module field_base
         procedure(compute_B_sqrtg_dB_dx), deferred :: compute_B_sqrtg_dB_dx
         procedure(compute_B_and_dB_dx), deferred :: compute_B_and_dB_dx
         procedure(compute_B_mod), deferred :: compute_B_mod
-        procedure(compute_sqrt_g11), deferred :: compute_sqrt_g11
+        procedure(compute_nabla_s), deferred :: compute_nabla_s
     end type field_t
 
     interface
@@ -38,11 +38,11 @@ module field_base
     end interface
 
     interface
-        subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+        subroutine compute_nabla_s(self, theta, phi, nabla_s)
             import :: field_t, dp
             class(field_t), intent(in) :: self
             real(dp), intent(in) :: theta, phi
-            real(dp), intent(out) :: sqrt_g11
+            real(dp), intent(out) :: nabla_s
         end subroutine
     end interface
 

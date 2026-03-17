@@ -17,11 +17,11 @@ target_link_libraries(test_neo_covariant_components.x rabe_lib)
 add_test(TestNeoCovariantComponents test_neo_covariant_components.x)
 set_tests_properties(TestNeoCovariantComponents PROPERTIES LABELS "slow")
 
-add_executable(test_neo_sqrt_g11.x
-               test_neo_sqrt_g11.f90)
-target_link_libraries(test_neo_sqrt_g11.x rabe_lib)
-add_test(TestNeoSqrtG11 test_neo_sqrt_g11.x)
-set_tests_properties(TestNeoSqrtG11 PROPERTIES LABELS "slow")
+add_executable(test_neo_nabla_s.x
+               test_neo_nabla_s.f90)
+target_link_libraries(test_neo_nabla_s.x rabe_lib)
+add_test(TestNeoNablaS test_neo_nabla_s.x)
+set_tests_properties(TestNeoNablaS PROPERTIES LABELS "slow")
 
 add_executable(test_neo_dr_dAtheta.x
                test_neo_dr_dAtheta.f90)
