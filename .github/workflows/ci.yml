@@ -20,6 +20,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gfortran cmake make libblas-dev liblapack-dev libsuitesparse-dev libmpfr-dev libnetcdf-dev libnetcdff-dev
         sudo apt-get install -y libopenmpi-dev openmpi-bin
+        sudo apt-get install -y python3-dev python3-numpy
 
     - name: Build project
       run: make
