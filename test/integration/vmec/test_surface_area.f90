@@ -47,10 +47,6 @@ program test_surface_area
 
     do case = 1, n_cases
         call bfield%fix_to_surface(stor(case))
-        call bfield%get_iota_and_covariant_components(stor(case), &
-                                                      iota, &
-                                                      B_theta_covar, &
-                                                      B_phi_covar)
         area = 0.0_dp
         do j = 1, n_phi
             phi = (real(j, dp) - 0.5_dp)*dphi
