@@ -17,4 +17,10 @@ add_subdirectory(fieldline)
 add_subdirectory(shaing_callen)
 
 target_link_libraries(rabe_lib PUBLIC
-  utils_lib neo_lib netcdf_lib field_lib fieldline_lib shaing_callen_lib)
+  utils_lib
+  neo_lib
+  netcdf_lib
+  field_lib
+  vmec_lib
+  fieldline_lib
+  shaing_callen_lib)

@@ -5,7 +5,8 @@ module read_file
 
     implicit none
 
-    character(len=100), public, protected :: bc_filename
+    character(len=100), public, protected :: nc_filename
+    real(dp), public, protected :: phi_shift
     real(dp), public, protected :: M_pol
     real(dp), public, protected :: N_tor
     real(dp), dimension(:), allocatable, public, protected :: s_tor
@@ -17,7 +18,8 @@ module read_file
     integer, public, protected :: n_eta
 
     namelist /rabe_config/ &
-        bc_filename, &
+        nc_filename, &
+        phi_shift, &
         M_pol, &
         N_tor, &
         s_tor, &
@@ -53,6 +55,7 @@ contains
         end if
 
         ! Default values
+        phi_shift = 0.0_dp
         should_calc_shaing_callen = .false.
         n_eta = 100
         if (allocated(s_tor)) deallocate (s_tor)
@@ -99,8 +102,12 @@ contains
 
         is_valid = .true.
 
-        if (len(trim(bc_filename)) == 0) then
-            print *, "bc_filename is empty!"
+        if (len(trim(nc_filename)) == 0) then
+            print *, "nc_filename is empty!"
+        end if
+        if (ieee_is_nan(phi_shift)) then
+            print *, "phi_shift is NaN!"
+            is_valid = .false.
         end if
         if (ieee_is_nan(M_pol)) then
             print *, "M_pol is NaN!"
