@@ -2,7 +2,8 @@
 
 The test suite uses the following VMEC equilibrium files
 
-- **Landreman-Paul QA** (`wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc`): A quasi-axisymmetric stellarator equilibrium at reactor scale from Ref. [6]. Taken from the test data of [simsopt](https://github.com/hiddenSymmetries/simsopt/raw/master/tests/test_files/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc).
+- **Landreman-Paul QA** (`wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc`): A quasi-axisymmetric stellarator equilibrium at reactor scale from Ref. [1]. Taken from the test data of [simsopt](https://github.com/hiddenSymmetries/simsopt/raw/master/tests/test_files/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc).
+- **Landreman-Paul QH** (`wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc`): A quasi-helically symmetric stellarator equilibrium at reactor scale from Ref. [1]. Taken from the test data of [simsopt](https://github.com/hiddenSymmetries/simsopt/raw/master/tests/test_files/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc).
 
 ## References
 
