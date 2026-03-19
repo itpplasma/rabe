@@ -64,6 +64,11 @@ target_link_libraries(test_read_namelist.x rabe_lib)
 add_test(TestReadNamelist test_read_namelist.x)
 set_tests_properties(TestReadNamelist PROPERTIES LABELS "quick")
 
+add_executable(test_linspace.x test_linspace.f90)
+target_link_libraries(test_linspace.x rabe_lib)
+add_test(TestLinspace test_linspace.x)
+set_tests_properties(TestLinspace PROPERTIES LABELS "quick")
+
 add_executable(test_diophantine.x test_diophantine.f90)
 target_link_libraries(test_diophantine.x utils_lib)
 add_test(TestDiophantine test_diophantine.x)
