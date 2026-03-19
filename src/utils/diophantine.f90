@@ -33,13 +33,17 @@ contains
 
         p0 = 0; q0 = 1
         p1 = 1; q1 = 0
+
+        if (max_denom <= 0) then
+            error stop "max_denom must be positive"
+        end if
         r = abs(x)
 
         do
             a = int(r)
             pt = a*p1 + p0
             qt = a*q1 + q0
-            if (qt > abs(max_denom)) exit
+            if (qt > max_denom) exit
             p0 = p1; q0 = q1
             p1 = pt; q1 = qt
             if (abs(r - a) < 1.0d-12) exit

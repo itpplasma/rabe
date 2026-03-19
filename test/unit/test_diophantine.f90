@@ -92,12 +92,12 @@ contains
         logical, intent(inout) :: test_failed
         integer :: p, q
 
-        call rational_approx(pi, 1000, p, q)
-        if (p /= 355 .or. q /= 113) then
+        call rational_approx(-pi, 1000, p, q)
+        if (p /= -355 .or. q /= 113) then
             print *, "-------------------------------------------------------------"
             print *, "test_diophantine failed: rational_approx(pi, 1000)"
             print *, "found: ", p, "/", q
-            print *, "expected: 355 / 113"
+            print *, "expected: -355 / 113"
             test_failed = .true.
         end if
 
