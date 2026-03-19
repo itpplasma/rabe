@@ -64,6 +64,11 @@ target_link_libraries(test_read_namelist.x rabe_lib)
 add_test(TestReadNamelist test_read_namelist.x)
 set_tests_properties(TestReadNamelist PROPERTIES LABELS "quick")
 
+add_executable(test_diophantine.x test_diophantine.f90)
+target_link_libraries(test_diophantine.x utils_lib)
+add_test(TestDiophantine test_diophantine.x)
+set_tests_properties(TestDiophantine PROPERTIES LABELS "quick")
+
 add_executable(plot_fit_functions.x plot_fit_functions.f90)
 target_link_libraries(plot_fit_functions.x rabe_lib
                                   myplot_lib)
