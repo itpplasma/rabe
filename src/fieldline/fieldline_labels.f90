@@ -6,7 +6,7 @@ module fieldline_labels
 contains
 
    subroutine get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, labels, approx_iota)
-        use diophantine, only: rational_approx, lcm
+        use diophantine, only: rational_approx
         use utils, only: linspace
         integer, intent(in) :: max_n_fieldlines
         real(dp), intent(in) :: iota
