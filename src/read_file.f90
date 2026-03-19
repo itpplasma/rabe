@@ -12,7 +12,7 @@ module read_file
     real(dp), public, protected :: ds_dr ![1/cm]
     real(dp), public, protected :: sign_sqrtg
     real(dp), public, protected :: phi_tol
-    integer, public, protected :: n_fieldlines
+    integer, public, protected :: max_n_fieldlines
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
 
@@ -23,7 +23,7 @@ module read_file
         s_tor, &
         sign_sqrtg, &
         phi_tol, &
-        n_fieldlines, &
+        max_n_fieldlines, &
         should_calc_shaing_callen, &
         n_eta
 
@@ -144,8 +144,8 @@ contains
             print *, "phi_tol must be positiv"
             is_valid = .false.
         end if
-        if (n_fieldlines <= 1) then
-            print *, "n_fieldliens must be bigger than 1"
+        if (max_n_fieldlines <= 1) then
+            print *, "max_n_fieldliens must be bigger than 1"
             is_valid = .false.
         end if
         if (should_calc_shaing_callen .and. n_eta <= 3) then

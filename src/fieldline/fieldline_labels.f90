@@ -19,11 +19,25 @@ contains
         integer :: n_fieldlines
 
         iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
+        !> The symmetry points label=pi and label=pi-iota_p have to be either
+        !> part of the label grid or lie symmetric between two labels. Only then
+        !> are the sampled points of a symmetric function themselvese symmetric
+        !> in respect to those points. The grid is automatic symmetric in respect
+        !> to pi if its equidistant between 0 and 2pi. Additionally, if one finds an
+        !> approximated iota so that iota_p/2pi is rational p/q, and takes q as
+        !> number of points excluding the endpoint 2pi, then
+        !> $$
+        !> dlabel = 2pi/q = iota_p/p
+        !> $$
+        !> and pi-iota_p is a whole number of steps away from pi and therefore
+        !> also either part of the grid or symmetric between two labels.
         call rational_approx(iota_p/(2.0_dp*pi), max_n_fieldlines, p, q)
         iota_p_approx = 2.0_dp*pi*p/q
         approx_iota = calc_iota(iota_p_approx, M_pol, N_tor, nfp)
 
-        n_fieldlines = q
+        !> Any multiple of q would work, but we want to use the largest one that
+        !> is smaller than max_n_fieldlines to get the best resolution.
+        n_fieldlines = q*(max_n_fieldlines/q)
         allocate (labels(n_fieldlines))
 
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, labels, include_endpoint=.false.)

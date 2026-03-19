@@ -8,7 +8,7 @@ program test_read_namelist
                          s_tor, &
                          sign_sqrtg, &
                          phi_tol, &
-                         n_fieldlines, &
+                         max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta
 
@@ -26,7 +26,7 @@ program test_read_namelist
     real(dp), dimension(:), allocatable :: test_s_tor
     real(dp), parameter :: test_sign_sqrtg = -1.0_dp
     real(dp), parameter :: test_phi_tol = 0.000001_dp
-    integer, parameter :: test_n_fieldlines = 10
+    integer, parameter :: test_max_n_fieldlines = 10
     logical, parameter :: test_should_calc_shaing_callen = .true.
     integer, parameter :: test_n_eta = 11
 
@@ -41,7 +41,7 @@ program test_read_namelist
                          test_s_tor=test_s_tor, &
                          test_sign_sqrtg=test_sign_sqrtg, &
                          test_phi_tol=test_phi_tol, &
-                         test_n_fieldlines=test_n_fieldlines, &
+                         test_max_n_fieldlines=test_max_n_fieldlines, &
                          test_should_calc_shaing_callen= &
                          test_should_calc_shaing_callen, &
                          test_n_eta=test_n_eta)
@@ -104,11 +104,11 @@ program test_read_namelist
         print *, "expected: ", test_phi_tol
         test_failed = .true.
     end if
-    if (n_fieldlines /= test_n_fieldlines) then
+    if (max_n_fieldlines /= test_max_n_fieldlines) then
         print *, "-------------------------------------------------------------"
-        print *, "test_read_namelist failed: n_fieldlines"
-        print *, "found: ", n_fieldlines
-        print *, "expected: ", test_n_fieldlines
+        print *, "test_read_namelist failed: max_n_fieldlines"
+        print *, "found: ", max_n_fieldlines
+        print *, "expected: ", test_max_n_fieldlines
         test_failed = .true.
     end if
     if (should_calc_shaing_callen .neqv. test_should_calc_shaing_callen) then
@@ -137,7 +137,7 @@ program test_read_namelist
                          test_s_tor=test_s_tor, &
                          test_sign_sqrtg=test_sign_sqrtg, &
                          test_phi_tol=test_phi_tol, &
-                         test_n_fieldlines=test_n_fieldlines, &
+                         test_max_n_fieldlines=test_max_n_fieldlines, &
                          test_should_calc_shaing_callen= &
                          test_should_calc_shaing_callen, &
                          test_n_eta=test_n_eta)
@@ -167,7 +167,7 @@ contains
                                test_s_tor, &
                                test_sign_sqrtg, &
                                test_phi_tol, &
-                               test_n_fieldlines, &
+                               test_max_n_fieldlines, &
                                test_should_calc_shaing_callen, &
                                test_n_eta)
 
@@ -178,7 +178,7 @@ contains
         real(dp), intent(in), dimension(:), optional :: test_s_tor
         real(dp), intent(in), optional :: test_sign_sqrtg
         real(dp), intent(in), optional :: test_phi_tol
-        integer, intent(in), optional :: test_n_fieldlines
+        integer, intent(in), optional :: test_max_n_fieldlines
         logical, intent(in), optional :: test_should_calc_shaing_callen
         integer, intent(in), optional :: test_n_eta
 
@@ -204,8 +204,8 @@ contains
         if (present(test_phi_tol)) then
             write (unit, "(A,E12.5,A)") "phi_tol = ", test_phi_tol, ","
         end if
-        if (present(test_n_fieldlines)) then
-            write (unit, "(A,I6,A)") "n_fieldlines = ", test_n_fieldlines, ","
+        if (present(test_max_n_fieldlines)) then
+            write (unit, "(A,I6,A)") "max_n_fieldlines = ", test_max_n_fieldlines, ","
         end if
         if (present(test_should_calc_shaing_callen)) then
             write (unit, "(A,L,A)") "should_calc_shaing_callen = ", &
