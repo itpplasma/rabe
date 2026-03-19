@@ -141,11 +141,11 @@ contains
             is_valid = .false.
         end if
         if (phi_tol <= 0.0_dp) then
-            print *, "phi_tol must be positiv"
+            print *, "phi_tol must be positive"
             is_valid = .false.
         end if
         if (max_n_fieldlines <= 1) then
-            print *, "max_n_fieldliens must be bigger than 1"
+            print *, "max_n_fieldlines must be bigger than 1"
             is_valid = .false.
         end if
         if (should_calc_shaing_callen .and. n_eta <= 3) then
