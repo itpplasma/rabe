@@ -49,6 +49,12 @@ contains
         real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp) :: iota_p
 
+        if (abs(iota*M_pol - N_tor) < 1.0e-10_dp) then
+            error stop "iota*M_pol - N_tor must not be zero (resonant)!"
+        end if
+        if (M_pol**2.0_dp + N_tor**2.0_dp < 1.0e-10_dp) then
+            error stop "M_pol**2 + N_tor**2 must not be zero!"
+        end if
         iota_p = sign(pi, iota*M_pol - N_tor)/(M_pol**2.0_dp + N_tor**2.0_dp)* &
                  (M_pol + &
                   nfp*(N_tor*iota + M_pol)/(iota*M_pol - N_tor))

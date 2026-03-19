@@ -33,20 +33,20 @@ contains
 
         p0 = 0; q0 = 1
         p1 = 1; q1 = 0
-        r = x
+        r = abs(x)
 
         do
             a = int(r)
             pt = a*p1 + p0
             qt = a*q1 + q0
-            if (qt > max_denom) exit
+            if (qt > abs(max_denom)) exit
             p0 = p1; q0 = q1
             p1 = pt; q1 = qt
             if (abs(r - a) < 1.0d-12) exit
-            r = 1.0d0/(r - a)
+            r = 1.0_dp/(r - a)
         end do
 
-        p = p1; q = q1
+        p = p1*sign(1.0_dp, x); q = q1
     end subroutine rational_approx
 
 end module diophantine
