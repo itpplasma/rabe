@@ -3,6 +3,7 @@ program plot_deviation_drevlak_axi
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
+    use fieldline_labels, only: get_labels
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use fit_functions, only: S_A, S_B
@@ -38,12 +39,13 @@ program plot_deviation_drevlak_axi
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-5
-    integer, parameter :: n_fieldlines = 401
+    integer, parameter :: max_n_fieldlines = 400
 
-    real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: labels
     real(dp) :: iota, nfp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
@@ -54,12 +56,13 @@ program plot_deviation_drevlak_axi
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
     nfp = field%nfp
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, labels, approx_iota)
+    n_fieldlines = size(labels)
+    allocate (fieldlines(n_fieldlines))
 
     call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
-                                  iota, &
+                                  labels, &
+                                  approx_iota, &
                                   field, &
                                   M_pol, &
                                   N_tor, &

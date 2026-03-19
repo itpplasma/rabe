@@ -1,0 +1,63 @@
+module fieldline_labels
+    use constants, only: dp, pi
+
+    implicit none
+
+contains
+
+   subroutine get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, labels, approx_iota)
+        use diophantine, only: rational_approx, lcm
+        use utils, only: linspace
+        integer, intent(in) :: max_n_fieldlines
+        real(dp), intent(in) :: iota
+        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp), dimension(:), allocatable, intent(out) :: labels
+        real(dp), intent(out) :: approx_iota
+
+        real(dp) :: iota_p, iota_p_approx
+        integer :: p, q
+        integer :: n_fieldlines
+
+        iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
+        call rational_approx(iota_p/(2.0_dp*pi), max_n_fieldlines, p, q)
+        iota_p_approx = 2.0_dp*pi*p/q
+        approx_iota = calc_iota(iota_p_approx, M_pol, N_tor, nfp)
+
+        n_fieldlines = q
+        allocate (labels(n_fieldlines))
+
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, labels, include_endpoint=.false.)
+
+    end subroutine get_labels
+
+    function calc_iota_p(iota, M_pol, N_tor, nfp) result(iota_p)
+        real(dp), intent(in) :: iota
+        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp) :: iota_p
+
+        iota_p = sign(pi, iota*M_pol - N_tor)/(M_pol**2.0_dp + N_tor**2.0_dp)* &
+                 (M_pol + &
+                  nfp*(N_tor*iota + M_pol)/(iota*M_pol - N_tor))
+
+    end function calc_iota_p
+
+    function calc_iota(iota_p, M_pol, N_tor, nfp) result(iota)
+        real(dp), intent(in) :: iota_p
+        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp) :: iota
+
+        real(dp) :: z, sigma
+
+        sigma = 1.0_dp
+        z = iota_p*(M_pol**2.0_dp + N_tor**2.0_dp)/pi*sigma - M_pol
+        iota = (M_pol*nfp + N_tor*z)/(M_pol*z - N_tor*nfp)
+
+        if (iota*M_pol - N_tor < 0.0_dp) then
+            sigma = -1.0_dp
+            z = iota_p*(M_pol**2.0_dp + N_tor**2.0_dp)/pi*sigma - M_pol
+            iota = (M_pol*nfp + N_tor*z)/(M_pol*z - N_tor*nfp)
+        end if
+
+    end function calc_iota
+
+end module fieldline_labels
