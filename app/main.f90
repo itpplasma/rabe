@@ -3,7 +3,7 @@ program rabe
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_labels, only: get_labels
+    use fieldline_labels, only: get_theta_0
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
@@ -39,7 +39,7 @@ program rabe
     real(dp) :: iota, approx_iota
     real(dp) :: nfp
 
-    real(dp), dimension(:), allocatable :: labels
+    real(dp), dimension(:), allocatable :: theta_0
 
     integer :: n_fieldlines
     type(fieldline_t), dimension(:), allocatable :: fieldlines
@@ -75,13 +75,14 @@ program rabe
         iota = field%iota
         nfp = field%nfp
 
-        call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, labels, approx_iota)
-        n_fieldlines = size(labels)
+        call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
+                         theta_0, approx_iota)
+        n_fieldlines = size(theta_0)
         allocate (fieldlines(n_fieldlines))
         iota = approx_iota
 
         call make_flock_of_fieldlines(fieldlines, &
-                                      labels, &
+                                      theta_0, &
                                       iota, &
                                       field, &
                                       M_pol, &
@@ -119,7 +120,7 @@ program rabe
         print *, "1/nu_star factor: ", C_B(this)
 
         if (allocated(fieldlines)) deallocate (fieldlines)
-        if (allocated(labels)) deallocate (labels)
+        if (allocated(theta_0)) deallocate (theta_0)
 
     end do
 
