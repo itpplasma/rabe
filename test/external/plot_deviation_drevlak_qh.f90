@@ -3,6 +3,7 @@ program plot_deviation_drevlak_qh
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
+    use fieldline_labels, only: get_theta_0
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use fit_functions, only: S_A, S_B
@@ -37,12 +38,13 @@ program plot_deviation_drevlak_qh
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-6
-    integer, parameter :: n_fieldlines = 200
+    integer, parameter :: max_n_fieldlines = 300
 
-    real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: theta_0
     real(dp) :: iota, nfp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
 
     integer :: current
     real(dp) :: interval(2)
@@ -56,12 +58,13 @@ program plot_deviation_drevlak_qh
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
     nfp = field%nfp
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, theta_0, approx_iota)
+    n_fieldlines = size(theta_0)
+    allocate (fieldlines(n_fieldlines))
 
     call make_flock_of_fieldlines(fieldlines, &
                                   theta_0, &
-                                  iota, &
+                                  approx_iota, &
                                   field, &
                                   M_pol, &
                                   N_tor, &
@@ -70,7 +73,7 @@ program plot_deviation_drevlak_qh
 
     if (should_plot_others) then
         current = 16
-        interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - iota*M_pol) + &
+        interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - approx_iota*M_pol) + &
                    fieldlines(current)%phi_0
         call plot_B_along_fieldline(field, fieldlines(current), interval)
         call plot_fieldlines_over_field(fieldlines, field)
@@ -83,7 +86,7 @@ program plot_deviation_drevlak_qh
 
     call calc_deviation(fieldlines, deviation_A, deviation_B)
 
-    covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
+    covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*approx_iota)
     dr_dAphi = 1.0_dp/(ds_dr*field%psi_tor_edge)*sign_sqrtg
     R = field%R
     off_factor_A = deviation_A*dr_dAphi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)

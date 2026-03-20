@@ -1,6 +1,7 @@
 program test_lambda_helical_anti_sigma
     use constants, only: dp, pi
     use utils, only: linspace, not_same
+    use fieldline_labels, only: get_theta_0
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -13,16 +14,17 @@ program test_lambda_helical_anti_sigma
     type(anti_sigma_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-6
-    integer, parameter :: n_fieldlines = 20
+    integer, parameter :: max_n_fieldlines = 20
 
-    real(dp), dimension(n_fieldlines) :: xi_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: xi_0
     real(dp), parameter :: iota = 0.0_dp, nfp = max(1.0_dp, abs(N_tor))
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
     type(fieldline_t) :: current_fieldline
 
-    real(dp), dimension(n_fieldlines) :: lambda_integral_analytic
-    real(dp), dimension(n_fieldlines) :: lambda_integral
+    real(dp), dimension(:), allocatable :: lambda_integral_analytic
+    real(dp), dimension(:), allocatable :: lambda_integral
     real(dp), parameter :: lambda_reltol = 1e-8
     integer :: current
     logical :: test_failed
@@ -30,11 +32,14 @@ program test_lambda_helical_anti_sigma
     logical :: should_plot = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    xi_0 = temp(1:n_fieldlines)
+    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
+    n_fieldlines = size(xi_0)
+    allocate (fieldlines(n_fieldlines))
+    allocate (lambda_integral_analytic(n_fieldlines))
+    allocate (lambda_integral(n_fieldlines))
     call make_flock_of_fieldlines(fieldlines, &
                                   xi_0, &
-                                  iota, &
+                                  approx_iota, &
                                   field, &
                                   M_pol, &
                                   N_tor, &

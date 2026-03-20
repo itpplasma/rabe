@@ -8,6 +8,7 @@ program test_anti_sigma_analytic
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
+    use fieldline_labels, only: get_theta_0
 
     implicit none
 
@@ -26,13 +27,14 @@ program test_anti_sigma_analytic
     real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*abs(eps_0)
     real(dp), parameter :: reltol_average_B_squared = 2.0_dp*eps_0**2
     real(dp), parameter :: abstol = 1e-13
-    integer, parameter :: n_fieldlines = 60
+    integer, parameter :: max_n_fieldlines = 60
 
-    real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: theta_0
     real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
     real(dp), parameter :: nfp = 1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
     integer :: n_modes
     integer, parameter :: active = 2
@@ -48,11 +50,12 @@ program test_anti_sigma_analytic
     failed_test = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, theta_0, approx_iota)
+    n_fieldlines = size(theta_0)
+    allocate (fieldlines(n_fieldlines))
 
-    call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
-                                  nfp, phi_tol)
+    call make_flock_of_fieldlines(fieldlines, theta_0, approx_iota, field, M_pol, &
+                                  N_tor, nfp, phi_tol)
 
     do current = 1, n_fieldlines
         if (not_same(phi_0, modulo(fieldlines(current)%phi_0, 2.0_dp*pi), &
