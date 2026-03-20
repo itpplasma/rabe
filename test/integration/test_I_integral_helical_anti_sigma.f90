@@ -2,6 +2,7 @@ program test_I_integral_helical_anti_sigma
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace, not_same
+    use fieldline_labels, only: get_theta_0
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -38,32 +39,35 @@ program test_I_integral_helical_anti_sigma
     real(dp), parameter :: I_mean_reltol = eps_0*eps_0*3.0_dp
     real(dp), parameter :: I_amplitude_reltol = max(eps_ratio*eps_ratio*5.0_dp, &
                                                     eps_0*eps_0*10.0_dp)
-    integer, parameter :: n_fieldlines = 20
+    integer, parameter :: max_n_fieldlines = 20
     real(dp), dimension(2) :: phi_max
 
-    real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: theta_0
     real(dp), parameter :: iota = 0.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, N_tor)
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp) :: off_factor_A, off_factor_B
 
     integer :: current
-    real(dp), dimension(n_fieldlines) :: I_shifted
+    real(dp), dimension(:), allocatable :: I_shifted
     real(dp) :: I_mean, I_amplitude
     logical :: test_failed
 
     logical, parameter :: should_plot = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, theta_0, approx_iota)
+    n_fieldlines = size(theta_0)
+    allocate (fieldlines(n_fieldlines))
+    allocate (I_shifted(n_fieldlines))
     call make_flock_of_fieldlines(fieldlines, &
                                   theta_0, &
-                                  iota, &
+                                  approx_iota, &
                                   field, &
                                   M_pol, &
                                   N_tor, &

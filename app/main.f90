@@ -3,6 +3,7 @@ program rabe
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
+    use fieldline_labels, only: get_theta_0
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
@@ -18,7 +19,7 @@ program rabe
                          s_tor, &
                          sign_sqrtg, &
                          phi_tol, &
-                         n_fieldlines, &
+                         max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta
 
@@ -35,12 +36,12 @@ program rabe
     real(dp) :: R ![m]
     type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
-    real(dp) :: iota
+    real(dp) :: iota, approx_iota
     real(dp) :: nfp
 
     real(dp), dimension(:), allocatable :: theta_0
-    real(dp), dimension(:), allocatable :: temp
 
+    integer :: n_fieldlines
     type(fieldline_t), dimension(:), allocatable :: fieldlines
 
     real(dp) :: deviation_A, deviation_B
@@ -65,12 +66,6 @@ program rabe
         allocate (remainder(n_stor))
     end if
 
-    allocate (fieldlines(n_fieldlines))
-    allocate (theta_0(n_fieldlines))
-    allocate (temp(n_fieldlines + 1))
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
-
     do this = 1, n_stor
         if (this == 1) then
             call field%neo_field_init(bc_filename, s_tor(1))
@@ -79,6 +74,12 @@ program rabe
         end if
         iota = field%iota
         nfp = field%nfp
+
+        call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
+                         theta_0, approx_iota)
+        n_fieldlines = size(theta_0)
+        allocate (fieldlines(n_fieldlines))
+        iota = approx_iota
 
         call make_flock_of_fieldlines(fieldlines, &
                                       theta_0, &
@@ -117,6 +118,9 @@ program rabe
         end if
         print *, "1/sqrt(nu_star) factor: ", C_A(this)
         print *, "1/nu_star factor: ", C_B(this)
+
+        if (allocated(fieldlines)) deallocate (fieldlines)
+        if (allocated(theta_0)) deallocate (theta_0)
 
     end do
 
@@ -171,9 +175,5 @@ program rabe
     if (allocated(nu_star_limit)) deallocate (nu_star_limit)
     if (allocated(lambda_SC)) deallocate (lambda_SC)
     if (allocated(remainder)) deallocate (remainder)
-
-    if (allocated(fieldlines)) deallocate (fieldlines)
-    if (allocated(theta_0)) deallocate (theta_0)
-    if (allocated(temp)) deallocate (temp)
 
 end program rabe

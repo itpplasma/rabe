@@ -4,6 +4,7 @@ add_library(utils_lib STATIC
   integrate.f90
   fourier.f90
   find_extrema.f90
+  diophantine.f90
   )
 
 include(Util)

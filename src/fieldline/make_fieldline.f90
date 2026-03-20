@@ -10,6 +10,7 @@ contains
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, phi_tol)
         use fieldline_integrals, only: calc_fieldline_integrals
+        use fieldline_labels, only: calc_iota_p
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
@@ -18,7 +19,6 @@ contains
         real(dp), intent(in), optional :: phi_tol
 
         real(dp) :: interval(2)
-        real(dp) :: normalization
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
@@ -37,10 +37,7 @@ contains
         call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
                                                 phi_tol)
 
-        normalization = N_tor**2.0_dp + M_pol**2.0_dp
-        fieldlines%iota_p = sign(pi, iota*M_pol - N_tor)/normalization* &
-                            (M_pol + &
-                             nfp*(N_tor*iota + M_pol)/(iota*M_pol - N_tor))
+        fieldlines%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
 
         too_strong_violation = .false.
         do current = 1, n_fieldlines

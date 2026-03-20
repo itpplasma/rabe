@@ -8,6 +8,7 @@ program test_pert_anti_sigma_analytic
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
+    use fieldline_labels, only: get_theta_0
 
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
@@ -28,14 +29,15 @@ program test_pert_anti_sigma_analytic
     real(dp), parameter :: abstol = 1e-15
     real(dp), parameter :: phi_tol = 2e-5
 
-    integer, parameter :: n_fieldlines = 50
-    integer, parameter :: n_modes = n_fieldlines/2 + 1
+    integer, parameter :: max_n_fieldlines = 50
 
-    real(dp), dimension(n_fieldlines) :: xi_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
+    real(dp), dimension(:), allocatable :: xi_0
     real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
     real(dp), parameter :: nfp = 1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp) :: approx_iota
+    integer :: n_fieldlines
+    integer :: n_modes
+    type(fieldline_t), dimension(:), allocatable :: fieldlines
     type(fieldline_modes_t) :: fieldline_modes
 
     integer :: current
@@ -53,12 +55,14 @@ program test_pert_anti_sigma_analytic
                                                    M_pol_pert, &
                                                    N_tor_pert, &
                                                    B_pert)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    xi_0 = temp(1:n_fieldlines)
+    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
+    n_fieldlines = size(xi_0)
+    n_modes = n_fieldlines/2 + 1
+    allocate (fieldlines(n_fieldlines))
 
     call make_flock_of_fieldlines(fieldlines, &
                                   xi_0, &
-                                  iota, &
+                                  approx_iota, &
                                   perturbed_field, &
                                   M_pol, &
                                   N_tor, &
