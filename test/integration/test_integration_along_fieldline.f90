@@ -3,7 +3,7 @@ program test_integration_along_fieldline
     use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: set_fieldline_labels_along_chi_min
+    use fieldline_labels, only: set_fieldline_labels_along_chi_min
     use make_fieldline, only: find_maxima_along_fieldline
     use integrate, only: integrate_1d
 

@@ -4,7 +4,7 @@ program test_set_fieldline_labels
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: set_fieldline_labels_along_chi_min
+    use fieldline_labels, only: set_fieldline_labels_along_chi_min
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
 

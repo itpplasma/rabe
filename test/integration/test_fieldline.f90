@@ -23,7 +23,7 @@ program test_fieldline
 contains
 
     subroutine test_guess_chi_at_minimum()
-        use make_fieldline, only: guess_chi_min
+        use fieldline_labels, only: guess_chi_min
 
         real(dp), parameter :: retol = 1e-2*0.5_dp*abs(N_tor)
 
@@ -123,7 +123,7 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use make_fieldline, only: set_fieldline_labels_along_chi_min
+        use fieldline_labels, only: set_fieldline_labels_along_chi_min
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
