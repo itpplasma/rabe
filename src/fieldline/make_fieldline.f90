@@ -11,7 +11,7 @@ contains
                                         field, M_pol, N_tor, nfp, phi_tol)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
-        use fieldline_labels, only: set_fieldline_labels_along_chi_min
+        use fieldline_labels, only: check_field_origin
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
@@ -35,8 +35,11 @@ contains
         fieldlines%N_tor = N_tor
         fieldlines%nfp = nfp
 
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
-                                                phi_tol)
+        !> if the origin of the ideal omnigenous field is a minimum
+        call check_field_origin(field, M_pol, N_tor, phi_tol)
+        !> we can put the labels along the chi = 0 line
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
 
         fieldlines%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
 

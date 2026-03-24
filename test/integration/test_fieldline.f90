@@ -16,35 +16,10 @@ program test_fieldline
     type(neo_field_t) :: field
 
     call field%neo_field_init(bc_filename, 0.0_dp)
-    call test_guess_chi_at_minimum()
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
 
 contains
-
-    subroutine test_guess_chi_at_minimum()
-        use fieldline_labels, only: guess_chi_min
-
-        real(dp), parameter :: retol = 1e-2*0.5_dp*abs(N_tor)
-
-        real(dp) :: stor(4)
-        real(dp) :: chi_min, found_chi_min
-        integer :: idx
-
-        stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
-        do idx = 1, 4
-            call field%neo_change_stor(stor(idx))
-            call guess_chi_min(field, chi_min, N_tor, M_pol)
-            found_chi_min = mod(chi_min - pi, 2*pi) + pi
-            if (not_same(chi_min, found_chi_min, retol)) then
-                print *, "-------------------------------------------------------------"
-                print *, "test_guess_chi_min failed: chi at minima"
-                print *, "found: ", found_chi_min
-                print *, "analytic: ", chi_min
-                error stop
-            end if
-        end do
-    end subroutine test_guess_chi_at_minimum
 
     subroutine test_find_maxima_along_fieldline()
         use make_fieldline, only: find_maxima_along_fieldline
@@ -123,7 +98,7 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use fieldline_labels, only: set_fieldline_labels_along_chi_min
+        use fieldline_labels, only: check_field_origin
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
@@ -141,8 +116,7 @@ contains
         fieldlines(:)%theta_0 = theta_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
-                                                fieldlines)
+        call check_field_origin(field, M_pol, N_tor)
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &

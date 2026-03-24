@@ -82,112 +82,125 @@ contains
 
     end function calc_iota
 
-    subroutine set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
-                                                  fieldlines, phi_tol)
+    subroutine check_field_origin(field, N_tor, M_pol, phi_tol)
+        use find_extrema, only: find_local_minima
+        use find_extrema, only: find_local_maxima
+        use find_extrema, only: find_global_extrema
         use field_base, only: field_t
-        use fieldline_mod, only: fieldline_t
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp), intent(in) :: N_tor, M_pol
         real(dp), intent(in), optional :: phi_tol
-        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
 
-        real(dp) :: chi_min, tol
-
-        call guess_chi_min(field, chi_min, N_tor, M_pol, phi_tol)
+        real(dp), dimension(2) :: interval
+        real(dp) :: tol
+        integer, parameter :: n_min = 10
+        real(dp) :: chis(n_min)
+        integer :: n
+        integer :: id_chi
+        real(dp), parameter :: height_tol = 0.3_dp
+        real(dp), dimension(2) :: extrema
+        real(dp) :: B_min, B_max, B_range, B_at_origin, height
+        logical :: origin_is_minimum, origin_is_maximum
 
         if (present(phi_tol)) then
-            tol = phi_tol*3.0_dp
+            tol = phi_tol*abs(M_pol*pi - N_tor)
         else
             tol = 3.0_dp*1e-2
         end if
-        if (not_multiple_of_2pi(chi_min, tol)) then
-            print *, "error: found chi_min is not multiple of 2pi"
-            print *, "chi_min: ", chi_min/pi, "[pi]"
-            print *, "The minima contour of the ideal omnigenous configuration"
-            print *, "must pass through (theta=0,phi=0)!"
+
+        origin_is_maximum = .false.
+        origin_is_minimum = .false.
+
+        interval = [-pi, pi]
+        call find_local_minima(B_mod_along_pi_line, interval, chis, tol)
+        n = count(.not. ieee_is_nan(chis))
+        do id_chi = 1, n
+            if (is_multiple_of_2pi(chis(id_chi), tol)) then
+                origin_is_minimum = .true.
+                exit
+            end if
+        end do
+
+        if (.not. origin_is_minimum) then
+            call find_local_maxima(B_mod_along_pi_line, interval, chis, tol)
+            n = count(.not. ieee_is_nan(chis))
+            do id_chi = 1, n
+                if (is_multiple_of_2pi(chis(id_chi), tol)) then
+                    origin_is_maximum = .true.
+                    exit
+                end if
+            end do
+        end if
+
+        if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
+            print *, "error: origin is neither local minimum nor maximum!"
+            print *, "Stellarator symmetry is violated!"
             error stop
         end if
 
-        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
-        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
-    end subroutine set_fieldline_labels_along_chi_min
-
-    subroutine guess_chi_min(field, chi_min, N_tor, M_pol, tol)
-        use find_extrema, only: find_local_minima
-        use field_base, only: field_t
-
-        class(field_t), intent(in) :: field
-        real(dp), intent(out) :: chi_min
-        real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: tol
-
-        ! chi = M*theta - N*phi
-        ! as f~f(chi) = sum c_j*cos(j*chi) with 1<j<j_max
-        ! periodic at least after 2pi -> minimum must be in e.g [-pi, 2pi]
-        real(dp), dimension(2), parameter :: interval = [0.0_dp, 3.0_dp*pi]
-        real(dp) :: location(1)
-
-        ! If f(theta,phi) approx f(chi = M*theta - N*phi) one can estiamte
-        ! f(chi/N) by choosing 1 specific theta-phi combination for that
-        ! chi value e.g.
-        ! - phi=-chi/N and theta=0 or
-        ! - phi=0 and theta=chi/M
-
-        if (nint(N_tor) /= 0) then
-            call find_local_minima(B_mod_along_phi_axis, interval, location, tol)
-        elseif (nint(M_pol) /= 0) then
-            call find_local_minima(B_mod_along_theta_axis, interval, location, tol)
-        else
-            print *, "error in guess_chi_min: M_pol=N_tor=0"
-            print *, "M_pol and N_tor must not be both zero!"
+        extrema = find_global_extrema(B_mod_along_pi_line, interval, tol)
+        B_min = extrema(1)
+        B_max = extrema(2)
+        B_range = B_max - B_min
+        call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
+        height = B_at_origin - B_min
+        if (height/B_range > height_tol) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Detected that origin in provided field is instead"
+            print *, "a significant local maximum of height > "
+            print *, height_tol*100.0_dp, "% of the total B range!"
+            print *, "The violation of omnigeneity is either too strong or the"
+            print *, "origin of the ideal omnigenous configuration is not a minimum!"
             error stop
         end if
-
-        chi_min = location(1)
 
     contains
 
-        subroutine B_mod_along_phi_axis(chi, B_mod)
+        !> we go along the theta = pi*phi line so that
+        !> chi = M_pol*theta - N_tor*phi can be inverted
+        subroutine B_mod_along_pi_line(chi, B_mod)
             real(dp), dimension(:), intent(in) :: chi
             real(dp), dimension(:), intent(out) :: B_mod
 
             real(dp), dimension(size(chi, 1)) :: phi, theta
             integer :: idx
 
-            phi = -chi/N_tor
-            theta = 0.0_dp
+            !> as M_pol and N_tor are whole numbers that must no both be zero
+            !> M_pol*pi - N_tor should never zero
+            if (abs(M_pol*pi - N_tor) < 1e-8) then
+                print *, "Error: (M_pol*pi - N_tor) must not be (close) zero."
+                print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*pi - N_tor)
+                error stop
+            end if
+
+            phi = chi/(M_pol*pi - N_tor)
+            theta = pi*phi
 
             do idx = 1, size(chi, 1)
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
-        end subroutine B_mod_along_phi_axis
+        end subroutine B_mod_along_pi_line
 
-        subroutine B_mod_along_theta_axis(chi, B_mod)
-            real(dp), dimension(:), intent(in) :: chi
-            real(dp), dimension(:), intent(out) :: B_mod
+    end subroutine check_field_origin
 
-            real(dp), dimension(size(chi, 1)) :: phi, theta
-            integer :: idx
-
-            theta = chi/M_pol
-            phi = 0.0_dp
-
-            do idx = 1, size(chi, 1)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
-            end do
-        end subroutine B_mod_along_theta_axis
-
-    end subroutine guess_chi_min
-
-    function not_multiple_of_2pi(angle, tol)
+    function is_multiple_of_2pi(angle, tol_in)
         real(dp), intent(in) :: angle
-        real(dp), intent(in) :: tol
-        logical :: not_multiple_of_2pi
+        real(dp), intent(in), optional :: tol_in
+        logical :: is_multiple_of_2pi
 
+        real(dp) :: tol
         real(dp) :: remainder
+        if (present(tol_in)) then
+            tol = tol_in
+        else
+            tol = 3.0_dp*1e-2
+        end if
 
         remainder = abs(mod(angle, 2.0_dp*pi))
-        not_multiple_of_2pi = remainder > tol .and. abs(remainder - 2.0*pi) > tol
-    end function not_multiple_of_2pi
+        is_multiple_of_2pi = remainder < tol .or. abs(remainder - 2.0*pi) < tol
+    end function is_multiple_of_2pi
 
 end module fieldline_labels
