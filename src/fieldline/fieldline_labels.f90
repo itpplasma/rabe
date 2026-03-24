@@ -5,14 +5,14 @@ module fieldline_labels
 
 contains
 
-    subroutine get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
-                           theta_0, approx_iota)
+    subroutine get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
+                          xi_0, approx_iota)
         use diophantine, only: rational_approx
         use utils, only: linspace
         integer, intent(in) :: max_n_fieldlines
         real(dp), intent(in) :: iota
         real(dp), intent(in) :: M_pol, N_tor, nfp
-        real(dp), dimension(:), allocatable, intent(out) :: theta_0
+        real(dp), dimension(:), allocatable, intent(out) :: xi_0
         real(dp), intent(out) :: approx_iota
 
         real(dp) :: iota_p, iota_p_approx
@@ -20,7 +20,7 @@ contains
         integer :: n_fieldlines
 
         iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
-        !> The symmetry points theta_0=pi and theta_0=pi-iota_p have to be either
+        !> The symmetry points xi_0=pi and xi_0=pi-iota_p have to be either
         !> part of the label grid or lie symmetric between two labels. Only then
         !> are the sampled points of a symmetric function themselvese symmetric
         !> in respect to those points. The grid is automatic symmetric in respect
@@ -28,7 +28,7 @@ contains
         !> approximated iota so that iota_p/2pi is rational p/q, and takes q as
         !> number of points excluding the endpoint 2pi, then
         !> $$
-        !> dtheta_0 = 2pi/q = iota_p/p
+        !> dxi_0 = 2pi/q = iota_p/p
         !> $$
         !> and pi-iota_p is a whole number of steps away from pi and therefore
         !> also either part of the grid or symmetric between two labels.
@@ -39,12 +39,12 @@ contains
         !> Any multiple of q would work, but we want to use the largest one that
         !> is smaller than max_n_fieldlines to get the best resolution.
         n_fieldlines = q*(max_n_fieldlines/q)
-        allocate (theta_0(n_fieldlines))
+        allocate (xi_0(n_fieldlines))
 
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, &
-                      theta_0, include_endpoint=.false.)
+                      xi_0, include_endpoint=.false.)
 
-    end subroutine get_theta_0
+    end subroutine get_labels
 
     function calc_iota_p(iota, M_pol, N_tor, nfp) result(iota_p)
         real(dp), intent(in) :: iota

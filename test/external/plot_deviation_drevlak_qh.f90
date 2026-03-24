@@ -3,7 +3,7 @@ program plot_deviation_drevlak_qh
     use utils, only: linspace
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_labels, only: get_theta_0
+    use fieldline_labels, only: get_labels
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use fit_functions, only: S_A, S_B
@@ -40,7 +40,7 @@ program plot_deviation_drevlak_qh
     real(dp), parameter :: phi_tol = 1e-6
     integer, parameter :: max_n_fieldlines = 300
 
-    real(dp), dimension(:), allocatable :: theta_0
+    real(dp), dimension(:), allocatable :: xi_0
     real(dp) :: iota, nfp
     real(dp) :: approx_iota
     integer :: n_fieldlines
@@ -58,12 +58,12 @@ program plot_deviation_drevlak_qh
     call field%neo_field_init(bc_filename, stor)
     iota = field%iota
     nfp = field%nfp
-    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, theta_0, approx_iota)
-    n_fieldlines = size(theta_0)
+    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
+    n_fieldlines = size(xi_0)
     allocate (fieldlines(n_fieldlines))
 
     call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
+                                  xi_0, &
                                   approx_iota, &
                                   field, &
                                   M_pol, &

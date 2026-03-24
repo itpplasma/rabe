@@ -1,7 +1,7 @@
 program test_lambda_helical_anti_sigma
     use constants, only: dp, pi
     use utils, only: linspace, not_same
-    use fieldline_labels, only: get_theta_0
+    use fieldline_labels, only: get_labels
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -32,7 +32,7 @@ program test_lambda_helical_anti_sigma
     logical :: should_plot = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
+    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
     n_fieldlines = size(xi_0)
     allocate (fieldlines(n_fieldlines))
     allocate (lambda_integral_analytic(n_fieldlines))
