@@ -4,6 +4,7 @@ program plot_deviation_drevlak_qh
     use neo_field, only: neo_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_labels, only: get_labels
+    use fieldline_labels, only: calc_iota_p
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use fit_functions, only: S_A, S_B
@@ -72,7 +73,9 @@ program plot_deviation_drevlak_qh
                                   phi_tol)
 
     if (should_plot_others) then
-        current = 16
+        current = minloc(abs(xi_0 - &
+                             calc_iota_p(approx_iota, M_pol, N_tor, nfp) &
+                             - pi), dim=1)
         interval = (/-1.5_dp*pi, 1.5_dp*pi/)/abs(N_tor - approx_iota*M_pol) + &
                    fieldlines(current)%phi_0
         call plot_B_along_fieldline(field, fieldlines(current), interval)
