@@ -18,6 +18,15 @@ contains
         real(dp) :: dx
         integer :: i
 
+        if (n < 2) then
+            print *, "Error in linspace: n must be at least 2."
+            error stop
+        end if
+        if (size(x) < n) then
+            print *, "Error in linspace: output array size must be at least n."
+            error stop
+        end if
+
         if (present(include_endpoint)) then
             if (include_endpoint) then
                 dx = (b - a)/(n - 1)
