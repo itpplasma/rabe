@@ -29,7 +29,7 @@ external: build
 	ctest --test-dir build/test -V -L external
 
 current: build
-	ctest --test-dir build/test --output-on-failure -L current
+	ctest --test-dir build/test --output-on-failure -V -L current
 
 golden: build
 	ctest --test-dir build/test --output-on-failure -V -L golden
