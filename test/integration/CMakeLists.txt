@@ -87,36 +87,3 @@ add_executable(test_shaing_callen_against_quasi_symmetric.x test_shaing_callen_a
 target_link_libraries(test_shaing_callen_against_quasi_symmetric.x rabe_lib helpers_lib myplot_lib)
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
-
-add_executable(test_plot.x test_plot.f90)
-target_link_libraries(test_plot.x myplot_lib utils_lib)
-add_test(TestPlot test_plot.x)
-set_tests_properties(TestPlot PROPERTIES LABELS "per_hand")
-
-add_executable(test_plot_anti_sigma.x test_plot_anti_sigma.f90)
-target_link_libraries(test_plot_anti_sigma.x myplot_lib
-                                             rabe_lib
-                                             helpers_lib)
-add_test(TestPlotAntiSigma test_plot_anti_sigma.x)
-set_tests_properties(TestPlotAntiSigma PROPERTIES LABELS "plot")
-
-add_executable(plot_deviation_helical_anti_sigma.x plot_deviation_helical_anti_sigma.f90)
-target_link_libraries(plot_deviation_helical_anti_sigma.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(PlotDeviationHelicalAntiSigma plot_deviation_helical_anti_sigma.x)
-set_tests_properties(PlotDeviationHelicalAntiSigma PROPERTIES LABELS "plot")
-
-add_executable(plot_helical_anti_sigma_small_aspect.x plot_helical_anti_sigma_small_aspect.f90)
-target_link_libraries(plot_helical_anti_sigma_small_aspect.x myplot_lib
-                                                             rabe_lib
-                                                             helpers_lib)
-add_test(PlotHelicalAntiSigmaSmallAspect plot_helical_anti_sigma_small_aspect.x)
-set_tests_properties(PlotHelicalAntiSigmaSmallAspect PROPERTIES LABELS "plot")
-
-add_executable(plot_deviation_poloidal_anti_sigma.x plot_deviation_poloidal_anti_sigma.f90)
-target_link_libraries(plot_deviation_poloidal_anti_sigma.x myplot_lib
-                                                          rabe_lib
-                                                          helpers_lib)
-add_test(PlotDeviationPoloidalAntiSigma plot_deviation_poloidal_anti_sigma.x)
-set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "plot")
