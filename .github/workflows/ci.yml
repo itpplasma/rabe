@@ -25,3 +25,9 @@ jobs:
 
     - name: Run tests
       run: make test_all
+
+    - name: Install Python dependencies
+      run: pip install xarray numpy netCDF4
+
+    - name: Run golden record test
+      run: make golden
