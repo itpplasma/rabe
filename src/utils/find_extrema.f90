@@ -108,7 +108,6 @@ contains
 
         if (current_maximum < 1) then
             print *, "find_local_maxima: found no local maxima"
-            error stop
         end if
 
     end subroutine find_local_maxima
@@ -133,7 +132,7 @@ contains
 
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
-        integer, intent(in), optional :: abstol
+        real(dp), intent(in), optional :: abstol
         real(dp) :: extrema(2)
 
         integer :: n_steps

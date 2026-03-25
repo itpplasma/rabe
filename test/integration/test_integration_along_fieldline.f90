@@ -3,7 +3,7 @@ program test_integration_along_fieldline
     use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: set_fieldline_labels_along_chi_min
+    use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
     use make_fieldline, only: find_maxima_along_fieldline
     use integrate, only: integrate_1d
 
@@ -30,7 +30,14 @@ program test_integration_along_fieldline
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
-    call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldline)
+    if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
+        print *, "error: The origin of the IDEAL omnigenous configuration"
+        print *, "(theta=phi=0) must be a global and local minimum!"
+        print *, "Origin of provided field suggests that this is not the case!"
+        error stop
+    end if
+    fieldline%theta_0 = N_tor*fieldline%xi_0/nfp
+    fieldline%phi_0 = M_pol*fieldline%xi_0/nfp
 
     interval = [0.0_dp, 4*pi] + fieldline(1)%phi_0
     call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)

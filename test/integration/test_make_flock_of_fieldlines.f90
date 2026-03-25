@@ -9,7 +9,7 @@ program test_make_flock_of_fieldlines
     implicit none
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
     type(neo_field_t) :: field
 
     real(dp), parameter :: phi_tol = 1e-4
@@ -18,17 +18,19 @@ program test_make_flock_of_fieldlines
     integer, parameter :: n_fieldlines = 10
 
     real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), parameter :: iota = -1.0_dp
+    real(dp) :: iota, nfp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     integer :: current
     real(dp) :: phi_max(2)
 
     call field%neo_field_init(bc_filename, stor)
+    nfp = field%nfp
+    iota = field%iota
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
-                                  phi_tol)
+                                  nfp, phi_tol)
 
     do current = 1, n_fieldlines
         phi_max = [-0.5*pi, 0.5*pi] + fieldlines(current)%phi_0

@@ -6,7 +6,7 @@ program test_fieldline
     implicit none
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     !The minimum/maximum chi of a single mode field
     !-cos(chi) with chi = M*theta - N*phi
@@ -16,35 +16,10 @@ program test_fieldline
     type(neo_field_t) :: field
 
     call field%neo_field_init(bc_filename, 0.0_dp)
-    call test_guess_chi_at_minimum()
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
 
 contains
-
-    subroutine test_guess_chi_at_minimum()
-        use make_fieldline, only: guess_chi_min
-
-        real(dp), parameter :: retol = 1e-2*0.5_dp*abs(N_tor)
-
-        real(dp) :: stor(4)
-        real(dp) :: chi_min, found_chi_min
-        integer :: idx
-
-        stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
-        do idx = 1, 4
-            call field%neo_change_stor(stor(idx))
-            call guess_chi_min(field, chi_min, N_tor, M_pol)
-            found_chi_min = mod(chi_min - pi, 2*pi) + pi
-            if (not_same(chi_min, found_chi_min, retol)) then
-                print *, "-------------------------------------------------------------"
-                print *, "test_guess_chi_min failed: chi at minima"
-                print *, "found: ", found_chi_min
-                print *, "analytic: ", chi_min
-                error stop
-            end if
-        end do
-    end subroutine test_guess_chi_at_minimum
 
     subroutine test_find_maxima_along_fieldline()
         use make_fieldline, only: find_maxima_along_fieldline
@@ -69,7 +44,7 @@ contains
             fieldline%theta_0 = theta_0(idx)
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
-            interval = [0.0_dp, 2.0_dp*pi] + phi_0(idx)
+            interval = [0.0_dp, 4.1_dp*pi]/abs(M_pol*iota(idx) - N_tor) + phi_0(idx)
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
@@ -123,26 +98,34 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use make_fieldline, only: set_fieldline_labels_along_chi_min
+        use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
-        real(dp), dimension(n_fieldlines) :: theta_0
+        real(dp), dimension(n_fieldlines) :: xi_0
         type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
         real(dp) :: B_mod
         real(dp) :: B_mod_min = 0.7_dp
         integer :: current
+        logical :: test_failed
 
-        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
-        fieldlines(:)%theta_0 = theta_0(:)
+        test_failed = .false.
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, xi_0)
+        fieldlines(:)%xi_0 = xi_0(:)
 
         call field%neo_change_stor(stor)
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, &
-                                                fieldlines)
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Origin of provided field suggests that this is not the case!"
+            error stop
+        end if
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
@@ -154,9 +137,13 @@ contains
                 print *, "at phi_0", fieldlines(current)%phi_0
                 print *, "found: ", B_mod
                 print *, "minimum: ", B_mod_min
-                error stop
+                test_failed = .true.
             end if
         end do
+
+        if (test_failed) then
+            error stop
+        end if
     end subroutine test_set_fieldline_labels_to_mode_minimum
 
 end program test_fieldline

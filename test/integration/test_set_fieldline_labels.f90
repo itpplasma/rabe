@@ -4,7 +4,7 @@ program test_set_fieldline_labels
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: set_fieldline_labels_along_chi_min
+    use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
 
@@ -65,8 +65,14 @@ program test_set_fieldline_labels
         fieldlines%iota = iota
         call base_field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
         call field%mock_perturbed_field_init(base_field, M_pert, N_pert, B_pert)
-        call set_fieldline_labels_along_chi_min(field, M_pol, N_tor, nfp, fieldlines, &
-                                                phi_tol)
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Origin of provided field suggests that this is not the case!"
+            error stop
+        end if
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, n_fieldlines
             chi_0 = M_pol*fieldlines(current)%theta_0 - N_tor*fieldlines(current)%phi_0
             if (not_same(chi_0, expected_chi_0, abstol_in=2.0_dp*phi_tol)) then

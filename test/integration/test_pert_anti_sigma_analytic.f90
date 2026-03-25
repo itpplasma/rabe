@@ -8,7 +8,7 @@ program test_pert_anti_sigma_analytic
     use fieldline_integrals, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
-    use fieldline_labels, only: get_theta_0
+    use fieldline_labels, only: get_labels
 
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
@@ -55,7 +55,7 @@ program test_pert_anti_sigma_analytic
                                                    M_pol_pert, &
                                                    N_tor_pert, &
                                                    B_pert)
-    call get_theta_0(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
+    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
     n_fieldlines = size(xi_0)
     n_modes = n_fieldlines/2 + 1
     allocate (fieldlines(n_fieldlines))
