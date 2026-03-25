@@ -56,7 +56,7 @@ contains
 
         if (rt0 .eq. 0.0_dp .or. bmref .eq. 0.0_dp) then
             write (w_us, *) ' NEO_INIT: Fatal problem setting rt0 or bmref', rt0, bmref
-            stop
+            error stop
         end if
 
     end subroutine neo_init

@@ -6,7 +6,7 @@ program test_fieldline
     implicit none
 
     character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-    real(dp), parameter :: M_pol = 2.0_dp, N_tor = -4.0_dp
+    real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     !The minimum/maximum chi of a single mode field
     !-cos(chi) with chi = M*theta - N*phi
@@ -44,7 +44,7 @@ contains
             fieldline%theta_0 = theta_0(idx)
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
-            interval = [0.0_dp, 2.0_dp*pi] + phi_0(idx)
+            interval = [0.0_dp, 4.1_dp*pi]/abs(M_pol*iota(idx) - N_tor) + phi_0(idx)
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
@@ -105,18 +105,22 @@ contains
         real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
-        real(dp), dimension(n_fieldlines) :: theta_0
+        real(dp), dimension(n_fieldlines) :: xi_0
         type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
         real(dp) :: B_mod
         real(dp) :: B_mod_min = 0.7_dp
         integer :: current
+        logical :: test_failed
 
-        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
-        fieldlines(:)%theta_0 = theta_0(:)
+        test_failed = .false.
+        call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, xi_0)
+        fieldlines(:)%xi_0 = xi_0(:)
 
         call field%neo_change_stor(stor)
         call check_field_origin(field, M_pol, N_tor)
+        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
+        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, size(fieldlines)
             call field%compute_B_mod(fieldlines(current)%theta_0, &
                                      fieldlines(current)%phi_0, &
@@ -128,9 +132,13 @@ contains
                 print *, "at phi_0", fieldlines(current)%phi_0
                 print *, "found: ", B_mod
                 print *, "minimum: ", B_mod_min
-                error stop
+                test_failed = .true.
             end if
         end do
+
+        if (test_failed) then
+            error stop
+        end if
     end subroutine test_set_fieldline_labels_to_mode_minimum
 
 end program test_fieldline
