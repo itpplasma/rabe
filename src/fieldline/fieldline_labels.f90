@@ -82,8 +82,7 @@ contains
 
     end function calc_iota
 
-    function check_field_origin(field, N_tor, M_pol, phi_tol) &
-        result(suspect_omnigenous_origin_not_minimum)
+    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
@@ -183,7 +182,7 @@ contains
             end do
         end subroutine B_mod_along_pi_line
 
-    end function check_field_origin
+    end function suspect_omnigenous_origin_not_minimum
 
     function is_multiple_of_2pi(angle, tol_in)
         real(dp), intent(in) :: angle

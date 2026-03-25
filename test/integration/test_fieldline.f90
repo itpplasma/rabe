@@ -98,7 +98,7 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use fieldline_labels, only: check_field_origin
+        use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
@@ -118,7 +118,7 @@ contains
         fieldlines(:)%xi_0 = xi_0(:)
 
         call field%neo_change_stor(stor)
-        if (check_field_origin(field, M_pol, N_tor)) then
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"
