@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test install clean plot
+.PHONY: all build test install clean plot golden
 all: build
 
 build/CMakeCache.txt:
@@ -30,6 +30,9 @@ external: build
 
 current: build
 	ctest --test-dir build/test --output-on-failure -L current
+
+golden: build
+	ctest --test-dir build/test --output-on-failure -V -L golden
 
 clean:
 	rm -rf build

@@ -1,0 +1,11 @@
+&rabe_config
+    bc_filename = "landreman_paul_qh.bc",
+    M_pol = -1.0d0,
+    N_tor = 4.0d0,
+    s_tor = 0.255102041, 0.316326531, 0.5, 0.704081633, 0.908163265,
+    sign_sqrtg = -1.0d0,
+    phi_tol = 8d-6,
+    max_n_fieldlines = 200,
+    should_calc_shaing_callen = .true.,
+    n_eta = 100
+/
