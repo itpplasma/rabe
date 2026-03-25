@@ -128,10 +128,7 @@ contains
         call self%plt%add_str( &
             '_lc.set_linewidth('//trim(cmap_str)//')')
         call self%plt%add_str('ax.add_collection(_lc)')
-        call self%plt%add_str( &
-            'ax.set_xlim(_x.min(), _x.max())')
-        call self%plt%add_str( &
-            'ax.set_ylim(_y.min(), _y.max())')
+        call self%plt%add_str('ax.autoscale_view()')
         if (present(clabel)) then
             call self%plt%add_str( &
                 '_cb = fig.colorbar(_lc, ax=ax)')
@@ -162,7 +159,7 @@ contains
         str = str//']'
     end function array_to_string
 
-    subroutine add_contour(self, x, y, f, levels, colorbar, filled)
+    subroutine add_contour(self, x, y, f, levels, colorbar, filled, cmap)
         use utils, only: linspace
         class(myplot), intent(inout) :: self
         real(dp), dimension(:), intent(in) :: x, y
@@ -170,6 +167,7 @@ contains
         integer, optional :: levels
         logical, optional :: colorbar
         logical, optional :: filled
+        character(len=*), intent(in), optional :: cmap
 
         real(dp), dimension(:), allocatable :: levels_pyplot
 
@@ -179,11 +177,13 @@ contains
             call self%plt%add_contour(x, y, f, linestyle="-", &
                                       levels=levels_pyplot, &
                                       colorbar=colorbar, &
-                                      filled=filled)
+                                      filled=filled, &
+                                      cmap=cmap)
         else
             call self%plt%add_contour(x, y, f, linestyle="-", &
                                       colorbar=colorbar, &
-                                      filled=filled)
+                                      filled=filled, &
+                                      cmap=cmap)
         end if
     end subroutine add_contour
 
