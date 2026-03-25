@@ -5,9 +5,8 @@ program plot_anti_sigma
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: make_flock_of_fieldlines
 
-    use plot_quantities, only: plot_fieldlines_over_field
+    use plot_quantities, only: plot_fieldline_over_local_drift
 
     implicit none
 
@@ -18,30 +17,23 @@ program plot_anti_sigma
     type(mock_perturbed_field_t) :: perturbed_field
 
     real(dp), parameter :: phi_tol = 8e-5
-    integer, parameter :: n_fieldlines = 20
 
-    real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    real(dp), parameter :: eta = 0.5_dp
+    type(fieldline_t) :: fieldline
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call perturbed_field%mock_perturbed_field_init(field, &
                                                    M_pol_pert, &
                                                    N_tor_pert, &
                                                    B_pert)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    theta_0 = temp(1:n_fieldlines)
+    fieldline%iota = iota
+    fieldline%nfp = nfp
+    fieldline%N_tor = N_tor
+    fieldline%M_pol = M_pol
+    fieldline%phi_0 = pi/nfp
+    fieldline%theta_0 = 0.0_dp
 
-    call make_flock_of_fieldlines(fieldlines, &
-                                  theta_0, &
-                                  iota, &
-                                  perturbed_field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp, &
-                                  phi_tol)
-
-    call plot_fieldlines_over_field(fieldlines, perturbed_field)
+    call plot_fieldline_over_local_drift(fieldline, perturbed_field, eta)
 
 end program plot_anti_sigma

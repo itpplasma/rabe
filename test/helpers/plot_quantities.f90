@@ -430,6 +430,69 @@ contains
 
     end subroutine plot_phi_max_over_xi_0
 
+    subroutine plot_fieldline_over_local_drift(fieldline, field, eta)
+        use fieldline_integrands, only: local_radial_drift
+        type(fieldline_t), intent(in) :: fieldline
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: eta
+
+        type(myplot) :: plt
+        integer :: current
+        integer, parameter :: n_points = 300
+        real(dp), dimension(2) :: phi_limits, theta_limits
+        real(dp) :: phi_range
+        real(dp), dimension(2) :: phi_ends, theta_ends
+        real(dp), dimension(n_points) :: phi, theta
+        real(dp), dimension(n_points, n_points) :: phi_mesh, theta_mesh
+        real(dp), dimension(n_points, n_points) :: drift_mesh
+        integer :: theta_idx, phi_idx
+        character(len=100) :: label, title
+
+        write (title, "(A,F4.2)") "Local radial drift for $\eta=$", eta
+
+        call plt%initialize(xlabel="$\varphi$", ylabel="$\vartheta$", &
+                            title=title, fontsize=20)
+
+        phi_limits(1) = 0.0_dp
+        phi_limits(2) = 2.0_dp*pi/fieldline%nfp
+        theta_limits(1) = -pi
+        theta_limits(2) = pi
+        phi_range = abs(phi_limits(2) - phi_limits(1))
+
+        phi_ends(1) = fieldline%phi_0 - 0.4_dp*phi_range
+        phi_ends(2) = fieldline%phi_0 + 0.4_dp*phi_range
+
+        call linspace(phi_ends(1), phi_ends(2), n_points, phi)
+        theta = fieldline%get_theta(phi)
+        write (label, '(F0.1)') fieldline%xi_0
+        call plt%add_plot(phi, theta, &
+                          label=label, &
+                          linestyle="k.", &
+                          linewidth=1)
+        theta_ends = fieldline%get_theta(phi_ends)
+        call plt%add_plot(phi_ends, theta_ends, &
+                          label=label, &
+                          linestyle="ro", &
+                          markersize=10)
+
+        call linspace(minval(phi_limits), maxval(phi_limits), n_points, phi)
+        call linspace(minval(theta_limits), maxval(theta_limits), n_points, theta)
+        do theta_idx = 1, n_points
+            do phi_idx = 1, n_points
+                drift_mesh(theta_idx, phi_idx) = local_radial_drift(field, &
+                                                                    theta(theta_idx), &
+                                                                    phi(phi_idx), &
+                                                                    eta)
+            end do
+        end do
+        call plt%add_contour(phi, theta, transpose(drift_mesh), &
+                             levels=20, &
+                             colorbar=.true., &
+                             filled=.true.)
+        call plt%show()
+
+    end subroutine plot_fieldline_over_local_drift
+
     subroutine plot_delta_eta(fieldlines, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in), optional :: delta_eta_1

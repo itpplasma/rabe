@@ -33,3 +33,10 @@ target_link_libraries(plot_deviation_poloidal_anti_sigma.x myplot_lib
                                                           helpers_lib)
 add_test(PlotDeviationPoloidalAntiSigma plot_deviation_poloidal_anti_sigma.x)
 set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "plot")
+
+add_executable(plot_local_drift.x plot_local_drift.f90)
+target_link_libraries(plot_local_drift.x myplot_lib
+                                             rabe_lib
+                                             helpers_lib)
+add_test(PlotLocalDrift plot_local_drift.x)
+set_tests_properties(PlotLocalDrift PROPERTIES LABELS "current")

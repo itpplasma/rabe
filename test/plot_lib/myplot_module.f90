@@ -15,18 +15,24 @@ module myplot_module
 
 contains
 
-    subroutine initialize(self, xlabel, ylabel, legend, figsize)
+    subroutine initialize(self, xlabel, ylabel, legend, figsize, title, fontsize)
         class(myplot), intent(out) :: self
 
         character(len=*), intent(in), optional :: xlabel, ylabel
         logical, intent(in), optional :: legend
         integer, dimension(2), intent(in), optional :: figsize
+        character(len=*), intent(in), optional :: title
+        integer, intent(in), optional :: fontsize
 
-        integer :: font_size
+        integer :: fontsize_internal
         integer, dimension(2) :: figsize_internal
         logical, parameter :: tight_layout = .true.
 
-        font_size = 30
+        if (present(fontsize)) then
+            fontsize_internal = fontsize
+        else
+            fontsize_internal = 30
+        end if
 
         if (present(figsize)) then
             figsize_internal = figsize
@@ -39,12 +45,13 @@ contains
                                  ylabel=ylabel, &
                                  legend=legend, &
                                  figsize=figsize_internal, &
+                                 title=title, &
                                  raw_strings=.true., &
-                                 font_size=font_size, &
-                                 legend_fontsize=font_size, &
-                                 axes_labelsize=font_size, &
-                                 xtick_labelsize=font_size, &
-                                 ytick_labelsize=font_size, &
+                                 font_size=fontsize_internal, &
+                                 legend_fontsize=fontsize_internal, &
+                                 axes_labelsize=fontsize_internal, &
+                                 xtick_labelsize=fontsize_internal, &
+                                 ytick_labelsize=fontsize_internal, &
                                  tight_layout=tight_layout)
     end subroutine initialize
 
