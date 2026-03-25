@@ -430,11 +430,12 @@ contains
 
     end subroutine plot_phi_max_over_xi_0
 
-    subroutine plot_fieldline_over_local_drift(fieldline, field, eta)
+    subroutine plot_fieldline_over_local_drift(fieldline, field, eta, interval)
         use fieldline_integrands, only: local_radial_drift
         type(fieldline_t), intent(in) :: fieldline
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: eta
+        real(dp), dimension(2), intent(in), optional :: interval
 
         type(myplot) :: plt
         integer :: current
@@ -447,14 +448,18 @@ contains
         real(dp), dimension(n_points, n_points) :: drift_mesh
         integer :: theta_idx, phi_idx
         character(len=100) :: label, title
+        character(len=*), parameter :: cmap = "coolwarm"
 
         write (title, "(A,F4.2)") "Local radial drift for $\eta=$", eta
 
         call plt%initialize(xlabel="$\varphi$", ylabel="$\vartheta$", &
                             title=title, fontsize=20)
 
-        phi_limits(1) = 0.0_dp
-        phi_limits(2) = 2.0_dp*pi/fieldline%nfp
+        if (present(interval)) then
+            phi_limits = interval
+        else
+            phi_limits = [0.0_dp, 2.0_dp*pi/fieldline%nfp]
+        end if
         theta_limits(1) = -pi
         theta_limits(2) = pi
         phi_range = abs(phi_limits(2) - phi_limits(1))
@@ -488,10 +493,90 @@ contains
         call plt%add_contour(phi, theta, transpose(drift_mesh), &
                              levels=20, &
                              colorbar=.true., &
-                             filled=.true.)
+                             filled=.true., &
+                             cmap=cmap)
         call plt%show()
 
     end subroutine plot_fieldline_over_local_drift
+
+    subroutine plot_local_drift_over_fieldline(field, &
+                                               fieldline, &
+                                               etas, &
+                                               interval)
+        use fieldline_integrands, only: local_radial_drift
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+        class(field_t), intent(in) :: field
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), dimension(:), intent(in) :: etas
+        real(dp), intent(in), optional :: interval(2)
+
+        integer, parameter :: n_points = 1001
+        character(len=*), parameter :: cmap = "coolwarm"
+        integer :: n_etas
+        real(dp), dimension(:), allocatable :: phi, theta, B, eta_level
+        real(dp), dimension(:, :), allocatable :: drift
+        character(len=1024) :: label
+        character(len=1024) :: title
+        integer :: current, id_eta
+
+        type(myplot) :: plt
+
+        allocate (phi(n_points), theta(n_points), B(n_points))
+        n_etas = size(etas)
+        allocate (eta_level(n_points))
+        allocate (drift(n_points, n_etas))
+
+        if (present(interval)) then
+            call linspace(interval(1), interval(2), n_points, phi)
+        else
+            call linspace(0.0_dp, 2.0_dp*pi, n_points, phi)
+        end if
+
+        theta = fieldline%get_theta(phi)
+
+        write (title, "(A,A,F5.2,A)") "Radial drift velocity ", &
+            " along fieldline $\xi_0=$", fieldline%xi_0/pi, "[$\pi$]"
+        call plt%initialize(xlabel="$\varphi$", &
+                            ylabel="$1/\eta$ [T]", &
+                            legend=.true., &
+                            figsize=[10, 10], &
+                            title=title, &
+                            fontsize=20)
+
+        do current = 1, n_points
+            call field%compute_B_mod(theta(current), phi(current), B(current))
+            do id_eta = 1, n_etas
+                if (B(current)*etas(id_eta) > 1.0_dp) then
+                    ! set to nan with intrinsic
+                    drift(current, id_eta) = ieee_value(1.0_dp, ieee_quiet_nan)
+                else
+                    drift(current, id_eta) = local_radial_drift(field, &
+                                                                theta(current), &
+                                                                phi(current), &
+                                                                etas(id_eta))
+                end if
+            end do
+        end do
+
+        eta_level = etas(1)
+        call plt%add_colored_line(phi, 1.0_dp/eta_level, drift(:, 1), &
+                                  cmap=cmap, &
+                                  clabel="$\mathcal{V}$", linewidth=3)
+        do id_eta = 2, n_etas
+            eta_level = etas(id_eta)
+            call plt%add_colored_line(phi, 1.0_dp/eta_level, drift(:, id_eta), &
+                                      cmap=cmap, &
+                                      linewidth=3)
+        end do
+
+        write (label, "(A,F6.2,A)") "$B$ [T]"
+        call plt%add_plot(phi, B, label=label, linestyle="k-", linewidth=3)
+
+        call plt%show()
+
+        deallocate (phi, theta, drift, B, eta_level)
+
+    end subroutine plot_local_drift_over_fieldline
 
     subroutine plot_delta_eta(fieldlines, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
