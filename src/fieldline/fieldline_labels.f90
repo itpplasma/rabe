@@ -82,7 +82,8 @@ contains
 
     end function calc_iota
 
-    subroutine check_field_origin(field, N_tor, M_pol, phi_tol)
+    function check_field_origin(field, N_tor, M_pol, phi_tol) &
+        result(suspect_omnigenous_origin_not_minimum)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
@@ -92,6 +93,7 @@ contains
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
         real(dp), intent(in), optional :: phi_tol
+        logical :: suspect_omnigenous_origin_not_minimum
 
         real(dp), dimension(2) :: interval
         real(dp) :: tol
@@ -110,6 +112,7 @@ contains
             tol = 3.0_dp*1e-2
         end if
 
+        suspect_omnigenous_origin_not_minimum = .false.
         origin_is_maximum = .false.
         origin_is_minimum = .false.
 
@@ -135,7 +138,7 @@ contains
         end if
 
         if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
-            print *, "error: origin is neither local minimum nor maximum!"
+            print *, "warning: origin is neither local minimum nor maximum!"
             print *, "Stellarator symmetry is violated!"
             error stop
         end if
@@ -147,14 +150,10 @@ contains
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
         if (height/B_range > height_tol) then
-            print *, "error: The origin of the IDEAL omnigenous configuration"
-            print *, "(theta=phi=0) must be a global and local minimum!"
-            print *, "Detected that origin in provided field is instead"
+            print *, "Detected that origin in provided field is"
             print *, "a significant local maximum of height > "
             print *, height_tol*100.0_dp, "% of the total B range!"
-            print *, "The violation of omnigeneity is either too strong or the"
-            print *, "origin of the ideal omnigenous configuration is not a minimum!"
-            error stop
+            suspect_omnigenous_origin_not_minimum = .true.
         end if
 
     contains
@@ -184,7 +183,7 @@ contains
             end do
         end subroutine B_mod_along_pi_line
 
-    end subroutine check_field_origin
+    end function check_field_origin
 
     function is_multiple_of_2pi(angle, tol_in)
         real(dp), intent(in) :: angle

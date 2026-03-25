@@ -30,7 +30,12 @@ program test_integration_along_fieldline
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
-    call check_field_origin(field, M_pol, N_tor)
+    if (check_field_origin(field, M_pol, N_tor, phi_tol)) then
+        print *, "error: The origin of the IDEAL omnigenous configuration"
+        print *, "(theta=phi=0) must be a global and local minimum!"
+        print *, "Origin of provided field suggests that this is not the case!"
+        error stop
+    end if
     fieldline%theta_0 = N_tor*fieldline%xi_0/nfp
     fieldline%phi_0 = M_pol*fieldline%xi_0/nfp
 

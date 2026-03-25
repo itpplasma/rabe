@@ -65,7 +65,12 @@ program test_set_fieldline_labels
         fieldlines%iota = iota
         call base_field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
         call field%mock_perturbed_field_init(base_field, M_pert, N_pert, B_pert)
-        call check_field_origin(field, M_pol, N_tor, phi_tol)
+        if (check_field_origin(field, M_pol, N_tor, phi_tol)) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Origin of provided field suggests that this is not the case!"
+            error stop
+        end if
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, n_fieldlines

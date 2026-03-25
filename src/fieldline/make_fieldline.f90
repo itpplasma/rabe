@@ -23,6 +23,7 @@ contains
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
+        logical :: suspect_omnigenous_origin_not_minimum
         logical :: more_than_2_maxima, too_strong_violation
 
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
@@ -36,7 +37,13 @@ contains
         fieldlines%nfp = nfp
 
         !> if the origin of the ideal omnigenous field is a minimum
-        call check_field_origin(field, M_pol, N_tor, phi_tol)
+suspect_omnigenous_origin_not_minimum = check_field_origin(field, M_pol, N_tor, phi_tol)
+        if (suspect_omnigenous_origin_not_minimum) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Origin of provided field suggests that this is not the case!"
+            error stop
+        end if
         !> we can put the labels along the chi = 0 line
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp

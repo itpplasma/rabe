@@ -78,6 +78,11 @@ target_link_libraries(test_set_fieldline_labels.x rabe_lib helpers_lib)
 add_test(TestSetFieldlineLabels test_set_fieldline_labels.x)
 set_tests_properties(TestSetFieldlineLabels PROPERTIES LABELS "quick")
 
+add_executable(test_check_field_origin.x test_check_field_origin.f90)
+target_link_libraries(test_check_field_origin.x rabe_lib helpers_lib)
+add_test(TestCheckFieldOrigin test_check_field_origin.x)
+set_tests_properties(TestCheckFieldOrigin PROPERTIES LABELS "quick")
+
 add_executable(test_shaing_callen_against_quasi_symmetric.x test_shaing_callen_against_quasi_symmetric.f90)
 target_link_libraries(test_shaing_callen_against_quasi_symmetric.x rabe_lib helpers_lib myplot_lib)
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)

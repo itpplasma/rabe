@@ -118,7 +118,12 @@ contains
         fieldlines(:)%xi_0 = xi_0(:)
 
         call field%neo_change_stor(stor)
-        call check_field_origin(field, M_pol, N_tor)
+        if (check_field_origin(field, M_pol, N_tor)) then
+            print *, "error: The origin of the IDEAL omnigenous configuration"
+            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Origin of provided field suggests that this is not the case!"
+            error stop
+        end if
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, size(fieldlines)
