@@ -9,6 +9,7 @@ module myplot_module
     contains
         procedure :: initialize
         procedure :: add_plot
+        procedure :: add_colored_line
         procedure :: add_contour
         procedure :: show
     end type myplot
@@ -82,6 +83,84 @@ contains
                                xlim=xlim, &
                                ylim=ylim)
     end subroutine add_plot
+
+    subroutine add_colored_line(self, x, y, color, cmap, clabel, linewidth)
+        class(myplot), intent(inout) :: self
+        real(dp), dimension(:), intent(in) :: x, y, color
+        character(len=*), intent(in), optional :: cmap, clabel
+        integer, intent(in), optional :: linewidth
+
+        character(len=:), allocatable :: cmap_str
+        integer :: lw
+
+        if (present(cmap)) then
+            cmap_str = cmap
+        else
+            cmap_str = "viridis"
+        end if
+        if (present(linewidth)) then
+            lw = linewidth
+        else
+            lw = 1
+        end if
+
+        call self%plt%add_str( &
+            'from matplotlib.collections import LineCollection')
+        call self%plt%add_str( &
+            '_x = np.array('//array_to_string(x)//')')
+        call self%plt%add_str( &
+            '_y = np.array('//array_to_string(y)//')')
+        call self%plt%add_str( &
+            '_c = np.array('//array_to_string(color)//')')
+        call self%plt%add_str( &
+            '_pts = np.array([_x, _y]).T.reshape(-1, 1, 2)')
+        call self%plt%add_str( &
+            '_seg = np.concatenate([_pts[:-1], _pts[1:]], axis=1)')
+        call self%plt%add_str( &
+            '_mask = ~np.isnan(_c[:-1]) ' &
+            //'& ~np.isnan(_x[:-1]) & ~np.isnan(_x[1:]) ' &
+            //'& ~np.isnan(_y[:-1]) & ~np.isnan(_y[1:])')
+        call self%plt%add_str( &
+            '_lc = LineCollection(_seg[_mask], cmap="' &
+            //trim(cmap_str)//'")')
+        call self%plt%add_str('_lc.set_array(_c[:-1][_mask])')
+        write (cmap_str, '(I0)') lw
+        call self%plt%add_str( &
+            '_lc.set_linewidth('//trim(cmap_str)//')')
+        call self%plt%add_str('ax.add_collection(_lc)')
+        call self%plt%add_str( &
+            'ax.set_xlim(_x.min(), _x.max())')
+        call self%plt%add_str( &
+            'ax.set_ylim(_y.min(), _y.max())')
+        if (present(clabel)) then
+            call self%plt%add_str( &
+                '_cb = fig.colorbar(_lc, ax=ax)')
+            call self%plt%add_str( &
+                '_cb.set_label(r"'//trim(clabel)//'")')
+        end if
+
+    end subroutine add_colored_line
+
+    function array_to_string(arr) result(str)
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+        real(dp), dimension(:), intent(in) :: arr
+        character(len=:), allocatable :: str
+
+        character(len=25) :: val_str
+        integer :: i
+
+        str = '['
+        do i = 1, size(arr)
+            if (i > 1) str = str//','
+            if (ieee_is_nan(arr(i))) then
+                str = str//'np.nan'
+            else
+                write (val_str, '(ES23.15E3)') arr(i)
+                str = str//trim(adjustl(val_str))
+            end if
+        end do
+        str = str//']'
+    end function array_to_string
 
     subroutine add_contour(self, x, y, f, levels, colorbar, filled)
         use utils, only: linspace
