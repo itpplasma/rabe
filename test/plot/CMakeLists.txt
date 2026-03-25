@@ -6,12 +6,12 @@ target_link_libraries(test_plot.x myplot_lib utils_lib)
 add_test(TestPlot test_plot.x)
 set_tests_properties(TestPlot PROPERTIES LABELS "plot")
 
-add_executable(test_plot_anti_sigma.x test_plot_anti_sigma.f90)
-target_link_libraries(test_plot_anti_sigma.x myplot_lib
+add_executable(plot_anti_sigma.x plot_anti_sigma.f90)
+target_link_libraries(plot_anti_sigma.x myplot_lib
                                              rabe_lib
                                              helpers_lib)
-add_test(TestPlotAntiSigma test_plot_anti_sigma.x)
-set_tests_properties(TestPlotAntiSigma PROPERTIES LABELS "plot")
+add_test(PlotAntiSigma plot_anti_sigma.x)
+set_tests_properties(PlotAntiSigma PROPERTIES LABELS "plot")
 
 add_executable(plot_deviation_helical_anti_sigma.x plot_deviation_helical_anti_sigma.f90)
 target_link_libraries(plot_deviation_helical_anti_sigma.x myplot_lib
