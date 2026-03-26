@@ -39,4 +39,4 @@ target_link_libraries(plot_local_drift.x myplot_lib
                                              rabe_lib
                                              helpers_lib)
 add_test(PlotLocalDrift plot_local_drift.x)
-set_tests_properties(PlotLocalDrift PROPERTIES LABELS "current")
+set_tests_properties(PlotLocalDrift PROPERTIES LABELS "plot")

@@ -813,6 +813,67 @@ contains
         call plt%show()
     end subroutine plot_deviation
 
+    subroutine plot_asymptotic_model(off_factor_A, off_factor_B, &
+                                     lambda_SC, finite_col_correction)
+        real(dp), intent(in) :: off_factor_A, off_factor_B
+        real(dp), intent(in) :: lambda_SC, finite_col_correction
+
+        type(myplot) :: plt
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: nu_star
+
+        character(len=1024) :: label
+        call plt%initialize(xlabel="$\nu_*$", &
+                            ylabel="$|\lambda_{bB}|$", &
+                            legend=.true., &
+                            figsize=[15, 10])
+        allocate (nu_star(n_points))
+        call linspace(2.0_dp, 8.0_dp, n_points, nu_star)
+        nu_star = 0.1_dp**nu_star
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{lm}=$", off_factor_B
+        call plt%add_plot(nu_star, &
+                          off_factor_B/nu_star, &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{bl}=$", off_factor_A
+        call plt%add_plot(nu_star, &
+                          off_factor_A/sqrt(nu_star), &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,ES10.3E2)") "$\lambda_\mathrm{SC}=$", lambda_SC
+        call plt%add_plot(nu_star, &
+                          lambda_SC*nu_star/nu_star, &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+       write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{finite}$=", finite_col_correction
+        call plt%add_plot(nu_star, &
+                          finite_col_correction*sqrt(nu_star), &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,A,A,A)") "$\lambda_\mathrm{SC} + ", &
+            "\Lambda_\mathrm{finite} \sqrt{\nu_*} + ", &
+            "\Lambda_\mathrm{bl}/\sqrt{\nu_*} + ", &
+            "\Lambda_\mathrm{lm}/\nu_*$"
+        call plt%add_plot(nu_star, &
+                          lambda_SC + &
+                          finite_col_correction*sqrt(nu_star) + &
+                          off_factor_A/sqrt(nu_star) + &
+                          off_factor_B/nu_star, &
+                          label=label, &
+                          linestyle="k-", &
+                          xscale="log", &
+                          yscale="linear")
+        call plt%show()
+    end subroutine plot_asymptotic_model
+
     subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
         use surface_average_mod, only: surface_average_t, calc_surface_averages
         use fit_functions, only: S_A, S_B
