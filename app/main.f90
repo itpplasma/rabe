@@ -130,7 +130,7 @@ program rabe
         end if
         print *, "1/sqrt(nu_star) factor: ", Lambda_bl(this)
         print *, "1/nu_star factor: ", Lambda_lm(this)
-        print *, "Lambda_finite: ", Lambda_finite
+        print *, "Lambda_finite: ", Lambda_finite(this)
 
         if (allocated(fieldlines)) deallocate (fieldlines)
         if (allocated(xi_0)) deallocate (xi_0)
