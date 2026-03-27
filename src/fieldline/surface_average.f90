@@ -1,5 +1,5 @@
 module surface_average_mod
-    use constants, only: dp, pi, eps
+    use constants, only: dp, pi, machine_eps
     implicit none
 
     type :: surface_average_t
@@ -34,6 +34,10 @@ contains
         well_lengths = fieldlines%phi_max(2) - fieldlines%phi_max(1)
         surface_average%normalization = sum(fieldlines%integral_one_over_B_squared)* &
                                         dxi_0
+        if (abs(surface_average%normalization) < machine_eps) then
+            print *, "error: surface average normalization is zero."
+            error stop
+        end if
         surface_average%B_squared = sum(well_lengths)*dxi_0/ &
                                     surface_average%normalization
         surface_average%lambda_b = sum(fieldlines%integral_lambda_b_over_B_squared)* &
@@ -41,15 +45,11 @@ contains
         surface_average%sqrt_g11 = sum(fieldlines%integral_sqrt_g11_over_B_squared)* &
                                    dxi_0/surface_average%normalization
 
-        if (abs(surface_average%normalization) < eps) then
-            print *, "error: surface average normalization is zero."
-            error stop
-        end if
-        if (surface_average%lambda_b < eps) then
+        if (surface_average%lambda_b < machine_eps) then
             print *, "error: average lambda_b <= 0."
             error stop
         end if
-        if (surface_average%B_squared < eps) then
+        if (surface_average%B_squared < machine_eps) then
             print *, "error: average B_squared <= 0."
             error stop
         end if
