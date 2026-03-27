@@ -7,6 +7,7 @@ program rabe
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
+    use coefficients, only: calc_finite_boundary_layer_correction
     use shaing_callen_mod, only: calc_trapped_fraction
     use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
@@ -47,7 +48,7 @@ program rabe
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: Lambda_bl, Lambda_lm
-    real(dp), dimension(:), allocatable :: nu_star_limit
+    real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_finite
     real(dp) :: I_ref_hat
     real(dp) :: helical_factor
@@ -63,7 +64,7 @@ program rabe
     n_stor = size(s_tor)
     allocate (Lambda_bl(n_stor))
     allocate (Lambda_lm(n_stor))
-    allocate (nu_star_limit(n_stor))
+    allocate (nu_star_crit(n_stor))
     allocate (Lambda_finite(n_stor))
     if (should_calc_shaing_callen) then
         allocate (lambda_SC(n_stor))
@@ -103,23 +104,22 @@ program rabe
         Lambda_bl(this) = deviation_A*dr_dAtheta* &
                           sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         Lambda_lm(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        nu_star_limit(this) = R/fieldlines(1)%I_ref*(fieldlines(1)%eta_b - &
+        nu_star_crit(this) = R/fieldlines(1)%I_ref*(fieldlines(1)%eta_b - &
                                           1.0_dp/minval(fieldlines%B_max(1)))**2.0_dp/ &
-                              fieldlines(1)%eta_b*0.25_dp*pi/3.0_dp
-        nu_star_limit(this) = nu_star_limit(this)/covariant_factor
+                             fieldlines(1)%eta_b*0.25_dp*pi/3.0_dp
+        nu_star_crit(this) = nu_star_crit(this)/covariant_factor
 
-        helical_factor = (field%B_phi_covariant*M_pol + &
-                          field%B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
-
-        I_ref_hat = fieldlines(1)%I_ref/fieldlines(1)%eta_b*covariant_factor/R
-        Lambda_finite = sqrt(I_ref_hat)*average%B_squared*fieldlines(1)%eta_b**2
-        Lambda_finite = Lambda_finite/average%lambda_b
-        Lambda_finite = 0.75_dp*0.855_dp/pi*sqrt(2.0_dp)*Lambda_finite
-        Lambda_finite = -helical_factor*dr_dAtheta*Lambda_finite
+        Lambda_finite(this) = calc_finite_boundary_layer_correction(fieldlines, &
+                                                                    R, &
+                                                                    dr_dAtheta, &
+                                                              field%B_theta_covariant, &
+                                                                  field%B_phi_covariant)
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
             trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
+            helical_factor = (field%B_phi_covariant*M_pol + &
+                              field%B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
             lambda_SC(this) = helical_factor*trapped_fraction
             lambda_SC(this) = lambda_SC(this)*dr_dAtheta
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
@@ -159,10 +159,10 @@ program rabe
                                  "1/nu_star factor")
     call nc_output%add_real_attr("C_B", "unit", &
                                  "[1]")
-    call nc_output%add_real_1d("nu_star_limit", dim_name)
-    call nc_output%add_real_attr("nu_star_limit", "long_name", &
-                                "collisionality limit for validity of asymptotic model")
-    call nc_output%add_real_attr("nu_star_limit", "unit", &
+    call nc_output%add_real_1d("nu_star_crit", dim_name)
+    call nc_output%add_real_attr("nu_star_crit", "long_name", &
+                          "lower collisionality limit for validity of asymptotic model")
+    call nc_output%add_real_attr("nu_star_crit", "unit", &
                                  "[1]")
     call nc_output%add_real_1d("Lambda_finite", dim_name)
     call nc_output%add_real_attr("Lambda_finite", "long_name", &
@@ -184,14 +184,14 @@ program rabe
     end if
     call nc_output%write_real_1d("C_A", Lambda_bl)
     call nc_output%write_real_1d("C_B", Lambda_lm)
-    call nc_output%write_real_1d("nu_star_limit", nu_star_limit)
+    call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_real_1d("Lambda_finite", Lambda_finite)
     call nc_output%write_real_1d("s_tor", s_tor)
     call nc_output%close()
 
     if (allocated(Lambda_bl)) deallocate (Lambda_bl)
     if (allocated(Lambda_lm)) deallocate (Lambda_lm)
-    if (allocated(nu_star_limit)) deallocate (nu_star_limit)
+    if (allocated(nu_star_crit)) deallocate (nu_star_crit)
     if (allocated(Lambda_finite)) deallocate (Lambda_finite)
     if (allocated(lambda_SC)) deallocate (lambda_SC)
     if (allocated(remainder)) deallocate (remainder)
