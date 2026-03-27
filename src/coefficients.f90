@@ -1,5 +1,5 @@
 module coefficients
-    use constants, only: dp, pi, eps
+    use constants, only: dp, pi, machine_eps
     use fieldline_mod, only: fieldline_t
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
@@ -24,7 +24,7 @@ contains
         real(dp) :: helical_factor, covariant_factor
         type(surface_average_t) :: average
 
-        if (R < eps) then
+        if (R < machine_eps) then
             print *, "error: major radius R must be positive."
             print *, "R =", R
             error stop
@@ -51,7 +51,7 @@ contains
         eta_b = fieldlines(1)%eta_b
 
         covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
-        if (covariant_factor < eps) then
+        if (covariant_factor < machine_eps) then
             print *, "error: covariant factor must be positive."
             print *, "B_phi_covariant =", B_phi_covariant
             print *, "B_theta_covariant =", B_theta_covariant

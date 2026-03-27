@@ -50,7 +50,6 @@ program rabe
     real(dp), dimension(:), allocatable :: Lambda_bl, Lambda_lm
     real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_finite
-    real(dp) :: I_ref_hat
     real(dp) :: helical_factor
 
     real(dp) :: trapped_fraction
@@ -141,7 +140,7 @@ program rabe
     call nc_output%add_global_attribute("title", &
                                         "asymptotic bootstrap coefficient lambda_bB")
     call nc_output%add_global_attribute("definition", &
-                                    "lambda^{off}_bB = C_A/sqrt(nu_star) + C_B/nu_star")
+                        "lambda^{off}_bB = Lambda_bl/sqrt(nu_star) + Lambda_lm/nu_star")
     call nc_output%add_global_attribute("git_hash", git_hash)
     call nc_output%def_dim(dim_name, n_stor)
     call nc_output%add_real_1d("s_tor", dim_name)
@@ -149,15 +148,15 @@ program rabe
                                  "normalized toroidal flux label")
     call nc_output%add_real_attr("s_tor", "unit", &
                                  "[1]")
-    call nc_output%add_real_1d("C_A", dim_name)
-    call nc_output%add_real_attr("C_A", "long_name", &
+    call nc_output%add_real_1d("Lambda_bl", dim_name)
+    call nc_output%add_real_attr("Lambda_bl", "long_name", &
                                  "1/sqrt(nu_star) factor")
-    call nc_output%add_real_attr("C_A", "unit", &
+    call nc_output%add_real_attr("Lambda_bl", "unit", &
                                  "[1]")
-    call nc_output%add_real_1d("C_B", dim_name)
-    call nc_output%add_real_attr("C_B", "long_name", &
+    call nc_output%add_real_1d("Lambda_lm", dim_name)
+    call nc_output%add_real_attr("Lambda_lm", "long_name", &
                                  "1/nu_star factor")
-    call nc_output%add_real_attr("C_B", "unit", &
+    call nc_output%add_real_attr("Lambda_lm", "unit", &
                                  "[1]")
     call nc_output%add_real_1d("nu_star_crit", dim_name)
     call nc_output%add_real_attr("nu_star_crit", "long_name", &
@@ -182,8 +181,8 @@ program rabe
         call nc_output%write_real_1d("lambda_SC_bB", lambda_SC)
         call nc_output%write_real_1d("remainder", remainder)
     end if
-    call nc_output%write_real_1d("C_A", Lambda_bl)
-    call nc_output%write_real_1d("C_B", Lambda_lm)
+    call nc_output%write_real_1d("Lambda_bl", Lambda_bl)
+    call nc_output%write_real_1d("Lambda_lm", Lambda_lm)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_real_1d("Lambda_finite", Lambda_finite)
     call nc_output%write_real_1d("s_tor", s_tor)
