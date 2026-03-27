@@ -7,6 +7,7 @@ program plot_finite_collisionality_landreman_paul_axi
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
+    use coefficients, only: calc_finite_boundary_layer_correction
     use shaing_callen_mod, only: calc_trapped_fraction
 
     use plot_quantities, only: plot_asymptotic_model
@@ -78,11 +79,11 @@ program plot_finite_collisionality_landreman_paul_axi
                      (M_pol*iota - N_tor)
     lambda_SC = helical_factor*dr_dAtheta*trapped_fraction
 
-    I_ref_hat = fieldlines(1)%I_ref/fieldlines(1)%eta_b*covariant_factor/R
-    finite_col_correction = sqrt(I_ref_hat)*average%B_squared*fieldlines(1)%eta_b**2
-    finite_col_correction = finite_col_correction/average%lambda_b
-    finite_col_correction = 0.75_dp*0.855_dp/pi*sqrt(2.0_dp)*finite_col_correction
-    finite_col_correction = -helical_factor*dr_dAtheta*finite_col_correction
+    finite_col_correction = calc_finite_boundary_layer_correction(fieldlines, &
+                                                                  R, &
+                                                                  dr_dAtheta, &
+                                                              field%B_theta_covariant, &
+                                                                  field%B_phi_covariant)
 
     call plot_asymptotic_model(off_factor_A, &
                                off_factor_B, &
