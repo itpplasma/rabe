@@ -814,9 +814,9 @@ contains
     end subroutine plot_deviation
 
     subroutine plot_asymptotic_model(off_factor_A, off_factor_B, &
-                                     lambda_SC, finite_col_correction)
+                                     lambda_SC, Lambda_finite)
         real(dp), intent(in) :: off_factor_A, off_factor_B
-        real(dp), intent(in) :: lambda_SC, finite_col_correction
+        real(dp), intent(in) :: lambda_SC, Lambda_finite
 
         type(myplot) :: plt
         integer, parameter :: n_points = 100
@@ -851,9 +851,9 @@ contains
                           linestyle="None", &
                           xscale="log", &
                           yscale="linear")
-       write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{finite}$=", finite_col_correction
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{finite}$=", Lambda_finite
         call plt%add_plot(nu_star, &
-                          finite_col_correction*sqrt(nu_star), &
+                          Lambda_finite*sqrt(nu_star), &
                           label=label, &
                           linestyle="None", &
                           xscale="log", &
@@ -864,7 +864,7 @@ contains
             "\Lambda_\mathrm{lm}/\nu_*$"
         call plt%add_plot(nu_star, &
                           lambda_SC + &
-                          finite_col_correction*sqrt(nu_star) + &
+                          Lambda_finite*sqrt(nu_star) + &
                           off_factor_A/sqrt(nu_star) + &
                           off_factor_B/nu_star, &
                           label=label, &
