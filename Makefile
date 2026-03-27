@@ -34,5 +34,8 @@ current: build
 golden: build
 	ctest --test-dir build/test --output-on-failure -V -L golden
 
+golden_update: build/test/golden/rabe.nc
+	cp $< test/golden/expected/.
+
 clean:
 	rm -rf build

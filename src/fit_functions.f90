@@ -1,6 +1,8 @@
 module fit_functions
-    use constants, only: dp, pi, eps
+    use constants, only: dp, pi
     implicit none
+
+    real(dp), parameter :: eps = 1e-15_dp
 
 contains
 
