@@ -69,7 +69,7 @@ program plot_finite_collisionality_landreman_paul_axi
 
     covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
     call calc_surface_averages(fieldlines, average)
-    dr_dAtheta = sign_sqrtg*sign(1.0_dp, field%psi_tor_edge)/average%sqrt_g11
+    dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
     R = field%R
     off_factor_A = deviation_A*dr_dAtheta*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
     off_factor_B = deviation_B*0.5_dp*R*pi*dr_dAtheta

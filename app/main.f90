@@ -113,8 +113,8 @@ program rabe
         Lambda_finite(this) = calc_finite_boundary_layer_correction(fieldlines, &
                                                                     R, &
                                                                     dr_dAtheta, &
-                                                              field%B_theta_covariant, &
-                                                                  field%B_phi_covariant)
+                                                                    B_theta_covariant, &
+                                                                    B_phi_covariant)
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
