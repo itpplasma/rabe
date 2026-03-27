@@ -56,3 +56,10 @@ target_link_libraries(plot_helical_omnigenous.x myplot_lib
                                                 helpers_lib)
 add_test(PlotHelicalOmnigenous plot_helical_omnigenous.x)
 set_tests_properties(PlotHelicalOmnigenous PROPERTIES LABELS "external")
+
+add_executable(plot_finite_collisionality_landreman_paul_axi.x plot_finite_collisionality_landreman_paul_axi.f90)
+target_link_libraries(plot_finite_collisionality_landreman_paul_axi.x myplot_lib
+                                                rabe_lib
+                                                helpers_lib)
+add_test(PlotFiniteCollisionality plot_finite_collisionality_landreman_paul_axi.x)
+set_tests_properties(PlotFiniteCollisionality PROPERTIES LABELS "external")
