@@ -144,39 +144,39 @@ program rabe
     call nc_output%add_global_attribute("git_hash", git_hash)
     call nc_output%def_dim(dim_name, n_stor)
     call nc_output%add_real_1d("s_tor", dim_name)
-    call nc_output%add_real_attr("s_tor", "long_name", &
-                                 "normalized toroidal flux label")
-    call nc_output%add_real_attr("s_tor", "unit", &
-                                 "[1]")
+    call nc_output%add_attr("s_tor", "long_name", &
+                            "normalized toroidal flux label")
+    call nc_output%add_attr("s_tor", "unit", &
+                            "[1]")
     call nc_output%add_real_1d("Lambda_bl", dim_name)
-    call nc_output%add_real_attr("Lambda_bl", "long_name", &
-                                 "1/sqrt(nu_star) factor")
-    call nc_output%add_real_attr("Lambda_bl", "unit", &
-                                 "[1]")
+    call nc_output%add_attr("Lambda_bl", "long_name", &
+                            "1/sqrt(nu_star) factor")
+    call nc_output%add_attr("Lambda_bl", "unit", &
+                            "[1]")
     call nc_output%add_real_1d("Lambda_lm", dim_name)
-    call nc_output%add_real_attr("Lambda_lm", "long_name", &
-                                 "1/nu_star factor")
-    call nc_output%add_real_attr("Lambda_lm", "unit", &
-                                 "[1]")
+    call nc_output%add_attr("Lambda_lm", "long_name", &
+                            "1/nu_star factor")
+    call nc_output%add_attr("Lambda_lm", "unit", &
+                            "[1]")
     call nc_output%add_real_1d("nu_star_crit", dim_name)
-    call nc_output%add_real_attr("nu_star_crit", "long_name", &
+    call nc_output%add_attr("nu_star_crit", "long_name", &
                           "lower collisionality limit for validity of asymptotic model")
-    call nc_output%add_real_attr("nu_star_crit", "unit", &
-                                 "[1]")
+    call nc_output%add_attr("nu_star_crit", "unit", &
+                            "[1]")
     call nc_output%add_real_1d("Lambda_finite", dim_name)
-    call nc_output%add_real_attr("Lambda_finite", "long_name", &
+    call nc_output%add_attr("Lambda_finite", "long_name", &
                       "sqrt(nu_star) factor accounting for finite boundary layer width")
-    call nc_output%add_real_attr("Lambda_finite", "unit", &
-                                 "[1]")
+    call nc_output%add_attr("Lambda_finite", "unit", &
+                            "[1]")
     if (should_calc_shaing_callen) then
         call nc_output%add_real_1d("lambda_SC_bB", dim_name)
-        call nc_output%add_real_attr("lambda_SC_bB", "long_name", &
-                                     "omnigenous Shaing-Callen coefficient")
-        call nc_output%add_real_attr("lambda_SC_bB", "unit", "[1]")
+        call nc_output%add_attr("lambda_SC_bB", "long_name", &
+                                "omnigenous Shaing-Callen coefficient")
+        call nc_output%add_attr("lambda_SC_bB", "unit", "[1]")
         call nc_output%add_real_1d("remainder", dim_name)
-        call nc_output%add_real_attr("remainder", "long_name", &
+        call nc_output%add_attr("remainder", "long_name", &
                                 "non-omnigenous remainder of Shaing-Callen coefficient")
-        call nc_output%add_real_attr("remainder", "unit", "[1]")
+        call nc_output%add_attr("remainder", "unit", "[1]")
 
         call nc_output%write_real_1d("lambda_SC_bB", lambda_SC)
         call nc_output%write_real_1d("remainder", remainder)
