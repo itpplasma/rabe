@@ -5,10 +5,19 @@ module make_fieldline
 
     implicit none
 
+    integer, parameter :: maximum_possible_n = 10
+    type :: maxima_t
+        integer :: n
+        real(dp), dimension(maximum_possible_n) :: phi
+        real(dp), dimension(maximum_possible_n) :: B
+    end type maxima_t
+
 contains
 
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
-                                        field, M_pol, N_tor, nfp, phi_tol)
+                                        field, M_pol, N_tor, nfp, &
+                                        phi_tol, &
+                                        too_strong_violation)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
@@ -17,13 +26,19 @@ contains
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
-        real(dp), intent(in), optional :: phi_tol
+        real(dp), intent(in) :: phi_tol
+        logical, intent(out), optional :: too_strong_violation
 
         real(dp) :: interval(2)
+        type(maxima_t) :: maxima
+        logical :: more_than_two_maxima
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
-        logical :: more_than_2_maxima, too_strong_violation
+
+        if (present(too_strong_violation)) then
+            too_strong_violation = .false.
+        end if
 
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
 
@@ -35,41 +50,68 @@ contains
         fieldlines%N_tor = N_tor
         fieldlines%nfp = nfp
 
-        !> if the origin of the ideal omnigenous field is a minimum
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"
             error stop
         end if
+        !> if the origin of the ideal omnigenous field is a minimum (above)
         !> we can put the labels along the chi = 0 line
         fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
 
         fieldlines%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
 
-        too_strong_violation = .false.
+        more_than_two_maxima = .false.
         do current = 1, n_fieldlines
             interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - iota*M_pol) + &
                        fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, phi_tol, more_than_2_maxima)
-            if (more_than_2_maxima) too_strong_violation = .true.
+                                             interval, maxima, phi_tol)
+            if (maxima%n < 2) then
+                print *, "---------------------------------------------------------"
+                print *, "---------------------------------------------------------"
+                print *, "---------------------------------------------------------"
+                print *, "Found less than two maxima in provided interval!"
+                print *, "theta_0: ", fieldlines(current)%theta_0
+                print *, "phi_0: ", fieldlines(current)%phi_0
+                print *, "interval: ", interval
+                print *, "phi_max: ", maxima%phi
+                print *, "B_max: ", maxima%B
+                print *, "---------------------------------------------------------"
+                print *, "---------------------------------------------------------"
+                print *, "---------------------------------------------------------"
+                error stop
+            elseif (maxima%n > 2) then
+                fieldlines(current)%phi_max = get_biggest_maxima_on_each_side(maxima, &
+                                                              fieldlines(current)%phi_0)
+                more_than_two_maxima = .true.
+            else
+                fieldlines(current)%phi_max = maxima%phi(1:2)
+            end if
+
+            ! To ensure that the there are no maxima in between found phi_max
+            ! we move phi_max inside the well by the maximal potential error
+            call nudge_maxima_inward(field, fieldlines(current), phi_tol)
         end do
 
-        if (too_strong_violation) then
+        if (more_than_two_maxima) then
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "warning in make_flock_of_fieldlines: "
             print *, "The provided field violates omnigeneity too strongly!"
-            print *, "-> Found more than one local maximum per half period", &
+            print *, "-> Found more than two local maxima per period", &
                 " for at least one fieldline!"
             print *, "Calculation done with biggest maximum in each half period!"
             print *, "Final result for bootstrap deviation can not be trusted!"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
+            if (present(too_strong_violation)) then
+                too_strong_violation = .true.
+            end if
         end if
 
         fieldlines%eta_b = (1.0_dp)/get_global_B_max(fieldlines)
@@ -159,8 +201,8 @@ contains
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
-                                           phi_tol, &
-                                           more_than_2_maxima)
+                                           maxima, &
+                                           phi_tol)
         use find_extrema, only: find_local_maxima
         use, intrinsic :: ieee_arithmetic
 
@@ -168,51 +210,49 @@ contains
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
         real(dp), intent(in), optional :: phi_tol
-        logical, intent(out), optional :: more_than_2_maxima
-
-        integer, parameter :: n_max = 10
-        real(dp), dimension(n_max) :: phi_max, B_max
-        integer :: found_maxima
-        integer :: of_biggest_B
-
-        if (present(more_than_2_maxima)) more_than_2_maxima = .false.
+        type(maxima_t) :: maxima
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
-                               phi_max, phi_tol)
+                               maxima%phi, phi_tol)
 
-        found_maxima = count(.not. ieee_is_nan(phi_max))
+        maxima%n = count(.not. ieee_is_nan(maxima%phi))
+        call B_mod_along_fieldline(maxima%phi(1:maxima%n), maxima%B(1:maxima%n))
 
-        if (found_maxima < 2) then
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "error in find_maxima_along_fieldline: "
-            print *, "Found less than two maxima in provided interval!"
-            print *, "theta_0: ", fieldline%theta_0
-            print *, "phi_0: ", fieldline%phi_0
-            print *, "interval: ", interval
-            print *, "found maxima: ", phi_max(1:found_maxima)
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            error stop
-        elseif (found_maxima > 2) then
-            if (present(more_than_2_maxima)) more_than_2_maxima = .true.
-            call B_mod_along_fieldline(phi_max(1:found_maxima), B_max(1:found_maxima))
-            of_biggest_B = maxloc(B_max, mask=(phi_max < fieldline%phi_0), dim=1)
-            fieldline%phi_max(1) = phi_max(of_biggest_B)
-            of_biggest_B = maxloc(B_max, mask=(phi_max > fieldline%phi_0), dim=1)
-            fieldline%phi_max(2) = phi_max(of_biggest_B)
-        else
-            fieldline%phi_max = phi_max(1:found_maxima)
-        end if
+    contains
+        subroutine B_mod_along_fieldline(phi, B_mod)
+            real(dp), dimension(:), intent(in) :: phi
+            real(dp), dimension(:), intent(out) :: B_mod
 
-        ! To ensure that the there are no maxima in between found phi_max
-        ! we move phi_max inside the well by the maximal potential error
-        if (present(phi_tol)) then
-            fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol
-            fieldline%phi_max(2) = fieldline%phi_max(2) - phi_tol
-        end if
+            real(dp), dimension(size(phi)) :: theta
+            integer :: idx
+
+            theta = fieldline%get_theta(phi)
+            do idx = 1, size(phi)
+                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+            end do
+        end subroutine B_mod_along_fieldline
+    end subroutine find_maxima_along_fieldline
+
+    function get_biggest_maxima_on_each_side(maxima, phi_0) result(phi_max)
+        type(maxima_t), intent(in) :: maxima
+        real(dp), intent(in) :: phi_0
+        real(dp), dimension(2) :: phi_max
+
+        integer :: of_biggest_B
+
+        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi < phi_0), dim=1)
+        phi_max(1) = maxima%phi(of_biggest_B)
+        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi > phi_0), dim=1)
+        phi_max(2) = maxima%phi(of_biggest_B)
+    end function get_biggest_maxima_on_each_side
+
+    subroutine nudge_maxima_inward(field, fieldline, phi_tol)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), intent(inout) :: fieldline
+        real(dp), intent(in) :: phi_tol
+
+        fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol
+        fieldline%phi_max(2) = fieldline%phi_max(2) - phi_tol
 
         call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 
@@ -229,7 +269,7 @@ contains
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
-    end subroutine find_maxima_along_fieldline
+    end subroutine nudge_maxima_inward
 
     function get_global_B_max(fieldlines) result(global_B_max)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines

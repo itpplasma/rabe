@@ -23,6 +23,7 @@ contains
 
     subroutine test_find_maxima_along_fieldline()
         use make_fieldline, only: find_maxima_along_fieldline
+        use make_fieldline, only: maxima_t
         use fieldline_mod, only: fieldline_t
 
         real(dp), parameter :: phi_tol = 1e-3
@@ -31,6 +32,7 @@ contains
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
         type(fieldline_t) :: fieldline
+        type(maxima_t) :: maxima
         real(dp) :: found_phi(2), analytic_phi(2)
         integer :: idx
 
@@ -48,7 +50,18 @@ contains
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
+                                             maxima, &
                                              phi_tol)
+            if (maxima%n == 2) then
+                fieldline%phi_max = maxima%phi(1:2)
+            else
+                print *, "-------------------------------------------------------------"
+                print *, "test_integration_along_fieldline failed: maxima"
+                print *, "Found ", maxima%n, " maxima, expected 2!"
+                print *, "maxima: ", maxima%phi(1:max(1, maxima%n))
+                error stop
+            end if
+
             call find_analytic_maxima_along_fieldline(M_pol, &
                                                       N_tor, &
                                                       chi_max, &
