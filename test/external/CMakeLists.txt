@@ -63,3 +63,12 @@ target_link_libraries(plot_finite_collisionality_landreman_paul_axi.x myplot_lib
                                                 helpers_lib)
 add_test(PlotFiniteCollisionality plot_finite_collisionality_landreman_paul_axi.x)
 set_tests_properties(PlotFiniteCollisionality PROPERTIES LABELS "external")
+
+add_executable(compare_boozer_neo_field.x compare_boozer_neo_field.f90)
+target_link_libraries(compare_boozer_neo_field.x myplot_lib
+                                                 rabe_lib
+                                                 helpers_lib)
+add_test(NAME CompareBoozerNeoField
+         COMMAND compare_boozer_neo_field.x
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+set_tests_properties(CompareBoozerNeoField PROPERTIES LABELS "current")
