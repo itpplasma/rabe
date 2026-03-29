@@ -17,7 +17,7 @@ contains
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, &
                                         phi_tol, &
-                                        too_strong_violation)
+                                        err_flag)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
@@ -27,7 +27,7 @@ contains
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
         real(dp), intent(in) :: phi_tol
-        logical, intent(out), optional :: too_strong_violation
+        integer, intent(out), optional :: err_flag
 
         real(dp) :: interval(2)
         type(maxima_t) :: maxima
@@ -36,8 +36,8 @@ contains
         integer :: n_fieldlines
         integer :: current
 
-        if (present(too_strong_violation)) then
-            too_strong_violation = .false.
+        if (present(err_flag)) then
+            err_flag = 0
         end if
 
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
@@ -109,8 +109,8 @@ contains
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
-            if (present(too_strong_violation)) then
-                too_strong_violation = .true.
+            if (present(err_flag)) then
+                err_flag = 1
             end if
         end if
 
