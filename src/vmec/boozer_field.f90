@@ -145,7 +145,7 @@ contains
                                                  B_phi_covariant)
         use new_vmec_stuff_mod, only: nper
 
-        class(boozer_field_t), intent(inout) :: self
+        class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: stor
         real(dp), intent(out) :: iota, B_theta_covariant, B_phi_covariant
 
