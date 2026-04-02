@@ -15,14 +15,19 @@ program test_netcdf
     integer, parameter :: n_dim = 3
     real(dp), parameter :: test_factor_a_array(n_dim) = [1.23_dp, 4.56_dp, 7.89_dp]
     real(dp), parameter :: test_factor_b_array(n_dim) = [98.7_dp, 6.54_dp, 32.1_dp]
+    integer, parameter :: test_int_array(n_dim) = [1, 0, -102]
     character(len=*), parameter :: title = "RABE Bootstrap Current Analysis Results"
     character(len=*), parameter :: long_name_a = "1/sqrt(nu_star) factor"
     character(len=*), parameter :: long_name_b = "1/nu_star factor"
+    character(len=*), parameter :: long_name_flags = "status flags"
 
     real(dp) :: read_factor_a, read_factor_b
     real(dp), dimension(n_dim) :: read_factor_a_array
     real(dp), dimension(n_dim) :: read_factor_b_array
     character(len=100) :: read_title, read_long_name_a, read_long_name_b
+    character(len=100) :: read_long_name_flags
+
+    integer, dimension(n_dim) :: read_int_array
 
     logical :: file_exists
     integer :: unit, iostat
@@ -30,9 +35,9 @@ program test_netcdf
     call nc_out%create(test_file)
     call nc_out%add_global_attribute("title", title)
     call nc_out%add_real("off_factor_a")
-    call nc_out%add_real_attr("off_factor_a", "long_name", long_name_a)
+    call nc_out%add_attr("off_factor_a", "long_name", long_name_a)
     call nc_out%add_real("off_factor_b")
-    call nc_out%add_real_attr("off_factor_b", "long_name", long_name_b)
+    call nc_out%add_attr("off_factor_b", "long_name", long_name_b)
     call nc_out%write_real("off_factor_a", test_factor_a)
     call nc_out%write_real("off_factor_b", test_factor_b)
     call nc_out%close()
@@ -48,8 +53,8 @@ program test_netcdf
     call nc_in%read_real("off_factor_a", read_factor_a)
     call nc_in%read_real("off_factor_b", read_factor_b)
     call nc_in%read_global_attribute("title", read_title)
-    call nc_in%read_real_attr("off_factor_a", "long_name", read_long_name_a)
-    call nc_in%read_real_attr("off_factor_b", "long_name", read_long_name_b)
+    call nc_in%read_attr("off_factor_a", "long_name", read_long_name_a)
+    call nc_in%read_attr("off_factor_b", "long_name", read_long_name_b)
     call nc_in%close()
 
     if (not_same(test_factor_a, read_factor_a, reltol)) then
@@ -108,11 +113,14 @@ program test_netcdf
     call nc_out%add_global_attribute("title", title)
     call nc_out%def_dim(dim_name, n_dim)
     call nc_out%add_real_1d("off_factor_a", dim_name)
-    call nc_out%add_real_attr("off_factor_a", "long_name", long_name_a)
+    call nc_out%add_attr("off_factor_a", "long_name", long_name_a)
     call nc_out%add_real_1d("off_factor_b", dim_name)
-    call nc_out%add_real_attr("off_factor_b", "long_name", long_name_b)
+    call nc_out%add_attr("off_factor_b", "long_name", long_name_b)
+    call nc_out%add_int_1d("flags", dim_name)
+    call nc_out%add_attr("flags", "long_name", long_name_flags)
     call nc_out%write_real_1d("off_factor_a", test_factor_a_array)
     call nc_out%write_real_1d("off_factor_b", test_factor_b_array)
+    call nc_out%write_int_1d("flags", test_int_array)
     call nc_out%close()
 
     inquire (file=test_file, exist=file_exists)
@@ -125,9 +133,11 @@ program test_netcdf
     call nc_in%open(test_file)
     call nc_in%read_real_1d("off_factor_a", read_factor_a_array)
     call nc_in%read_real_1d("off_factor_b", read_factor_b_array)
+    call nc_in%read_int_1d("flags", read_int_array)
     call nc_in%read_global_attribute("title", read_title)
-    call nc_in%read_real_attr("off_factor_a", "long_name", read_long_name_a)
-    call nc_in%read_real_attr("off_factor_b", "long_name", read_long_name_b)
+    call nc_in%read_attr("off_factor_a", "long_name", read_long_name_a)
+    call nc_in%read_attr("off_factor_b", "long_name", read_long_name_b)
+    call nc_in%read_attr("flags", "long_name", read_long_name_flags)
     call nc_in%close()
 
     if (not_same(test_factor_a_array, read_factor_a_array, reltol)) then
@@ -167,6 +177,22 @@ program test_netcdf
         print *, "test_netcdf failed: off_factor_b long_name mismatch"
         print *, "found: ", trim(read_long_name_b)
         print *, "expected: ", trim(long_name_b)
+        error stop
+    end if
+
+    if (any(read_int_array /= test_int_array)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: int array mismatch"
+        print *, "found: ", read_int_array
+        print *, "expected: ", test_int_array
+        error stop
+    end if
+
+    if (trim(read_long_name_flags) /= long_name_flags) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_netcdf failed: flags long_name mismatch"
+        print *, "found: ", trim(read_long_name_flags)
+        print *, "expected: ", trim(long_name_flags)
         error stop
     end if
 

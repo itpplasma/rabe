@@ -43,6 +43,10 @@ def main():
             print(f"      {e}")
             failed = True
 
+    for var in current.data_vars:
+        if var not in expected.data_vars:
+            print(f"WARNING: variable '{var}' missing in golden record")
+
     expected.close()
     current.close()
 

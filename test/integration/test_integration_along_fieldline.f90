@@ -5,6 +5,7 @@ program test_integration_along_fieldline
     use fieldline_mod, only: fieldline_t
     use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
     use make_fieldline, only: find_maxima_along_fieldline
+    use make_fieldline, only: maxima_t
     use integrate, only: integrate_1d
 
     implicit none
@@ -22,6 +23,7 @@ program test_integration_along_fieldline
     real(dp), parameter :: iota = -3.0_dp
     type(fieldline_t), dimension(1) :: fieldline
 
+    type(maxima_t) :: maxima
     real(dp) :: interval(2)
     real(dp) :: found_integral
 
@@ -40,7 +42,16 @@ program test_integration_along_fieldline
     fieldline%phi_0 = M_pol*fieldline%xi_0/nfp
 
     interval = [0.0_dp, 4*pi] + fieldline(1)%phi_0
-    call find_maxima_along_fieldline(field, fieldline(1), interval, phi_tol)
+    call find_maxima_along_fieldline(field, fieldline(1), interval, maxima, phi_tol)
+    if (maxima%n == 2) then
+        fieldline(1)%phi_max = maxima%phi(1:2)
+    else
+        print *, "-------------------------------------------------------------"
+        print *, "test_integration_along_fieldline failed: maxima"
+        print *, "Found ", maxima%n, " maxima, expected 2!"
+        print *, "maxima: ", maxima%phi(1:max(1, maxima%n))
+        error stop
+    end if
 
     call integrate_1d(B_mod_along_fieldline, &
                       fieldline(1)%phi_max(1), &
