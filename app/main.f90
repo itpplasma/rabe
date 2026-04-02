@@ -15,7 +15,7 @@ program rabe
     use git_version, only: git_hash
 
     use read_file, only: read_namelist
-    use read_file, only: nc_filename, &
+    use read_file, only: field_file, &
                          phi_shift, &
                          M_pol, &
                          N_tor, &
@@ -76,7 +76,7 @@ program rabe
         allocate (remainder(n_stor))
     end if
 
-    call field%boozer_field_init(nc_filename, phi_shift=phi_shift, grid_refinement=6)
+    call field%boozer_field_init(field_file, phi_shift=phi_shift, grid_refinement=6)
     do this = 1, n_stor
         call field%fix_to_surface(s_tor(this))
         call field%get_iota_and_covariant_components(s_tor(this), &

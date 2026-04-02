@@ -5,7 +5,7 @@ module read_file
 
     implicit none
 
-    character(len=100), public, protected :: nc_filename
+    character(len=100), public, protected :: field_file
     real(dp), public, protected :: phi_shift
     real(dp), public, protected :: M_pol
     real(dp), public, protected :: N_tor
@@ -18,7 +18,7 @@ module read_file
     integer, public, protected :: n_eta
 
     namelist /rabe_config/ &
-        nc_filename, &
+        field_file, &
         phi_shift, &
         M_pol, &
         N_tor, &
@@ -102,8 +102,8 @@ contains
 
         is_valid = .true.
 
-        if (len(trim(nc_filename)) == 0) then
-            print *, "nc_filename is empty!"
+        if (len(trim(field_file)) == 0) then
+            print *, "field_file is empty!"
         end if
         if (ieee_is_nan(phi_shift)) then
             print *, "phi_shift is NaN!"
