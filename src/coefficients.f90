@@ -81,15 +81,42 @@ contains
         real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
         real(dp) :: nu_star_crit
 
-        real(dp) :: eta_b, I_ref_hat, max_delta_eta
+        real(dp) :: eta_b, iota, I_ref_hat, max_delta_eta
         real(dp) :: covariant_factor
 
+        if (R < machine_eps) then
+            print *, "error: major radius R must be positive."
+            print *, "R =", R
+            error stop
+        end if
+        if (ieee_is_nan(B_theta_covariant)) then
+            print *, "error: B_theta_covariant is NaN."
+            error stop
+        end if
+        if (ieee_is_nan(B_phi_covariant)) then
+            print *, "error: B_phi_covariant is NaN."
+            error stop
+        end if
+
         eta_b = fieldlines(1)%eta_b
-        covariant_factor = (B_phi_covariant + B_theta_covariant*fieldlines(1)%iota)
+        iota = fieldlines(1)%iota
+        covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
+        if (covariant_factor < machine_eps) then
+            print *, "error: covariant factor must be positive."
+            print *, "B_phi_covariant =", B_phi_covariant
+            print *, "B_theta_covariant =", B_theta_covariant
+            print *, "iota =", iota
+            error stop
+        end if
         I_ref_hat = 1.0_dp/(2.0_dp*pi*R*eta_b)*fieldlines(1)%I_ref*covariant_factor
         max_delta_eta = eta_b - 1.0_dp/minval(fieldlines%B_max(1))
 
-        nu_star_crit = 0.125_dp/3.0_dp*(max_delta_eta/eta_b)**2.0_dp/I_ref_hat
+        nu_star_crit = 0.125_dp*(max_delta_eta/eta_b)**2.0_dp/I_ref_hat
+
+        if (ieee_is_nan(nu_star_crit)) then
+            print *, "error: Lambda_finite is NaN."
+            error stop
+        end if
     end function calc_nu_star_crit
 
 end module coefficients
