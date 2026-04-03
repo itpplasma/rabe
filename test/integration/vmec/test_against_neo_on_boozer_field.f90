@@ -17,7 +17,7 @@ program test_against_neo_on_boozer_field
     type(boozer_field_t) :: bfield
     type(neo_field_t) :: nfield
 
-    integer, parameter :: n_stor = 49
+    integer, parameter :: n_stor = 8
     integer :: idx
     real(dp), dimension(n_stor) :: stors
     character(len=*), parameter :: bc_filename = "test.bc"
@@ -36,26 +36,30 @@ program test_against_neo_on_boozer_field
                                   radial_spline_order=5, &
                                   angular_spline_order=5, &
                                   grid_refinement=12)
-    ! call write_field_B_mod_to_bc(bfield, stors, m_max=31, n_max=32, &
-    !                          filename=bc_filename)
+    call write_field_B_mod_to_bc(bfield, stors, m_max=31, n_max=32, &
+                                 filename=bc_filename)
 
     theta = 0.3_dp
     phi = 0.7_dp
-    stor = 0.397959184_dp
-    call bfield%fix_to_surface(stor)
-    call bfield%compute_B_mod(theta, phi, B_mod_bfield)
+    call nfield%neo_field_init(bc_filename, stors(1))
+    do idx = 2, n_stor
+        stor = stors(idx)
+        call bfield%fix_to_surface(stor)
+        call bfield%compute_B_mod(theta, phi, B_mod_bfield)
 
-    call nfield%neo_field_init(bc_filename, stor)
-    call nfield%compute_B_mod(theta, phi, B_mod_nfield)
-    if (not_same(B_mod_bfield, B_mod_nfield, reltol, abstol)) then
-        print *, "B_mod mismatch at s_tor =", stor, "theta =", theta, "phi =", phi
-        print *, "B_mod_bfield =", B_mod_bfield
-        print *, "B_mod_nfield =", B_mod_nfield
-    print *, "Relative difference =", abs(B_mod_bfield - B_mod_nfield)/abs(B_mod_nfield)
-        test_failed = .true.
-    end if
+        call nfield%neo_change_stor(stor)
+        call nfield%compute_B_mod(theta, phi, B_mod_nfield)
+        if (not_same(B_mod_bfield, B_mod_nfield, reltol, abstol)) then
+            print *, "B_mod mismatch at s_tor =", stor, "theta =", theta, "phi =", phi
+            print *, "B_mod_bfield =", B_mod_bfield
+            print *, "B_mod_nfield =", B_mod_nfield
+            print *, "Relative difference =", abs(B_mod_bfield - B_mod_nfield) &
+                /abs(B_mod_nfield)
+            test_failed = .true.
+        end if
+    end do
 
-    ! call delete_bc_file(bc_filename)
+    call delete_bc_file(bc_filename)
 
     if (test_failed) error stop
 

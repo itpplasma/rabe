@@ -136,7 +136,7 @@ contains
         end do
 
         do k = 1, size(m)
-           bmnc(k) = prefac*sum(cos(real(m(k), kind=dp)*u + real(n(k), kind=dp)*v)*fval)
+           bmnc(k) = prefac*sum(cos(real(m(k), kind=dp)*u - real(n(k), kind=dp)*v)*fval)
             if (m(k) == 0 .and. n(k) == 0) bmnc(k) = bmnc(k)/2.0_dp
         end do
 
