@@ -112,8 +112,8 @@ program rabe
         Lambda_lm(this) = deviation_B*0.5*R*pi*dr_dAtheta
         nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
                                                R, &
-                                               field%B_theta_covariant, &
-                                               field%B_phi_covariant)
+                                               B_theta_covariant, &
+                                               B_phi_covariant)
         Lambda_finite(this) = calc_finite_boundary_layer_correction(fieldlines, &
                                                                     R, &
                                                                     dr_dAtheta, &
