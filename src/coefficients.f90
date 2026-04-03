@@ -62,14 +62,34 @@ contains
         helical_factor = (B_phi_covariant*M_pol + B_theta_covariant*N_tor) &
                          /(M_pol*iota - N_tor)
 
-        I_ref_hat = I_ref/eta_b*covariant_factor/R
+        I_ref_hat = I_ref/eta_b*covariant_factor/(2.0_dp*pi*R)
         Lambda_finite = sqrt(I_ref_hat)*average%B_squared*eta_b**2/average%lambda_b
-        Lambda_finite = 0.75_dp*0.855_dp/pi*sqrt(2.0_dp)*Lambda_finite
+        Lambda_finite = 1.5_dp*0.855_dp/sqrt(pi)*Lambda_finite
         Lambda_finite = -helical_factor*dr_dAtheta*Lambda_finite
         if (ieee_is_nan(Lambda_finite)) then
             print *, "error: Lambda_finite is NaN."
             error stop
         end if
     end function calc_finite_boundary_layer_correction
+
+    function calc_nu_star_crit(fieldlines, &
+                               R, &
+                               B_theta_covariant, &
+                               B_phi_covariant) result(nu_star_crit)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: R
+        real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
+        real(dp) :: nu_star_crit
+
+        real(dp) :: eta_b, I_ref_hat, max_delta_eta
+        real(dp) :: covariant_factor
+
+        eta_b = fieldlines(1)%eta_b
+        covariant_factor = (B_phi_covariant + B_theta_covariant*fieldlines(1)%iota)
+        I_ref_hat = 1.0_dp/(2.0_dp*pi*R*eta_b)*fieldlines(1)%I_ref*covariant_factor
+        max_delta_eta = eta_b - 1.0_dp/minval(fieldlines%B_max(1))
+
+        nu_star_crit = 0.125_dp/3.0_dp*(max_delta_eta/eta_b)**2.0_dp/I_ref_hat
+    end function calc_nu_star_crit
 
 end module coefficients

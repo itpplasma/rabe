@@ -7,6 +7,7 @@ program rabe
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
+    use coefficients, only: calc_nu_star_crit
     use coefficients, only: calc_finite_boundary_layer_correction
     use shaing_callen_mod, only: calc_trapped_fraction
     use shaing_callen_mod, only: get_non_omnigenous_remainder
@@ -107,11 +108,10 @@ program rabe
         Lambda_bl(this) = deviation_A*dr_dAtheta* &
                           sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         Lambda_lm(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        nu_star_crit(this) = R/fieldlines(1)%I_ref*(fieldlines(1)%eta_b - &
-                                          1.0_dp/minval(fieldlines%B_max(1)))**2.0_dp/ &
-                             fieldlines(1)%eta_b*0.25_dp*pi/3.0_dp
-        nu_star_crit(this) = nu_star_crit(this)/covariant_factor
-
+        nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
+                                               R, &
+                                               field%B_theta_covariant, &
+                                               field%B_phi_covariant)
         Lambda_finite(this) = calc_finite_boundary_layer_correction(fieldlines, &
                                                                     R, &
                                                                     dr_dAtheta, &
