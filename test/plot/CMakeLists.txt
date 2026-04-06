@@ -1,5 +1,6 @@
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../integration/input/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/input)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../integration/vmec/input/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/input)
 
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
@@ -40,3 +41,10 @@ target_link_libraries(plot_local_drift.x myplot_lib
                                              helpers_lib)
 add_test(PlotLocalDrift plot_local_drift.x)
 set_tests_properties(PlotLocalDrift PROPERTIES LABELS "plot")
+
+add_executable(plot_nabla_s_compare.x plot_nabla_s_compare.f90)
+target_link_libraries(plot_nabla_s_compare.x myplot_lib
+                                              rabe_lib
+                                              helpers_lib)
+add_test(PlotNablaSCompare plot_nabla_s_compare.x)
+set_tests_properties(PlotNablaSCompare PROPERTIES LABELS "current")
