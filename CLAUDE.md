@@ -42,7 +42,7 @@ rabe_lib (main static library)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
 │   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion
-├── fieldline_lib (src/fieldline/)
+├── fieldline_lib (src/fieldline/) — see src/fieldline/README.md
 │   fieldline.f90, fieldline_integrals.f90, fieldline_integrands.f90,
 │   fieldline_labels.f90, make_fieldline.f90, surface_average.f90
 ├── shaing_callen_lib (src/shaing_callen/)
