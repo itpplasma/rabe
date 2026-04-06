@@ -6,7 +6,6 @@ module read_file
     implicit none
 
     character(len=100), public, protected :: field_file
-    real(dp), public, protected :: phi_shift
     real(dp), public, protected :: M_pol
     real(dp), public, protected :: N_tor
     real(dp), dimension(:), allocatable, public, protected :: s_tor
@@ -19,7 +18,6 @@ module read_file
 
     namelist /rabe_config/ &
         field_file, &
-        phi_shift, &
         M_pol, &
         N_tor, &
         s_tor, &
@@ -55,7 +53,6 @@ contains
         end if
 
         ! Default values
-        phi_shift = 0.0_dp
         should_calc_shaing_callen = .false.
         n_eta = 100
         if (allocated(s_tor)) deallocate (s_tor)
@@ -104,10 +101,6 @@ contains
 
         if (len(trim(field_file)) == 0) then
             print *, "field_file is empty!"
-        end if
-        if (ieee_is_nan(phi_shift)) then
-            print *, "phi_shift is NaN!"
-            is_valid = .false.
         end if
         if (ieee_is_nan(M_pol)) then
             print *, "M_pol is NaN!"

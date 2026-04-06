@@ -19,7 +19,6 @@ module boozer_field
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
         real(dp) :: R
-        real(dp) :: phi_shift
     contains
         procedure :: boozer_field_init
         procedure :: evaluate
@@ -29,13 +28,11 @@ module boozer_field
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
-        procedure :: phi_wrapper
     end type boozer_field_t
 
 contains
 
     subroutine boozer_field_init(self, vmec_file, &
-                                 phi_shift, &
                                  radial_spline_order, &
                                  angular_spline_order, &
                                  grid_refinement)
@@ -44,7 +41,6 @@ contains
         use boozer_coordinates_mod, only: use_B_r
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: vmec_file
-        real(dp), intent(in), optional :: phi_shift
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
@@ -57,11 +53,6 @@ contains
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
-        if (present(phi_shift)) then
-            self%phi_shift = real(phi_shift, dp)
-        else
-            self%phi_shift = 0.0_dp
-        end if
         self%initialized = .true.
     end subroutine boozer_field_init
 
@@ -92,7 +83,7 @@ contains
 
         r = x(1)
         vartheta_B = x(2)
-        varphi_B = self%phi_wrapper(x(3))
+        varphi_B = x(3)
 
         call splint_boozer_coord(r, vartheta_B, varphi_B, &
                                  mode_secders, &
@@ -240,7 +231,7 @@ contains
         if (.not. self%fixed_to_surface) &
             error stop "compute_nabla_s: call fix_to_surface first"
 
-        call splint_boozer_coord(self%fixed_stor, theta, self%phi_wrapper(phi), 0, &
+        call splint_boozer_coord(self%fixed_stor, theta, phi, 0, &
                                  dummy(1), dummy(2), dummy(3), &
                                  dummy(4), dummy(5), dummy(6), &
                                  dummy(7), dummy(8), dummy(9), &
@@ -251,16 +242,5 @@ contains
         nabla_s = sqrt_g_ss/cm2m
 
     end subroutine compute_nabla_s
-
-    !> rabe requires the minimum line of the perfect omnigenous field to pass
-    !> through phi=theta=0. If this is not the case, the user can specify the
-    !> necessary shift when initializing the field.
-    function phi_wrapper(self, phi)
-        class(boozer_field_t), intent(in) :: self
-        real(dp), intent(in) :: phi
-        real(dp) :: phi_wrapper
-
-        phi_wrapper = phi + self%phi_shift/self%nfp
-    end function phi_wrapper
 
 end module boozer_field
