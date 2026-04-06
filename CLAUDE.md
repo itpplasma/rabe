@@ -67,6 +67,10 @@ The main application (`app/main.f90`) orchestrates these components to:
 - **Field Data**: `.bc` files containing magnetic field spline data
 - **Output**: Results written to `rabe.out`
 
+## Plot Tests
+
+See `test/plot/README.md` for the CMake pattern, available input files, myplot API reference, and examples.
+
 ## Important Notes
 
 - Fortran arrays cannot be polymorphic - use wrapper types with abstract members
