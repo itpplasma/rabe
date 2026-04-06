@@ -1,3 +1,5 @@
+<!-- When adding new input files or changing the myplot API, update this README accordingly. -->
+
 # Plot Tests
 
 ## CMake pattern
