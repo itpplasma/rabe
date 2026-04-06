@@ -2,7 +2,7 @@ program test_read_namelist
     use constants, only: dp, pi
     use utils, only: not_same
     use read_file, only: read_namelist
-    use read_file, only: bc_filename, &
+    use read_file, only: field_file, &
                          M_pol, &
                          N_tor, &
                          s_tor, &
@@ -20,7 +20,7 @@ program test_read_namelist
 
     logical :: test_failed
 
-    character(len=*), parameter :: test_bc_filename = "test.bc"
+    character(len=*), parameter :: test_field_file = "test.nc"
     real(dp), parameter :: test_M_pol = -1.0_dp
     real(dp), parameter :: test_N_tor = 2.0_dp
     real(dp), dimension(:), allocatable :: test_s_tor
@@ -35,7 +35,7 @@ program test_read_namelist
     if (allocated(test_s_tor)) deallocate (test_s_tor)
     allocate (test_s_tor, source=[0.25_dp, 0.5_dp])
     call write_test_file(test_file, &
-                         test_bc_filename=test_bc_filename, &
+                         test_field_file=test_field_file, &
                          test_M_pol=test_M_pol, &
                          test_N_tor=test_N_tor, &
                          test_s_tor=test_s_tor, &
@@ -47,11 +47,11 @@ program test_read_namelist
                          test_n_eta=test_n_eta)
     call read_namelist(test_file)
 
-    if (bc_filename /= test_bc_filename) then
+    if (field_file /= test_field_file) then
         print *, "-------------------------------------------------------------"
         print *, "test_read_namelist failed: bc_filename"
-        print *, "found: ", bc_filename
-        print *, "expected: ", test_bc_filename
+        print *, "found: ", field_file
+        print *, "expected: ", test_field_file
         test_failed = .true.
     end if
     if (not_same(M_pol, &
@@ -131,7 +131,7 @@ program test_read_namelist
     if (allocated(test_s_tor)) deallocate (test_s_tor)
     allocate (test_s_tor, source=[0.314_dp])
     call write_test_file(test_file, &
-                         test_bc_filename=test_bc_filename, &
+                         test_field_file=test_field_file, &
                          test_M_pol=test_M_pol, &
                          test_N_tor=test_N_tor, &
                          test_s_tor=test_s_tor, &
@@ -161,7 +161,7 @@ program test_read_namelist
 contains
 
     subroutine write_test_file(filename, &
-                               test_bc_filename, &
+                               test_field_file, &
                                test_M_pol, &
                                test_N_tor, &
                                test_s_tor, &
@@ -172,7 +172,7 @@ contains
                                test_n_eta)
 
         character(len=*), intent(in) :: filename
-        character(len=*), intent(in), optional :: test_bc_filename
+        character(len=*), intent(in), optional :: test_field_file
         real(dp), intent(in), optional :: test_M_pol
         real(dp), intent(in), optional :: test_N_tor
         real(dp), intent(in), dimension(:), optional :: test_s_tor
@@ -186,8 +186,8 @@ contains
 
         open (newunit=unit, file=filename, status="replace")
         write (unit, "(A)") "&rabe_config"
-        if (present(test_bc_filename)) then
-            write (unit, "(A,A,A)") "bc_filename = '", test_bc_filename, "',"
+        if (present(test_field_file)) then
+            write (unit, "(A,A,A)") "field_file = '", test_field_file, "',"
         end if
         if (present(test_M_pol)) then
             write (unit, "(A,F4.1,A)") "M_pol = ", test_M_pol, ","

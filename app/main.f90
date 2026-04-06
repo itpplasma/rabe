@@ -1,7 +1,7 @@
 program rabe
     use constants, only: dp, pi
     use utils, only: linspace
-    use neo_field, only: neo_field_t
+    use boozer_field, only: boozer_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_labels, only: get_labels
     use make_fieldline, only: make_flock_of_fieldlines
@@ -15,7 +15,7 @@ program rabe
     use git_version, only: git_hash
 
     use read_file, only: read_namelist
-    use read_file, only: bc_filename, &
+    use read_file, only: field_file, &
                          M_pol, &
                          N_tor, &
                          s_tor, &
@@ -30,7 +30,7 @@ program rabe
     character(len=*), parameter :: input_file = "rabe.in"
     character(len=*), parameter :: output_file = "rabe.nc"
 
-    type(neo_field_t) :: field
+    type(boozer_field_t) :: field
 
     integer :: n_stor
     integer :: this
@@ -39,6 +39,7 @@ program rabe
     type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota, approx_iota
+    real(dp) :: B_theta_covariant, B_phi_covariant
     real(dp) :: nfp
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -60,6 +61,7 @@ program rabe
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
+    character(len=1024) :: description
 
     call read_namelist(input_file)
 
@@ -74,13 +76,13 @@ program rabe
         allocate (remainder(n_stor))
     end if
 
+    call field%boozer_field_init(field_file, grid_refinement=6)
     do this = 1, n_stor
-        if (this == 1) then
-            call field%neo_field_init(bc_filename, s_tor(1))
-        else
-            call field%neo_change_stor(s_tor(this))
-        end if
-        iota = field%iota
+        call field%fix_to_surface(s_tor(this))
+        call field%get_iota_and_covariant_components(s_tor(this), &
+                                                     iota, &
+                                                     B_theta_covariant, &
+                                                     B_phi_covariant)
         nfp = field%nfp
 
         call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
@@ -101,28 +103,28 @@ program rabe
 
         call calc_deviation(fieldlines, deviation_A, deviation_B)
 
-        covariant_factor = (field%B_phi_covariant + field%B_theta_covariant*iota)
+        covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
         call calc_surface_averages(fieldlines, average)
-        dr_dAtheta = sign_sqrtg*sign(1.0_dp, field%psi_tor_edge)/average%sqrt_g11
+        dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
         Lambda_bl(this) = deviation_A*dr_dAtheta* &
                           sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         Lambda_lm(this) = deviation_B*0.5*R*pi*dr_dAtheta
         nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
                                                R, &
-                                               field%B_theta_covariant, &
-                                               field%B_phi_covariant)
+                                               B_theta_covariant, &
+                                               B_phi_covariant)
         Lambda_finite(this) = calc_finite_boundary_layer_correction(fieldlines, &
                                                                     R, &
                                                                     dr_dAtheta, &
-                                                              field%B_theta_covariant, &
-                                                                  field%B_phi_covariant)
+                                                                    B_theta_covariant, &
+                                                                    B_phi_covariant)
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
             trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
-            helical_factor = (field%B_phi_covariant*M_pol + &
-                              field%B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
+            helical_factor = (B_phi_covariant*M_pol + &
+                              B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
             lambda_SC(this) = helical_factor*trapped_fraction
             lambda_SC(this) = lambda_SC(this)*dr_dAtheta
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
@@ -175,6 +177,14 @@ program rabe
     call nc_output%add_int_1d("err_flag", dim_name)
     call nc_output%add_attr("err_flag", "long_name", &
                             "1 if violation of omnigeneity is too strong, 0 otherwise")
+    call nc_output%add_real("R")
+    call nc_output%add_attr("R", "long_name", &
+                            "major radius")
+    call nc_output%add_attr("R", "unit", "[m]")
+    write (description, "(A,A,A)") "defines the reference length scale to convert ", &
+        "to dimensionless quantities i.e. defines coeffients in respect to ", &
+        "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
+    call nc_output%add_attr("R", "definition", description)
     if (should_calc_shaing_callen) then
         call nc_output%add_real_1d("lambda_SC_bB", dim_name)
         call nc_output%add_attr("lambda_SC_bB", "long_name", &
@@ -194,6 +204,7 @@ program rabe
     call nc_output%write_real_1d("Lambda_finite", Lambda_finite)
     call nc_output%write_int_1d("err_flag", err_flag)
     call nc_output%write_real_1d("s_tor", s_tor)
+    call nc_output%write_real("R", field%R)
     call nc_output%close()
 
     if (allocated(Lambda_bl)) deallocate (Lambda_bl)

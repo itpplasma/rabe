@@ -15,10 +15,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gfortran cmake make libblas-dev liblapack-dev libsuitesparse-dev libmpfr-dev libnetcdf-dev libnetcdff-dev
+        sudo apt-get install -y gfortran cmake ninja-build make libblas-dev liblapack-dev libsuitesparse-dev libmpfr-dev libnetcdf-dev libnetcdff-dev
+        sudo apt-get install -y libopenmpi-dev openmpi-bin libhdf5-dev libfftw3-dev libgsl-dev libopenblas-dev pkg-config
+        pip install numpy
 
     - name: Build project
       run: make

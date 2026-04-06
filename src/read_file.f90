@@ -5,7 +5,7 @@ module read_file
 
     implicit none
 
-    character(len=100), public, protected :: bc_filename
+    character(len=100), public, protected :: field_file
     real(dp), public, protected :: M_pol
     real(dp), public, protected :: N_tor
     real(dp), dimension(:), allocatable, public, protected :: s_tor
@@ -17,7 +17,7 @@ module read_file
     integer, public, protected :: n_eta
 
     namelist /rabe_config/ &
-        bc_filename, &
+        field_file, &
         M_pol, &
         N_tor, &
         s_tor, &
@@ -99,8 +99,8 @@ contains
 
         is_valid = .true.
 
-        if (len(trim(bc_filename)) == 0) then
-            print *, "bc_filename is empty!"
+        if (len(trim(field_file)) == 0) then
+            print *, "field_file is empty!"
         end if
         if (ieee_is_nan(M_pol)) then
             print *, "M_pol is NaN!"
