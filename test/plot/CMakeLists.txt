@@ -47,4 +47,11 @@ target_link_libraries(plot_nabla_s_compare.x myplot_lib
                                               rabe_lib
                                               helpers_lib)
 add_test(PlotNablaSCompare plot_nabla_s_compare.x)
-set_tests_properties(PlotNablaSCompare PROPERTIES LABELS "current")
+set_tests_properties(PlotNablaSCompare PROPERTIES LABELS "plot")
+
+add_executable(plot_I_ref_compare.x plot_I_ref_compare.f90)
+target_link_libraries(plot_I_ref_compare.x myplot_lib
+                                            rabe_lib
+                                            helpers_lib)
+add_test(PlotIRefCompare plot_I_ref_compare.x)
+set_tests_properties(PlotIRefCompare PROPERTIES LABELS "current")
