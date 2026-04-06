@@ -62,6 +62,7 @@ program rabe
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
+    character(len=1024) :: description
 
     call read_namelist(input_file)
 
@@ -177,6 +178,14 @@ program rabe
     call nc_output%add_int_1d("err_flag", dim_name)
     call nc_output%add_attr("err_flag", "long_name", &
                             "1 if violation of omnigeneity is too strong, 0 otherwise")
+    call nc_output%add_real("R")
+    call nc_output%add_attr("R", "long_name", &
+                            "major radius")
+    call nc_output%add_attr("R", "unit", "[m]")
+    write (description, "(A,A,A)") "defines the reference length scale to convert ", &
+        "to dimensionless quantities i.e. defines coeffients in respect to ", &
+        "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
+    call nc_output%add_attr("R", "definition", description)
     if (should_calc_shaing_callen) then
         call nc_output%add_real_1d("lambda_SC_bB", dim_name)
         call nc_output%add_attr("lambda_SC_bB", "long_name", &
@@ -196,6 +205,7 @@ program rabe
     call nc_output%write_real_1d("Lambda_finite", Lambda_finite)
     call nc_output%write_int_1d("err_flag", err_flag)
     call nc_output%write_real_1d("s_tor", s_tor)
+    call nc_output%write_real("R", field%R)
     call nc_output%close()
 
     if (allocated(Lambda_bl)) deallocate (Lambda_bl)
