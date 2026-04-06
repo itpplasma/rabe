@@ -24,18 +24,21 @@ function(fetch DEPENDENCY SOURCE_DIR)
     message(STATUS "Fetch ${DEPENDENCY} branch ${REMOTE_BRANCH} from ${REPO_URL}")
 
 
-    FetchContent_Declare(
-        ${DEPENDENCY}
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-        GIT_REPOSITORY ${REPO_URL}
-        GIT_TAG ${REMOTE_BRANCH}
-    )
-    FetchContent_Populate(${DEPENDENCY})
-
     string(TOLOWER ${DEPENDENCY} DEPENDENCY_LOWER)
+
+    FetchContent_GetProperties(${DEPENDENCY})
+    if(NOT ${DEPENDENCY_LOWER}_POPULATED)
+        FetchContent_Declare(
+            ${DEPENDENCY}
+            DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+            GIT_REPOSITORY ${REPO_URL}
+            GIT_TAG ${REMOTE_BRANCH}
+        )
+        FetchContent_Populate(${DEPENDENCY})
+    endif()
     message(STATUS "Fetched ${DEPENDENCY} to ${${DEPENDENCY_LOWER}_SOURCE_DIR}")
 
-    set(SOURCE_DIR ${${DEPENDENCY_LOWER}_SOURCE_DIR}/${OPTIONAL_SUBDIR} PARENT_SCOPE)
+    set(${SOURCE_DIR} ${${DEPENDENCY_LOWER}_SOURCE_DIR}/${OPTIONAL_SUBDIR} PARENT_SCOPE)
 endfunction()
 
 function(get_branch_or_main REPO_URL REMOTE_BRANCH)
