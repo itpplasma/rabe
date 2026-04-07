@@ -4,4 +4,4 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../vmec/input DESTINATION ${CMAKE_CURRENT_
 add_executable(test_trace_till_bounce.x test_trace_till_bounce.f90)
 target_link_libraries(test_trace_till_bounce.x rabe_lib helpers_lib)
 add_test(TestTraceTillBounce test_trace_till_bounce.x)
-set_tests_properties(TestTraceTillBounce PROPERTIES LABELS "current")
+set_tests_properties(TestTraceTillBounce PROPERTIES LABELS "quick")
