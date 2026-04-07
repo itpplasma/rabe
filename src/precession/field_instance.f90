@@ -8,8 +8,9 @@ module field_instance
     private
     type(boozer_field_t) :: field
     logical :: field_initialized = .false.
+    real(dp), parameter :: cm2m = 1e-2, gauss2tesla = 1e-4
 
-    public :: magfie
+    public :: magfie, initialize_field_instance
 
 contains
 
@@ -23,6 +24,11 @@ contains
             error stop
         end if
         call field%evaluate(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
+        bmod = bmod/gauss2tesla
+        sqrtg = sqrtg/cm2m**3.0_dp
+        hcovar = hcovar/cm2m
+        hctrvr = hctrvr*cm2m
+        hcurl = hcurl*cm2m**2.0_dp
     end subroutine magfie
 
     subroutine initialize_field_instance(field_in)

@@ -99,3 +99,4 @@ add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 
 add_subdirectory(vmec)
+add_subdirectory(precession)

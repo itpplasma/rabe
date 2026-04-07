@@ -36,7 +36,9 @@ contains
         integer, parameter :: nfp_dim = 3
         integer :: nfp_cot, ideal, ijpar, ierr_cot, iangvar
         real(dp), dimension(nfp_dim) :: fpr_in
+        logical :: did_bounce
 
+        did_bounce = .false.
         z_end = 0d0
         !
         iangvar = 2
@@ -44,7 +46,6 @@ contains
         z = z_start
 
         call magfie(z(1:3), bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
-
         !$omp critical
         if (.not. allocated(ipoi)) &
           allocate (ipoi(nplagr), coef(0:nder, nplagr), orb_sten(6, nplagr), xp(nplagr))
@@ -70,14 +71,12 @@ contains
         !--------------------------------
         !
         par_inv = 0d0
-        TIMELOOP: do ktau = 1, ntau
+        TIMELOOP: do ktau = 1, ntau*(ntimstep - 1)
             call orbit_timestep_axis(z, dtaumin, dtaumin, relerr, ierr)
-
             if (ierr .ne. 0) then
                 error stop "Orbit lost during integration!"
             end if
             kt = kt + 1
-
             par_inv = par_inv + z(5)**2*dtaumin ! parallel adiabatic invariant
             if (kt .le. nplagr) then          !<=first nplagr points to initialize stencil
                 orb_sten(1:5, kt) = z
@@ -103,6 +102,7 @@ contains
                     var_tip(3) = modulo(var_tip(3), 2.0_dp*pi)
 
                     z = var_tip(1:5) !<= update z to interpolated tip value
+                    did_bounce = .true.
                     exit TIMELOOP
                 end if
             end if
@@ -112,6 +112,9 @@ contains
         !$omp critical
         z_end = z
         !$omp end critical
+        if (.not. did_bounce) then
+            print *, "Warning: trace_orbit_till_bounce reached end of time loop without detecting bounce."
+        end if
     end subroutine trace_orbit_till_bounce
 
 end module bounce

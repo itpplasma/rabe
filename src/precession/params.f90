@@ -93,7 +93,8 @@ module params
 
 contains
 
-    subroutine params_init
+    subroutine params_init(nfperiods, rmajor)
+        real(dp), intent(in) :: nfperiods, rmajor
         real(dp) :: E_alpha
         integer :: L1i
         real(dp) :: weight_sum, cumul_weight, w
@@ -111,7 +112,8 @@ contains
         ! normalized time step:
         dtau = tau/dble(ntimstep - 1)
         ! parameters for the vacuum chamber:
-        call stevvo(RT0, R0i, L1i, cbfi, bz0i, bf0)
+        L1i = int(nfperiods)
+        rt0 = rmajor*1e2
         rbig = rt0
         ! field line integration step step over phi (to check chamber wall crossing)
         dphi = 2.d0*pi/(L1i*npoiper)
