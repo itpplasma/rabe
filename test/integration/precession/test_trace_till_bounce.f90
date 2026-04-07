@@ -8,7 +8,7 @@ program test_trace_till_bounce
 
     implicit none
 
-    real(dp), parameter :: reltol = 1.4e-2, abstol = 1e-10
+    real(dp), parameter :: reltol = 1e-6, abstol = 1e-20
     real(dp), parameter :: abstol_for_zero = 1e-4
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc"
@@ -16,24 +16,41 @@ program test_trace_till_bounce
     type(boozer_field_t) :: bfield
 
     real(dp), dimension(5) :: z_start, z_end
+    integer, parameter :: n_bounces = 3
+    integer :: i_bounce
+    real(dp), dimension(n_bounces, 5) :: z_bounce_ref
     logical :: test_failed
 
     call bfield%boozer_field_init(nc_filename, &
                                   radial_spline_order=5, &
                                   angular_spline_order=5, &
-                                  grid_refinement=6)
+                                  grid_refinement=5, &
+                                  use_B_r_covariant=.false.)
 
     test_failed = .false.
 
     call initialize_field_instance(bfield)
     call params_init(nfperiods=bfield%nfp, rmajor=bfield%R)
+    z_start = [0.5_dp, 6.2319269065015011_dp, 0.34860621153343652_dp, 1.0_dp, -0.1_dp]
 
-    z_start = [0.5_dp, 0.0_dp, 0.314_dp, 1.0_dp, -0.1_dp]
-    call trace_orbit_till_bounce(z_start, z_end)
-    print *, "z_end at bounce:", z_end
-    z_start = z_end
-    call trace_orbit_till_bounce(z_start, z_end)
-    print *, "z_end at bounce:", z_end
+    z_bounce_ref(1,:) = [4.0419130794376634E-01, 6.0365708273104213E+00, 5.0430593251401215E+00, 1.0000000000000002E+00, -2.7822181191809768E-21]
+    z_bounce_ref(2,:) = [4.0493842511538775E-01,  6.0434631646087142E+00,  1.7569417065699922E+00,  9.9999999999999989E-01,  2.1000115451565121E-21]
+    z_bounce_ref(3,:) = [4.0164172878932580E-01,  6.0610633762317665E+00,  4.8167018386562095E+00,  1.0000000000000000E+00, -5.2359841756454391E-21]
+
+    do i_bounce = 1, n_bounces
+        call trace_orbit_till_bounce(z_start, z_end)
+        if (not_same(z_end, z_bounce_ref(i_bounce, :), reltol, abstol)) then
+            print *, "Test failed at bounce ", i_bounce
+            print *, "Expected: ", z_bounce_ref(i_bounce, :)
+            print *, "Got:      ", z_end
+            print *, "Relative error z(1:4): ", abs((z_end(1:4) - &
+                                                     z_bounce_ref(i_bounce, 1:4)) &
+                                                    /z_bounce_ref(i_bounce, 1:4))
+            print *, "Absolute error z(5): ", abs(z_end(5) - z_bounce_ref(i_bounce, 5))
+            test_failed = .true.
+        end if
+        z_start = z_end
+    end do
 
     if (test_failed) error stop
 

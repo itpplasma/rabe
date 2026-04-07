@@ -67,8 +67,8 @@ module params
 
     ! Further configuration parameters
     integer :: notrace_passing = 0
-    real(dp) :: facE_al = 1d0, trace_time = 1d-1
-    integer :: ntimstep = 10000, npoiper = 100, npoiper2 = 256, n_e = 2
+    real(dp) :: facE_al = 1d0, trace_time = 2d-3
+    integer :: ntimstep = 10000, npoiper = 100, npoiper2 = 128, n_e = 2
     real(dp) :: n_d = 4
 
     real(dp) :: v0
