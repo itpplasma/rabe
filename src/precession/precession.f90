@@ -12,6 +12,8 @@ module precession
         real(dp), dimension(:), allocatable :: t
         real(dp), dimension(:), allocatable :: adiabatic_coef
         real(dp), dimension(:), allocatable :: bounce_coef
+        real(dp), dimension(:), allocatable :: bounce_time
+        real(dp), dimension(:), allocatable :: I_j
     end type integration_grid_t
 
     type, extends(fieldline_t) :: fieldline_with_minimum_t
@@ -27,7 +29,7 @@ module precession
 
 contains
 
- subroutine compute_precession_correction(field, fieldlines, l_c, Omega_hat, s_tor, correction)
+    subroutine compute_precession_correction(field, fieldlines, l_c, Omega_hat, s_tor, correction)
         use field_instance, only: initialize_field_instance
         class(field_3D_t), intent(in) :: field
         class(fieldline_t), dimension(:) :: fieldlines
@@ -179,6 +181,7 @@ contains
         use bounce, only: trace_orbit_till_bounce
         use fieldline_integrands, only: calc_lambda_squared
         use constants, only: machine_eps
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
         class(field_3D_t), intent(in) :: field
         type(fieldline_with_minimum_t), intent(in) :: fieldline
         real(dp), intent(in) :: s_tor
@@ -203,9 +206,13 @@ contains
 
         if (allocated(grid%adiabatic_coef)) deallocate (grid%adiabatic_coef)
         if (allocated(grid%bounce_coef)) deallocate (grid%bounce_coef)
+        if (allocated(grid%bounce_time)) deallocate (grid%bounce_time)
+        if (allocated(grid%I_j)) deallocate (grid%I_j)
 
         allocate (grid%adiabatic_coef(grid%n_grid))
         allocate (grid%bounce_coef(grid%n_grid))
+        allocate (grid%bounce_time(grid%n_grid))
+        allocate (grid%I_j(grid%n_grid))
 
         theta_min = fieldline%get_theta(fieldline%phi_min)
         phi_min = fieldline%phi_min
@@ -232,6 +239,8 @@ contains
             if (abs(t_weight) < machine_eps) then
                 grid%adiabatic_coef(idx) = 0.0_dp
                 grid%bounce_coef(idx) = 0.0_dp
+                grid%bounce_time(idx) = ieee_value(1.0_dp, ieee_quiet_nan)
+                grid%I_j(idx) = ieee_value(1.0_dp, ieee_quiet_nan)
                 cycle
             end if
 
@@ -261,6 +270,8 @@ contains
             bounce_time_times_v_thermal = z_end(7)*cm2m
             grid%adiabatic_coef(idx) = t_weight/(eta*I_j)
             grid%bounce_coef(idx) = t_weight*bounce_time_times_v_thermal
+            grid%bounce_time(idx) = bounce_time_times_v_thermal
+            grid%I_j(idx) = I_j
             print *, "idx: ", idx, "out of ", grid%n_grid
             print *, "Bounce time for eta = ", eta, ": ", bounce_time_times_v_thermal
             print *, "Deep trapped bounce time: ", deep_trapped_bounce_time
