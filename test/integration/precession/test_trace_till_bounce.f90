@@ -15,10 +15,12 @@ program test_trace_till_bounce
 
     type(boozer_field_t) :: bfield
 
-    real(dp), dimension(5) :: z_start, z_end
+    integer, parameter :: ndim_simple = 5
+    integer, parameter :: ndim = 7
+    real(dp), dimension(ndim) :: z_start, z_end
     integer, parameter :: n_bounces = 3
     integer :: i_bounce
-    real(dp), dimension(n_bounces, 5) :: z_bounce_ref
+    real(dp), dimension(n_bounces, ndim_simple) :: z_bounce_ref
     logical :: test_failed
 
     call bfield%boozer_field_init(nc_filename, &
@@ -31,7 +33,7 @@ program test_trace_till_bounce
 
     call initialize_field_instance(bfield)
     call params_init(nfperiods=bfield%nfp, rmajor=bfield%R)
-    z_start = [0.5_dp, 6.2319269065015011_dp, 0.34860621153343652_dp, 1.0_dp, -0.1_dp]
+    z_start = [0.5_dp, 6.2319269065015011_dp, 0.34860621153343652_dp, 1.0_dp, -0.1_dp, 0.0_dp, 0.0_dp]
 
     z_bounce_ref(1,:) = [4.0419130794376634E-01, 6.0365708273104213E+00, 5.0430593251401215E+00, 1.0000000000000002E+00, -2.7822181191809768E-21]
     z_bounce_ref(2,:) = [4.0493842511538775E-01,  6.0434631646087142E+00,  1.7569417065699922E+00,  9.9999999999999989E-01,  2.1000115451565121E-21]
@@ -39,10 +41,12 @@ program test_trace_till_bounce
 
     do i_bounce = 1, n_bounces
         call trace_orbit_till_bounce(z_start, z_end)
-        if (not_same(z_end, z_bounce_ref(i_bounce, :), reltol, abstol)) then
+        if (not_same(z_end(1:ndim_simple), &
+                     z_bounce_ref(i_bounce, :), &
+                     reltol, abstol)) then
             print *, "Test failed at bounce ", i_bounce
             print *, "Expected: ", z_bounce_ref(i_bounce, :)
-            print *, "Got:      ", z_end
+            print *, "Got:      ", z_end(1:ndim_simple)
             print *, "Relative error z(1:4): ", abs((z_end(1:4) - &
                                                      z_bounce_ref(i_bounce, 1:4)) &
                                                     /z_bounce_ref(i_bounce, 1:4))
@@ -50,8 +54,12 @@ program test_trace_till_bounce
             test_failed = .true.
         end if
         z_start = z_end
+        z_start(ndim_simple + 1:ndim) = 0.0_dp
     end do
 
     if (test_failed) error stop
+    print *, "--------------------------------------------------------"
+    print *, "Test passed successfully."
+    print *, "--------------------------------------------------------"
 
 end program test_trace_till_bounce

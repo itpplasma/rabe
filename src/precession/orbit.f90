@@ -157,6 +157,8 @@ contains
         vz(5) = -(0.5d0*coala/hpstar)*(sum(hstar*derphi)/p &
                                      + p*sum(hstar*bder)/gamma + alambd*sum(a_phi*bder))
         !
+        vz(6) = alambd**2/bmod !dI/dtau
+        vz(7) = 1.0_dp ! dtau/dtau
     end subroutine velo_can
     !
     !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -172,13 +174,14 @@ contains
         real(dp), intent(in) :: z_axis(:)
         real(dp), intent(out) :: vz_axis(:)
         real(dp) :: derlogsqs
-        real(dp), dimension(5) :: z, vz
+        integer, parameter :: ndim = 7
+        real(dp), dimension(ndim) :: z, vz
         !
         !  z(1)=z_axis(1)**2+z_axis(2)**2
         z(1) = sqrt(z_axis(1)**2 + z_axis(2)**2)
         z(1) = max(z(1), 1.d-8)
         z(2) = atan2(z_axis(2), z_axis(1))
-        z(3:5) = z_axis(3:5)
+        z(3:ndim) = z_axis(3:ndim)
         !
         call velo_can(tau, z, vz)
         !
@@ -186,7 +189,7 @@ contains
         derlogsqs = vz(1)/z(1)
         vz_axis(1) = derlogsqs*z_axis(1) - vz(2)*z_axis(2)
         vz_axis(2) = derlogsqs*z_axis(2) + vz(2)*z_axis(1)
-        vz_axis(3:5) = vz(3:5)
+        vz_axis(3:ndim) = vz(3:ndim)
         !
     end subroutine velo_axis
     !
@@ -197,7 +200,7 @@ contains
         !
         implicit none
         !
-        integer, parameter :: ndim = 5, nstepmax = 1000000
+        integer, parameter :: ndim = 7, nstepmax = 1000000
         real(dp), parameter :: snear_axis = 0.01d0
         !
         logical :: near_axis

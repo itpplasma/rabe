@@ -93,8 +93,9 @@ module params
 
 contains
 
-    subroutine params_init(nfperiods, rmajor)
+    subroutine params_init(nfperiods, rmajor, rlarm_in)
         real(dp), intent(in) :: nfperiods, rmajor
+        real(dp), intent(in), optional :: rlarm_in
         real(dp) :: E_alpha
         integer :: L1i
         real(dp) :: weight_sum, cumul_weight, w
@@ -104,7 +105,11 @@ contains
         E_alpha = 3.5d6/facE_al
         ! set alpha energy, velocity, and Larmor radius
         v0 = sqrt(2.d0*E_alpha*ev/(n_d*p_mass))
-        rlarm = v0*n_d*p_mass*c/(n_e*e_charge)
+        if (present(rlarm_in)) then
+            rlarm = rlarm_in
+        else
+            rlarm = v0*n_d*p_mass*c/(n_e*e_charge)
+        end if
         ro0 = rlarm
         ! Neglect relativistic effects by large inverse relativistic temperature
         ! normalized slowing down time:
