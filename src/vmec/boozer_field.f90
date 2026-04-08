@@ -1,7 +1,7 @@
 module boozer_field
 
     use, intrinsic :: iso_fortran_env, only: dp => real64
-    use field_base, only: field_t
+    use field_base, only: field_3D_t
     use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
 
     implicit none
@@ -12,7 +12,7 @@ module boozer_field
 
     public :: boozer_field_t
 
-    type, extends(field_t) :: boozer_field_t
+    type, extends(field_3D_t) :: boozer_field_t
         logical :: initialized = .false.
         logical :: fixed_to_surface = .false.
         real(dp) :: fixed_stor

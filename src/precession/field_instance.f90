@@ -1,12 +1,12 @@
 
 module field_instance
     use constants, only: dp
-    use boozer_field, only: boozer_field_t
+    use field_base, only: field_3D_t
 
     implicit none
 
     private
-    type(boozer_field_t) :: field
+    class(field_3D_t), allocatable :: field
     logical :: field_initialized = .false.
     real(dp), parameter :: cm2m = 1e-2, gauss2tesla = 1e-4
 
@@ -32,9 +32,9 @@ contains
     end subroutine magfie
 
     subroutine initialize_field_instance(field_in)
-        type(boozer_field_t), intent(in) :: field_in
+        class(field_3D_t), intent(in) :: field_in
         if (.not. field_initialized) then
-            field = field_in
+            allocate (field, source=field_in)
             field_initialized = .true.
         else
             error stop "Error: initialize_field_instance called more than once."
