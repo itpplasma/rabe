@@ -93,8 +93,8 @@ module params
 
 contains
 
-    subroutine params_init(nfperiods, rmajor, rlarm_in)
-        real(dp), intent(in) :: nfperiods, rmajor
+    subroutine params_init(nfperiods, dtaumin_in, rlarm_in)
+        real(dp), intent(in) :: nfperiods, dtaumin_in
         real(dp), intent(in), optional :: rlarm_in
         real(dp) :: E_alpha
         integer :: L1i
@@ -118,12 +118,13 @@ contains
         dtau = tau/dble(ntimstep - 1)
         ! parameters for the vacuum chamber:
         L1i = int(nfperiods)
-        rt0 = rmajor*1e2
-        rbig = rt0
+        ! rt0 = rmajor*1e2
+        ! rbig = rt0
         ! field line integration step step over phi (to check chamber wall crossing)
         dphi = 2.d0*pi/(L1i*npoiper)
         ! orbit integration time step (to check chamber wall crossing)
-        dtaumin = 2.d0*pi*rbig/npoiper2
+        ! dtaumin = 2.d0*pi*rbig/npoiper2
+        dtaumin = dtaumin_in*1e2
         ntau = ceiling(dtau/dtaumin)
         dtaumin = dtau/ntau
         fper = 2d0*pi/dble(L1i)
