@@ -1,16 +1,17 @@
 module precession
     use constants, only: dp, pi
     use field_base, only: field_t
+    use field_base, only: field_3D_t
     use fieldline_mod, only: fieldline_t
 
     implicit none
 
     type :: integration_grid_t
+        integer :: n_grid
         real(dp), dimension(:), allocatable :: eta
         real(dp), dimension(:), allocatable :: t
-        real(dp), dimension(:), allocatable :: t_weight
-        real(dp), dimension(:), allocatable :: I_bounce
-        real(dp), dimension(:), allocatable :: I_pitch
+        real(dp), dimension(:), allocatable :: adiabatic_coef
+        real(dp), dimension(:), allocatable :: bounce_coef
     end type integration_grid_t
 
     type, extends(fieldline_t) :: fieldline_with_minimum_t
@@ -26,11 +27,13 @@ module precession
 
 contains
 
- subroutine compute_precession_correction(field, fieldlines, l_c, Omega_hat, correction)
-        class(field_t), intent(in) :: field
+ subroutine compute_precession_correction(field, fieldlines, l_c, Omega_hat, s_tor, correction)
+        use field_instance, only: initialize_field_instance
+        class(field_3D_t), intent(in) :: field
         class(fieldline_t), dimension(:) :: fieldlines
         real(dp), intent(in) :: l_c
         real(dp), intent(in) :: Omega_hat
+        real(dp), intent(in) :: s_tor
         real(dp), intent(out) :: correction
 
         type(precession_t) :: precession
@@ -46,8 +49,14 @@ contains
         precession%fieldline%B_min = B_bottom
         call set_integration_grids(eta_t, eta_c, precession%lower_grid, &
                                    precession%upper_grid)
-        call compute_bounce_integrals(field, precession%fieldline, &
+        call initialize_field_instance(field)
+        call compute_bounce_integrals(field, precession%fieldline, s_tor, &
                                       precession%lower_grid)
+        print *, "----------------------------------------------"
+        print *, "Lower grid bounce integrals computed."
+        print *, "----------------------------------------------"
+        call compute_bounce_integrals(field, precession%fieldline, s_tor, &
+                                      precession%upper_grid)
 
         correction = B_bottom
 
@@ -139,50 +148,125 @@ contains
 
         if (allocated(lower_grid%eta)) deallocate (lower_grid%eta)
         if (allocated(lower_grid%t)) deallocate (lower_grid%t)
-        if (allocated(lower_grid%t_weight)) deallocate (lower_grid%t_weight)
 
         allocate (lower_grid%eta(n))
         allocate (lower_grid%t(n))
-        allocate (lower_grid%t_weight(n))
         eta_mid = 0.5_dp*(eta_c + eta_t)
         t_start = 0.0_dp
         t_end = (eta_t - eta_mid)**0.25_dp
         call linspace(t_start, t_end, n, t)
-        lower_grid%eta = eta_c - t**4.0_dp
-        lower_grid%t_weight = -4.0_dp*t**3.0_dp
+        lower_grid%eta = eta_t - t**4.0_dp
         lower_grid%t = t
+        lower_grid%n_grid = n
 
         if (allocated(upper_grid%eta)) deallocate (upper_grid%eta)
         if (allocated(upper_grid%t)) deallocate (upper_grid%t)
-        if (allocated(upper_grid%t_weight)) deallocate (upper_grid%t_weight)
 
         allocate (upper_grid%eta(n))
         allocate (upper_grid%t(n))
-        allocate (upper_grid%t_weight(n))
         t_start = (eta_mid - eta_c)**0.25_dp
         t_end = 0.0_dp
         call linspace(t_start, t_end, n, t)
         upper_grid%eta = eta_c + t**4.0_dp
-        upper_grid%t_weight = 4.0_dp*t**3.0_dp
         upper_grid%t = t
+        upper_grid%n_grid = n
 
     end subroutine set_integration_grids
 
-    subroutine compute_bounce_integrals(field, fieldline, grid)
-        class(field_t), intent(in) :: field
+    subroutine compute_bounce_integrals(field, fieldline, s_tor, grid)
+        use field_instance, only: initialize_field_instance
+        use params, only: params_init
+        use bounce, only: trace_orbit_till_bounce
+        use fieldline_integrands, only: calc_lambda_squared
+        use constants, only: machine_eps
+        class(field_3D_t), intent(in) :: field
         type(fieldline_with_minimum_t), intent(in) :: fieldline
+        real(dp), intent(in) :: s_tor
         type(integration_grid_t), intent(inout) :: grid
 
-        integer :: idx
-        real(dp) :: phi_turning(2)
+        integer, parameter :: n_coef = 2
+        integer :: idx, n_grid
 
-        if (allocated(grid%I_bounce)) deallocate (grid%I_bounce)
-        if (allocated(grid%I_pitch)) deallocate (grid%I_pitch)
+        real(dp) :: theta_min, phi_min
 
-        allocate (grid%I_bounce(size(grid%eta)))
-        allocate (grid%I_pitch(size(grid%eta)))
+        integer, parameter :: n_dim = 7
+        real(dp), parameter :: cm2m = 1e-2_dp, gauss2tesla = 1e-4_dp
+        real(dp) :: well_depth, I_j_estimate
+        real(dp) :: deep_trapped_bounce_time, time_step
+        real(dp), dimension(n_dim) :: z_template, z_start, z_end
+        real(dp) :: lambda_squared
+        real(dp) :: eta, t_weight
+        real(dp) :: bounce_time_times_v_thermal
+        real(dp) :: I_j
+        real(dp) :: h_ctrvr(3), x(3)
+        real(dp) :: dummy, dummy_vec(3)
 
-        phi_turning = find_turning_points(field, fieldline, grid%eta(1))
+        if (allocated(grid%adiabatic_coef)) deallocate (grid%adiabatic_coef)
+        if (allocated(grid%bounce_coef)) deallocate (grid%bounce_coef)
+
+        allocate (grid%adiabatic_coef(grid%n_grid))
+        allocate (grid%bounce_coef(grid%n_grid))
+
+        theta_min = fieldline%get_theta(fieldline%phi_min)
+        phi_min = fieldline%phi_min
+        x = [s_tor, theta_min, phi_min]
+        call field%evaluate(x, dummy, dummy, dummy_vec, dummy_vec, h_ctrvr, dummy_vec)
+
+        well_depth = 1.0_dp - fieldline%B_min*fieldline%eta_b
+        I_j_estimate = 4.0_dp*sqrt(well_depth)/h_ctrvr(3)
+        deep_trapped_bounce_time = 4.0_dp*pi/h_ctrvr(2)/sqrt(well_depth)
+        time_step = deep_trapped_bounce_time/128.0_dp
+        call params_init(fieldline%nfp, &
+                         time_step, &
+                         rlarm_in=0.0_dp)
+        z_template(1) = s_tor
+        z_template(2) = theta_min
+        z_template(3) = phi_min
+        z_template(4) = 1.0_dp
+        z_template(5) = 0.0_dp
+        z_template(6) = 0.0_dp
+        z_template(7) = 0.0_dp
+
+        do idx = 1, grid%n_grid
+            t_weight = 4.0_dp*grid%t(idx)**3.0_dp
+            if (abs(t_weight) < machine_eps) then
+                grid%adiabatic_coef(idx) = 0.0_dp
+                grid%bounce_coef(idx) = 0.0_dp
+                cycle
+            end if
+
+            !> initialize orbit with certain eta
+            z_start = z_template
+            eta = grid%eta(idx)
+            lambda_squared = calc_lambda_squared(fieldline%B_min, eta)
+            if (abs(lambda_squared) < machine_eps) then
+                print *, "idx: ", idx
+                print *, "lambda_squared is zero!"
+                print *, "B_min: ", fieldline%B_min
+                print *, "eta: ", eta
+                print *, "lambda_squared: ", lambda_squared
+                error stop
+            end if
+            z_start(5) = sqrt(lambda_squared)
+
+            !> initial trace to a turning point
+            call trace_orbit_till_bounce(z_start, z_end)
+
+            !> then reset time and integral and trace to until back at bounce
+            !> i.e. one full bounce period
+            z_start = z_end
+            z_start(6:7) = 0.0_dp
+            call trace_orbit_till_bounce(z_start, z_end)
+            I_j = 0.5_dp*z_end(6)*cm2m/gauss2tesla ! I_j is only over half a bounce period
+            bounce_time_times_v_thermal = z_end(7)*cm2m
+            grid%adiabatic_coef(idx) = t_weight/(eta*I_j)
+            grid%bounce_coef(idx) = t_weight*bounce_time_times_v_thermal
+            print *, "idx: ", idx, "out of ", grid%n_grid
+            print *, "Bounce time for eta = ", eta, ": ", bounce_time_times_v_thermal
+            print *, "Deep trapped bounce time: ", deep_trapped_bounce_time
+            print *, "Bounce integral I_j for eta = ", eta, ": ", I_j
+            print *, "boundary layer estimate for I_j: ", I_j_estimate
+        end do
 
     end subroutine compute_bounce_integrals
 
