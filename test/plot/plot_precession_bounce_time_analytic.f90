@@ -12,6 +12,7 @@ program plot_precession_bounce_time_analytic
     use precession, only: set_integration_grids
     use precession, only: compute_bounce_integrals
     use field_instance, only: initialize_field_instance
+    use plot_quantities, only: plot_local_drift_over_fieldline
     use utils, only: linspace
     use myplot_module, only: myplot
 
@@ -39,11 +40,9 @@ program plot_precession_bounce_time_analytic
     real(dp), dimension(:), allocatable :: bounce_time
     real(dp), dimension(:), allocatable :: bounce_time_deep
     real(dp), dimension(:), allocatable :: I_j, I_j_boundary
-    real(dp) :: B_min, h_theta, eta_b, phi_bottom
+    real(dp) :: B_min, eta_b, phi_bottom
     real(dp) :: lowest_B_max, eta_t, eta_c, theta_min
     real(dp) :: well_depth
-    real(dp) :: y_min, y_max
-    real(dp), dimension(2) :: y_limits
     real(dp) :: dummy, sqrtg
     real(dp), dimension(3) :: x, b_der, h_covar, h_ctrvr, h_curl
 
@@ -122,5 +121,8 @@ program plot_precession_bounce_time_analytic
                       linestyle="r--")
 
     call plt%show()
+
+    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta, &
+                                         interval=precession_fieldline%phi_max)
 
 end program plot_precession_bounce_time_analytic
