@@ -26,11 +26,11 @@ program plot_precession_bounce_time_analytic
     type(mock_field_3d_t) :: field
 
     integer, parameter :: n_fieldlines = 50
-    real(dp), parameter :: phi_tol = 1e-6_dp
+    real(dp), parameter :: phi_tol = 5e-6_dp
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.0_dp
-    real(dp), parameter :: nfp = 1.0_dp
+    real(dp) :: iota
+    real(dp), parameter :: nfp = N_tor
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_with_minimum_t) :: precession_fieldline
     type(integration_grid_t) :: lower_grid, upper_grid
@@ -55,6 +55,7 @@ program plot_precession_bounce_time_analytic
                                                       N_tor_pert, &
                                                       B_pert)
     call field%mock_field_3d_init(perturbed_field_2D)
+    call field%get_iota(s_tor, iota)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
@@ -80,6 +81,7 @@ program plot_precession_bounce_time_analytic
     call set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
     call initialize_field_instance(field)
     call compute_bounce_integrals(field, precession_fieldline, s_tor, lower_grid)
+    call compute_bounce_integrals(field, precession_fieldline, s_tor, upper_grid)
 
     eta = lower_grid%eta(2:lower_grid%n_grid)
     bounce_time = lower_grid%bounce_time(2:lower_grid%n_grid)

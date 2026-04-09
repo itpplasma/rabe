@@ -14,6 +14,7 @@ module mock_field_3d
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
         procedure :: evaluate
+        procedure :: get_iota
     end type mock_field_3d_t
 
 contains
@@ -124,5 +125,23 @@ contains
             error stop
         end if
     end subroutine evaluate
+
+    subroutine get_iota(self, s_tor, iota)
+        class(mock_field_3d_t), intent(in) :: self
+        real(dp), intent(in) :: s_tor
+        real(dp), intent(out) :: iota
+
+        real(dp) :: dummy, dummy_vec(3), hctrvr(3)
+        real(dp) :: x(3)
+
+        x(1) = s_tor
+        x(2) = 0.0_dp
+        x(3) = 0.0_dp
+
+        call self%evaluate(x, dummy, dummy, dummy_vec, dummy_vec, hctrvr, dummy_vec)
+
+        iota = hctrvr(2)/hctrvr(3)
+
+    end subroutine get_iota
 
 end module mock_field_3d
