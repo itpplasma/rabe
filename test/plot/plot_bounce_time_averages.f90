@@ -1,4 +1,4 @@
-program plot_precession_bounce_time_analytic
+program plot_bounce_time_averages
     use constants, only: dp, pi, machine_eps
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
@@ -37,7 +37,6 @@ program plot_precession_bounce_time_analytic
 
     real(dp), parameter :: s_tor = 0.25_dp
     real(dp), dimension(:), allocatable :: eta
-    real(dp), dimension(:), allocatable :: eta_level_plot
     real(dp), dimension(:), allocatable :: bounce_time
     real(dp), dimension(:), allocatable :: bounce_time_deep
     real(dp), dimension(:), allocatable :: I_j, I_j_boundary
@@ -46,6 +45,7 @@ program plot_precession_bounce_time_analytic
     real(dp) :: well_depth
     real(dp) :: dummy, sqrtg
     real(dp), dimension(3) :: x, b_der, h_covar, h_ctrvr, h_curl
+    integer, dimension(2), parameter :: figsize = [14, 10]
 
     type(myplot) :: plt
 
@@ -83,9 +83,18 @@ program plot_precession_bounce_time_analytic
     call compute_bounce_integrals(field, precession_fieldline, s_tor, lower_grid)
     call compute_bounce_integrals(field, precession_fieldline, s_tor, upper_grid)
 
-    eta = lower_grid%eta(2:lower_grid%n_grid)
-    bounce_time = lower_grid%bounce_time(2:lower_grid%n_grid)
-    I_j = lower_grid%I_j(2:lower_grid%n_grid)
+    allocate (eta((lower_grid%n_grid - 1) + (upper_grid%n_grid - 2)))
+    allocate (bounce_time(size(eta)))
+    allocate (I_j(size(eta)))
+
+    eta(1:lower_grid%n_grid - 1) = lower_grid%eta(2:lower_grid%n_grid)
+    eta(lower_grid%n_grid:) = upper_grid%eta(2:upper_grid%n_grid - 1)
+
+    bounce_time(1:lower_grid%n_grid - 1) = lower_grid%bounce_time(2:lower_grid%n_grid)
+    bounce_time(lower_grid%n_grid:) = upper_grid%bounce_time(2:upper_grid%n_grid - 1)
+
+    I_j(1:lower_grid%n_grid - 1) = lower_grid%I_j(2:lower_grid%n_grid)
+    I_j(lower_grid%n_grid:) = upper_grid%I_j(2:upper_grid%n_grid - 1)
 
     theta_min = precession_fieldline%get_theta(phi_bottom)
     x = [s_tor, theta_min, phi_bottom]
@@ -99,37 +108,35 @@ program plot_precession_bounce_time_analytic
     I_j_boundary = 4.0_dp*sqrt(well_depth)/h_ctrvr(3)
 
     call plt%initialize(xlabel="$1 - \eta/\eta_t$", &
-                        ylabel="$\tau_b v_{th}$", &
+                        ylabel="$\tau_b v_{\mathrm{th}}$", &
                         legend=.true., &
-                        title="Bounce time")
+                        figsize=figsize, &
+                        title="$\tau_b$ vs $1 - \eta/\eta_t$")
 
     call plt%add_plot(1.0_dp - eta/eta_t, bounce_time, &
-                      label="numerical", &
+                      label="$\tau_b$ (numerical)", &
                       linestyle="k-")
     call plt%add_plot(1.0_dp - eta/eta_t, bounce_time_deep, &
-                      label="deep trapped estimate", &
+                      label="$\tau_b$ (deep-trapped estimate)", &
                       linestyle="r--")
     call plt%show()
 
     call plt%initialize(xlabel="$\eta/\eta_c - 1$", &
                         ylabel="$I_j$", &
                         legend=.true., &
-                        title="adiabatic invariant")
+                        figsize=figsize, &
+                        title="$I_j$ vs $\eta/\eta_c - 1$")
 
     call plt%add_plot(eta/eta_c - 1.0_dp, I_j, &
-                      label="numerical", &
+                      label="$I_j$ (numerical)", &
                       linestyle="k-")
     call plt%add_plot(eta/eta_c - 1.0_dp, I_j_boundary, &
-                      label="trapped-passing boundary estimate", &
+                      label="$I_j$ (trapped-passing boundary estimate)", &
                       linestyle="r--")
 
     call plt%show()
 
-    allocate (eta_level_plot((lower_grid%n_grid - 1) + (upper_grid%n_grid - 1)))
-    eta_level_plot(1:lower_grid%n_grid - 1) = lower_grid%eta(2:lower_grid%n_grid)
-    eta_level_plot(lower_grid%n_grid:) = upper_grid%eta(2:upper_grid%n_grid)
-
-    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta_level_plot, &
+    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta, &
                                          interval=precession_fieldline%phi_max)
 
-end program plot_precession_bounce_time_analytic
+end program plot_bounce_time_averages

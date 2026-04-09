@@ -56,9 +56,16 @@ target_link_libraries(plot_I_ref_compare.x myplot_lib
 add_test(PlotIRefCompare plot_I_ref_compare.x)
 set_tests_properties(PlotIRefCompare PROPERTIES LABELS "plot")
 
-add_executable(plot_precession_bounce_time_analytic.x plot_precession_bounce_time_analytic.f90)
-target_link_libraries(plot_precession_bounce_time_analytic.x myplot_lib
+add_executable(plot_bounce_time_averages.x plot_bounce_time_averages.f90)
+target_link_libraries(plot_bounce_time_averages.x myplot_lib
                                                      rabe_lib
                                                      helpers_lib)
-add_test(PlotPrecessionBounceTimeAnalytic plot_precession_bounce_time_analytic.x)
-set_tests_properties(PlotPrecessionBounceTimeAnalytic PROPERTIES LABELS "current")
+add_test(PlotBounceTimeAverages plot_bounce_time_averages.x)
+set_tests_properties(PlotBounceTimeAverages PROPERTIES LABELS "plot")
+
+add_executable(plot_bounce_orbits.x plot_bounce_orbits.f90)
+target_link_libraries(plot_bounce_orbits.x myplot_lib
+                                                 rabe_lib
+                                                 helpers_lib)
+add_test(PlotBounceOrbits plot_bounce_orbits.x)
+set_tests_properties(PlotBounceOrbits PROPERTIES LABELS "plot")

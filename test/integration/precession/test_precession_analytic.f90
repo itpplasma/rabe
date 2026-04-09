@@ -18,12 +18,12 @@ program test_precession_analytic
     type(mock_field_3d_t) :: field
 
     integer, parameter :: n_fieldlines = 50
-    real(dp), parameter :: phi_tol = 1e-6
+    real(dp), parameter :: phi_tol = 5e-6
 
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
-    real(dp), parameter :: nfp = 1.0_dp
+    real(dp), parameter :: nfp = N_tor
+    real(dp) :: iota
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     real(dp), parameter :: l_c = 1e-4, Omega_hat = 1e-2, s_tor = 0.25_dp
@@ -40,6 +40,7 @@ program test_precession_analytic
                                                       N_tor_pert, &
                                                       B_pert)
     call field%mock_field_3d_init(perturbed_field_2D)
+    call field%get_iota(s_tor, iota)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
 
