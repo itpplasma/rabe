@@ -37,6 +37,7 @@ program plot_precession_bounce_time_analytic
 
     real(dp), parameter :: s_tor = 0.25_dp
     real(dp), dimension(:), allocatable :: eta
+    real(dp), dimension(:), allocatable :: eta_level_plot
     real(dp), dimension(:), allocatable :: bounce_time
     real(dp), dimension(:), allocatable :: bounce_time_deep
     real(dp), dimension(:), allocatable :: I_j, I_j_boundary
@@ -122,7 +123,11 @@ program plot_precession_bounce_time_analytic
 
     call plt%show()
 
-    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta, &
+    allocate (eta_level_plot((lower_grid%n_grid - 1) + (upper_grid%n_grid - 1)))
+    eta_level_plot(1:lower_grid%n_grid - 1) = lower_grid%eta(2:lower_grid%n_grid)
+    eta_level_plot(lower_grid%n_grid:) = upper_grid%eta(2:upper_grid%n_grid)
+
+    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta_level_plot, &
                                          interval=precession_fieldline%phi_max)
 
 end program plot_precession_bounce_time_analytic
