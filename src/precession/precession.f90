@@ -145,7 +145,7 @@ contains
 
         real(dp) :: eta_mid
         real(dp) :: t_start, t_end
-        integer, parameter :: n = 100
+        integer, parameter :: n = 20
         real(dp), dimension(n) :: t
 
         if (allocated(lower_grid%eta)) deallocate (lower_grid%eta)
@@ -175,9 +175,9 @@ contains
 
     end subroutine set_integration_grids
 
-    subroutine compute_bounce_integrals(field, fieldline, s_tor, grid)
+    subroutine compute_bounce_integrals(field, fieldline, s_tor, grid, orbit_history)
         use field_instance, only: initialize_field_instance
-        use params, only: params_init
+        use params, only: params_init, ntau, ntimstep
         use bounce, only: trace_orbit_till_bounce
         use fieldline_integrands, only: calc_lambda_squared
         use constants, only: machine_eps
@@ -186,6 +186,7 @@ contains
         type(fieldline_with_minimum_t), intent(in) :: fieldline
         real(dp), intent(in) :: s_tor
         type(integration_grid_t), intent(inout) :: grid
+     real(dp), dimension(:, :, :), allocatable, intent(inout), optional :: orbit_history
 
         integer, parameter :: n_coef = 2
         integer :: idx, n_grid
@@ -203,6 +204,7 @@ contains
         real(dp) :: I_j
         real(dp) :: h_ctrvr(3), x(3)
         real(dp) :: dummy, dummy_vec(3)
+        integer :: max_trace_steps
 
         if (allocated(grid%adiabatic_coef)) deallocate (grid%adiabatic_coef)
         if (allocated(grid%bounce_coef)) deallocate (grid%bounce_coef)
@@ -226,6 +228,13 @@ contains
         call params_init(fieldline%nfp, &
                          time_step, &
                          rlarm_in=0.0_dp)
+        max_trace_steps = ntau*(ntimstep - 1)
+        if (present(orbit_history)) then
+            if (.not. allocated(orbit_history)) then
+                allocate (orbit_history(max_trace_steps, n_dim, grid%n_grid))
+            end if
+            orbit_history = ieee_value(1.0_dp, ieee_quiet_nan)
+        end if
         z_template(1) = s_tor
         z_template(2) = theta_min
         z_template(3) = phi_min
@@ -259,7 +268,12 @@ contains
             z_start(5) = sqrt(lambda_squared)
 
             !> initial trace to a turning point
-            call trace_orbit_till_bounce(z_start, z_end)
+            if (present(orbit_history)) then
+                call trace_orbit_till_bounce(z_start, z_end, &
+                                             orbit_buffer=orbit_history(:, :, idx))
+            else
+                call trace_orbit_till_bounce(z_start, z_end)
+            end if
 
             !> then reset time and integral and trace to until back at bounce
             !> i.e. one full bounce period

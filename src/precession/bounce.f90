@@ -7,14 +7,16 @@ module bounce
 
 contains
 
-    subroutine trace_orbit_till_bounce(z_start, z_end)
+    subroutine trace_orbit_till_bounce(z_start, z_end, orbit_buffer)
         use plag_coeff_sub, only: plag_coeff
         use orbit, only: orbit_timestep_axis
         use field_instance, only: magfie
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
 
         integer, parameter :: ndim = 7
         real(dp), dimension(ndim), intent(in) :: z_start
         real(dp), dimension(ndim), intent(out) :: z_end
+        real(dp), dimension(:, :), intent(inout), optional :: orbit_buffer
 
         integer :: ierr, ierr_coll
         real(dp), dimension(ndim) :: z
@@ -43,6 +45,8 @@ contains
         iangvar = 2
 
         z = z_start
+
+        if (present(orbit_buffer)) orbit_buffer = ieee_value(1.0_dp, ieee_quiet_nan)
 
         call magfie(z(1:3), bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
         !$omp critical
@@ -79,6 +83,11 @@ contains
                 error stop "Orbit lost during integration!"
             end if
             kt = kt + 1
+            if (present(orbit_buffer)) then
+                if (kt <= size(orbit_buffer, 1)) then
+                    orbit_buffer(kt, :) = z
+                end if
+            end if
             if (kt .le. nplagr) then          !<=first nplagr points to initialize stencil
                 orb_sten(:, kt) = z
             else                          !<=normal case, shift stencil
@@ -99,6 +108,9 @@ contains
                     z = matmul(orb_sten(:, ipoi), coef(0, :))
                     z(2) = modulo(z(2), 2.0_dp*pi)
                     z(3) = modulo(z(3), 2.0_dp*pi)
+                    if (present(orbit_buffer)) then
+                        orbit_buffer(kt, :) = z
+                    end if
 
                     did_bounce = .true.
                     exit TIMELOOP
