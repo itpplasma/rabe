@@ -33,7 +33,7 @@ program plot_bounce_orbits
     real(dp), parameter :: nfp = 1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_with_minimum_t) :: precession_fieldline
-    type(integration_grid_t) :: lower_grid, upper_grid
+    type(integration_grid_t) :: grid
 
     real(dp), parameter :: s_tor = 0.25_dp
     real(dp) :: B_min, phi_bottom
@@ -41,7 +41,7 @@ program plot_bounce_orbits
 
     real(dp), dimension(:, :, :), allocatable :: orbit_history
     integer, parameter :: n_orbits_plot = 3
-    integer, dimension(n_orbits_plot), parameter :: selected = [1, 5, 10]
+    integer, dimension(n_orbits_plot), parameter :: selected = [2, 5, 10]
     real(dp), parameter :: gauss2tesla = 1e-4_dp
 
     type(myplot) :: plt
@@ -87,11 +87,11 @@ program plot_bounce_orbits
     precession_fieldline%phi_min = phi_bottom
     precession_fieldline%B_min = B_min
 
-    call set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
+    call set_integration_grids(eta_t, eta_c, grid)
     call initialize_field_instance(field)
 
-    ! Capture orbit points for each eta level of the upper grid.
-    call compute_bounce_integrals(field, precession_fieldline, s_tor, upper_grid, &
+    ! Capture orbit points for each eta level of the integration grid.
+    call compute_bounce_integrals(field, precession_fieldline, s_tor, grid, &
                                   orbit_history=orbit_history)
 
     call plt%initialize(xlabel="$\varphi$", &
@@ -114,21 +114,21 @@ program plot_bounce_orbits
         phi = orbit_history(1:n_steps, 3, idx)
         theta = orbit_history(1:n_steps, 2, idx)
         lambda = orbit_history(1:n_steps, 5, idx)
-        eta_inv = 1.0_dp/upper_grid%eta(idx)
+        eta_inv = 1.0_dp/grid%eta(idx)
 
         do step = 1, n_steps
             x = orbit_history(step, 1:3, idx)
             call magfie(x, bmod, sqrtg, bder, hcovar, hctrvr, hcurl)
             B_orbit(step) = bmod*gauss2tesla
-            check(step) = B_orbit(step)*upper_grid%eta(idx) + lambda(step)**2.0_dp
+            check(step) = B_orbit(step)*grid%eta(idx) + lambda(step)**2.0_dp
             step_axis(step) = real(step, dp)
         end do
 
         write (label, '(A,I0,A,F8.5,A)') '$i=', idx, &
-            '$, $\eta=', upper_grid%eta(idx), '$'
+            '$, $\eta=', grid%eta(idx), '$'
 
         write (orbit_title, '(A,I0,A,F8.5,A)') '$i=', idx, &
-            '$, $\eta=', upper_grid%eta(idx), '$'
+            '$, $\eta=', grid%eta(idx), '$'
         call plt_orbit%initialize(xlabel='$n$', &
                                   ylabel='$\mathrm{diagnostic}$', &
                                   legend=.true., &

@@ -3,6 +3,7 @@ module precession
     use field_base, only: field_t
     use field_base, only: field_3D_t
     use fieldline_mod, only: fieldline_t
+    use interpolate, only: SplineData1D, construct_splines_1d, evaluate_splines_1d_many
 
     implicit none
 
@@ -10,10 +11,11 @@ module precession
         integer :: n_grid
         real(dp), dimension(:), allocatable :: eta
         real(dp), dimension(:), allocatable :: t
-        real(dp), dimension(:), allocatable :: adiabatic_coef
         real(dp), dimension(:), allocatable :: bounce_coef
         real(dp), dimension(:), allocatable :: bounce_time
         real(dp), dimension(:), allocatable :: I_j
+        type(SplineData1D) :: I_j_spline
+        type(SplineData1D) :: bounce_coef_spline
     end type integration_grid_t
 
     type, extends(fieldline_t) :: fieldline_with_minimum_t
@@ -22,8 +24,7 @@ module precession
     end type fieldline_with_minimum_t
 
     type :: precession_t
-        type(integration_grid_t) :: lower_grid
-        type(integration_grid_t) :: upper_grid
+        type(integration_grid_t) :: grid
         type(fieldline_with_minimum_t) :: fieldline
     end type precession_t
 
@@ -49,16 +50,12 @@ contains
         eta_c = 1.0_dp/lowest_B_max
         precession%fieldline%phi_min = phi_bottom
         precession%fieldline%B_min = B_bottom
-        call set_integration_grids(eta_t, eta_c, precession%lower_grid, &
-                                   precession%upper_grid)
+        call set_integration_grids(eta_t, eta_c, precession%grid)
         call initialize_field_instance(field)
         call compute_bounce_integrals(field, precession%fieldline, s_tor, &
-                                      precession%lower_grid)
-        print *, "----------------------------------------------"
-        print *, "Lower grid bounce integrals computed."
-        print *, "----------------------------------------------"
-        call compute_bounce_integrals(field, precession%fieldline, s_tor, &
-                                      precession%upper_grid)
+                                      precession%grid)
+
+        call set_splines(precession%grid)
 
         correction = B_bottom
 
@@ -138,40 +135,27 @@ contains
 
     end subroutine find_magnetic_well_bottom
 
-    subroutine set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
+    subroutine set_integration_grids(eta_t, eta_c, grid)
         use utils, only: linspace
         real(dp), intent(in) :: eta_t, eta_c
-        type(integration_grid_t), intent(out) :: lower_grid, upper_grid
+        type(integration_grid_t), intent(out) :: grid
 
         real(dp) :: eta_mid
         real(dp) :: t_start, t_end
-        integer, parameter :: n = 20
+        integer, parameter :: n = 50
         real(dp), dimension(n) :: t
 
-        if (allocated(lower_grid%eta)) deallocate (lower_grid%eta)
-        if (allocated(lower_grid%t)) deallocate (lower_grid%t)
+        if (allocated(grid%eta)) deallocate (grid%eta)
+        if (allocated(grid%t)) deallocate (grid%t)
 
-        allocate (lower_grid%eta(n))
-        allocate (lower_grid%t(n))
-        eta_mid = 0.5_dp*(eta_c + eta_t)
+        allocate (grid%eta(n))
+        allocate (grid%t(n))
         t_start = 0.0_dp
-        t_end = (eta_t - eta_mid)**0.25_dp
+        t_end = (eta_t - eta_c)**0.5_dp
         call linspace(t_start, t_end, n, t)
-        lower_grid%eta = eta_t - t**4.0_dp
-        lower_grid%t = t
-        lower_grid%n_grid = n
-
-        if (allocated(upper_grid%eta)) deallocate (upper_grid%eta)
-        if (allocated(upper_grid%t)) deallocate (upper_grid%t)
-
-        allocate (upper_grid%eta(n))
-        allocate (upper_grid%t(n))
-        t_start = (eta_mid - eta_c)**0.25_dp
-        t_end = 0.0_dp
-        call linspace(t_start, t_end, n, t)
-        upper_grid%eta = eta_c + t**4.0_dp
-        upper_grid%t = t
-        upper_grid%n_grid = n
+        grid%eta = eta_c + t**2.0_dp
+        grid%t = t
+        grid%n_grid = n
 
     end subroutine set_integration_grids
 
@@ -206,12 +190,10 @@ contains
         real(dp) :: dummy, dummy_vec(3)
         integer :: max_trace_steps
 
-        if (allocated(grid%adiabatic_coef)) deallocate (grid%adiabatic_coef)
         if (allocated(grid%bounce_coef)) deallocate (grid%bounce_coef)
         if (allocated(grid%bounce_time)) deallocate (grid%bounce_time)
         if (allocated(grid%I_j)) deallocate (grid%I_j)
 
-        allocate (grid%adiabatic_coef(grid%n_grid))
         allocate (grid%bounce_coef(grid%n_grid))
         allocate (grid%bounce_time(grid%n_grid))
         allocate (grid%I_j(grid%n_grid))
@@ -246,7 +228,6 @@ contains
         do idx = 1, grid%n_grid
             t_weight = 4.0_dp*grid%t(idx)**3.0_dp
             if (abs(t_weight) < machine_eps) then
-                grid%adiabatic_coef(idx) = 0.0_dp
                 grid%bounce_coef(idx) = 0.0_dp
                 grid%bounce_time(idx) = ieee_value(1.0_dp, ieee_quiet_nan)
                 grid%I_j(idx) = ieee_value(1.0_dp, ieee_quiet_nan)
@@ -257,14 +238,6 @@ contains
             z_start = z_template
             eta = grid%eta(idx)
             lambda_squared = calc_lambda_squared(fieldline%B_min, eta)
-            if (abs(lambda_squared) < machine_eps) then
-                print *, "idx: ", idx
-                print *, "lambda_squared is zero!"
-                print *, "B_min: ", fieldline%B_min
-                print *, "eta: ", eta
-                print *, "lambda_squared: ", lambda_squared
-                error stop
-            end if
             z_start(5) = sqrt(lambda_squared)
 
             !> initial trace to a turning point
@@ -282,7 +255,6 @@ contains
             call trace_orbit_till_bounce(z_start, z_end)
             I_j = 0.5_dp*z_end(6)*cm2m/gauss2tesla ! I_j is only over half a bounce period
             bounce_time_times_v_thermal = z_end(7)*cm2m
-            grid%adiabatic_coef(idx) = t_weight/(eta*I_j)
             grid%bounce_coef(idx) = t_weight*bounce_time_times_v_thermal
             grid%bounce_time(idx) = bounce_time_times_v_thermal
             grid%I_j(idx) = I_j
@@ -294,6 +266,51 @@ contains
         end do
 
     end subroutine compute_bounce_integrals
+
+    subroutine set_splines(grid)
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+        type(integration_grid_t), intent(inout) :: grid
+        logical, parameter :: periodic = .false.
+        integer, parameter :: I_j_order = 3
+        integer, parameter :: bounce_order = 3
+
+        integer :: n
+        integer :: I_j_start
+        integer :: bounce_start
+
+        n = grid%n_grid
+        if (ieee_is_nan(grid%I_j(1))) then
+            I_j_start = 2
+        else
+            I_j_start = 1
+        end if
+
+        call construct_splines_1d(grid%t(I_j_start), &
+                                  grid%t(n), &
+                                  grid%I_j(I_j_start:n), &
+                                  I_j_order, &
+                                  periodic, &
+                                  grid%I_j_spline)
+
+        bounce_start = 1
+
+        call construct_splines_1d(grid%t(bounce_start), &
+                                  grid%t(n), &
+                                  grid%bounce_coef(bounce_start:n), &
+                                  bounce_order, &
+                                  periodic, &
+                                  grid%bounce_coef_spline)
+    end subroutine set_splines
+
+    subroutine evaluate_grid_splines(grid, t_eval, I_j_eval, bounce_coef_eval)
+        type(integration_grid_t), intent(in) :: grid
+        real(dp), intent(in) :: t_eval(:)
+        real(dp), intent(out) :: I_j_eval(:)
+        real(dp), intent(out) :: bounce_coef_eval(:)
+
+        call evaluate_splines_1d_many(grid%I_j_spline, t_eval, I_j_eval)
+        call evaluate_splines_1d_many(grid%bounce_coef_spline, t_eval, bounce_coef_eval)
+    end subroutine evaluate_grid_splines
 
     function find_turning_points(field, fieldline, eta, reltol_in) result(phi_turning)
         use find_extrema, only: find_global_minimum

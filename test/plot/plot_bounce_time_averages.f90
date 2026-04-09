@@ -11,8 +11,9 @@ program plot_bounce_time_averages
     use precession, only: find_magnetic_well_bottom
     use precession, only: set_integration_grids
     use precession, only: compute_bounce_integrals
+    use precession, only: set_splines
+    use precession, only: evaluate_grid_splines
     use field_instance, only: initialize_field_instance
-    use plot_quantities, only: plot_local_drift_over_fieldline
     use utils, only: linspace
     use myplot_module, only: myplot
 
@@ -33,13 +34,18 @@ program plot_bounce_time_averages
     real(dp), parameter :: nfp = N_tor
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
     type(fieldline_with_minimum_t) :: precession_fieldline
-    type(integration_grid_t) :: lower_grid, upper_grid
+    type(integration_grid_t) :: grid
 
     real(dp), parameter :: s_tor = 0.25_dp
+    integer, parameter :: n_spline_plot = 300
     real(dp), dimension(:), allocatable :: eta
     real(dp), dimension(:), allocatable :: bounce_time
     real(dp), dimension(:), allocatable :: bounce_time_deep
     real(dp), dimension(:), allocatable :: I_j, I_j_boundary
+    real(dp), dimension(:), allocatable :: t_spline
+    real(dp), dimension(:), allocatable :: eta_spline
+    real(dp), dimension(:), allocatable :: I_j_spline_vals
+    real(dp), dimension(:), allocatable :: bounce_coef_spline_vals
     real(dp) :: B_min, eta_b, phi_bottom
     real(dp) :: lowest_B_max, eta_t, eta_c, theta_min
     real(dp) :: well_depth
@@ -78,23 +84,20 @@ program plot_bounce_time_averages
     precession_fieldline%B_min = B_min
     eta_b = precession_fieldline%eta_b
 
-    call set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
+    call set_integration_grids(eta_t, eta_c, grid)
     call initialize_field_instance(field)
-    call compute_bounce_integrals(field, precession_fieldline, s_tor, lower_grid)
-    call compute_bounce_integrals(field, precession_fieldline, s_tor, upper_grid)
+    call compute_bounce_integrals(field, precession_fieldline, s_tor, grid)
+    call set_splines(grid)
 
-    allocate (eta((lower_grid%n_grid - 1) + (upper_grid%n_grid - 2)))
+    allocate (eta(grid%n_grid - 1))
     allocate (bounce_time(size(eta)))
     allocate (I_j(size(eta)))
 
-    eta(1:lower_grid%n_grid - 1) = lower_grid%eta(2:lower_grid%n_grid)
-    eta(lower_grid%n_grid:) = upper_grid%eta(2:upper_grid%n_grid - 1)
+    eta = grid%eta(2:grid%n_grid)
 
-    bounce_time(1:lower_grid%n_grid - 1) = lower_grid%bounce_time(2:lower_grid%n_grid)
-    bounce_time(lower_grid%n_grid:) = upper_grid%bounce_time(2:upper_grid%n_grid - 1)
+    bounce_time = grid%bounce_time(2:grid%n_grid)
 
-    I_j(1:lower_grid%n_grid - 1) = lower_grid%I_j(2:lower_grid%n_grid)
-    I_j(lower_grid%n_grid:) = upper_grid%I_j(2:upper_grid%n_grid - 1)
+    I_j = grid%I_j(2:grid%n_grid)
 
     theta_min = precession_fieldline%get_theta(phi_bottom)
     x = [s_tor, theta_min, phi_bottom]
@@ -102,10 +105,17 @@ program plot_bounce_time_averages
 
     allocate (bounce_time_deep(size(eta)))
     allocate (I_j_boundary(size(eta)))
+    allocate (t_spline(n_spline_plot))
+    allocate (eta_spline(n_spline_plot))
+    allocate (I_j_spline_vals(n_spline_plot))
+    allocate (bounce_coef_spline_vals(n_spline_plot))
 
     well_depth = max(machine_eps, 1.0_dp - B_min*eta_b)
     bounce_time_deep = 4.0_dp*pi/abs(h_ctrvr(2))/sqrt(well_depth)
     I_j_boundary = 4.0_dp*sqrt(well_depth)/h_ctrvr(3)
+    call linspace(grid%t(1), grid%t(grid%n_grid), n_spline_plot, t_spline)
+    eta_spline = eta_c + t_spline**2.0_dp
+    call evaluate_grid_splines(grid, t_spline, I_j_spline_vals, bounce_coef_spline_vals)
 
     call plt%initialize(xlabel="$1 - \eta/\eta_t$", &
                         ylabel="$\tau_b v_{\mathrm{th}}$", &
@@ -115,10 +125,10 @@ program plot_bounce_time_averages
 
     call plt%add_plot(1.0_dp - eta/eta_t, bounce_time, &
                       label="$\tau_b$ (numerical)", &
-                      linestyle="k-")
+                      linestyle="r-")
     call plt%add_plot(1.0_dp - eta/eta_t, bounce_time_deep, &
                       label="$\tau_b$ (deep-trapped estimate)", &
-                      linestyle="r--")
+                      linestyle="k--")
     call plt%show()
 
     call plt%initialize(xlabel="$\eta/\eta_c - 1$", &
@@ -129,14 +139,29 @@ program plot_bounce_time_averages
 
     call plt%add_plot(eta/eta_c - 1.0_dp, I_j, &
                       label="$I_j$ (numerical)", &
-                      linestyle="k-")
+                      linestyle="r-")
     call plt%add_plot(eta/eta_c - 1.0_dp, I_j_boundary, &
                       label="$I_j$ (trapped-passing boundary estimate)", &
-                      linestyle="r--")
+                      linestyle="k--")
+    call plt%add_plot(eta_spline/eta_c - 1.0_dp, I_j_spline_vals, &
+                      label="$I_j$ (spline)", &
+                      linestyle="b--")
 
     call plt%show()
 
-    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, eta, &
-                                         interval=precession_fieldline%phi_max)
+    call plt%initialize(xlabel="$t$", &
+                        ylabel="$C_{\mathrm{bounce}}$", &
+                        legend=.true., &
+                        figsize=figsize, &
+                        title="$C_{\mathrm{bounce}}$ vs $t$")
+
+    call plt%add_plot(grid%t, grid%bounce_coef, &
+                      label="$C_{\mathrm{bounce}}$ (numerical)", &
+                      linestyle="r-")
+    call plt%add_plot(t_spline, bounce_coef_spline_vals, &
+                      label="$C_{\mathrm{bounce}}$ (spline)", &
+                      linestyle="b--")
+
+    call plt%show()
 
 end program plot_bounce_time_averages
