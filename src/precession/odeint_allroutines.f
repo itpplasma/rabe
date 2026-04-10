@@ -1,6 +1,6 @@
 !
 !------------------------------------------------------------------------------
-      module odeint_mod
+      module legacy_odeint_mod
         logical :: adaptive=.true.
         integer :: kmax=0, kount=0, kmaxx=200, ialloc
         double precision :: dxsav=0.d0
@@ -9,17 +9,20 @@
         double precision, dimension(:),   allocatable :: ak2,ak3,ak4,ak5
         double precision, dimension(:),   allocatable :: ak6,ytemp
         double precision, dimension(:),   allocatable :: yerr,ytemp1
-      end module odeint_mod
+      end module legacy_odeint_mod
 !
 !------------------------------------------------------------------------------
 !
+      module legacy_odeint_allroutines_sub
+      contains
+
       SUBROUTINE odeint_allroutines(y,nvar,x1,x2,eps,derivs)
 !
-      use odeint_mod, only : adaptive
+      use legacy_odeint_mod, only : adaptive
 !
       implicit none
 !
-      external :: derivs,rkqs
+      external :: derivs
       integer :: nvar,nok,nbad
       double precision :: x1,x2,eps,h1,hmin
       double precision, dimension(nvar) :: y
@@ -33,7 +36,9 @@
 !
       else
 !
-        call RK4b(y,nvar,x1,h1,derivs)
+        ! call RK4b(y,nvar,x1,h1,derivs)
+        print *, "no-none-adaptive supported"
+        error stop
 !
       endif
 !
@@ -44,7 +49,8 @@
 !
       SUBROUTINE alloc_odeint(nvar)
 !
-      use odeint_mod
+      use legacy_odeint_mod
+      integer :: nvar
 !
       if(ialloc.eq.1) then
         allocate(dydx(nvar),xp(kmaxx),y(nvar))
@@ -64,7 +70,8 @@
       SUBROUTINE odeint(ystart,nvar,x1,x2,eps,h1,hmin,nok,nbad,derivs,
      *rkqs)
 !
-      use odeint_mod, only : kmax,kount,ialloc,dxsav,dydx,xp,y,yscal,yp
+      use legacy_odeint_mod, only : kmax,kount,ialloc,dxsav,dydx,xp,
+     *                              y,yscal,yp
 !
       implicit double precision (a-h,o-z)
 !
@@ -138,7 +145,7 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       SUBROUTINE rkck(y,dydx,n,x,h,yout,yerr,derivs)
 !
-      use odeint_mod, only : ak2,ak3,ak4,ak5,ak6,ytemp
+      use legacy_odeint_mod, only : ak2,ak3,ak4,ak5,ak6,ytemp
 !
       implicit double precision (a-h,o-z)
 !
@@ -196,7 +203,7 @@ CU    USES derivs
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       SUBROUTINE rkqs(y,dydx,n,x,htry,eps,yscal,hdid,hnext,derivs)
 !
-      use odeint_mod, only : yerr,ytemp1
+      use legacy_odeint_mod, only : yerr,ytemp1
 !
       implicit double precision (a-h,o-z)
 !
@@ -243,49 +250,50 @@ CU    USES derivs,rkck
       END
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! 22.08.2011
-      SUBROUTINE RK4b(Y,N,X,H,DERIVS)
-!
-      use magfield_mod, only : ierrfield
-!
-      implicit double precision (a-h,o-z)
-      external derivs
-      PARAMETER (NMAX=12)
-      DIMENSION Y(N),DYDX(NMAX),YT(NMAX),DYT(NMAX),DYM(NMAX)
-! 22.08.2011      HH=H*0.5
-      HH=H*0.5d0
-! 22.08.2011      H6=H/6.
-      H6=H/6.0d0
-      XH=X+HH
-!
-      CALL DERIVS(X,Y,DYDX)
-      if(ierrfield.ne.0) return
-!
-      DO 11 I=1,N
-        YT(I)=Y(I)+HH*DYDX(I)
-11    CONTINUE
-!
-      CALL DERIVS(XH,YT,DYT)
-      if(ierrfield.ne.0) return
-!
-      DO 12 I=1,N
-        YT(I)=Y(I)+HH*DYT(I)
-12    CONTINUE
-!
-      CALL DERIVS(XH,YT,DYM)
-      if(ierrfield.ne.0) return
-!
-      DO 13 I=1,N
-        YT(I)=Y(I)+H*DYM(I)
-        DYM(I)=DYT(I)+DYM(I)
-13    CONTINUE
-!
-      CALL DERIVS(X+H,YT,DYT)
-      if(ierrfield.ne.0) return
-!
-      DO 14 I=1,N
-        Y(I)=Y(I)+H6*(DYDX(I)+DYT(I)+2.d0*DYM(I))
-14    CONTINUE
-! 24.08.2011                         X=X+H
-      RETURN
-      END
+!       SUBROUTINE RK4b(Y,N,X,H,DERIVS)
+! !
+!       use magfield_mod, only : ierrfield
+! !
+!       implicit double precision (a-h,o-z)
+!       external derivs
+!       PARAMETER (NMAX=12)
+!       DIMENSION Y(N),DYDX(NMAX),YT(NMAX),DYT(NMAX),DYM(NMAX)
+! ! 22.08.2011      HH=H*0.5
+!       HH=H*0.5d0
+! ! 22.08.2011      H6=H/6.
+!       H6=H/6.0d0
+!       XH=X+HH
+! !
+!       CALL DERIVS(X,Y,DYDX)
+!       if(ierrfield.ne.0) return
+! !
+!       DO 11 I=1,N
+!         YT(I)=Y(I)+HH*DYDX(I)
+! 11    CONTINUE
+! !
+!       CALL DERIVS(XH,YT,DYT)
+!       if(ierrfield.ne.0) return
+! !
+!       DO 12 I=1,N
+!         YT(I)=Y(I)+HH*DYT(I)
+! 12    CONTINUE
+! !
+!       CALL DERIVS(XH,YT,DYM)
+!       if(ierrfield.ne.0) return
+! !
+!       DO 13 I=1,N
+!         YT(I)=Y(I)+H*DYM(I)
+!         DYM(I)=DYT(I)+DYM(I)
+! 13    CONTINUE
+! !
+!       CALL DERIVS(X+H,YT,DYT)
+!       if(ierrfield.ne.0) return
+! !
+!       DO 14 I=1,N
+!         Y(I)=Y(I)+H6*(DYDX(I)+DYT(I)+2.d0*DYM(I))
+! 14    CONTINUE
+! ! 24.08.2011                         X=X+H
+!       RETURN
+!       END
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      end module legacy_odeint_allroutines_sub
