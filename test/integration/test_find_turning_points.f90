@@ -2,7 +2,7 @@ program test_find_turning_points
     use constants, only: dp, pi
     use utils, only: linspace, not_same
     use mock_field, only: mock_field_t
-    use precession, only: fieldline_with_minimum_t
+    use grid_mod, only: fieldline_with_minimum_t
     use precession, only: find_turning_points
     use myplot_module, only: myplot
 

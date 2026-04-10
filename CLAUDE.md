@@ -51,6 +51,9 @@ rabe_lib (main static library)
 │   Legacy NEO-2 code for .bc file reading and spline interpolation (21 files)
 ├── netcdf_lib (src/netcdf/)
 │   netcdf.f90 - NetCDF output via type netcdf_t
+├── precession_lib (src/precession/)
+│   grid.f90 - Integration grid type and bounce/spline routines
+│   precession.f90 - Magnetic well and turning-point helpers
 └── Top-level modules:
     coefficients.f90, deviation.f90, fit_functions.f90, read_file.f90
 ```

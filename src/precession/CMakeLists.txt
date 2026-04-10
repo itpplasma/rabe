@@ -1,4 +1,5 @@
 add_library(precession_lib STATIC
+  grid.f90
   precession.f90
     bounce.f90
     orbit.f90

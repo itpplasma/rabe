@@ -6,14 +6,14 @@ program plot_bounce_time_averages
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use precession, only: integration_grid_t
-    use precession, only: fieldline_with_minimum_t
+    use grid_mod, only: integration_grid_t
+    use grid_mod, only: fieldline_with_minimum_t
     use precession, only: get_fieldline_at_global_maximum
     use precession, only: find_magnetic_well_bottom
-    use precession, only: set_integration_grids
-    use precession, only: compute_bounce_integrals
-    use precession, only: set_splines
-    use precession, only: evaluate_grid_splines
+    use grid_mod, only: set_integration_grids
+    use grid_mod, only: compute_bounce_integrals
+    use grid_mod, only: set_splines
+    use grid_mod, only: evaluate_grid_splines
     use field_instance, only: initialize_field_instance
     use utils, only: linspace
     use myplot_module, only: myplot
