@@ -148,7 +148,7 @@ contains
 
         real(dp) :: eta_mid
         real(dp) :: t_start, t_end
-        integer, parameter :: n = 50
+        integer, parameter :: n = 100
         real(dp), dimension(n) :: t
 
         if (allocated(grid%eta)) deallocate (grid%eta)
@@ -185,8 +185,8 @@ contains
 
         integer, parameter :: n_dim = 7
         real(dp), parameter :: cm2m = 1e-2_dp, gauss2tesla = 1e-4_dp
-        real(dp), parameter :: lamor_radius = 1.0_dp
-        real(dp) :: well_depth 
+        real(dp), parameter :: lamor_radius = 1e-2_dp
+        real(dp) :: well_depth
         real(dp) :: deep_trapped_bounce_time, time_step
         real(dp), dimension(n_dim) :: z_template, z_start, z_end
         real(dp) :: lambda_squared
@@ -194,16 +194,16 @@ contains
         real(dp) :: bounce_time_times_v_thermal
         real(dp) :: I_j
         real(dp) :: h_ctrvr(3), x(3)
-        real(dp) :: dummy, dummy_vec(3)
+        real(dp) :: dummy(11)
         integer :: max_trace_steps
 
         if (allocated(grid%bounce_time_weighted)) deallocate (grid%bounce_time_weighted)
-        if (allocated(grid%normalized_bounce_time)) deallocate (grid%normalized_bounce_time)
+    if (allocated(grid%normalized_bounce_time)) deallocate (grid%normalized_bounce_time)
         if (allocated(grid%I_j)) deallocate (grid%I_j)
-        if (allocated(grid%normalized_radial_drift)) deallocate (grid%normalized_radial_drift)
-        if (allocated(grid%radial_drift_weighted)) deallocate (grid%radial_drift_weighted)
+  if (allocated(grid%normalized_radial_drift)) deallocate (grid%normalized_radial_drift)
+      if (allocated(grid%radial_drift_weighted)) deallocate (grid%radial_drift_weighted)
         if (allocated(grid%poloidal_drift)) deallocate (grid%poloidal_drift)
-        if (allocated(grid%poloidal_drift_weighted)) deallocate (grid%poloidal_drift_weighted)
+  if (allocated(grid%poloidal_drift_weighted)) deallocate (grid%poloidal_drift_weighted)
 
         allocate (grid%bounce_time_weighted(grid%n_grid))
         allocate (grid%normalized_bounce_time(grid%n_grid))
@@ -216,11 +216,12 @@ contains
         theta_min = fieldline%get_theta(fieldline%phi_min)
         phi_min = fieldline%phi_min
         x = [s_tor, theta_min, phi_min]
-        call field%evaluate(x, dummy, dummy, dummy_vec, dummy_vec, h_ctrvr, dummy_vec)
+call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dummy(9:11))
 
         well_depth = 1.0_dp - fieldline%B_min*fieldline%eta_b
-        deep_trapped_bounce_time = 4.0_dp*pi/h_ctrvr(2)/sqrt(well_depth)
-        time_step = deep_trapped_bounce_time/128.0_dp
+        deep_trapped_bounce_time = 4.0_dp*pi/abs(h_ctrvr(2))/sqrt(well_depth) &
+                                  /abs(fieldline%M_pol*fieldline%iota - fieldline%N_tor)
+        time_step = deep_trapped_bounce_time/10.0_dp
         call params_init(fieldline%nfp, &
                          time_step, &
                          rlarm_in=lamor_radius)
@@ -259,18 +260,17 @@ contains
             z_start(5) = sqrt(lambda_squared)
 
             !> initial trace to a turning point
-            if (present(orbit_history)) then
-                call trace_orbit_till_bounce(z_start, z_end, &
-                                             orbit_buffer=orbit_history(:, :, idx))
-            else
-                call trace_orbit_till_bounce(z_start, z_end)
-            end if
+            call trace_orbit_till_bounce(z_start, z_end)
 
             !> then reset time and integral and trace to until back at bounce
             !> i.e. one full bounce period
             z_start = z_end
             z_start(6:7) = 0.0_dp
-            call trace_orbit_till_bounce(z_start, z_end)
+            if (present(orbit_history)) then
+                call trace_orbit_till_bounce(z_start, z_end, orbit_history(:, :, idx))
+            else
+                call trace_orbit_till_bounce(z_start, z_end)
+            end if
             I_j = 0.5_dp*z_end(6)*cm2m/gauss2tesla ! I_j is only over half a bounce period
             bounce_time_times_v_thermal = z_end(7)*cm2m
             grid%normalized_bounce_time(idx) = bounce_time_times_v_thermal
@@ -278,9 +278,18 @@ contains
             grid%I_j(idx) = I_j
             grid%normalized_radial_drift(idx) = (z_end(1) - z_start(1))/lamor_radius
             grid%radial_drift_weighted(idx) = t_weight*grid%normalized_radial_drift(idx)
-            grid%poloidal_drift(idx) = (z_end(2) - z_start(2))
+            grid%poloidal_drift(idx) = (z_end(2) - z_start(2))/lamor_radius
             grid%poloidal_drift_weighted(idx) = t_weight*grid%poloidal_drift(idx)
-            print *, "idx: ", idx, "out of ", grid%n_grid
+
+            ! write (out_unit, '(I0,1X,8(ES22.14E3,1X))') &
+            !     idx, grid%t(idx), eta, &
+            !     bounce_time_times_v_thermal, I_j, &
+            !     (z_end(1) - z_start(1))/lamor_scan(i_lamor), &
+            !     t_weight*((z_end(1) - z_start(1))/lamor_scan(i_lamor)), &
+            !     (z_end(2) - z_start(2))/lamor_scan(i_lamor), &
+            !     t_weight*((z_end(2) - z_start(2))/lamor_scan(i_lamor))
+
+            print *, "idx:", idx, "out of", grid%n_grid
         end do
 
     end subroutine compute_bounce_integrals
@@ -332,14 +341,23 @@ contains
                                   grid%poloidal_drift_weighted_spline)
     end subroutine set_splines
 
-    subroutine evaluate_grid_splines(grid, t_eval, I_j_eval, bounce_coef_eval)
+    subroutine evaluate_grid_splines(grid, t_eval, I_j_eval, bounce_coef_eval, &
+                                     radial_drift_eval, poloidal_drift_eval)
         type(integration_grid_t), intent(in) :: grid
         real(dp), intent(in) :: t_eval(:)
         real(dp), intent(out) :: I_j_eval(:)
         real(dp), intent(out) :: bounce_coef_eval(:)
+        real(dp), intent(out), optional :: radial_drift_eval(:)
+        real(dp), intent(out), optional :: poloidal_drift_eval(:)
 
         call evaluate_splines_1d_many(grid%I_j_spline, t_eval, I_j_eval)
         call evaluate_splines_1d_many(grid%bounce_time_weighted_spline, t_eval, bounce_coef_eval)
+        if (present(radial_drift_eval)) then
+            call evaluate_splines_1d_many(grid%radial_drift_weighted_spline, t_eval, radial_drift_eval)
+        end if
+        if (present(poloidal_drift_eval)) then
+            call evaluate_splines_1d_many(grid%poloidal_drift_weighted_spline, t_eval, poloidal_drift_eval)
+        end if
     end subroutine evaluate_grid_splines
 
     function find_turning_points(field, fieldline, eta, reltol_in) result(phi_turning)

@@ -3,6 +3,7 @@ program plot_bounce_time_averages
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use mock_field_3d, only: mock_field_3d_t
+    use boozer_field, only: boozer_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use precession, only: integration_grid_t
@@ -17,17 +18,19 @@ program plot_bounce_time_averages
     use utils, only: linspace
     use myplot_module, only: myplot
 
+    use plot_quantities, only: plot_local_drift_over_fieldline
+
     implicit none
 
-    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
+    real(dp), parameter :: M_pol = 0.0_dp, N_tor = 4.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.0125_dp, eps_1 = -0.0005_dp
     type(anti_sigma_field_t) :: field_2D
     real(dp), parameter :: B_pert = 0.001_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
     type(mock_perturbed_field_t) :: perturbed_field_2D
-    type(mock_field_3d_t) :: field
+    type(mock_field_3d_t) :: field_mock
 
     integer, parameter :: n_fieldlines = 50
-    real(dp), parameter :: phi_tol = 5e-6_dp
+    real(dp), parameter :: phi_tol = 8e-6_dp
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp) :: iota
@@ -46,22 +49,31 @@ program plot_bounce_time_averages
     real(dp), dimension(:), allocatable :: eta_spline
     real(dp), dimension(:), allocatable :: I_j_spline_vals
     real(dp), dimension(:), allocatable :: bounce_coef_spline_vals
+    real(dp), dimension(:), allocatable :: radial_drift_spline_vals
+    real(dp), dimension(:), allocatable :: poloidal_drift_spline_vals
     real(dp) :: B_min, eta_b, phi_bottom
     real(dp) :: lowest_B_max, eta_t, eta_c, theta_min
     real(dp) :: well_depth
-    real(dp) :: dummy, sqrtg
+    real(dp) :: dummy(2), average_B, sqrtg
     real(dp), dimension(3) :: x, b_der, h_covar, h_ctrvr, h_curl
     integer, dimension(2), parameter :: figsize = [14, 10]
 
+    character(len=*), parameter :: nc_file = "input/wout_squid_20230921_v1_shifted.nc"
+    type(boozer_field_t) :: field
+
     type(myplot) :: plt
 
-    call field_2D%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call perturbed_field_2D%mock_perturbed_field_init(field_2D, &
-                                                      M_pol_pert, &
-                                                      N_tor_pert, &
-                                                      B_pert)
-    call field%mock_field_3d_init(perturbed_field_2D)
-    call field%get_iota(s_tor, iota)
+    ! call field_2D%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
+    ! call perturbed_field_2D%mock_perturbed_field_init(field_2D, &
+    !                                                   M_pol_pert, &
+    !                                                   N_tor_pert, &
+    !                                                   B_pert)
+    ! call field%mock_field_3d_init(perturbed_field_2D)
+    ! call field%get_iota(s_tor, iota)
+
+    call field%boozer_field_init(nc_file, grid_refinement=5)
+    call field%fix_to_surface(s_tor)
+    call field%get_iota_and_covariant_components(s_tor, iota, dummy(1), dummy(1))
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
@@ -76,6 +88,7 @@ program plot_bounce_time_averages
                                   phi_tol)
 
     precession_fieldline%fieldline_t = get_fieldline_at_global_maximum(fieldlines)
+
     call find_magnetic_well_bottom(field, precession_fieldline, phi_bottom, B_min)
     lowest_B_max = minval(precession_fieldline%B_max)
     eta_t = 1.0_dp/B_min
@@ -85,6 +98,9 @@ program plot_bounce_time_averages
     eta_b = precession_fieldline%eta_b
 
     call set_integration_grids(eta_t, eta_c, grid)
+
+    call plot_local_drift_over_fieldline(field, precession_fieldline%fieldline_t, grid%eta, precession_fieldline%phi_max)
+
     call initialize_field_instance(field)
     call compute_bounce_integrals(field, precession_fieldline, s_tor, grid)
     call set_splines(grid)
@@ -101,7 +117,7 @@ program plot_bounce_time_averages
 
     theta_min = precession_fieldline%get_theta(phi_bottom)
     x = [s_tor, theta_min, phi_bottom]
-    call field%evaluate(x, dummy, sqrtg, b_der, h_covar, h_ctrvr, h_curl)
+    call field%evaluate(x, dummy(1), sqrtg, b_der, h_covar, h_ctrvr, h_curl)
 
     allocate (bounce_time_deep(size(eta)))
     allocate (I_j_boundary(size(eta)))
@@ -109,24 +125,32 @@ program plot_bounce_time_averages
     allocate (eta_spline(n_spline_plot))
     allocate (I_j_spline_vals(n_spline_plot))
     allocate (bounce_coef_spline_vals(n_spline_plot))
+    allocate (radial_drift_spline_vals(n_spline_plot))
+    allocate (poloidal_drift_spline_vals(n_spline_plot))
 
     well_depth = max(machine_eps, 1.0_dp - B_min*eta_b)
-    bounce_time_deep = 4.0_dp*pi/abs(h_ctrvr(2))/sqrt(well_depth)
-    I_j_boundary = 4.0_dp*sqrt(well_depth)/h_ctrvr(3)
+    average_B = 0.5_dp*(B_min + lowest_B_max)
+    bounce_time_deep = 4.0_dp*pi/abs(h_ctrvr(2))/sqrt(well_depth)/ &
+                       abs(M_pol*iota - N_tor)
+    I_j_boundary = 4.0_dp*sqrt(well_depth)/(average_B*h_ctrvr(3))/ &
+                   abs(M_pol*iota - N_tor)
+
     call linspace(grid%t(1), grid%t(grid%n_grid), n_spline_plot, t_spline)
     eta_spline = eta_c + t_spline**2.0_dp
-    call evaluate_grid_splines(grid, t_spline, I_j_spline_vals, bounce_coef_spline_vals)
+    call evaluate_grid_splines(grid, t_spline, I_j_spline_vals, &
+                               bounce_coef_spline_vals, &
+                               radial_drift_spline_vals, poloidal_drift_spline_vals)
 
     call plt%initialize(xlabel="$1 - \eta/\eta_t$", &
                         ylabel="$\tau_b v_{\mathrm{th}}$", &
                         legend=.true., &
                         figsize=figsize, &
-                        title="$\tau_b$ vs $1 - \eta/\eta_t$")
+                        title="$\tau_b$ vs $\eta/\eta_c - 1$")
 
-    call plt%add_plot(1.0_dp - eta/eta_t, bounce_time, &
+    call plt%add_plot(eta/eta_c - 1.0_dp, bounce_time, &
                       label="$\tau_b$ (numerical)", &
                       linestyle="r-")
-    call plt%add_plot(1.0_dp - eta/eta_t, bounce_time_deep, &
+    call plt%add_plot(eta/eta_c - 1.0_dp, bounce_time_deep, &
                       label="$\tau_b$ (deep-trapped estimate)", &
                       linestyle="k--")
     call plt%show()
@@ -160,6 +184,61 @@ program plot_bounce_time_averages
                       linestyle="r-")
     call plt%add_plot(t_spline, bounce_coef_spline_vals, &
                       label="$C_{\mathrm{bounce}}$ (spline)", &
+                      linestyle="b--")
+
+    call plt%show()
+
+    call plt%initialize(xlabel="$t$", &
+                        ylabel="$D_{r}$", &
+                        legend=.true., &
+                        figsize=figsize, &
+                        title="$D_{r}$ vs $t$")
+
+    call plt%add_plot(grid%t(2:grid%n_grid), &
+                      grid%normalized_radial_drift(2:grid%n_grid), &
+                      label="$D_{r}$ (numerical)", &
+                      linestyle="r-")
+
+    call plt%show()
+
+    call plt%initialize(xlabel="$t$", &
+                        ylabel="$D_{r}$", &
+                        legend=.true., &
+                        figsize=figsize, &
+                        title="$D_{\vartheta}$ vs $t$")
+
+    call plt%add_plot(grid%t(2:grid%n_grid), grid%poloidal_drift(2:grid%n_grid), &
+                      label="$D_{\vartheta}$ (numerical)", &
+                      linestyle="r-")
+
+    call plt%show()
+
+    call plt%initialize(xlabel="$t$", &
+                        ylabel="$D_{r,\mathrm{w}}$", &
+                        legend=.true., &
+                        figsize=figsize, &
+                        title="$D_{r,\mathrm{w}}$ vs $t$")
+
+    call plt%add_plot(grid%t, grid%radial_drift_weighted, &
+                      label="$D_{r,\mathrm{w}}$ (numerical)", &
+                      linestyle="r-")
+    call plt%add_plot(t_spline, radial_drift_spline_vals, &
+                      label="$D_{r,\mathrm{w}}$ (spline)", &
+                      linestyle="b--")
+
+    call plt%show()
+
+    call plt%initialize(xlabel="$t$", &
+                        ylabel="$D_{\vartheta,\mathrm{w}}$", &
+                        legend=.true., &
+                        figsize=figsize, &
+                        title="$D_{\vartheta,\mathrm{w}}$ vs $t$")
+
+    call plt%add_plot(grid%t, grid%poloidal_drift_weighted, &
+                      label="$D_{\vartheta,\mathrm{w}}$ (numerical)", &
+                      linestyle="r-")
+    call plt%add_plot(t_spline, poloidal_drift_spline_vals, &
+                      label="$D_{\vartheta,\mathrm{w}}$ (spline)", &
                       linestyle="b--")
 
     call plt%show()

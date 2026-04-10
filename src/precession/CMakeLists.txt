@@ -4,6 +4,7 @@ add_library(precession_lib STATIC
     orbit.f90
     params.f90
     field_instance.f90
+    odeint_allroutines.f
   )
 
 target_link_libraries(precession_lib PRIVATE utils_lib

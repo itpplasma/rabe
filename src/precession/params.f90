@@ -32,12 +32,10 @@ module params
     integer :: ntau ! number of dtaumin in dtau
     integer(8) :: n_microsteps_total = 0_8
     character(16) :: macrostep_time_grid = 'linear'
-    integer, allocatable :: ntau_macro(:)
-    integer(8), allocatable :: kt_macro(:)
 
     integer :: kpart = 0 ! progress counter for particles
 
-    real(dp) :: relerr = 1d-13
+    real(dp) :: relerr = 1d-10
 
     real(dp), allocatable :: trap_par(:), perp_inv(:)
     integer, allocatable :: iclass(:, :)
@@ -67,7 +65,7 @@ module params
 
     ! Further configuration parameters
     integer :: notrace_passing = 0
-    real(dp) :: facE_al = 1d0, trace_time = 2d-4
+    real(dp) :: facE_al = 1d0, trace_time = 2d-3
     integer :: ntimstep = 10000, npoiper = 100, npoiper2 = 128, n_e = 2
     real(dp) :: n_d = 4
 
@@ -124,30 +122,11 @@ contains
         dphi = 2.d0*pi/(L1i*npoiper)
         ! orbit integration time step (to check chamber wall crossing)
         ! dtaumin = 2.d0*pi*rbig/npoiper2
-        dtaumin = dtaumin_in*1e2
-        ntau = ceiling(dtau/dtaumin)
-        dtaumin = dtau/ntau
+        dtaumin = dtaumin_in
+        print *, "dtaumin = ", dtaumin
+        ntau = 100
         fper = 2d0*pi/dble(L1i)
-
-        ! Macrostep schedule (number of microsteps per macrostep).
-        ! - Default is linear: constant ntau per macrostep.
-        ! - Log schedule: macrosteps are distributed logarithmically in time
-        !   while keeping the microstep resolution dtaumin. The total number
-        !   of microsteps is preserved as (ntimstep-1)*ntau.
-        nintv = max(1, ntimstep - 1)
-        n_microsteps_total = int(nintv, kind=8)*int(ntau, kind=8)
-        if (allocated(ntau_macro)) deallocate (ntau_macro)
-        if (allocated(kt_macro)) deallocate (kt_macro)
-        allocate (ntau_macro(ntimstep))
-        allocate (kt_macro(ntimstep))
-        ntau_macro = 0
-        kt_macro = 0_8
-
-        ntcut = ceiling(ntimstep*ntau*tcut/trace_time)
-        norbper = ceiling(1d0*ntau*ntimstep/(L1i*npoiper2))
-        nfp = L1i*norbper
-
-        nplagr = 4
+        nplagr = 6
         nder = 0
         npl_half = nplagr/2
 

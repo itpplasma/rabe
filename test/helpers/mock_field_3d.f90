@@ -131,14 +131,15 @@ contains
         real(dp), intent(in) :: s_tor
         real(dp), intent(out) :: iota
 
-        real(dp) :: dummy, dummy_vec(3), hctrvr(3)
+        real(dp) :: dummy(11), hctrvr(3)
         real(dp) :: x(3)
 
         x(1) = s_tor
         x(2) = 0.0_dp
         x(3) = 0.0_dp
 
-        call self%evaluate(x, dummy, dummy, dummy_vec, dummy_vec, hctrvr, dummy_vec)
+        call self%evaluate(x, dummy(1), dummy(2), dummy(3:5), &
+                           dummy(6:8), hctrvr, dummy(9:11))
 
         iota = hctrvr(2)/hctrvr(3)
 

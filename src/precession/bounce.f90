@@ -1,7 +1,7 @@
 module bounce
     use omp_lib
     use constants, only: dp, pi
-    use params, only: ntimstep, nplagr, nder, npl_half, nfp, dtaumin, relerr, ntau
+    use params, only: ntimstep, nplagr, nder, npl_half, dtaumin, relerr, ntau
 
     implicit none
 
@@ -32,7 +32,7 @@ contains
         real(dp), dimension(:, :), allocatable :: coef, orb_sten
         real(dp), parameter :: zerolam = 0.0_dp
         real(dp) :: phiper, alam_prev, par_inv
-        integer :: iper, itip, kper, nfp_tip, nfp_per
+        integer :: iper, itip, kper
 
         integer, parameter :: nfp_dim = 3
         integer :: nfp_cot, ideal, ijpar, ierr_cot, iangvar
@@ -60,9 +60,6 @@ contains
         do it = 1, nplagr
             ipoi(it) = it
         end do
-
-        nfp_tip = nfp             !<= initial array dimension for tips
-        nfp_per = nfp             !<= initial array dimension for periods
 
         ifp_tip = 0               !<= initialize footprint counter on tips
         ifp_per = 0               !<= initialize footprint counter on periods
