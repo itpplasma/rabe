@@ -49,6 +49,39 @@ contains
 
     end subroutine compute_precession_correction
 
+    subroutine integrate_radial_drift(grid, fieldline, integral)
+        use odeint_allroutines_sub, only: odeint_allroutines
+        use grid_instance, only: initialize_grid_instance
+        type(integration_grid_t), intent(in) :: grid
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), intent(out) :: integral
+
+        integer, parameter :: ndim = 1
+        real(dp) :: t_start, t_end
+        real(dp), parameter :: relerr = 1e-8_dp
+        real(dp), dimension(ndim) :: y
+
+        t_start = grid%t(1)
+        t_end = grid%t(size(grid%t))
+
+        call initialize_grid_instance(grid)
+        y(1) = 0.0_dp
+        call odeint_allroutines(y, ndim, t_start, t_end, relerr, rhs)
+
+        integral = y(1)
+    end subroutine integrate_radial_drift
+
+    subroutine rhs(t, y, dydt)
+        use grid_instance, only: get_radial_drift
+        real(dp), intent(in) :: t
+        real(dp), dimension(:), intent(in) :: y
+        real(dp), dimension(:), intent(out) :: dydt
+
+        real(dp) :: radial_drift
+        call get_radial_drift(t, dydt(1))
+
+    end subroutine rhs
+
     function get_fieldline_at_global_maximum(fieldlines) result(max_fieldline)
         class(fieldline_t), dimension(:), intent(in) :: fieldlines
         type(fieldline_t) :: max_fieldline

@@ -74,7 +74,7 @@ contains
 
         integer, parameter :: n_dim = 7
         real(dp), parameter :: cm2m = 1e-2_dp, gauss2tesla = 1e-4_dp
-        real(dp), parameter :: lamor_radius = 1e-2_dp
+        real(dp), parameter :: lamor_radius = 1e-8_dp !m*Tesla
         real(dp) :: well_depth
         real(dp) :: deep_trapped_bounce_time, time_step
         real(dp), dimension(n_dim) :: z_template, z_start, z_end

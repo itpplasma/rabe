@@ -99,12 +99,13 @@ contains
         real(dp) :: weight_sum, cumul_weight, w
         integer :: i, nintv
         integer(8) :: kt_target, kt_prev
+        real(dp) :: m2cm = 1e2, tesla2gauss = 1e4
 
         E_alpha = 3.5d6/facE_al
         ! set alpha energy, velocity, and Larmor radius
         v0 = sqrt(2.d0*E_alpha*ev/(n_d*p_mass))
         if (present(rlarm_in)) then
-            rlarm = rlarm_in
+            rlarm = rlarm_in*m2cm*tesla2gauss
         else
             rlarm = v0*n_d*p_mass*c/(n_e*e_charge)
         end if
