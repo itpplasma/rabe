@@ -69,3 +69,9 @@ target_link_libraries(plot_bounce_orbits.x myplot_lib
                                                  helpers_lib)
 add_test(PlotBounceOrbits plot_bounce_orbits.x)
 set_tests_properties(PlotBounceOrbits PROPERTIES LABELS "plot")
+
+add_executable(plot_integrate_radial_drift.x plot_integrate_radial_drift.f90)
+target_link_libraries(plot_integrate_radial_drift.x rabe_lib
+                                                   helpers_lib)
+add_test(PlotIntegrateRadialDrift plot_integrate_radial_drift.x)
+set_tests_properties(PlotIntegrateRadialDrift PROPERTIES LABELS "current")
