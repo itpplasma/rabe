@@ -95,7 +95,7 @@ program plot_bounce_time_averages
 
     eta = grid%eta(2:grid%n_grid)
 
-    bounce_time = grid%bounce_time(2:grid%n_grid)
+    bounce_time = grid%normalized_bounce_time(2:grid%n_grid)
 
     I_j = grid%I_j(2:grid%n_grid)
 
@@ -155,7 +155,7 @@ program plot_bounce_time_averages
                         figsize=figsize, &
                         title="$C_{\mathrm{bounce}}$ vs $t$")
 
-    call plt%add_plot(grid%t, grid%bounce_coef, &
+    call plt%add_plot(grid%t, grid%bounce_time_weighted, &
                       label="$C_{\mathrm{bounce}}$ (numerical)", &
                       linestyle="r-")
     call plt%add_plot(t_spline, bounce_coef_spline_vals, &
