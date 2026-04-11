@@ -4,7 +4,7 @@ program plot_integrate_radial_drift
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use grid_mod, only: integration_grid_t
-    use grid_mod, only: fieldline_with_minimum_t
+    use grid_mod, only: fieldline_for_precession_t
     use grid_mod, only: set_integration_grids
     use grid_mod, only: compute_bounce_integrals
     use grid_mod, only: set_splines
@@ -32,7 +32,7 @@ program plot_integrate_radial_drift
     real(dp) :: check
 
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
-    type(fieldline_with_minimum_t) :: precession_fieldline
+    type(fieldline_for_precession_t) :: precession_fieldline
     type(integration_grid_t) :: grid
     type(boozer_field_t) :: field
 

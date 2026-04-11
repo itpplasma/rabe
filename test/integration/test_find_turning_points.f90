@@ -2,7 +2,7 @@ program test_find_turning_points
     use constants, only: dp, pi
     use utils, only: linspace, not_same
     use mock_field, only: mock_field_t
-    use grid_mod, only: fieldline_with_minimum_t
+    use grid_mod, only: fieldline_for_precession_t
     use precession, only: find_turning_points
     use myplot_module, only: myplot
 
@@ -11,7 +11,7 @@ program test_find_turning_points
     real(dp), parameter :: B_0 = 1.0_dp, dB = -0.1_dp
     real(dp), parameter :: M_pol = 1.0_dp, N_tor = 1.0_dp
     type(mock_field_t) :: field
-    type(fieldline_with_minimum_t) :: fieldline
+    type(fieldline_for_precession_t) :: fieldline
     real(dp), parameter :: phi_0 = 0.0_dp, theta_0 = 0.0_dp
     real(dp), parameter :: iota = 0.5_dp
 

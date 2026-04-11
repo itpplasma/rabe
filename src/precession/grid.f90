@@ -3,11 +3,11 @@ module grid_mod
     use field_base, only: field_3D_t
     use fieldline_mod, only: fieldline_t
     use interpolate, only: SplineData1D, construct_splines_1d, evaluate_splines_1d_many
-
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
     implicit none
 
     type :: integration_grid_t
-        integer :: n_grid
+        integer :: n
         real(dp), dimension(:), allocatable :: eta
         real(dp), dimension(:), allocatable :: t
         real(dp), dimension(:), allocatable :: normalized_bounce_time
@@ -23,15 +23,17 @@ module grid_mod
         type(SplineData1D) :: poloidal_drift_weighted_spline
     end type integration_grid_t
 
-    type, extends(fieldline_t) :: fieldline_with_minimum_t
+    type, extends(fieldline_t) :: fieldline_for_precession_t
         real(dp) :: phi_min
         real(dp) :: B_min
-    end type fieldline_with_minimum_t
+        type(integration_grid_t) :: grid
+    end type fieldline_for_precession_t
 
 contains
 
     subroutine set_integration_grids(eta_t, eta_c, grid)
         use utils, only: linspace
+        use, intrinsic :: ieee_arithmetic, only: ieee_quiet_nan, ieee_value
         real(dp), intent(in) :: eta_t, eta_c
         type(integration_grid_t), intent(out) :: grid
 
@@ -39,6 +41,19 @@ contains
         real(dp) :: t_start, t_end
         integer, parameter :: n = 100
         real(dp), dimension(n) :: t
+
+        if (ieee_is_nan(eta_t)) then
+            print *, "Error: eta_t is NaN."
+            error stop
+        end if
+        if (ieee_is_nan(eta_c)) then
+            print *, "Error: eta_c is NaN."
+            error stop
+        end if
+        if (eta_t <= eta_c) then
+            print *, "Error: eta_t must be greater than eta_c."
+            error stop
+        end if
 
         if (allocated(grid%eta)) deallocate (grid%eta)
         if (allocated(grid%t)) deallocate (grid%t)
@@ -50,7 +65,54 @@ contains
         call linspace(t_start, t_end, n, t)
         grid%eta = eta_c + t**2.0_dp
         grid%t = t
-        grid%n_grid = n
+        grid%n = n
+
+        if (allocated(grid%bounce_time_weighted)) then
+            deallocate (grid%bounce_time_weighted)
+        end if
+        if (allocated(grid%normalized_bounce_time)) then
+            deallocate (grid%normalized_bounce_time)
+        end if
+        if (allocated(grid%I_j)) then
+            deallocate (grid%I_j)
+        end if
+        if (allocated(grid%normalized_radial_drift)) then
+            deallocate (grid%normalized_radial_drift)
+        end if
+        if (allocated(grid%radial_drift_weighted)) then
+            deallocate (grid%radial_drift_weighted)
+        end if
+        if (allocated(grid%poloidal_drift)) then
+            deallocate (grid%poloidal_drift)
+        end if
+        if (allocated(grid%poloidal_drift_weighted)) then
+            deallocate (grid%poloidal_drift_weighted)
+        end if
+
+        allocate (grid%bounce_time_weighted(n))
+        allocate (grid%normalized_bounce_time(n))
+        allocate (grid%I_j(n))
+        allocate (grid%normalized_radial_drift(n))
+        allocate (grid%radial_drift_weighted(n))
+        allocate (grid%poloidal_drift(n))
+        allocate (grid%poloidal_drift_weighted(n))
+
+        grid%bounce_time_weighted = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%normalized_bounce_time = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%I_j = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%normalized_radial_drift = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%radial_drift_weighted = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%poloidal_drift = ieee_value(1.0_dp, ieee_quiet_nan)
+        grid%poloidal_drift_weighted = ieee_value(1.0_dp, ieee_quiet_nan)
+
+        if (any(ieee_is_nan(grid%eta))) then
+            print *, "Error: NaN values found in eta grid."
+            error stop
+        end if
+        if (any(ieee_is_nan(grid%t))) then
+            print *, "Error: NaN values found in t grid."
+            error stop
+        end if
 
     end subroutine set_integration_grids
 
@@ -62,7 +124,7 @@ contains
         use constants, only: machine_eps
         use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
         class(field_3D_t), intent(in) :: field
-        type(fieldline_with_minimum_t), intent(in) :: fieldline
+        type(fieldline_for_precession_t), intent(in) :: fieldline
         real(dp), intent(in) :: s_tor
         type(integration_grid_t), intent(inout) :: grid
      real(dp), dimension(:, :, :), allocatable, intent(inout), optional :: orbit_history
@@ -86,26 +148,11 @@ contains
         real(dp) :: dummy(11)
         integer :: max_trace_steps
 
-        if (allocated(grid%bounce_time_weighted)) deallocate (grid%bounce_time_weighted)
-    if (allocated(grid%normalized_bounce_time)) deallocate (grid%normalized_bounce_time)
-        if (allocated(grid%I_j)) deallocate (grid%I_j)
-  if (allocated(grid%normalized_radial_drift)) deallocate (grid%normalized_radial_drift)
-      if (allocated(grid%radial_drift_weighted)) deallocate (grid%radial_drift_weighted)
-        if (allocated(grid%poloidal_drift)) deallocate (grid%poloidal_drift)
-  if (allocated(grid%poloidal_drift_weighted)) deallocate (grid%poloidal_drift_weighted)
-
-        allocate (grid%bounce_time_weighted(grid%n_grid))
-        allocate (grid%normalized_bounce_time(grid%n_grid))
-        allocate (grid%I_j(grid%n_grid))
-        allocate (grid%normalized_radial_drift(grid%n_grid))
-        allocate (grid%radial_drift_weighted(grid%n_grid))
-        allocate (grid%poloidal_drift(grid%n_grid))
-        allocate (grid%poloidal_drift_weighted(grid%n_grid))
-
         theta_min = fieldline%get_theta(fieldline%phi_min)
         phi_min = fieldline%phi_min
         x = [s_tor, theta_min, phi_min]
-call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dummy(9:11))
+        call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), &
+                            h_ctrvr, dummy(9:11))
 
         well_depth = 1.0_dp - fieldline%B_min*fieldline%eta_b
         deep_trapped_bounce_time = 4.0_dp*pi/abs(h_ctrvr(2))/sqrt(well_depth) &
@@ -117,7 +164,7 @@ call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dumm
         max_trace_steps = ntau*(ntimstep - 1)
         if (present(orbit_history)) then
             if (.not. allocated(orbit_history)) then
-                allocate (orbit_history(max_trace_steps, n_dim, grid%n_grid))
+                allocate (orbit_history(max_trace_steps, n_dim, grid%n))
             end if
             orbit_history = ieee_value(1.0_dp, ieee_quiet_nan)
         end if
@@ -129,7 +176,7 @@ call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dumm
         z_template(6) = 0.0_dp
         z_template(7) = 0.0_dp
 
-        do idx = 1, grid%n_grid
+        do idx = 1, grid%n
             t_weight = 2.0_dp*grid%t(idx)
             if (abs(t_weight) < machine_eps) then
                 grid%bounce_time_weighted(idx) = 0.0_dp
@@ -147,6 +194,12 @@ call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dumm
             eta = grid%eta(idx)
             lambda_squared = calc_lambda_squared(fieldline%B_min, eta)
             z_start(5) = sqrt(lambda_squared)
+            if (ieee_is_nan(z_start(5))) then
+                print *, "Error: Lambda is NaN!"
+                print *, "B_min:", fieldline%B_min, "eta:", eta
+                print *, "Calculated lambda_squared:", lambda_squared
+                error stop
+            end if
 
             !> initial trace to a turning point
             call trace_orbit_till_bounce(z_start, z_end)
@@ -178,7 +231,7 @@ call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dumm
             !     (z_end(2) - z_start(2))/lamor_scan(i_lamor), &
             !     t_weight*((z_end(2) - z_start(2))/lamor_scan(i_lamor))
 
-            print *, "idx:", idx, "out of", grid%n_grid
+            print *, "idx:", idx, "out of", grid%n
         end do
 
     end subroutine compute_bounce_integrals
@@ -193,7 +246,7 @@ call field%evaluate(x, dummy(1), dummy(2), dummy(3:5), dummy(6:8), h_ctrvr, dumm
         integer :: n
         integer :: start
 
-        n = grid%n_grid
+        n = grid%n
         if (ieee_is_nan(grid%I_j(1))) then
             start = 2
         else

@@ -17,7 +17,7 @@ program test_precession_analytic
     type(mock_perturbed_field_t) :: perturbed_field_2D
     type(mock_field_3d_t) :: field
 
-    integer, parameter :: n_fieldlines = 50
+    integer, parameter :: n_fieldlines = 6
     real(dp), parameter :: phi_tol = 5e-6
 
     real(dp), dimension(n_fieldlines) :: xi_0

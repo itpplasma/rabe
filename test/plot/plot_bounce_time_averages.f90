@@ -7,7 +7,7 @@ program plot_bounce_time_averages
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use grid_mod, only: integration_grid_t
-    use grid_mod, only: fieldline_with_minimum_t
+    use grid_mod, only: fieldline_for_precession_t
     use precession, only: get_fieldline_at_global_maximum
     use precession, only: find_magnetic_well_bottom
     use grid_mod, only: set_integration_grids
@@ -36,7 +36,7 @@ program plot_bounce_time_averages
     real(dp) :: iota
     real(dp), parameter :: nfp = N_tor
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
-    type(fieldline_with_minimum_t) :: precession_fieldline
+    type(fieldline_for_precession_t) :: precession_fieldline
     type(integration_grid_t) :: grid
 
     real(dp), parameter :: s_tor = 0.25_dp
@@ -105,15 +105,15 @@ program plot_bounce_time_averages
     call compute_bounce_integrals(field, precession_fieldline, s_tor, grid)
     call set_splines(grid)
 
-    allocate (eta(grid%n_grid - 1))
+    allocate (eta(grid%n - 1))
     allocate (bounce_time(size(eta)))
     allocate (I_j(size(eta)))
 
-    eta = grid%eta(2:grid%n_grid)
+    eta = grid%eta(2:grid%n)
 
-    bounce_time = grid%normalized_bounce_time(2:grid%n_grid)
+    bounce_time = grid%normalized_bounce_time(2:grid%n)
 
-    I_j = grid%I_j(2:grid%n_grid)
+    I_j = grid%I_j(2:grid%n)
 
     theta_min = precession_fieldline%get_theta(phi_bottom)
     x = [s_tor, theta_min, phi_bottom]
@@ -135,7 +135,7 @@ program plot_bounce_time_averages
     I_j_boundary = 4.0_dp*sqrt(well_depth)/(average_B*h_ctrvr(3))/ &
                    abs(M_pol*iota - N_tor)
 
-    call linspace(grid%t(1), grid%t(grid%n_grid), n_spline_plot, t_spline)
+    call linspace(grid%t(1), grid%t(grid%n), n_spline_plot, t_spline)
     eta_spline = eta_c + t_spline**2.0_dp
     call evaluate_grid_splines(grid, t_spline, I_j_spline_vals, &
                                bounce_coef_spline_vals, &
@@ -194,8 +194,8 @@ program plot_bounce_time_averages
                         figsize=figsize, &
                         title="$D_{r}$ vs $t$")
 
-    call plt%add_plot(grid%t(2:grid%n_grid), &
-                      grid%normalized_radial_drift(2:grid%n_grid), &
+    call plt%add_plot(grid%t(2:grid%n), &
+                      grid%normalized_radial_drift(2:grid%n), &
                       label="$D_{r}$ (numerical)", &
                       linestyle="r-")
 
@@ -207,7 +207,7 @@ program plot_bounce_time_averages
                         figsize=figsize, &
                         title="$D_{\vartheta}$ vs $t$")
 
-    call plt%add_plot(grid%t(2:grid%n_grid), grid%poloidal_drift(2:grid%n_grid), &
+    call plt%add_plot(grid%t(2:grid%n), grid%poloidal_drift(2:grid%n), &
                       label="$D_{\vartheta}$ (numerical)", &
                       linestyle="r-")
 
