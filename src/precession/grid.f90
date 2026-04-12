@@ -60,8 +60,8 @@ contains
 
         allocate (grid%eta(n))
         allocate (grid%t(n))
-        t_start = 0.0_dp
-        t_end = (eta_t - eta_c)**0.5_dp
+        t_start = (eta_t - eta_c)**0.5_dp
+        t_end = 0.0_dp
         call linspace(t_start, t_end, n, t)
         grid%eta = eta_c + t**2.0_dp
         grid%t = t
@@ -246,11 +246,15 @@ contains
         integer :: n
         integer :: start
 
-        n = grid%n
         if (ieee_is_nan(grid%I_j(1))) then
             start = 2
         else
             start = 1
+        end if
+        if (ieee_is_nan(grid%I_j(grid%n))) then
+            n = grid%n - 1
+        else
+            n = grid%n
         end if
 
         call construct_splines_1d(grid%t(start), &
@@ -261,6 +265,7 @@ contains
                                   grid%I_j_spline)
 
         start = 1
+        n = grid%n
         call construct_splines_1d(grid%t(start), &
                                   grid%t(n), &
                                   grid%bounce_time_weighted(start:n), &
