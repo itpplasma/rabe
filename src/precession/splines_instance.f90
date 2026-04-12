@@ -262,6 +262,7 @@ contains
             print *, "radial_drift_mode: ", radial_drift_mode(start:n)
             print *, "Error: initialize_radial_drift_spline called with NaN in ", &
                 "radial_drift_mode."
+            error stop
         end if
         call construct_splines_1d(t(start), t(n), radial_drift_mode(start:n), &
                                   order, periodic, radial_drift_mode_spl)

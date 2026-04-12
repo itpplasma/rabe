@@ -97,6 +97,7 @@ contains
         allocate (bounce_time_weighted(grid%n))
         allocate (I_j(grid%n))
         allocate (magnetic_drift_weighted(grid%n))
+        allocate (electric_drift_weighted(grid%n))
         bounce_time_weighted = 0.0_dp
         I_j = 0.0_dp
         magnetic_drift_weighted = 0.0_dp
@@ -120,11 +121,11 @@ contains
         I_j = I_j/n_fieldlines
         electric_drift_weighted = Omega_hat*bounce_time_weighted
         allocate (poloidal_drift_weighted(grid%n))
-        poloidal_drift_weighted = poloidal_drift_weighted + electric_drift_weighted
+        poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
 
         n_modes = n_fieldlines/2 + 1
-        allocate (radial_drift_cos(n_fieldlines, grid%n))
-        allocate (radial_drift_sin(n_fieldlines, grid%n))
+        allocate (radial_drift_cos(n_modes, grid%n))
+        allocate (radial_drift_sin(n_modes, grid%n))
         do idx = 1, grid%n
             call real_ft(fieldlines%xi_0, &
                          radial_drift_weighted(:, idx), &
