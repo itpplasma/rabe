@@ -1,6 +1,6 @@
 module precession
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
-    use constants, only: dp, pi
+    use constants, only: dp, pi, machine_eps
     use field_base, only: field_t
     use field_base, only: field_3D_t
     use fieldline_mod, only: fieldline_t
@@ -14,6 +14,8 @@ module precession
 
     implicit none
 
+    logical, parameter :: ignore_magnetic_drift = .true.
+
 contains
 
     subroutine compute_precession_correction(field, fieldlines_in, l_c, Omega_hat, s_tor, correction)
@@ -25,6 +27,7 @@ contains
         use splines_instance, only: initialize_prefactor
         use splines_instance, only: initialize_radial_drift_spline
         use splines_instance, only: get_flux_mode
+        use splines_instance, only: initialize_startup
         class(field_3D_t), intent(in) :: field
         class(fieldline_t), dimension(:) :: fieldlines_in
         real(dp), intent(in) :: l_c
@@ -43,6 +46,7 @@ contains
         real(dp), dimension(:), allocatable :: I_j
         real(dp), dimension(:), allocatable :: poloidal_drift_weighted
         real(dp), dimension(:), allocatable :: electric_drift_weighted
+        real(dp), dimension(:), allocatable :: magnetic_drift_weighted
 
         real(dp), dimension(:), allocatable :: flux_mode
         real(dp) :: M_pol, N_tor, nfp, iota
@@ -57,6 +61,31 @@ contains
         allocate (fieldlines(n_fieldlines))
         fieldlines%fieldline_t = fieldlines_in
 
+        M_pol = fieldlines(1)%M_pol
+        N_tor = fieldlines(1)%N_tor
+        nfp = fieldlines(1)%nfp
+        iota = fieldlines(1)%iota
+        if (ieee_is_nan(M_pol)) then
+            print *, "M_pol: ", M_pol
+            error stop "Error: M_pol is NaN."
+        end if
+        if (ieee_is_nan(N_tor)) then
+            print *, "N_tor: ", N_tor
+            error stop "Error: N_tor is NaN."
+        end if
+        if (ieee_is_nan(nfp)) then
+            print *, "nfp: ", nfp
+            error stop "Error: nfp is NaN."
+        end if
+        if (ieee_is_nan(iota)) then
+            print *, "iota: ", iota
+            error stop "Error: iota is NaN."
+        end if
+        if (abs(M_pol*iota - N_tor) < machine_eps) then
+            print *, "Error-Resonant: M_pol*iota - N_tor must not be zero."
+            error stop
+        end if
+
         eta_c = 1.0_dp/get_smallest_maximum(fieldlines)
         call set_fieldline_minima(field, fieldlines)
         eta_t = 1.0_dp/get_biggest_minimum(fieldlines)
@@ -67,18 +96,31 @@ contains
         allocate (radial_drift_weighted(n_fieldlines, grid%n))
         allocate (bounce_time_weighted(grid%n))
         allocate (I_j(grid%n))
-        allocate (poloidal_drift_weighted(grid%n))
+        allocate (magnetic_drift_weighted(grid%n))
+        bounce_time_weighted = 0.0_dp
+        I_j = 0.0_dp
+        magnetic_drift_weighted = 0.0_dp
         do idx = 1, n_fieldlines
             call compute_bounce_integrals(field, &
                                           fieldlines(idx), &
                                           s_tor, &
                                           fieldlines(idx)%grid)
             radial_drift_weighted(idx, :) = fieldlines(idx)%grid%radial_drift_weighted
- bounce_time_weighted = bounce_time_weighted + fieldlines(idx)%grid%bounce_time_weighted
+            bounce_time_weighted = bounce_time_weighted + &
+                                   fieldlines(idx)%grid%bounce_time_weighted
             I_j = I_j + fieldlines(idx)%grid%I_j
-            poloidal_drift_weighted = poloidal_drift_weighted + fieldlines(idx)%grid%poloidal_drift_weighted
+            magnetic_drift_weighted = magnetic_drift_weighted + fieldlines(idx)%grid%poloidal_drift_weighted
         end do
+        if (ignore_magnetic_drift) then
+            magnetic_drift_weighted = 0.0_dp
+        else
+            magnetic_drift_weighted = magnetic_drift_weighted/n_fieldlines
+        end if
+        bounce_time_weighted = bounce_time_weighted/n_fieldlines
+        I_j = I_j/n_fieldlines
         electric_drift_weighted = Omega_hat*bounce_time_weighted
+        allocate (poloidal_drift_weighted(grid%n))
+        poloidal_drift_weighted = poloidal_drift_weighted + electric_drift_weighted
 
         n_modes = n_fieldlines/2 + 1
         allocate (radial_drift_cos(n_fieldlines, grid%n))
@@ -93,20 +135,31 @@ contains
         call initialize_splines(grid%t, &
                                 grid%eta, &
                                 I_j, &
-                                electric_drift_weighted, &
                                 poloidal_drift_weighted)
 
         allocate (flux_mode(n_modes))
         flux_mode(1) = 0.0_dp
         do idx = 2, n_modes
-            mode_factor = real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
+            mode_factor = 0.5_dp*real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
             call initialize_prefactor(mode_factor)
+            call initialize_startup(grid%t, grid%eta, I_j, mode_factor)
             call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
-            call get_flux_mode(flux_mode(idx))
+            call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
         end do
 
         call calc_surface_averages(fieldlines, average)
         correction = pi*sum(flux_mode)/average%normalization
+
+        deallocate (fieldlines)
+        deallocate (radial_drift_weighted)
+        deallocate (bounce_time_weighted)
+        deallocate (I_j)
+        deallocate (poloidal_drift_weighted)
+        deallocate (electric_drift_weighted)
+        deallocate (magnetic_drift_weighted)
+        deallocate (radial_drift_cos)
+        deallocate (radial_drift_sin)
+        deallocate (flux_mode)
 
     end subroutine compute_precession_correction
 
