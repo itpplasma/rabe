@@ -7,6 +7,7 @@ module mock_field_3d
 
     type, extends(field_3D_t) :: mock_field_3d_t
         class(field_t), allocatable :: field_2D
+        real(dp) :: psi_tor_edge = 1.0_dp
     contains
         procedure :: mock_field_3d_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -82,7 +83,6 @@ contains
 
         call self%field_2D%compute_B_and_dB_dx(x(2), x(3), B_mod, dB_dx)
 
-        sqrtg = 1.0_dp
         bmod = B_mod
         bder = dB_dx/B_mod
         hcovar = 0.0_dp
@@ -91,6 +91,7 @@ contains
         hctrvr(2) = 1.0_dp
         hctrvr(3) = 1.0_dp
         hcurl = 0.0_dp
+        sqrtg = self%psi_tor_edge/(B_mod*hcovar(3))
 
         if (ieee_is_nan(bmod)) then
             print *, "bmod is NaN!"

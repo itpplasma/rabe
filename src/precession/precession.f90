@@ -18,7 +18,9 @@ module precession
 
 contains
 
-    subroutine compute_precession_correction(field, fieldlines_in, l_c, Omega_hat, s_tor, correction)
+    subroutine compute_precession_correction(field, fieldlines_in, &
+                                             l_c, Omega_hat, s_tor, &
+                                             correction, flux_modes_out)
         use field_instance, only: initialize_field_instance
         use fourier, only: real_ft
         use surface_average_mod, only: calc_surface_averages
@@ -34,6 +36,7 @@ contains
         real(dp), intent(in) :: Omega_hat
         real(dp), intent(in) :: s_tor
         real(dp), intent(out) :: correction
+        real(dp), dimension(:), allocatable, intent(out), optional :: flux_modes_out
 
         type(fieldline_for_precession_t), dimension(:), allocatable :: fieldlines
         real(dp) :: phi_bottom, B_bottom, lowest_B_max, eta_t, eta_c
@@ -150,6 +153,10 @@ contains
 
         call calc_surface_averages(fieldlines, average)
         correction = pi*sum(flux_mode)/average%normalization
+
+        if (present(flux_modes_out)) then
+            flux_modes_out = flux_mode
+        end if
 
         deallocate (fieldlines)
         deallocate (radial_drift_weighted)

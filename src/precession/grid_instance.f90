@@ -18,12 +18,11 @@ contains
 
     subroutine initialize_grid_instance(grid_in)
         class(integration_grid_t), intent(in) :: grid_in
-        if (.not. grid_initialized) then
-            allocate (grid, source=grid_in)
-            grid_initialized = .true.
-        else
-            error stop "Error: initialize_grid_instance called more than once."
+        if (grid_initialized) then
+            deallocate (grid)
         end if
+        allocate (grid, source=grid_in)
+        grid_initialized = .true.
     end subroutine initialize_grid_instance
 
     subroutine get_radial_drift(t, radial_drift)
