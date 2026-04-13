@@ -88,7 +88,7 @@ program electric_rabe
     integer :: n_modes
     integer :: idx
     integer :: id_nu
-    integer, parameter :: n_nu = 10
+    integer, parameter :: n_nu = 76
     real(dp), dimension(n_nu) :: nu_stars
     real(dp) :: nu_star, l_c
     real(dp), parameter :: Omega_hat = 1.0_dp
@@ -99,6 +99,27 @@ program electric_rabe
     character(len=1024) :: description
 
     call read_namelist(input_file)
+
+    nu_stars = [ &
+               1e-07_dp, 1.5e-07_dp, 2e-07_dp, 3e-07_dp, &
+               4e-07_dp, 5e-07_dp, 6e-07_dp, 7e-07_dp, &
+               8e-07_dp, 9e-07_dp, 1e-06_dp, 1.2e-06_dp, &
+               1.3e-06_dp, 1.4e-06_dp, 1.41e-06_dp, 1.42e-06_dp, &
+               1.43e-06_dp, 1.44e-06_dp, 1.45e-06_dp, 1.46e-06_dp, &
+               1.47e-06_dp, 1.48e-06_dp, 1.49e-06_dp, 1.5e-06_dp, &
+               1.6e-06_dp, 1.7e-06_dp, 2e-06_dp, 2.5e-06_dp, &
+               3e-06_dp, 3.4e-06_dp, 4e-06_dp, 5e-06_dp, &
+               6e-06_dp, 8e-06_dp, 1e-05_dp, 1.4e-05_dp, &
+               2e-05_dp, 3e-05_dp, 4.1e-05_dp, 6e-05_dp, &
+               0.0001_dp, 0.00017_dp, 0.0003_dp, 0.0006_dp, &
+               0.001_dp, 0.003_dp, 0.006_dp, 0.01_dp, &
+               0.0168_dp, 0.03_dp, 0.037_dp, 0.039_dp, &
+               0.04_dp, 0.042_dp, 0.0435_dp, 0.045_dp, &
+               0.048_dp, 0.05_dp, 0.055_dp, 0.062_dp, &
+               0.069_dp, 0.083_dp, 0.1_dp, 0.13_dp, &
+               0.17_dp, 0.256_dp, 0.356_dp, 0.42_dp, &
+               0.456_dp, 0.5_dp, 0.556_dp, 0.98_dp, &
+               1.69_dp, 3.0_dp, 5.61_dp, 10.0_dp]
 
     n_stor = size(s_tor)
     if (n_stor > 1) then
@@ -204,8 +225,8 @@ program electric_rabe
                 call initialize_startup(grid%t, grid%eta, I_j, mode_factor)
                 call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
                 call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
-        call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
             end do
+        call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
       lambda_off(id_nu) = pi*sum(g_off_modes%sin_coeffs*flux_mode)/average%normalization
         end do
 
@@ -272,6 +293,7 @@ program electric_rabe
         "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
     call nc_output%add_attr("R", "definition", description)
     call nc_output%write_real_1d("lambda_off", lambda_off)
+    call nc_output%write_real_1d("nu_star", nu_stars)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_int_1d("err_flag", err_flag)
     call nc_output%write_real_1d("s_tor", s_tor)
