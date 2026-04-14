@@ -156,10 +156,6 @@ contains
 
         integer :: start, n
 
-        if (splines_initialized) then
-            error stop "Error: initialize_splines_instance called more than once."
-        end if
-
         n = size(t)
         if (ieee_is_nan(I_j(1))) then
             start = 2

@@ -36,7 +36,8 @@ program electric_rabe
                          phi_tol, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta
+                         n_eta, &
+                         Omega_hat
 
     implicit none
 
@@ -95,8 +96,17 @@ program electric_rabe
     integer, parameter :: n_nu = 76
     real(dp), dimension(n_nu) :: nu_stars
     real(dp) :: nu_star, l_c
-    real(dp), parameter :: Omega_hat = 1.856e-04_dp/0.7366_dp
-    real(dp), dimension(n_nu) :: lambda_off
+    integer :: n_Omega_hat
+    integer :: idx_Omega
+    ! real(dp), parameter :: Omega_hat = 1.856e-04_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 1.114E-05_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 1.856E-03_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 7.425E-05_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 3.712E-07_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 1.856E-02_dp/0.7366_dp
+    ! real(dp), parameter :: Omega_hat = 1.114E-06_dp/0.7366_dp
+
+    real(dp), dimension(:, :), allocatable :: lambda_off
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
@@ -131,6 +141,8 @@ program electric_rabe
     end if
     allocate (nu_star_crit(n_stor))
     allocate (err_flag(n_stor))
+    n_Omega_hat = size(Omega_hat)
+    allocate (lambda_off(n_nu, n_Omega_hat))
 
     call field%boozer_field_init(field_file, grid_refinement=6)
     do this = 1, n_stor
@@ -237,9 +249,7 @@ program electric_rabe
         end if
         bounce_time_weighted = bounce_time_weighted/n_fieldlines
         I_j = I_j/n_fieldlines
-        electric_drift_weighted = Omega_hat*bounce_time_weighted
         allocate (poloidal_drift_weighted(grid%n))
-        poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
 
         n_modes = n_fieldlines/2 + 1
         allocate (radial_drift_cos(n_modes, grid%n))
@@ -251,25 +261,32 @@ program electric_rabe
                          radial_drift_sin(:, idx))
         end do
 
-        call initialize_splines(grid%t, &
-                                grid%eta, &
-                                I_j, &
-                                poloidal_drift_weighted)
-
         allocate (flux_mode(n_modes))
-        do id_nu = 1, n_nu
-            nu_star = nu_stars(id_nu)
-            l_c = pi*R/(2.0_dp*nu_star)
-            flux_mode(1) = 0.0_dp
-            do idx = 2, n_modes
-                mode_factor = 0.5_dp*real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
-                call initialize_prefactor(mode_factor)
-                call initialize_startup(grid%t, grid%eta, I_j, mode_factor)
-                call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
-                call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
-            end do
+
+        do idx_Omega = 1, n_Omega_hat
+            electric_drift_weighted = Omega_hat(idx_Omega)*bounce_time_weighted
+            poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
+
+            call initialize_splines(grid%t, &
+                                    grid%eta, &
+                                    I_j, &
+                                    poloidal_drift_weighted)
+
+            do id_nu = 1, n_nu
+                nu_star = nu_stars(id_nu)
+                l_c = pi*R/(2.0_dp*nu_star)
+                flux_mode(1) = 0.0_dp
+                do idx = 2, n_modes
+                    mode_factor = 0.5_dp*real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
+                    call initialize_prefactor(mode_factor)
+                    call initialize_startup(grid%t, grid%eta, I_j, mode_factor)
+                   call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
+                    call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
+                end do
         call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
-      lambda_off(id_nu) = pi*sum(g_off_modes%sin_coeffs*flux_mode)/average%normalization
+        lambda_off(id_nu, idx_Omega) = pi*sum(g_off_modes%sin_coeffs*flux_mode)/average%normalization
+
+            end do
         end do
         lambda_off = lambda_off*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
 
@@ -313,7 +330,10 @@ program electric_rabe
 
     call nc_output%def_dim("collisionality", n_nu)
     call nc_output%add_real_1d("nu_star", "collisionality")
-    call nc_output%add_real_1d("lambda_off", "collisionality")
+    call nc_output%def_dim("precession_frequency", n_Omega_hat)
+    call nc_output%add_real_1d("Omega_hat", "precession_frequency")
+
+    call nc_output%add_real_2d("lambda_off", "collisionality", "precession_frequency")
     call nc_output%add_attr("lambda_off", "long_name", &
                             "geometrical factor")
     call nc_output%add_attr("lambda_off", "unit", &
@@ -335,7 +355,8 @@ program electric_rabe
         "to dimensionless quantities i.e. defines coeffients in respect to ", &
         "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
     call nc_output%add_attr("R", "definition", description)
-    call nc_output%write_real_1d("lambda_off", lambda_off)
+    call nc_output%write_real_2d("lambda_off", lambda_off)
+    call nc_output%write_real_1d("Omega_hat", Omega_hat)
     call nc_output%write_real_1d("nu_star", nu_stars)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_int_1d("err_flag", err_flag)
