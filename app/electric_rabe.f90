@@ -86,12 +86,16 @@ program electric_rabe
     type(modes_t) :: g_off_modes
 
     integer :: n_modes
-    integer :: idx
+    integer :: idx, i_grid
     integer :: id_nu
+    integer :: file_unit
+    character(len=256) :: filename
+    logical :: file_exists
+    character(len=256) :: header_line
     integer, parameter :: n_nu = 76
     real(dp), dimension(n_nu) :: nu_stars
     real(dp) :: nu_star, l_c
-    real(dp), parameter :: Omega_hat = 1.0_dp
+    real(dp), parameter :: Omega_hat = 1.856e-04_dp/0.7366_dp
     real(dp), dimension(n_nu) :: lambda_off
 
     type(netcdf_t) :: nc_output
@@ -178,15 +182,53 @@ program electric_rabe
         magnetic_drift_weighted = 0.0_dp
 
         do idx = 1, n_fieldlines
-            call compute_bounce_integrals(field, &
-                                          fieldlines_precession(idx), &
-                                          s_tor(this), &
-                                          fieldlines_precession(idx)%grid)
+            write (filename, '(A,I0,A)') 'bounce_fieldline_', idx, '.dat'
+            inquire (file=trim(filename), exist=file_exists)
+
+            if (file_exists) then
+                print *, "Reading bounce integrals from ", trim(filename)
+                open (newunit=file_unit, file=trim(filename), &
+                      status='old', action='read')
+                read (file_unit, '(A)') header_line
+                do i_grid = 1, fieldlines_precession(idx)%grid%n
+                    read (file_unit, *) &
+                        fieldlines_precession(idx)%grid%t(i_grid), &
+                        fieldlines_precession(idx)%grid%eta(i_grid), &
+                        fieldlines_precession(idx)%grid%bounce_time_weighted(i_grid), &
+                        fieldlines_precession(idx)%grid%I_j(i_grid), &
+                        fieldlines_precession(idx)%grid%radial_drift_weighted(i_grid), &
+                        fieldlines_precession(idx)%grid%poloidal_drift_weighted(i_grid)
+                end do
+                close (file_unit)
+            else
+                call compute_bounce_integrals(field, &
+                                              fieldlines_precession(idx), &
+                                              s_tor(this), &
+                                              fieldlines_precession(idx)%grid)
+                open (newunit=file_unit, file=trim(filename), &
+                      status='replace')
+                write (file_unit, '(A)') &
+                    '# t  eta  bounce_time_weighted' &
+                    //'  I_j  radial_drift_weighted' &
+                    //'  poloidal_drift_weighted'
+                do i_grid = 1, fieldlines_precession(idx)%grid%n
+                    write (file_unit, '(6ES20.12)') &
+                        fieldlines_precession(idx)%grid%t(i_grid), &
+                        fieldlines_precession(idx)%grid%eta(i_grid), &
+                        fieldlines_precession(idx)%grid%bounce_time_weighted(i_grid), &
+                        fieldlines_precession(idx)%grid%I_j(i_grid), &
+                        fieldlines_precession(idx)%grid%radial_drift_weighted(i_grid), &
+                        fieldlines_precession(idx)%grid%poloidal_drift_weighted(i_grid)
+                end do
+                close (file_unit)
+            end if
+
    radial_drift_weighted(idx, :) = fieldlines_precession(idx)%grid%radial_drift_weighted
             bounce_time_weighted = bounce_time_weighted + &
                                    fieldlines_precession(idx)%grid%bounce_time_weighted
             I_j = I_j + fieldlines_precession(idx)%grid%I_j
-            magnetic_drift_weighted = magnetic_drift_weighted + fieldlines_precession(idx)%grid%poloidal_drift_weighted
+            magnetic_drift_weighted = magnetic_drift_weighted + &
+                                 fieldlines_precession(idx)%grid%poloidal_drift_weighted
         end do
         if (ignore_magnetic_drift) then
             magnetic_drift_weighted = 0.0_dp
@@ -229,6 +271,7 @@ program electric_rabe
         call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
       lambda_off(id_nu) = pi*sum(g_off_modes%sin_coeffs*flux_mode)/average%normalization
         end do
+        lambda_off = lambda_off*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
 
         deallocate (flux_mode)
         deallocate (fieldlines_precession)
