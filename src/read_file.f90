@@ -15,7 +15,6 @@ module read_file
     integer, public, protected :: max_n_fieldlines
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
-    real(dp), dimension(:), allocatable, public, protected :: Omega_hat
 
     namelist /rabe_config/ &
         field_file, &
@@ -26,8 +25,7 @@ module read_file
         phi_tol, &
         max_n_fieldlines, &
         should_calc_shaing_callen, &
-        n_eta, &
-        Omega_hat
+        n_eta
 
 contains
 
@@ -40,9 +38,6 @@ contains
         real(dp), dimension(:), allocatable :: s_tor_temp
         integer, parameter :: n_stor_max = 1000
         integer :: n_stor
-        real(dp), dimension(:), allocatable :: Omega_hat_temp
-        integer, parameter :: n_Omega_hat_max = 1000
-        integer :: n_Omega_hat
         real(dp) :: nan_value
 
         inquire (file=filename, exist=file_exists)
@@ -64,9 +59,6 @@ contains
         allocate (s_tor(n_stor_max))
         nan_value = ieee_value(nan_value, ieee_quiet_nan)
         s_tor = nan_value
-        if (allocated(Omega_hat)) deallocate (Omega_hat)
-        allocate (Omega_hat(n_Omega_hat_max))
-        Omega_hat = nan_value
 
         read (unit, nml=rabe_config, iostat=ios)
         if (ios /= 0) then
@@ -92,20 +84,6 @@ contains
         allocate (s_tor(n_stor))
         s_tor = s_tor_temp
         deallocate (s_tor_temp)
-
-        n_Omega_hat = count(.not. ieee_is_nan(Omega_hat))
-        if (n_Omega_hat >= n_stor_max) then
-            print *, "Error in read_namelist: too many Omega_hat values ", &
-                "provided in namelist"
-            error stop
-        end if
-        if (allocated(Omega_hat_temp)) deallocate (Omega_hat_temp)
-        allocate (Omega_hat_temp(n_Omega_hat))
-        Omega_hat_temp = pack(Omega_hat,.not. ieee_is_nan(Omega_hat))
-        deallocate (Omega_hat)
-        allocate (Omega_hat(n_Omega_hat))
-        Omega_hat = Omega_hat_temp
-        deallocate (Omega_hat_temp)
 
         call check_if_valid_namelist()
 

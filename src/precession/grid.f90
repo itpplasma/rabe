@@ -39,7 +39,7 @@ contains
 
         real(dp) :: eta_mid
         real(dp) :: t_start, t_end
-        integer, parameter :: n = 100
+        integer, parameter :: n = 200
         real(dp), dimension(n) :: t
 
         if (ieee_is_nan(eta_t)) then

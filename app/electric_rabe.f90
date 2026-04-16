@@ -36,13 +36,15 @@ program electric_rabe
                          phi_tol, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta, &
-                         Omega_hat
+                         n_eta
+    use read_precession, only: read_precession_namelist
+    use read_precession, only: Omega_hat, &
+                               nu_star
 
     implicit none
 
     character(len=*), parameter :: input_file = "rabe.in"
-    character(len=*), parameter :: output_file = "rabe.nc"
+    character(len=*), parameter :: output_file = "electric_rabe.nc"
 
     type(boozer_field_t) :: field
 
@@ -88,24 +90,16 @@ program electric_rabe
 
     integer :: n_modes
     integer :: idx, i_grid
-    integer :: id_nu
     integer :: file_unit
+    character(len=*), parameter :: save_dir = "saved_bounce_integrals/"
     character(len=256) :: filename
     logical :: file_exists
     character(len=256) :: header_line
-    integer, parameter :: n_nu = 70
-    real(dp), dimension(n_nu) :: nu_stars
-    real(dp) :: nu_star, l_c
     integer :: n_Omega_hat
     integer :: idx_Omega
-    ! real(dp), parameter :: Omega_hat = 1.856e-04_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 1.114E-05_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 1.856E-03_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 7.425E-05_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 3.712E-07_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 1.856E-02_dp/0.7366_dp
-    ! real(dp), parameter :: Omega_hat = 1.114E-06_dp/0.7366_dp
-
+    integer :: n_nu
+    integer :: id_nu
+    real(dp) :: l_c
     real(dp), dimension(:, :), allocatable :: lambda_off
     real(dp), dimension(:, :, :), allocatable :: lambda_off_modes
 
@@ -115,24 +109,6 @@ program electric_rabe
 
     call read_namelist(input_file)
 
-    nu_stars = [3e-06_dp, 4.0e-06_dp, 5e-06_dp, &
-                6e-06_dp, 8e-06_dp, 1e-05_dp, 1.4e-05_dp, &
-                2e-05_dp, 3e-05_dp, 4.1e-05_dp, 5e-05_dp, 6e-05_dp, &
-                7e-05_dp, 8e-05_dp, 9e-05_dp, 1e-04_dp, &
-                2.5e-05_dp, 3.5e-05_dp, 4.5e-05_dp, 5.5e-05_dp, &
-                6.5e-05_dp, 7.5e-05_dp, 8.5e-05_dp, 9.5e-05_dp, &
-                1.3e-04_dp, 2.5e-04_dp, 1.9e-04_dp, &
-                0.00017_dp, 0.0003_dp, 0.0004_dp, 0.0005_dp, 0.0006_dp, &
-                0.0007_dp, 0.0008_dp, 0.001_dp, 0.002_dp, 0.003_dp, &
-                0.004_dp, 0.005_dp, 0.006_dp, 0.007_dp, 0.008_dp, 0.01_dp, &
-                0.0168_dp, 0.03_dp, 0.037_dp, 0.039_dp, &
-                0.04_dp, 0.042_dp, 0.0435_dp, 0.045_dp, &
-                0.048_dp, 0.05_dp, 0.055_dp, 0.062_dp, &
-                0.069_dp, 0.083_dp, 0.1_dp, 0.13_dp, &
-                0.17_dp, 0.256_dp, 0.356_dp, 0.42_dp, &
-                0.456_dp, 0.5_dp, 0.556_dp, 0.98_dp, &
-                10.0_dp, 100.0_dp, 1000.0_dp]
-
     n_stor = size(s_tor)
     if (n_stor > 1) then
         error stop "Error: only one surface allowed!"
@@ -140,6 +116,7 @@ program electric_rabe
     allocate (nu_star_crit(n_stor))
     allocate (err_flag(n_stor))
     n_Omega_hat = size(Omega_hat)
+    n_nu = size(nu_star)
     allocate (lambda_off(n_nu, n_Omega_hat))
 
     call field%boozer_field_init(field_file, grid_refinement=6)
@@ -192,7 +169,7 @@ program electric_rabe
         magnetic_drift_weighted = 0.0_dp
 
         do idx = 1, n_fieldlines
-            write (filename, '(A,I0,A)') 'bounce_fieldline_', idx, '.dat'
+            write (filename, '(A,I0,A)') save_dir, 'bounce_fieldline_', idx, '.dat'
             inquire (file=trim(filename), exist=file_exists)
 
             if (file_exists) then
@@ -272,8 +249,7 @@ program electric_rabe
                                     poloidal_drift_weighted)
 
             do id_nu = 1, n_nu
-                nu_star = nu_stars(id_nu)
-                l_c = pi*R/(2.0_dp*nu_star)
+                l_c = pi*R/(2.0_dp*nu_star(id_nu))
                 flux_mode(1) = 0.0_dp
                 do idx = 2, n_modes
                     mode_factor = 0.5_dp*real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
@@ -372,7 +348,7 @@ program electric_rabe
     call nc_output%write_real_1d("mode_numbers", g_off_modes%mode_numbers)
     call nc_output%write_real_3d("lambda_off_modes", lambda_off_modes)
     call nc_output%write_real_1d("Omega_hat", Omega_hat)
-    call nc_output%write_real_1d("nu_star", nu_stars)
+    call nc_output%write_real_1d("nu_star", nu_star)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_int_1d("err_flag", err_flag)
     call nc_output%write_real_1d("s_tor", s_tor)

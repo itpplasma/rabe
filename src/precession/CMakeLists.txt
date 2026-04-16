@@ -8,6 +8,7 @@ add_library(precession_lib STATIC
     params.f90
     field_instance.f90
     odeint_allroutines.f
+    read_precession.f90
   )
 
 target_link_libraries(precession_lib PRIVATE utils_lib
