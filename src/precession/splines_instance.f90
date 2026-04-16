@@ -237,8 +237,6 @@ contains
         deallocate (startup)
         a = poloidal_drift_spl%coeff(:, 1)
         b = startup_spl%coeff(:, 1)
-        print *, "a: ", a
-        print *, "b: ", b
         y_hat(1) = i*a(0)/b(1)
         y_hat(2) = ((i*a(0) - 2.0_dp*b(2))*y_hat(1) + i*a(1))/(4.0_dp*b(1))
         y_hat(3) = ((i*a(0) - 6.0_dp*b(2))*y_hat(2) + &

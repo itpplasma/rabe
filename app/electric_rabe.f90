@@ -108,6 +108,7 @@ program electric_rabe
     character(len=1024) :: description
 
     call read_namelist(input_file)
+    call read_precession_namelist(input_file)
 
     n_stor = size(s_tor)
     if (n_stor > 1) then
@@ -169,7 +170,7 @@ program electric_rabe
         magnetic_drift_weighted = 0.0_dp
 
         do idx = 1, n_fieldlines
-            write (filename, '(A,I0,A)') save_dir, 'bounce_fieldline_', idx, '.dat'
+            write (filename, '(A,A,I0,A)') save_dir, 'bounce_fieldline_', idx, '.dat'
             inquire (file=trim(filename), exist=file_exists)
 
             if (file_exists) then
@@ -240,6 +241,7 @@ program electric_rabe
         allocate (lambda_off_modes(n_modes, n_nu, n_Omega_hat))
 
         do idx_Omega = 1, n_Omega_hat
+            print *, "idx_Omega: ", idx_Omega, " / ", n_Omega_hat
             electric_drift_weighted = -Omega_hat(idx_Omega)*bounce_time_weighted
             poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
 
@@ -375,7 +377,6 @@ contains
 
         real(dp) :: prefactor_A
 
-        integer, parameter :: n_points = 300
         integer :: max_mode
         real(dp), dimension(:), allocatable :: theta_mid, g_off
 
