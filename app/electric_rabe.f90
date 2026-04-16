@@ -93,7 +93,7 @@ program electric_rabe
     character(len=256) :: filename
     logical :: file_exists
     character(len=256) :: header_line
-    integer, parameter :: n_nu = 76
+    integer, parameter :: n_nu = 70
     real(dp), dimension(n_nu) :: nu_stars
     real(dp) :: nu_star, l_c
     integer :: n_Omega_hat
@@ -107,6 +107,7 @@ program electric_rabe
     ! real(dp), parameter :: Omega_hat = 1.114E-06_dp/0.7366_dp
 
     real(dp), dimension(:, :), allocatable :: lambda_off
+    real(dp), dimension(:, :, :), allocatable :: lambda_off_modes
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
@@ -114,26 +115,23 @@ program electric_rabe
 
     call read_namelist(input_file)
 
-    nu_stars = [ &
-               1e-07_dp, 1.5e-07_dp, 2e-07_dp, 3e-07_dp, &
-               4e-07_dp, 5e-07_dp, 6e-07_dp, 7e-07_dp, &
-               8e-07_dp, 9e-07_dp, 1e-06_dp, 1.2e-06_dp, &
-               1.3e-06_dp, 1.4e-06_dp, 1.41e-06_dp, 1.42e-06_dp, &
-               1.43e-06_dp, 1.44e-06_dp, 1.45e-06_dp, 1.46e-06_dp, &
-               1.47e-06_dp, 1.48e-06_dp, 1.49e-06_dp, 1.5e-06_dp, &
-               1.6e-06_dp, 1.7e-06_dp, 2e-06_dp, 2.5e-06_dp, &
-               3e-06_dp, 3.4e-06_dp, 4e-06_dp, 5e-06_dp, &
-               6e-06_dp, 8e-06_dp, 1e-05_dp, 1.4e-05_dp, &
-               2e-05_dp, 3e-05_dp, 4.1e-05_dp, 6e-05_dp, &
-               0.0001_dp, 0.00017_dp, 0.0003_dp, 0.0006_dp, &
-               0.001_dp, 0.003_dp, 0.006_dp, 0.01_dp, &
-               0.0168_dp, 0.03_dp, 0.037_dp, 0.039_dp, &
-               0.04_dp, 0.042_dp, 0.0435_dp, 0.045_dp, &
-               0.048_dp, 0.05_dp, 0.055_dp, 0.062_dp, &
-               0.069_dp, 0.083_dp, 0.1_dp, 0.13_dp, &
-               0.17_dp, 0.256_dp, 0.356_dp, 0.42_dp, &
-               0.456_dp, 0.5_dp, 0.556_dp, 0.98_dp, &
-               1.69_dp, 3.0_dp, 5.61_dp, 10.0_dp]
+    nu_stars = [3e-06_dp, 4.0e-06_dp, 5e-06_dp, &
+                6e-06_dp, 8e-06_dp, 1e-05_dp, 1.4e-05_dp, &
+                2e-05_dp, 3e-05_dp, 4.1e-05_dp, 5e-05_dp, 6e-05_dp, &
+                7e-05_dp, 8e-05_dp, 9e-05_dp, 1e-04_dp, &
+                2.5e-05_dp, 3.5e-05_dp, 4.5e-05_dp, 5.5e-05_dp, &
+                6.5e-05_dp, 7.5e-05_dp, 8.5e-05_dp, 9.5e-05_dp, &
+                1.3e-04_dp, 2.5e-04_dp, 1.9e-04_dp, &
+                0.00017_dp, 0.0003_dp, 0.0004_dp, 0.0005_dp, 0.0006_dp, &
+                0.0007_dp, 0.0008_dp, 0.001_dp, 0.002_dp, 0.003_dp, &
+                0.004_dp, 0.005_dp, 0.006_dp, 0.007_dp, 0.008_dp, 0.01_dp, &
+                0.0168_dp, 0.03_dp, 0.037_dp, 0.039_dp, &
+                0.04_dp, 0.042_dp, 0.0435_dp, 0.045_dp, &
+                0.048_dp, 0.05_dp, 0.055_dp, 0.062_dp, &
+                0.069_dp, 0.083_dp, 0.1_dp, 0.13_dp, &
+                0.17_dp, 0.256_dp, 0.356_dp, 0.42_dp, &
+                0.456_dp, 0.5_dp, 0.556_dp, 0.98_dp, &
+                10.0_dp, 100.0_dp, 1000.0_dp]
 
     n_stor = size(s_tor)
     if (n_stor > 1) then
@@ -262,9 +260,10 @@ program electric_rabe
         end do
 
         allocate (flux_mode(n_modes))
+        allocate (lambda_off_modes(n_modes, n_nu, n_Omega_hat))
 
         do idx_Omega = 1, n_Omega_hat
-            electric_drift_weighted = Omega_hat(idx_Omega)*bounce_time_weighted
+            electric_drift_weighted = -Omega_hat(idx_Omega)*bounce_time_weighted
             poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
 
             call initialize_splines(grid%t, &
@@ -284,11 +283,13 @@ program electric_rabe
                     call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
                 end do
         call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
-        lambda_off(id_nu, idx_Omega) = pi*sum(g_off_modes%sin_coeffs*flux_mode)/average%normalization
+        lambda_off_modes(:, id_nu, idx_Omega) = pi*g_off_modes%sin_coeffs*flux_mode/average%normalization
+               lambda_off(id_nu, idx_Omega) = sum(lambda_off_modes(:, id_nu, idx_Omega))
 
             end do
         end do
         lambda_off = lambda_off*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
+ lambda_off_modes = lambda_off_modes*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
 
         deallocate (flux_mode)
         deallocate (fieldlines_precession)
@@ -339,6 +340,18 @@ program electric_rabe
     call nc_output%add_attr("lambda_off", "unit", &
                             "[1]")
 
+    call nc_output%def_dim("label_mode", n_modes)
+    call nc_output%add_real_1d("mode_numbers", "label_mode")
+    call nc_output%add_attr("mode_numbers", "long_name", &
+                            "Fourier mode numbers")
+    call nc_output%add_real_3d("lambda_off_modes", &
+                               "label_mode", "collisionality", &
+                               "precession_frequency")
+    call nc_output%add_attr("lambda_off_modes", "long_name", &
+                            "per-mode contribution to lambda_off")
+    call nc_output%add_attr("lambda_off_modes", "unit", &
+                            "[1]")
+
     call nc_output%add_real_1d("nu_star_crit", dim_name)
     call nc_output%add_attr("nu_star_crit", "long_name", &
                           "lower collisionality limit for validity of asymptotic model")
@@ -356,6 +369,8 @@ program electric_rabe
         "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
     call nc_output%add_attr("R", "definition", description)
     call nc_output%write_real_2d("lambda_off", lambda_off)
+    call nc_output%write_real_1d("mode_numbers", g_off_modes%mode_numbers)
+    call nc_output%write_real_3d("lambda_off_modes", lambda_off_modes)
     call nc_output%write_real_1d("Omega_hat", Omega_hat)
     call nc_output%write_real_1d("nu_star", nu_stars)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
@@ -364,6 +379,7 @@ program electric_rabe
     call nc_output%write_real("R", field%R)
     call nc_output%close()
 
+    if (allocated(lambda_off_modes)) deallocate (lambda_off_modes)
     if (allocated(nu_star_crit)) deallocate (nu_star_crit)
     if (allocated(err_flag)) deallocate (err_flag)
 
