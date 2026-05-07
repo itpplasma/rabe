@@ -81,6 +81,7 @@ contains
             real(dp), intent(out) :: loc, err
 
             real(dp) :: x_sub(n_refine), val_sub(n_refine)
+            real(dp) :: machine_spacing
             real(dp) :: subinterval(2)
             integer :: i_max
 
@@ -90,22 +91,21 @@ contains
                 call linspace(subinterval(1), subinterval(2), n_refine, x_sub)
                 call func(x_sub, val_sub)
                 i_max = maxloc(val_sub, dim=1)
+                machine_spacing = spacing(max(abs(subinterval(1)), abs(subinterval(2))))
                 if (i_max == 1) then
                     err = x_sub(2) - x_sub(1)
                     if (cannot_resolve_at_edge(val_sub(1:2))) exit
-                    if (err <= epsilon(x_sub(1))) exit
                     subinterval = [x_sub(1), x_sub(2)]
                 else if (i_max == n_refine) then
                     err = x_sub(n_refine) - x_sub(n_refine - 1)
                     if (cannot_resolve_at_edge(val_sub(n_refine - 1:n_refine))) exit
-                    if (err <= epsilon(x_sub(n_refine))) exit
                     subinterval = [x_sub(n_refine - 1), x_sub(n_refine)]
                 else
                     err = x_sub(i_max + 1) - x_sub(i_max - 1)
                     if (cannot_resolve(val_sub(i_max - 1:i_max + 1))) exit
-                    if (err <= epsilon(x_sub(i_max))) exit
                     subinterval = [x_sub(i_max - 1), x_sub(i_max + 1)]
                 end if
+                if (err <= machine_spacing) exit
             end do
             loc = x_sub(i_max)
         end subroutine refine_maximum
