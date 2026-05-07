@@ -9,6 +9,7 @@ module fieldline_mod
         real(dp) :: phi_0
         real(dp) :: iota
         real(dp) :: phi_max(2)
+        real(dp) :: phi_max_error(2)
         real(dp) :: B_max(2)
         real(dp) :: iota_p
 

@@ -17,7 +17,6 @@ contains
 
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, &
-                                        phi_tol, &
                                         err_flag)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
@@ -27,7 +26,6 @@ contains
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
-        real(dp), intent(in) :: phi_tol
         integer, intent(out), optional :: err_flag
 
         real(dp) :: interval(2)
@@ -88,14 +86,6 @@ contains
                        fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
                                              interval, maxima)
-            if (maxval(maxima%achieved_error) > phi_tol) then
-                print *, "---------------------------------------------------------"
-                print *, "maximal achieved error in ", &
-                    "find_maxima_along_fieldline is too large!"
-                print *, "achieved error: ", maxima%achieved_error
-                print *, "error limit: ", phi_tol
-                error stop
-            end if
             if (maxima%n < 2) then
                 print *, "---------------------------------------------------------"
                 print *, "---------------------------------------------------------"
@@ -114,16 +104,17 @@ contains
                 call pick_maximum_on_each_side(maxima, &
                                                fieldlines(current)%phi_0, &
                                                fieldlines(current)%phi_max, &
+                                            fieldlines(current)%phi_max_error, &
                                                symmetry_violation)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
+                fieldlines(current)%phi_max_error = maxima%achieved_error(1:2)
             end if
 
-            ! To ensure that the there are no maxima in between found phi_max
+            ! To ensure that there are no maxima in between found phi_max
             ! we move phi_max inside the well by the maximal potential error
-            call nudge_maxima_inward(field, fieldlines(current), &
-                                     maxval(maxima%achieved_error))
+            call nudge_maxima_inward(field, fieldlines(current))
         end do
 
         if (more_than_two_maxima) then
@@ -306,22 +297,25 @@ contains
 
     !> Pick the biggest maximum on each side of phi_0, with ties broken by
     !> proximity to phi_0 to respect stellarator symmetry.
-    subroutine pick_maximum_on_each_side(maxima, phi_0, phi_max, &
+    subroutine pick_maximum_on_each_side(maxima, phi_0, phi_max, phi_max_error,&
                                          symmetry_violation)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
         real(dp), intent(in) :: symmetry_violation
         real(dp), dimension(2), intent(out) :: phi_max
+        real(dp), dimension(2), intent(out) :: phi_max_error
 
         integer :: idx
 
         idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
                            symmetry_violation, mask=maxima%phi < phi_0)
         phi_max(1) = maxima%phi(idx)
+        phi_max_error(1) = maxima%achieved_error(idx)
 
         idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
                            symmetry_violation, mask=maxima%phi > phi_0)
         phi_max(2) = maxima%phi(idx)
+        phi_max_error(2) = maxima%achieved_error(idx)
     end subroutine pick_maximum_on_each_side
 
     !> Pick the biggest maximum from the masked set. If multiple maxima are
@@ -349,13 +343,12 @@ contains
         idx = minloc(abs(phi - phi_0), mask=equal_to_biggest, dim=1)
     end function pick_maximum
 
-    subroutine nudge_maxima_inward(field, fieldline, phi_tol)
+    subroutine nudge_maxima_inward(field, fieldline)
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
-        real(dp), intent(in) :: phi_tol
 
-        fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol
-        fieldline%phi_max(2) = fieldline%phi_max(2) - phi_tol
+        fieldline%phi_max(1) = fieldline%phi_max(1) + fieldline%phi_max_error(1)
+        fieldline%phi_max(2) = fieldline%phi_max(2) - fieldline%phi_max_error(2)
 
         call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 
