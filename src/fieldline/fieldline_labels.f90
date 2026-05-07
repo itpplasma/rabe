@@ -82,54 +82,44 @@ contains
 
     end function calc_iota
 
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)
+    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
         use field_base, only: field_t
-        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: phi_tol
         logical :: suspect_omnigenous_origin_not_minimum
 
         real(dp), dimension(2) :: interval
         real(dp) :: tol
-        integer, parameter :: n_min = 10
-        real(dp) :: chis(n_min)
+        real(dp), dimension(:), allocatable :: chis, chis_error
         integer :: n
         integer :: id_chi
         real(dp), parameter :: height_tol = 0.3_dp
         real(dp), dimension(2) :: extrema
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
         logical :: origin_is_minimum, origin_is_maximum
-
-        if (present(phi_tol)) then
-            tol = phi_tol*abs(M_pol*pi - N_tor)
-        else
-            tol = 3.0_dp*1e-2
-        end if
-
         suspect_omnigenous_origin_not_minimum = .false.
         origin_is_maximum = .false.
         origin_is_minimum = .false.
 
         interval = [-pi, pi]
-        call find_local_minima(B_mod_along_pi_line, interval, chis, tol)
-        n = count(.not. ieee_is_nan(chis))
+        call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
+        n = size(chis)
         do id_chi = 1, n
-            if (is_multiple_of_2pi(chis(id_chi), tol)) then
+            if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi))) then
                 origin_is_minimum = .true.
                 exit
             end if
         end do
 
         if (.not. origin_is_minimum) then
-            call find_local_maxima(B_mod_along_pi_line, interval, chis, tol)
-            n = count(.not. ieee_is_nan(chis))
+            call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
+            n = size(chis)
             do id_chi = 1, n
-                if (is_multiple_of_2pi(chis(id_chi), tol)) then
+                if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi))) then
                     origin_is_maximum = .true.
                     exit
                 end if
@@ -142,6 +132,7 @@ contains
             error stop
         end if
 
+        tol = 1e-3_dp
         extrema = find_global_extrema(B_mod_along_pi_line, interval, tol)
         B_min = extrema(1)
         B_max = extrema(2)

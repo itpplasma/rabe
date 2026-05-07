@@ -26,8 +26,7 @@ contains
         use make_fieldline, only: maxima_t
         use fieldline_mod, only: fieldline_t
 
-        real(dp), parameter :: phi_tol = 1e-3
-        real(dp), parameter :: retol = 0.0_dp, abstol = phi_tol*2.0_dp
+        real(dp), parameter :: retol = 0.0_dp, abstol = 1e-6
 
         real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
@@ -50,8 +49,7 @@ contains
             call find_maxima_along_fieldline(field, &
                                              fieldline, &
                                              interval, &
-                                             maxima, &
-                                             phi_tol)
+                                             maxima)
             if (maxima%n == 2) then
                 fieldline%phi_max = maxima%phi(1:2)
             else
@@ -70,8 +68,10 @@ contains
             if (not_same(analytic_phi, fieldline%phi_max, retol, abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_find_maxima_along_fieldline failed: phi at maxima"
+                print *, "case: ", idx
                 print *, "found: ", fieldline%phi_max
                 print *, "analytic: ", analytic_phi
+                print *, "error: ", abs(fieldline%phi_max - analytic_phi)
                 error stop
             end if
         end do
