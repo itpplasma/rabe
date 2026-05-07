@@ -87,6 +87,7 @@ contains
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
         use field_base, only: field_t
+        use constants, only: eps
 
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
@@ -137,6 +138,12 @@ contains
         B_min = extrema(1)
         B_max = extrema(2)
         B_range = B_max - B_min
+        if (B_range <= eps*B_max) then
+            print *, "Error: provided field must not be flat (B_max = B_min)!"
+            print *, "B_max = ", B_max, " B_min = ", B_min
+            print *, "relative B range = ", B_range/B_max
+            error stop
+        end if
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
         if (height/B_range > height_tol) then
