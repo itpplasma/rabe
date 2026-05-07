@@ -77,16 +77,18 @@ contains
     contains
 
         subroutine refine_maximum(bracket, loc, err)
+            use constants, only: machine_eps
             real(dp), intent(in) :: bracket(2)
             real(dp), intent(out) :: loc, err
 
             real(dp) :: x_sub(n_refine), val_sub(n_refine)
-            real(dp) :: machine_spacing
+            real(dp) :: machine_spacing, bracket_width
             real(dp) :: subinterval(2)
             integer :: i_max
 
             subinterval = bracket
             err = subinterval(2) - subinterval(1)
+            bracket_width = abs(bracket(2) - bracket(1))
             do
                 call linspace(subinterval(1), subinterval(2), n_refine, x_sub)
                 call func(x_sub, val_sub)
@@ -106,6 +108,7 @@ contains
                     subinterval = [x_sub(i_max - 1), x_sub(i_max + 1)]
                 end if
                 if (err <= machine_spacing) exit
+                if (err/bracket_width <= machine_eps) exit
             end do
             loc = x_sub(i_max)
         end subroutine refine_maximum
