@@ -16,12 +16,11 @@ program test_anti_sigma_analytic
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.0125_dp, eps_1 = -0.0005_dp
     real(dp), parameter :: I_v_1 = -8.0_dp*eps_1*sqrt(2*abs(eps_0))/(B_0**2*N_tor)
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
-    real(dp), parameter :: delta_A_o_1 = 0.25_dp*eps_ratio*(1.0_dp + 6.0_dp*abs(eps_0))
+    real(dp), parameter :: delta_A_o_1 = 0.25_dp*eps_ratio*(1.0_dp + 16.0_dp/3.0_dp*abs(eps_0)/(1.0_dp + 2.0_dp/3.0_dp*eps_0))
     real(dp), parameter :: average_lambda_b = sqrt(8.0_dp*abs(eps_0))/pi
     real(dp), parameter :: phi_0 = 0.0_dp
     type(anti_sigma_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 4e-6
     real(dp), parameter :: reltol_radial_drift = 2.0_dp*abs(eps_0)
     real(dp), parameter :: reltol_aspect_ratio = abs(eps_ratio)
     real(dp), parameter :: reltol_average_lambda_b = 2.0_dp*abs(eps_0)
@@ -55,11 +54,11 @@ program test_anti_sigma_analytic
     allocate (fieldlines(n_fieldlines))
 
     call make_flock_of_fieldlines(fieldlines, xi_0, approx_iota, field, M_pol, &
-                                  N_tor, nfp, phi_tol)
+                                  N_tor, nfp)
 
     do current = 1, n_fieldlines
         if (not_same(phi_0, modulo(fieldlines(current)%phi_0, 2.0_dp*pi), &
-                     abstol_in=2.0_dp*phi_tol)) then
+                     abstol_in=2.0_dp*max(maxval(fieldlines%phi_max_error(1)), maxval(fieldlines%phi_max_error(2))))) then
             print *, "-------------------------------------------------------------"
             print *, "test_anti_sigma_analytic failed: phi_0"
             print *, "found: ", fieldlines(current)%phi_0
