@@ -84,8 +84,9 @@ contains
                 print *, "---------------------------------------------------------"
                 error stop
             elseif (maxima%n > 2) then
-                fieldlines(current)%phi_max = get_biggest_maxima_on_each_side(maxima, &
-                                                              fieldlines(current)%phi_0)
+                call get_biggest_maxima_on_each_side(maxima, &
+                                                     fieldlines(current)%phi_0, &
+                                                     fieldlines(current)%phi_max)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
@@ -233,18 +234,38 @@ contains
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
 
-    function get_biggest_maxima_on_each_side(maxima, phi_0) result(phi_max)
+    subroutine get_biggest_maxima_on_each_side(maxima, phi_0, phi_max)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
-        real(dp), dimension(2) :: phi_max
+        real(dp), dimension(2), intent(out) :: phi_max
 
-        integer :: of_biggest_B
+        integer :: idx
 
-        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi < phi_0), dim=1)
-        phi_max(1) = maxima%phi(of_biggest_B)
-        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi > phi_0), dim=1)
-        phi_max(2) = maxima%phi(of_biggest_B)
-    end function get_biggest_maxima_on_each_side
+        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, &
+                                               mask=maxima%phi < phi_0)
+        phi_max(1) = maxima%phi(idx)
+
+        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, &
+                                               mask=maxima%phi > phi_0)
+        phi_max(2) = maxima%phi(idx)
+    end subroutine get_biggest_maxima_on_each_side
+
+    !> in case of multiple global maxima of same height we choose the one closest to phi_0
+    function get_abs_maximum_closest_to_phi_0(phi, B, phi_0, mask) result(idx)
+        real(dp), dimension(:), intent(in) :: phi, B
+        real(dp), intent(in) :: phi_0
+        logical, dimension(:), intent(in) :: mask
+        integer :: idx
+
+        real(dp) :: biggest_B
+        real(dp) :: tol
+        logical, dimension(size(phi)) :: equal_to_biggest
+
+        biggest_B = maxval(B, mask=mask)
+        tol = spacing(biggest_B)*10.0_dp
+        equal_to_biggest = mask .and. (abs(B - biggest_B) <= tol)
+        idx = minloc(abs(phi - phi_0), mask=equal_to_biggest, dim=1)
+    end function get_abs_maximum_closest_to_phi_0
 
     subroutine nudge_maxima_inward(field, fieldline, phi_tol)
         class(field_t), intent(in) :: field
