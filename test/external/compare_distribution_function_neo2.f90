@@ -26,7 +26,6 @@ program compare_distribution_function_neo2
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 8e-7
     integer, parameter :: n_fieldlines = 151
 
     real(dp), dimension(n_fieldlines) :: theta_0
@@ -55,8 +54,7 @@ program compare_distribution_function_neo2
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     g_neo2%label = "NEO-2: $\hat{g}_0 \frac{\mathrm{bmod0}}{100}$"
     n_columns = 1

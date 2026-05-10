@@ -34,8 +34,7 @@ program test_I_integral_helical_anti_sigma
     type(anti_sigma_field_t) :: field
     real(dp), dimension(2), parameter :: chi_max = [+pi, -pi]
 
-    real(dp), parameter :: phi_tol = 1e-6
-    real(dp), parameter :: B_max_reltol = phi_tol**2.0_dp*N_tor**2.0
+    real(dp) :: B_max_reltol, phi_error
     real(dp), parameter :: I_mean_reltol = eps_0*eps_0*3.0_dp
     real(dp), parameter :: I_amplitude_reltol = max(eps_ratio*eps_ratio*5.0_dp, &
                                                     eps_0*eps_0*10.0_dp)
@@ -71,15 +70,14 @@ program test_I_integral_helical_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     test_failed = .false.
     do current = 1, n_fieldlines
         phi_max = (M_pol*fieldlines(current)%theta_0 - chi_max)/N_tor
         if (not_same(fieldlines(current)%phi_max(1), &
                      phi_max(1), &
-                     abstol_in=2.0_dp*phi_tol)) then
+                     abstol_in=2.0_dp*max(maxval(fieldlines%phi_max_error(1)), maxval(fieldlines%phi_max_error(2))))) then
             print *, "-------------------------------------------------------------"
             print *, "test_I_integral_helical_anti_sigma failed: left phi_max"
             print *, "found: ", fieldlines(current)%phi_max(1)
@@ -88,13 +86,16 @@ program test_I_integral_helical_anti_sigma
         end if
         if (not_same(fieldlines(current)%phi_max(2), &
                      phi_max(2), &
-                     abstol_in=2.0_dp*phi_tol)) then
+                     abstol_in=2.0_dp*max(maxval(fieldlines%phi_max_error(1)), maxval(fieldlines%phi_max_error(2))))) then
             print *, "-------------------------------------------------------------"
             print *, "test_I_integral_helical_anti_sigma failed: right phi_max"
             print *, "found: ", fieldlines(current)%phi_max(2)
             print *, "analytic: ", phi_max(2)
             test_failed = .true.
         end if
+        phi_error = maxval(fieldlines(current)%phi_max_error)
+        B_max_reltol = phi_error**2.0_dp*N_tor**2.0
+
      if (not_same(1.0_dp/fieldlines(current)%eta_b, B_max, reltol_in=B_max_reltol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_I_integral_helical_anti_sigma failed: B_max"

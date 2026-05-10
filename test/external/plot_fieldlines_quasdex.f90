@@ -22,7 +22,6 @@ program plot_fieldlines_quasdex
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 8e-6
     integer, parameter :: n_fieldlines = 101
 
     real(dp), dimension(n_fieldlines) :: xi_0
@@ -48,8 +47,7 @@ program plot_fieldlines_quasdex
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot) then
         call plot_fieldlines_over_field(fieldlines, field)

@@ -99,9 +99,11 @@ contains
         integer :: n
         integer :: id_chi
         real(dp), parameter :: height_tol = 0.3_dp
+        real(dp), parameter :: safety_factor = 3.0_dp
         real(dp), dimension(2) :: extrema
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
         logical :: origin_is_minimum, origin_is_maximum
+
         suspect_omnigenous_origin_not_minimum = .false.
         origin_is_maximum = .false.
         origin_is_minimum = .false.
@@ -110,7 +112,7 @@ contains
         call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
         n = size(chis)
         do id_chi = 1, n
-            if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi))) then
+            if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi)*safety_factor)) then
                 origin_is_minimum = .true.
                 exit
             end if
@@ -120,7 +122,8 @@ contains
             call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
             n = size(chis)
             do id_chi = 1, n
-                if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi))) then
+                if (is_multiple_of_2pi(chis(id_chi), &
+                                       chis_error(id_chi)*safety_factor)) then
                     origin_is_maximum = .true.
                     exit
                 end if

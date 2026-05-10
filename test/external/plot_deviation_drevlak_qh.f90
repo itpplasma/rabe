@@ -38,7 +38,6 @@ program plot_deviation_drevlak_qh
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-6
     integer, parameter :: max_n_fieldlines = 300
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -69,8 +68,7 @@ program plot_deviation_drevlak_qh
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot_others) then
         current = minloc(abs(xi_0 - &

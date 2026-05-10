@@ -16,7 +16,6 @@ program test_shaing_callen_against_quasi_symmetric
 
     implicit none
 
-    real(dp), parameter :: phi_tol = 7e-7
     integer, parameter :: n_fieldlines = 6
 
     real(dp), dimension(n_fieldlines) :: xi_0
@@ -48,8 +47,7 @@ program test_shaing_callen_against_quasi_symmetric
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot) then
         call plot_fieldlines_over_field(fieldlines, field)

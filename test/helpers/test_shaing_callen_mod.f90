@@ -17,8 +17,6 @@ contains
 
         logical, intent(inout) :: test_failed
 
-        real(dp), parameter :: phi_tol = 4e-5
-
         integer, parameter :: n_fieldlines = 50
         real(dp), dimension(n_fieldlines + 1) :: temp
         real(dp), dimension(n_fieldlines) :: xi_0
@@ -46,8 +44,7 @@ contains
                                       circular_tok_field, &
                                       M_pol, &
                                       N_tor, &
-                                      nfp, &
-                                      phi_tol)
+                                      nfp)
         found = calc_trapped_fraction(circular_tok_field, fieldlines, n_eta)
 
         if (not_same(found, analytical_approx, &

@@ -34,7 +34,6 @@ program plot_deviation_poloidal_anti_sigma
     real(dp), parameter :: delta_eta_1 = -delta_B_1/B_max**2.0_dp
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 4e-6
     integer, parameter :: n_fieldlines = 41
 
     real(dp), dimension(n_fieldlines) :: xi_0
@@ -65,8 +64,7 @@ program plot_deviation_poloidal_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot_others) then
         call plot_fieldlines_over_field(fieldlines, field)

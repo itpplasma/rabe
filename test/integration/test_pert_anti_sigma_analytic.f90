@@ -27,7 +27,6 @@ program test_pert_anti_sigma_analytic
 
     real(dp), parameter :: reltol_delta_eta = (B_pert/B_max)
     real(dp), parameter :: abstol = 1e-15
-    real(dp), parameter :: phi_tol = 2e-5
 
     integer, parameter :: max_n_fieldlines = 50
 
@@ -66,8 +65,7 @@ program test_pert_anti_sigma_analytic
                                   perturbed_field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
     call fourier_transform_over_label(fieldlines, &
                                       fieldline_modes)
 

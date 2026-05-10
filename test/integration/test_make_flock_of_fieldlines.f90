@@ -12,8 +12,6 @@ program test_make_flock_of_fieldlines
     real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-4
-    real(dp), parameter :: abstol = 2*phi_tol
     real(dp), parameter :: stor = 0.5_dp
     integer, parameter :: n_fieldlines = 10
 
@@ -23,6 +21,7 @@ program test_make_flock_of_fieldlines
 
     integer :: current
     real(dp) :: phi_max(2)
+    real(dp) :: abstol
 
     call field%neo_field_init(bc_filename, stor)
     nfp = field%nfp
@@ -30,8 +29,10 @@ program test_make_flock_of_fieldlines
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
-                                  nfp, phi_tol)
+                                  nfp)
 
+    abstol = max(2.0_dp*max(maxval(fieldlines%phi_max_error(1)), &
+                            maxval(fieldlines%phi_max_error(2))), 1e-6_dp)
     do current = 1, n_fieldlines
         phi_max = [-0.5*pi, 0.5*pi] + fieldlines(current)%phi_0
         if (not_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then

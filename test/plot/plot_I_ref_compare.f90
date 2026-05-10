@@ -19,7 +19,6 @@ program plot_I_ref_compare
 
     real(dp), parameter :: stor = 0.5_dp
     real(dp), parameter :: M_pol = -1.0_dp, N_tor = 4.0_dp
-    real(dp), parameter :: phi_tol = 8.e-6_dp
     integer, parameter :: max_n_fieldlines = 100
 
     type(fieldline_t), dimension(:), allocatable :: fl_b, fl_n
@@ -38,7 +37,7 @@ program plot_I_ref_compare
                     xi_0, approx_iota)
     allocate (fl_b(size(xi_0)))
     call make_flock_of_fieldlines(fl_b, xi_0, approx_iota, bfield, &
-                                  M_pol, N_tor, bfield%nfp, phi_tol)
+                                  M_pol, N_tor, bfield%nfp)
 
     call nfield%neo_field_init(bc_file, stor)
     iota = nfield%iota
@@ -46,7 +45,7 @@ program plot_I_ref_compare
                     xi_0, approx_iota)
     allocate (fl_n(size(xi_0)))
     call make_flock_of_fieldlines(fl_n, xi_0, approx_iota, nfield, &
-                                  M_pol, N_tor, nfield%nfp, phi_tol)
+                                  M_pol, N_tor, nfield%nfp)
 
     call plt%initialize( &
         xlabel="$\xi_0$ [$\pi$]", &

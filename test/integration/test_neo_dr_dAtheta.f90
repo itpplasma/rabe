@@ -9,7 +9,6 @@ program test_neo_dr_dAtheta
     implicit none
 
     real(dp), parameter :: reltol = 2e-4
-    real(dp), parameter :: phi_tol = 6e-7
     character(len=*), parameter :: bc_filename = "input/quasi_helical.bc"
 
     type(neo_field_t) :: field
@@ -42,8 +41,7 @@ program test_neo_dr_dAtheta
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     call calc_surface_averages(fieldlines, average)
 

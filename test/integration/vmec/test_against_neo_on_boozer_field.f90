@@ -32,7 +32,6 @@ program test_against_neo_on_boozer_field
     real(dp) :: stor
 
     integer, parameter :: max_n_fieldlines = 20
-    real(dp), parameter :: phi_tol = 4.e-5_dp
     type(fieldline_t), dimension(:), allocatable :: fieldlines
     real(dp), dimension(:), allocatable :: xi_0
     real(dp) :: iota, approx_iota, B_theta_covariant, B_phi_covariant
@@ -64,6 +63,8 @@ program test_against_neo_on_boozer_field
     ! so that the calculation can execute without crashing
     do idx = 2, 6
         stor = stors(idx)
+        print *, "Testing surface with s_tor =", stor
+        print *, "Boozer field"
         call bfield%fix_to_surface(stor)
 
         call bfield%get_iota_and_covariant_components(stor, &
@@ -79,8 +80,7 @@ program test_against_neo_on_boozer_field
                                       bfield, &
                                       M_pol, &
                                       N_tor, &
-                                      bfield%nfp, &
-                                      phi_tol)
+                                      bfield%nfp)
         call calc_deviation(fieldlines, deviation_A, deviation_B)
         R = bfield%R
         covariant_factor = B_phi_covariant + approx_iota*B_theta_covariant
@@ -89,6 +89,7 @@ program test_against_neo_on_boozer_field
         bfield_Lambda_lm(idx) = deviation_B*0.5*R*pi*dr_dAtheta
         deallocate (fieldlines)
 
+        print *, "NEO field"
         call nfield%neo_change_stor(stor)
         iota = nfield%iota
         B_theta_covariant = nfield%B_theta_covariant
@@ -102,8 +103,7 @@ program test_against_neo_on_boozer_field
                                       nfield, &
                                       M_pol, &
                                       N_tor, &
-                                      nfield%nfp, &
-                                      phi_tol)
+                                      nfield%nfp)
         call calc_deviation(fieldlines, deviation_A, deviation_B)
         R = nfield%R
         covariant_factor = B_phi_covariant + approx_iota*B_theta_covariant
