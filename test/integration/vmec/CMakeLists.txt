@@ -24,3 +24,8 @@ add_executable(test_against_neo_on_boozer_field.x test_against_neo_on_boozer_fie
 target_link_libraries(test_against_neo_on_boozer_field.x rabe_lib utils_lib helpers_lib)
 add_test(TestOnBoozerField test_against_neo_on_boozer_field.x)
 set_tests_properties(TestOnBoozerField PROPERTIES LABELS "slow")
+
+add_executable(test_stellarator_symmetry_qa.x test_stellarator_symmetry_qa.f90)
+target_link_libraries(test_stellarator_symmetry_qa.x vmec_lib utils_lib)
+add_test(TestStellaratorSymmetryQA test_stellarator_symmetry_qa.x)
+set_tests_properties(TestStellaratorSymmetryQA PROPERTIES LABELS "quick")

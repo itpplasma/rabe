@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test install clean plot golden
+.PHONY: all build test test_failed install clean plot golden
 all: build
 
 build/CMakeCache.txt:
@@ -15,6 +15,9 @@ install: build
 
 test: build
 	ctest --test-dir build/test --output-on-failure -L quick
+
+test_failed: build
+	ctest --test-dir build/test --output-on-failure -V --rerun-failed
 
 test_slow: build
 	ctest --test-dir build/test --output-on-failure -L slow

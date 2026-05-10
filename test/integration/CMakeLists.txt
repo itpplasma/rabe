@@ -1,5 +1,10 @@
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+add_executable(test_stellarator_symmetry_neo.x test_stellarator_symmetry_neo.f90)
+target_link_libraries(test_stellarator_symmetry_neo.x field_lib utils_lib)
+add_test(TestStellaratorSymmetryNEO test_stellarator_symmetry_neo.x)
+set_tests_properties(TestStellaratorSymmetryNEO PROPERTIES LABELS "quick")
+
 add_executable(test_against_neo2_field.x test_against_neo2_field.f90)
 target_link_libraries(test_against_neo2_field.x rabe_lib)
 add_test(TestAgainstNeo2Field test_against_neo2_field.x)
