@@ -95,8 +95,8 @@ contains
                 print *, "---------------------------------------------------------"
                 error stop
             elseif (maxima%n > 2) then
-                maxima_tol = max(spacing(maxval(maxima%B)),
-                symmetry_violation*maxval(maxima%B))*10.0_dp
+                maxima_tol = max(spacing(maxval(maxima%B)), &
+                                 symmetry_violation*maxval(maxima%B))*10.0_dp
                 call get_biggest_maxima_on_each_side(maxima, &
                                                      fieldlines(current)%phi_0, &
                                                      fieldlines(current)%phi_max, &
