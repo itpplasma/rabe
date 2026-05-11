@@ -36,7 +36,7 @@ contains
         integer :: n_fieldlines
         integer :: current
         real(dp) :: symmetry_violation
-        real(dp), parameter :: violation_tol = 1e-11_dp
+        real(dp), parameter :: violation_tol = 1e-12_dp
         real(dp) :: maxima_tol
 
         if (present(err_flag)) then
@@ -95,8 +95,9 @@ contains
                 print *, "---------------------------------------------------------"
                 error stop
             elseif (maxima%n > 2) then
-                maxima_tol = max(spacing(maxval(maxima%B)), &
-                                 symmetry_violation*maxval(maxima%B))*10.0_dp
+                maxima_tol = max(spacing(maxval(maxima%B))*100.0_dp, &
+                                 symmetry_violation*maxval(maxima%B))
+
                 call get_biggest_maxima_on_each_side(maxima, &
                                                      fieldlines(current)%phi_0, &
                                                      fieldlines(current)%phi_max, &
