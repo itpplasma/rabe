@@ -24,8 +24,8 @@ program test_stellarator_symmetry_qa
     real(dp), parameter :: theta(n_pts) = [0.3_dp, 1.0_dp, 2.0_dp, -0.5_dp, 3.0_dp]
     real(dp), parameter :: phi(n_pts) = [0.1_dp, 0.7_dp, 1.5_dp, 0.4_dp, 2.8_dp]
 
-    real(dp) :: bmod_ref, sqrtg_ref_val, dB_dx_ref(3)
-    real(dp) :: bmod_sym, sqrtg_sym, dB_dx_sym(3)
+    real(dp) :: bmod_ref
+    real(dp) :: bmod_sym
     real(dp) :: max_sym_err, phi_period
     integer :: is, ip
     logical :: test_failed
@@ -44,12 +44,12 @@ program test_stellarator_symmetry_qa
         call bfield%fix_to_surface(stors(is))
 
         do ip = 1, n_pts
-            call bfield%compute_B_sqrtg_dB_dx( &
-                theta(ip), phi(ip), bmod_ref, sqrtg_ref_val, dB_dx_ref)
+            call bfield%compute_B_mod( &
+                theta(ip), phi(ip), bmod_ref)
 
             ! --- stellarator symmetry ---
-            call bfield%compute_B_sqrtg_dB_dx( &
-                -theta(ip), -phi(ip), bmod_sym, sqrtg_sym, dB_dx_sym)
+            call bfield%compute_B_mod( &
+                -theta(ip), -phi(ip), bmod_sym)
 
             max_sym_err = max(max_sym_err, abs(bmod_ref - bmod_sym)/abs(bmod_ref))
 
@@ -65,8 +65,8 @@ program test_stellarator_symmetry_qa
             end if
 
             ! --- poloidal periodicity ---
-            call bfield%compute_B_sqrtg_dB_dx( &
-                theta(ip) + 2.0_dp*pi, phi(ip), bmod_sym, sqrtg_sym, dB_dx_sym)
+            call bfield%compute_B_mod( &
+                theta(ip) + 2.0_dp*pi, phi(ip), bmod_sym)
 
             if (not_same(bmod_ref, bmod_sym, &
                          reltol_in=reltol_periodicity, abstol_in=abstol)) then
@@ -80,8 +80,8 @@ program test_stellarator_symmetry_qa
             end if
 
             ! --- toroidal periodicity ---
-            call bfield%compute_B_sqrtg_dB_dx( &
-                theta(ip), phi(ip) + phi_period, bmod_sym, sqrtg_sym, dB_dx_sym)
+            call bfield%compute_B_mod( &
+                theta(ip), phi(ip) + phi_period, bmod_sym)
 
             if (not_same(bmod_ref, bmod_sym, &
                          reltol_in=reltol_periodicity, abstol_in=abstol)) then
