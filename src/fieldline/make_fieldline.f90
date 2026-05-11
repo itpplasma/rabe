@@ -35,6 +35,9 @@ contains
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
+        real(dp) :: symmetry_violation
+        real(dp), parameter :: violation_tol = 1e-11_dp
+        real(dp) :: maxima_tol
 
         if (present(err_flag)) then
             err_flag = 0
@@ -49,6 +52,14 @@ contains
         fieldlines%M_pol = M_pol
         fieldlines%N_tor = N_tor
         fieldlines%nfp = nfp
+
+        symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
+        if (symmetry_violation > violation_tol) then
+            print *, "error: provided field violates stellarator symmetry too strongly!"
+            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
+                symmetry_violation
+            error stop
+        end if
 
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
@@ -84,9 +95,11 @@ contains
                 print *, "---------------------------------------------------------"
                 error stop
             elseif (maxima%n > 2) then
+                maxima_tol = max(spacing(maxval(maxima%B)), symmetry_violation)*10.0_dp
                 call get_biggest_maxima_on_each_side(maxima, &
                                                      fieldlines(current)%phi_0, &
-                                                     fieldlines(current)%phi_max)
+                                                     fieldlines(current)%phi_max, &
+                                                     maxima_tol)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
@@ -199,6 +212,30 @@ contains
         is_not_integer = abs(x - nint(x)) > tol
     end function is_not_integer
 
+    function estimate_symmetry_violation(field, iota, nfp) result(symmetry_violation)
+        use utils, only: linspace
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: iota
+        real(dp), intent(in) :: nfp
+        real(dp) :: symmetry_violation
+
+        integer, parameter :: n_points = 1000
+        integer :: idx
+        real(dp), dimension(n_points) :: theta, phi, B_ref, B_sym
+
+        call linspace(0.0_dp, 2.0_dp*pi/nfp, n_points, phi)
+        theta = iota*phi
+        do idx = 1, n_points
+            call field%compute_B_mod(theta(idx), phi(idx), B_ref(idx))
+        end do
+        phi = -phi
+        theta = -theta
+        do idx = 1, n_points
+            call field%compute_B_mod(theta(idx), phi(idx), B_sym(idx))
+        end do
+        symmetry_violation = maxval(abs(B_ref - B_sym)/B_ref)
+    end function estimate_symmetry_violation
+
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
@@ -234,35 +271,35 @@ contains
         end subroutine B_mod_along_fieldline
     end subroutine find_maxima_along_fieldline
 
-    subroutine get_biggest_maxima_on_each_side(maxima, phi_0, phi_max)
+    subroutine get_biggest_maxima_on_each_side(maxima, phi_0, phi_max, tol)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
+        real(dp), intent(in) :: tol
         real(dp), dimension(2), intent(out) :: phi_max
 
         integer :: idx
 
-        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, &
+        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, tol, &
                                                mask=maxima%phi < phi_0)
         phi_max(1) = maxima%phi(idx)
 
-        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, &
+        idx = get_abs_maximum_closest_to_phi_0(maxima%phi, maxima%B, phi_0, tol, &
                                                mask=maxima%phi > phi_0)
         phi_max(2) = maxima%phi(idx)
     end subroutine get_biggest_maxima_on_each_side
 
     !> in case of multiple global maxima of same height we choose the one closest to phi_0
-    function get_abs_maximum_closest_to_phi_0(phi, B, phi_0, mask) result(idx)
+    function get_abs_maximum_closest_to_phi_0(phi, B, phi_0, tol, mask) result(idx)
         real(dp), dimension(:), intent(in) :: phi, B
         real(dp), intent(in) :: phi_0
+        real(dp), intent(in) :: tol
         logical, dimension(:), intent(in) :: mask
         integer :: idx
 
         real(dp) :: biggest_B
-        real(dp) :: tol
         logical, dimension(size(phi)) :: equal_to_biggest
 
         biggest_B = maxval(B, mask=mask)
-        tol = spacing(biggest_B)*10.0_dp
         equal_to_biggest = mask .and. (abs(B - biggest_B) <= tol)
         idx = minloc(abs(phi - phi_0), mask=equal_to_biggest, dim=1)
     end function get_abs_maximum_closest_to_phi_0
