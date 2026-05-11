@@ -151,20 +151,20 @@ contains
         real(dp), dimension(size(qs_fieldlines)) :: well_lengths
         real(dp) :: avg_B_squared, found, analytic
 
-        real(dp) :: M_pol, N_tor
+        real(dp) :: M_pol, nfp
 
         M_pol = qs_fieldlines(1)%M_pol
-        N_tor = qs_fieldlines(1)%N_tor
+        nfp = qs_fieldlines(1)%nfp
 
         avg_B_squared = sum(qs_fieldlines%phi_max(2) - qs_fieldlines%phi_max(1))
         avg_B_squared = avg_B_squared/sum(qs_fieldlines%integral_one_over_B_squared)
-        analytic = avg_B_squared*qs_fieldlines(1)%eta_b**2.0_dp*M_pol/N_tor
+        analytic = avg_B_squared*qs_fieldlines(1)%eta_b**2.0_dp*M_pol/nfp
         found = calc_avg_normalized_B_squared_dphimax_dxi0(qs_fieldlines)
 
         if (not_same(found, analytic, reltol_in=reltol, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_calc_avg_normalized_B_squared_dphimax_dxi0 failed: ", &
-                "for quasi-symmetric fields M_pol = ", M_pol, " N_tor = ", N_tor
+                "for quasi-symmetric fields M_pol = ", M_pol, " nfp = ", nfp
             print *, "found = ", found
             print *, "analytic = ", analytic
             print *, "relative error = ", abs(1.0_dp - found/analytic)
