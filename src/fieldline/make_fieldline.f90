@@ -103,9 +103,9 @@ contains
             elseif (maxima%n > 2) then
                 call pick_maximum_on_each_side(maxima, &
                                                fieldlines(current)%phi_0, &
+                                               symmetry_violation, &
                                                fieldlines(current)%phi_max, &
-                                            fieldlines(current)%phi_max_error, &
-                                               symmetry_violation)
+                                               fieldlines(current)%phi_max_error)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
@@ -297,8 +297,8 @@ contains
 
     !> Pick the biggest maximum on each side of phi_0, with ties broken by
     !> proximity to phi_0 to respect stellarator symmetry.
-    subroutine pick_maximum_on_each_side(maxima, phi_0, phi_max, phi_max_error,&
-                                         symmetry_violation)
+    subroutine pick_maximum_on_each_side(maxima, phi_0, symmetry_violation, &
+                                         phi_max, phi_max_error)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
         real(dp), intent(in) :: symmetry_violation
