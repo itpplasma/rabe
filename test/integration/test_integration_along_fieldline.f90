@@ -52,10 +52,10 @@ program test_integration_along_fieldline
         print *, "maxima: ", maxima%phi(1:max(1, maxima%n))
         error stop
     end if
-    if (maxval(maxima%achieved_error) > error_limit) then
+    if (maxval(maxima%phi_error) > error_limit) then
         print *, "-------------------------------------------------------------"
         print *, "test_integration_along_fieldline failed: maxima"
-        print *, "Achieved error is too large: ", maxima%achieved_error
+        print *, "Achieved error is too large: ", maxima%phi_error
         print *, "Error limit: ", error_limit
         error stop
     end if
@@ -65,7 +65,7 @@ program test_integration_along_fieldline
                       fieldline(1)%phi_max(2), &
                       found_integral)
 
-    reltol = maxval(maxima%achieved_error)*2.0_dp
+    reltol = maxval(maxima%phi_error)*2.0_dp
     if (not_same(integral, found_integral, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integration_along_fieldline failed: integral"

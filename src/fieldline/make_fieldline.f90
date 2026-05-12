@@ -9,8 +9,8 @@ module make_fieldline
         integer :: n
         real(dp), dimension(:), allocatable :: phi
         real(dp), dimension(:), allocatable :: B
-        real(dp), dimension(:), allocatable :: error
-        real(dp), dimension(:), allocatable :: achieved_error
+        real(dp), dimension(:), allocatable :: B_error
+        real(dp), dimension(:), allocatable :: phi_error
     end type maxima_t
 
 contains
@@ -109,7 +109,7 @@ contains
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
-                fieldlines(current)%phi_max_error = maxima%achieved_error(1:2)
+                fieldlines(current)%phi_max_error = maxima%phi_error(1:2)
             end if
 
             ! To ensure that there are no maxima in between found phi_max
@@ -255,14 +255,14 @@ contains
         type(maxima_t), intent(out) :: maxima
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
-                               maxima%phi, maxima%achieved_error)
+                               maxima%phi, maxima%phi_error)
 
         maxima%n = size(maxima%phi)
-        allocate (maxima%B(maxima%n), maxima%error(maxima%n))
+        allocate (maxima%B(maxima%n), maxima%B_error(maxima%n))
         call B_mod_along_fieldline(maxima%phi, maxima%B)
-        maxima%error = 0.0_dp
-        call dB_dphi_along_fieldline(maxima%phi, maxima%error)
-        maxima%error(1:maxima%n) = abs(maxima%error)*maxima%achieved_error
+        maxima%B_error = 0.0_dp
+        call dB_dphi_along_fieldline(maxima%phi, maxima%B_error)
+        maxima%B_error(1:maxima%n) = abs(maxima%B_error)*maxima%phi_error
 
     contains
         subroutine B_mod_along_fieldline(phi, B_mod)
@@ -307,15 +307,15 @@ contains
 
         integer :: idx
 
-        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%B_error, &
                            symmetry_violation, mask=maxima%phi < phi_0)
         phi_max(1) = maxima%phi(idx)
-        phi_max_error(1) = maxima%achieved_error(idx)
+        phi_max_error(1) = maxima%phi_error(idx)
 
-        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%B_error, &
                            symmetry_violation, mask=maxima%phi > phi_0)
         phi_max(2) = maxima%phi(idx)
-        phi_max_error(2) = maxima%achieved_error(idx)
+        phi_max_error(2) = maxima%phi_error(idx)
     end subroutine pick_maximum_on_each_side
 
     !> Pick the biggest maximum from the masked set. If multiple maxima are

@@ -49,11 +49,11 @@ contains
 
         maxima%n = n_maxima
         allocate (maxima%phi(n_maxima), maxima%B(n_maxima), &
-                  maxima%error(n_maxima), maxima%achieved_error(n_maxima))
+                  maxima%B_error(n_maxima), maxima%phi_error(n_maxima))
         maxima%phi = ieee_value(0.0_dp, ieee_quiet_nan)
         maxima%B = 0.0_dp
-        maxima%error = 0.0_dp
-        maxima%achieved_error = 0.0_dp
+        maxima%B_error = 0.0_dp
+        maxima%phi_error = 0.0_dp
     end subroutine init_maxima
 
     !> Two maxima on each side with clearly different B: higher B wins
@@ -67,7 +67,7 @@ contains
         call init_maxima(maxima)
         maxima%phi(1:n_maxima) = [-3.0_dp, -1.0_dp, 1.0_dp, 3.0_dp]
         maxima%B(1:n_maxima) = [2.0_dp, 1.0_dp, 1.0_dp, 2.5_dp]
-        maxima%achieved_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
+        maxima%phi_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
 
         call pick_maximum_on_each_side(maxima, phi_0, sym_tol, phi_max, phi_max_error)
 
@@ -87,8 +87,8 @@ contains
         call init_maxima(maxima)
         maxima%phi(1:n_maxima) = [-3.0_dp, -1.0_dp, 1.0_dp, 3.0_dp]
         maxima%B(1:n_maxima) = [2.0_dp, 1.99_dp, 1.99_dp, 2.0_dp]
-        maxima%error(2:3) = 0.02_dp
-        maxima%achieved_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
+        maxima%B_error(2:3) = 0.02_dp
+        maxima%phi_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
 
         call pick_maximum_on_each_side(maxima, phi_0, sym_tol, phi_max, phi_max_error)
 
@@ -110,7 +110,7 @@ call assert_phi_max_error("tied_by_error_pick_closest", phi_max_error, [0.2_dp, 
         call init_maxima(maxima)
         maxima%phi(1:n_maxima) = [-3.0_dp, -1.0_dp, 1.0_dp, 3.0_dp]
         maxima%B(1:n_maxima) = [2.0_dp, 1.99_dp, 1.99_dp, 2.0_dp]
-        maxima%achieved_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
+        maxima%phi_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
 
         call pick_maximum_on_each_side(maxima, phi_0, symmetry_violation, &
                                        phi_max, phi_max_error)
@@ -131,8 +131,8 @@ call assert_phi_max_error("tied_by_error_pick_closest", phi_max_error, [0.2_dp, 
         call init_maxima(maxima)
         maxima%phi(1:n_maxima) = [-3.0_dp, -1.0_dp, 1.0_dp, 3.0_dp]
         maxima%B(1:n_maxima) = [2.0_dp, 1.98_dp, 1.98_dp, 2.0_dp]
-        maxima%error(2:3) = 0.009_dp
-        maxima%achieved_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
+        maxima%B_error(2:3) = 0.009_dp
+        maxima%phi_error(1:n_maxima) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
 
         call pick_maximum_on_each_side(maxima, phi_0, sym_tol, phi_max, phi_max_error)
 
