@@ -10,6 +10,7 @@ module make_fieldline
         integer :: n
         real(dp), dimension(maximum_possible_n) :: phi
         real(dp), dimension(maximum_possible_n) :: B
+        real(dp), dimension(maximum_possible_n) :: error
     end type maxima_t
 
 contains
@@ -35,6 +36,8 @@ contains
         real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
+        real(dp) :: symmetry_violation
+        real(dp), parameter :: violation_tol = 1e-11_dp
 
         if (present(err_flag)) then
             err_flag = 0
@@ -49,6 +52,14 @@ contains
         fieldlines%M_pol = M_pol
         fieldlines%N_tor = N_tor
         fieldlines%nfp = nfp
+
+        symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
+        if (symmetry_violation > violation_tol) then
+            print *, "error: provided field violates stellarator symmetry too strongly!"
+            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
+                symmetry_violation
+            error stop
+        end if
 
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
@@ -84,8 +95,10 @@ contains
                 print *, "---------------------------------------------------------"
                 error stop
             elseif (maxima%n > 2) then
-                fieldlines(current)%phi_max = get_biggest_maxima_on_each_side(maxima, &
-                                                              fieldlines(current)%phi_0)
+                call pick_maximum_on_each_side(maxima, &
+                                               fieldlines(current)%phi_0, &
+                                               fieldlines(current)%phi_max, &
+                                               symmetry_violation)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
@@ -198,6 +211,30 @@ contains
         is_not_integer = abs(x - nint(x)) > tol
     end function is_not_integer
 
+    function estimate_symmetry_violation(field, iota, nfp) result(symmetry_violation)
+        use utils, only: linspace
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: iota
+        real(dp), intent(in) :: nfp
+        real(dp) :: symmetry_violation
+
+        integer, parameter :: n_points = 1000
+        integer :: idx
+        real(dp), dimension(n_points) :: theta, phi, B_ref, B_sym
+
+        call linspace(0.0_dp, 2.0_dp*pi/nfp, n_points, phi)
+        theta = iota*phi
+        do idx = 1, n_points
+            call field%compute_B_mod(theta(idx), phi(idx), B_ref(idx))
+        end do
+        phi = -phi
+        theta = -theta
+        do idx = 1, n_points
+            call field%compute_B_mod(theta(idx), phi(idx), B_sym(idx))
+        end do
+        symmetry_violation = maxval(abs(B_ref - B_sym)/B_ref)
+    end function estimate_symmetry_violation
+
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
@@ -217,6 +254,12 @@ contains
 
         maxima%n = count(.not. ieee_is_nan(maxima%phi))
         call B_mod_along_fieldline(maxima%phi(1:maxima%n), maxima%B(1:maxima%n))
+        maxima%error = 0.0_dp
+        if (present(phi_tol)) then
+            call dB_dphi_along_fieldline(maxima%phi(1:maxima%n), &
+                                         maxima%error(1:maxima%n))
+            maxima%error(1:maxima%n) = abs(maxima%error(1:maxima%n))*phi_tol
+        end if
 
     contains
         subroutine B_mod_along_fieldline(phi, B_mod)
@@ -231,20 +274,68 @@ contains
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
+
+        subroutine dB_dphi_along_fieldline(phi, dB_dphi)
+            real(dp), dimension(:), intent(in) :: phi
+            real(dp), dimension(:), intent(out) :: dB_dphi
+
+            real(dp), dimension(size(phi)) :: theta
+            real(dp) :: B_mod, dB_dx(3)
+            integer :: idx
+
+            theta = fieldline%get_theta(phi)
+            do idx = 1, size(phi)
+                call field%compute_B_and_dB_dx(theta(idx), phi(idx), &
+                                               B_mod, dB_dx)
+                dB_dphi(idx) = dB_dx(3) + fieldline%iota*dB_dx(2)
+            end do
+        end subroutine dB_dphi_along_fieldline
     end subroutine find_maxima_along_fieldline
 
-    function get_biggest_maxima_on_each_side(maxima, phi_0) result(phi_max)
+    !> Pick the biggest maximum on each side of phi_0, with ties broken by
+    !> proximity to phi_0 to respect stellarator symmetry.
+    subroutine pick_maximum_on_each_side(maxima, phi_0, phi_max, &
+                                         symmetry_violation)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
-        real(dp), dimension(2) :: phi_max
+        real(dp), intent(in) :: symmetry_violation
+        real(dp), dimension(2), intent(out) :: phi_max
 
-        integer :: of_biggest_B
+        integer :: idx
 
-        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi < phi_0), dim=1)
-        phi_max(1) = maxima%phi(of_biggest_B)
-        of_biggest_B = maxloc(maxima%B, mask=(maxima%phi > phi_0), dim=1)
-        phi_max(2) = maxima%phi(of_biggest_B)
-    end function get_biggest_maxima_on_each_side
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+                           symmetry_violation, mask=maxima%phi < phi_0)
+        phi_max(1) = maxima%phi(idx)
+
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+                           symmetry_violation, mask=maxima%phi > phi_0)
+        phi_max(2) = maxima%phi(idx)
+    end subroutine pick_maximum_on_each_side
+
+    !> Pick the biggest maximum from the masked set. If multiple maxima are
+    !> equivalent to the biggest, i.e. due to
+    !> (a) their difference being within their error bounds or
+    !> (b) them being symmetric mirrors within the symmetry violation -
+    !> the one closest to phi_0 is chosen.
+    function pick_maximum(phi, B, phi_0, error, symmetry_violation, mask) result(idx)
+        real(dp), dimension(:), intent(in) :: phi, B
+        real(dp), intent(in) :: phi_0
+        real(dp), dimension(:), intent(in) :: error
+        real(dp), intent(in) :: symmetry_violation
+        logical, dimension(:), intent(in) :: mask
+        integer :: idx
+
+        real(dp), dimension(size(phi)) :: tol
+        real(dp) :: biggest_B, error_of_biggest
+        logical, dimension(size(phi)) :: equal_to_biggest
+
+        idx = maxloc(B, mask=mask, dim=1)
+        biggest_B = B(idx)
+        error_of_biggest = error(idx)
+        tol = error_of_biggest + error + 2.0_dp*symmetry_violation*B
+        equal_to_biggest = mask .and. (abs(B - biggest_B) <= tol)
+        idx = minloc(abs(phi - phi_0), mask=equal_to_biggest, dim=1)
+    end function pick_maximum
 
     subroutine nudge_maxima_inward(field, fieldline, phi_tol)
         class(field_t), intent(in) :: field
