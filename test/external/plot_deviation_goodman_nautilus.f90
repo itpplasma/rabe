@@ -40,7 +40,6 @@ program plot_deviation_goodman_squid
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 8e-7
     integer, parameter :: max_n_fieldlines = 151
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -72,8 +71,7 @@ program plot_deviation_goodman_squid
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot_others) then
         g_neo2%label = "NEO-2: $\hat{g}_0 \frac{\mathrm{bmod0}}{100}$"

@@ -15,7 +15,7 @@ program test_find_global_maximum
     type(mock_field_t) :: field
     type(mock_perturbed_field_t) :: perturbed_field
 
-    real(dp), parameter :: tol_phi_max = 1e-5
+    real(dp) :: tol_phi_max
     real(dp) :: B_reltol
 
     integer, parameter :: n_fieldlines = 100
@@ -26,15 +26,17 @@ program test_find_global_maximum
 
     real(dp) :: found_global_B_max, fieldline_B_max
 
-    B_reltol = max((tol_phi_max*abs(phi_mode))**2.0_dp, &
-                   (2.0_dp*pi/n_fieldlines)**2.0_dp*1e-3)
-
     call field%mock_field_init(theta_mode, phi_mode, B_0, B_amplitude)
     call perturbed_field%mock_perturbed_field_init(field, theta_mode, 0.0_dp, B_pert)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, perturbed_field, &
-                                  theta_mode, phi_mode, nfp, tol_phi_max)
+                                  theta_mode, phi_mode, nfp)
+
+    tol_phi_max = max(maxval(fieldlines%phi_max_error(1)), &
+                      maxval(fieldlines%phi_max_error(2)))
+    B_reltol = max((tol_phi_max*abs(phi_mode))**2.0_dp, &
+                   (2.0_dp*pi/n_fieldlines)**2.0_dp*1e-3)
 
     found_global_B_max = 1.0_dp/fieldlines(1)%eta_b
     if (not_same(global_B_max, found_global_B_max, B_reltol)) then

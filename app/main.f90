@@ -20,7 +20,6 @@ program rabe
                          N_tor, &
                          s_tor, &
                          sign_sqrtg, &
-                         phi_tol, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta
@@ -98,7 +97,6 @@ program rabe
                                       M_pol, &
                                       N_tor, &
                                       nfp, &
-                                      phi_tol, &
                                       err_flag(this))
 
         call calc_deviation(fieldlines, deviation_A, deviation_B)

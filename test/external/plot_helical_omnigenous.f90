@@ -18,7 +18,6 @@ program plot_helical_omnigenous
     real(dp), parameter :: ds_dr = 0.190236_dp, sign_sqrtg = -1.0_dp
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 8e-6
     integer, parameter :: n_fieldlines = 101
 
     real(dp) :: iota, nfp
@@ -38,8 +37,7 @@ program plot_helical_omnigenous
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     call plot_fieldlines_over_field(fieldlines, field)
     call plot_phi_max_over_xi_0(fieldlines)

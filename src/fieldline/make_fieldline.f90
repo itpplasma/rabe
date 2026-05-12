@@ -5,19 +5,18 @@ module make_fieldline
 
     implicit none
 
-    integer, parameter :: maximum_possible_n = 10
     type :: maxima_t
         integer :: n
-        real(dp), dimension(maximum_possible_n) :: phi
-        real(dp), dimension(maximum_possible_n) :: B
-        real(dp), dimension(maximum_possible_n) :: error
+        real(dp), dimension(:), allocatable :: phi
+        real(dp), dimension(:), allocatable :: B
+        real(dp), dimension(:), allocatable :: B_error
+        real(dp), dimension(:), allocatable :: phi_error
     end type maxima_t
 
 contains
 
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, &
-                                        phi_tol, &
                                         err_flag)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
@@ -27,7 +26,6 @@ contains
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
-        real(dp), intent(in) :: phi_tol
         integer, intent(out), optional :: err_flag
 
         real(dp) :: interval(2)
@@ -61,7 +59,15 @@ contains
             error stop
         end if
 
-        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
+        symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
+        if (symmetry_violation > violation_tol) then
+            print *, "error: provided field violates stellarator symmetry too strongly!"
+            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
+                symmetry_violation
+            error stop
+        end if
+
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"
@@ -79,7 +85,7 @@ contains
             interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - iota*M_pol) + &
                        fieldlines(current)%phi_0
             call find_maxima_along_fieldline(field, fieldlines(current), &
-                                             interval, maxima, phi_tol)
+                                             interval, maxima)
             if (maxima%n < 2) then
                 print *, "---------------------------------------------------------"
                 print *, "---------------------------------------------------------"
@@ -97,16 +103,18 @@ contains
             elseif (maxima%n > 2) then
                 call pick_maximum_on_each_side(maxima, &
                                                fieldlines(current)%phi_0, &
+                                               symmetry_violation, &
                                                fieldlines(current)%phi_max, &
-                                               symmetry_violation)
+                                               fieldlines(current)%phi_max_error)
                 more_than_two_maxima = .true.
             else
                 fieldlines(current)%phi_max = maxima%phi(1:2)
+                fieldlines(current)%phi_max_error = maxima%phi_error(1:2)
             end if
 
-            ! To ensure that the there are no maxima in between found phi_max
+            ! To ensure that there are no maxima in between found phi_max
             ! we move phi_max inside the well by the maximal potential error
-            call nudge_maxima_inward(field, fieldlines(current), phi_tol)
+            call nudge_maxima_inward(field, fieldlines(current))
         end do
 
         if (more_than_two_maxima) then
@@ -238,28 +246,23 @@ contains
     subroutine find_maxima_along_fieldline(field, &
                                            fieldline, &
                                            interval, &
-                                           maxima, &
-                                           phi_tol)
+                                           maxima)
         use find_extrema, only: find_local_maxima
-        use, intrinsic :: ieee_arithmetic
 
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
-        real(dp), intent(in), optional :: phi_tol
-        type(maxima_t) :: maxima
+        type(maxima_t), intent(out) :: maxima
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
-                               maxima%phi, phi_tol)
+                               maxima%phi, maxima%phi_error)
 
-        maxima%n = count(.not. ieee_is_nan(maxima%phi))
-        call B_mod_along_fieldline(maxima%phi(1:maxima%n), maxima%B(1:maxima%n))
-        maxima%error = 0.0_dp
-        if (present(phi_tol)) then
-            call dB_dphi_along_fieldline(maxima%phi(1:maxima%n), &
-                                         maxima%error(1:maxima%n))
-            maxima%error(1:maxima%n) = abs(maxima%error(1:maxima%n))*phi_tol
-        end if
+        maxima%n = size(maxima%phi)
+        allocate (maxima%B(maxima%n), maxima%B_error(maxima%n))
+        call B_mod_along_fieldline(maxima%phi, maxima%B)
+        maxima%B_error = 0.0_dp
+        call dB_dphi_along_fieldline(maxima%phi, maxima%B_error)
+        maxima%B_error(1:maxima%n) = abs(maxima%B_error)*maxima%phi_error
 
     contains
         subroutine B_mod_along_fieldline(phi, B_mod)
@@ -294,22 +297,25 @@ contains
 
     !> Pick the biggest maximum on each side of phi_0, with ties broken by
     !> proximity to phi_0 to respect stellarator symmetry.
-    subroutine pick_maximum_on_each_side(maxima, phi_0, phi_max, &
-                                         symmetry_violation)
+    subroutine pick_maximum_on_each_side(maxima, phi_0, symmetry_violation, &
+                                         phi_max, phi_max_error)
         type(maxima_t), intent(in) :: maxima
         real(dp), intent(in) :: phi_0
         real(dp), intent(in) :: symmetry_violation
         real(dp), dimension(2), intent(out) :: phi_max
+        real(dp), dimension(2), intent(out) :: phi_max_error
 
         integer :: idx
 
-        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%B_error, &
                            symmetry_violation, mask=maxima%phi < phi_0)
         phi_max(1) = maxima%phi(idx)
+        phi_max_error(1) = maxima%phi_error(idx)
 
-        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%error, &
+        idx = pick_maximum(maxima%phi, maxima%B, phi_0, maxima%B_error, &
                            symmetry_violation, mask=maxima%phi > phi_0)
         phi_max(2) = maxima%phi(idx)
+        phi_max_error(2) = maxima%phi_error(idx)
     end subroutine pick_maximum_on_each_side
 
     !> Pick the biggest maximum from the masked set. If multiple maxima are
@@ -337,13 +343,12 @@ contains
         idx = minloc(abs(phi - phi_0), mask=equal_to_biggest, dim=1)
     end function pick_maximum
 
-    subroutine nudge_maxima_inward(field, fieldline, phi_tol)
+    subroutine nudge_maxima_inward(field, fieldline)
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
-        real(dp), intent(in) :: phi_tol
 
-        fieldline%phi_max(1) = fieldline%phi_max(1) + phi_tol
-        fieldline%phi_max(2) = fieldline%phi_max(2) - phi_tol
+        fieldline%phi_max(1) = fieldline%phi_max(1) + fieldline%phi_max_error(1)
+        fieldline%phi_max(2) = fieldline%phi_max(2) - fieldline%phi_max_error(2)
 
         call B_mod_along_fieldline(fieldline%phi_max, fieldline%B_max)
 

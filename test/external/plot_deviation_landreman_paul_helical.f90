@@ -73,7 +73,6 @@ program plot_deviation_landreman_paul_helical
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 5e-7
     integer, parameter :: max_n_fieldlines = 50
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -101,8 +100,7 @@ program plot_deviation_landreman_paul_helical
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot_others) then
         call plot_fieldlines_over_field(fieldlines, field)

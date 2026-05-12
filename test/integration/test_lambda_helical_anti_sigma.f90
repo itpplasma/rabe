@@ -13,7 +13,6 @@ program test_lambda_helical_anti_sigma
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05, eps_1 = -0.00375_dp
     type(anti_sigma_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-6
     integer, parameter :: max_n_fieldlines = 20
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -43,8 +42,7 @@ program test_lambda_helical_anti_sigma
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     lambda_integral_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
                                /N_tor*4.0_dp*sqrt(2.0_dp) &

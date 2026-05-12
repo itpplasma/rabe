@@ -10,8 +10,8 @@ program test_integration_along_fieldline
 
     implicit none
 
-    real(dp), parameter :: phi_tol = 1e-3
-    real(dp), parameter :: reltol = 2*phi_tol
+    real(dp), parameter :: error_limit = 1e-7
+    real(dp) :: reltol
 
     real(dp), parameter :: M_pol = 1.0_dp, N_tor = -4.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
@@ -32,7 +32,7 @@ program test_integration_along_fieldline
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
-    if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
+    if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
         print *, "error: The origin of the IDEAL omnigenous configuration"
         print *, "(theta=phi=0) must be a global and local minimum!"
         print *, "Origin of provided field suggests that this is not the case!"
@@ -42,7 +42,7 @@ program test_integration_along_fieldline
     fieldline%phi_0 = M_pol*fieldline%xi_0/nfp
 
     interval = [0.0_dp, 4*pi] + fieldline(1)%phi_0
-    call find_maxima_along_fieldline(field, fieldline(1), interval, maxima, phi_tol)
+    call find_maxima_along_fieldline(field, fieldline(1), interval, maxima)
     if (maxima%n == 2) then
         fieldline(1)%phi_max = maxima%phi(1:2)
     else
@@ -52,12 +52,20 @@ program test_integration_along_fieldline
         print *, "maxima: ", maxima%phi(1:max(1, maxima%n))
         error stop
     end if
+    if (maxval(maxima%phi_error) > error_limit) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_integration_along_fieldline failed: maxima"
+        print *, "Achieved error is too large: ", maxima%phi_error
+        print *, "Error limit: ", error_limit
+        error stop
+    end if
 
     call integrate_1d(B_mod_along_fieldline, &
                       fieldline(1)%phi_max(1), &
                       fieldline(1)%phi_max(2), &
                       found_integral)
 
+    reltol = maxval(maxima%phi_error)*2.0_dp
     if (not_same(integral, found_integral, reltol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_integration_along_fieldline failed: integral"

@@ -11,7 +11,6 @@ module read_file
     real(dp), dimension(:), allocatable, public, protected :: s_tor
     real(dp), public, protected :: ds_dr ![1/cm]
     real(dp), public, protected :: sign_sqrtg
-    real(dp), public, protected :: phi_tol
     integer, public, protected :: max_n_fieldlines
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
@@ -22,7 +21,6 @@ module read_file
         N_tor, &
         s_tor, &
         sign_sqrtg, &
-        phi_tol, &
         max_n_fieldlines, &
         should_calc_shaing_callen, &
         n_eta
@@ -118,10 +116,6 @@ contains
             print *, "sign_sqrtg is NaN!"
             is_valid = .false.
         end if
-        if (ieee_is_nan(phi_tol)) then
-            print *, "phi_tol is NaN!"
-            is_valid = .false.
-        end if
 
         if (is_not_integer(M_pol, tol)) then
             print *, "M_pol must be integer"
@@ -138,10 +132,6 @@ contains
         end if
         if (any(s_tor <= 0.0_dp) .or. any(s_tor >= 1.0_dp)) then
             print *, "s_tor must be in ]0.0, 1.0["
-            is_valid = .false.
-        end if
-        if (phi_tol <= 0.0_dp) then
-            print *, "phi_tol must be positive"
             is_valid = .false.
         end if
         if (max_n_fieldlines <= 1) then

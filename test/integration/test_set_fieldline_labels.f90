@@ -20,8 +20,7 @@ program test_set_fieldline_labels
     real(dp), parameter :: B_pert = 0.0006_dp, N_pert = 2.0_dp, M_pert = 1.0_dp
     type(mock_perturbed_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 6e-5
-
+    real(dp), parameter :: chi_tol = 1.2e-4
     integer, parameter :: n_fieldlines = 100
     real(dp), dimension(2) :: phi_max
 
@@ -65,7 +64,7 @@ program test_set_fieldline_labels
         fieldlines%iota = iota
         call base_field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
         call field%mock_perturbed_field_init(base_field, M_pert, N_pert, B_pert)
-        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, phi_tol)) then
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"
@@ -75,7 +74,7 @@ program test_set_fieldline_labels
         fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
         do current = 1, n_fieldlines
             chi_0 = M_pol*fieldlines(current)%theta_0 - N_tor*fieldlines(current)%phi_0
-            if (not_same(chi_0, expected_chi_0, abstol_in=2.0_dp*phi_tol)) then
+            if (not_same(chi_0, expected_chi_0, abstol_in=chi_tol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_set_fieldline_labels_along_chi_min failed: chi_0"
                 print *, "theta_0: ", fieldlines(current)%theta_0
@@ -86,7 +85,7 @@ program test_set_fieldline_labels
             end if
         end do
         call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, &
-                                      nfp, phi_tol=phi_tol)
+                                      nfp)
         if (should_plot) then
             call plot_fieldlines_over_field_chi_xi(fieldlines, field, M_pol, N_tor, &
                                                    nfp)

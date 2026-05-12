@@ -17,7 +17,6 @@ program test_plot_anti_sigma
     real(dp), parameter :: B_pert = -0.01_dp, M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
     type(mock_perturbed_field_t) :: perturbed_field
 
-    real(dp), parameter :: phi_tol = 8e-5
     integer, parameter :: n_fieldlines = 20
 
     real(dp), dimension(n_fieldlines) :: theta_0
@@ -39,8 +38,7 @@ program test_plot_anti_sigma
                                   perturbed_field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     call plot_fieldlines_over_field(fieldlines, perturbed_field)
 

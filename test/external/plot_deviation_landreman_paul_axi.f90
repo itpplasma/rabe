@@ -38,7 +38,6 @@ program plot_deviation_drevlak_axi
 
     type(neo_field_t) :: field
 
-    real(dp), parameter :: phi_tol = 1e-5
     integer, parameter :: max_n_fieldlines = 400
 
     real(dp), dimension(:), allocatable :: xi_0
@@ -66,8 +65,7 @@ program plot_deviation_drevlak_axi
                                   field, &
                                   M_pol, &
                                   N_tor, &
-                                  nfp, &
-                                  phi_tol)
+                                  nfp)
 
     if (should_plot_others) then
         call plot_delta_eta(fieldlines)
