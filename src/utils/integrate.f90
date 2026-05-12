@@ -1,10 +1,9 @@
 module integrate
     use constants, only: dp
+    use odeint_allroutines_sub, only: odeint_allroutines, odeint_has_failed
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
-
-    integer, parameter :: quadpack = 8
 
     abstract interface
         function integrand(x)
@@ -21,48 +20,26 @@ contains
         real(dp), intent(in) :: a, b
         real(dp), intent(out) :: result
 
-        real(quadpack), parameter :: abs_error_tol_quadpack = 0.0_dp
-        real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-6
-        integer, parameter :: order_key = 6
-        real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
-        real(quadpack) :: abs_error
-        integer :: error_flag
-        real(quadpack) :: error_limit
+        real(dp), parameter :: eps = 1.0e-10_dp
+        real(dp), parameter :: eps_rough = 1.0e-3_dp
+        real(dp) :: y(1), y_offset
 
-        integer :: neval_dummy
+        ! Round 1: cheap pass to estimate the integral scale.
+        y(1) = eps_rough
+        call odeint_allroutines(y, 1, a, b, eps_rough, integral_derivs)
+        y_offset = max(abs(y(1) - eps_rough), eps)
 
-        ! quadpack operates in and requires real(8)
-        a_quadpack = convert_to_quadpack(a)
-        b_quadpack = convert_to_quadpack(b)
+        ! Round 2: accurate pass with y_offset calibrated to the integral magnitude,
+        ! so y_scale ~ |integral| throughout and relative error is ~eps.
+        y(1) = y_offset
+        call odeint_allroutines(y, 1, a, b, eps, integral_derivs)
 
-        ! integration by globally adaptive interval subdivision (quadpack import)
-        call qag(quadpack_integrand, &
-                 a_quadpack, &
-                 b_quadpack, &
-                 abs_error_tol_quadpack, &
-                 rel_error_tol_quadpack, &
-                 order_key, &
-                 result_quadpack, &
-                 abs_error, &
-                 neval_dummy, &
-                 error_flag)
-
-        error_limit = abs(result_quadpack)*rel_error_tol_quadpack &
-                      + abs_error_tol_quadpack
-
-        if (abs_error > error_limit) then
-            print *, "Integration warning: absolute error =", abs_error
-            print *, "bigger than required ", error_limit
-            print *, "relative error", abs_error/abs(result_quadpack)
+        if (odeint_has_failed()) then
+            print *, "Integration failed!"
             error stop
         end if
 
-        if (error_flag /= 0) then
-            print *, "Integration warning: error =", error_flag
-            error stop
-        end if
-
-        result = convert_to_dp(result_quadpack)
+        result = y(1) - y_offset
 
         if (ieee_is_nan(result)) then
             print *, "Integration result is NaN!"
@@ -71,16 +48,12 @@ contains
 
     contains
 
-        ! the function input also needs to be real(8) for quadpack
-        function quadpack_integrand(x_quadpack)
-            real(quadpack), intent(in) :: x_quadpack
-            real(quadpack) :: quadpack_integrand
-
-            real(dp) :: x_dp
-
-            x_dp = real(x_quadpack, kind=dp)
-            quadpack_integrand = real(f(x_dp), kind=quadpack)
-        end function quadpack_integrand
+        subroutine integral_derivs(x, yy, dydx)
+            real(dp), intent(in) :: x
+            real(dp), intent(in) :: yy(:)
+            real(dp), intent(out) :: dydx(:)
+            dydx(1) = f(x)
+        end subroutine integral_derivs
 
     end subroutine integrate_1d
 
@@ -134,20 +107,6 @@ contains
         end function right_substituted_integrand
 
     end subroutine integrate_1d_substituted
-
-    function convert_to_quadpack(val_dp) result(val_quadpack)
-        real(dp), intent(in) :: val_dp
-        real(quadpack) :: val_quadpack
-
-        val_quadpack = real(val_dp, kind=quadpack)
-    end function convert_to_quadpack
-
-    function convert_to_dp(val_quadpack) result(val_dp)
-        real(quadpack), intent(in) :: val_quadpack
-        real(dp) :: val_dp
-
-        val_dp = real(val_quadpack, kind=dp)
-    end function convert_to_dp
 
     function sum_trapez_1d(x, y)
         real(dp), dimension(:), intent(in) :: x, y

@@ -7,8 +7,5 @@ add_library(utils_lib STATIC
   diophantine.f90
   )
 
-include(Util)
-find_or_fetch(quadpack)
-target_compile_options(quadpack PRIVATE -w)
-target_link_libraries(utils_lib PRIVATE quadpack)
+target_link_libraries(utils_lib PRIVATE LIBNEO::neo)
 target_include_directories(utils_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

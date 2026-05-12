@@ -79,7 +79,7 @@ contains
 
     function calc_avg_lambda_over_B_squared(fieldline, eta_grid) &
         result(avg_lambda_over_B_squared)
-        use integrate, only: integrate_1d_substituted
+        use integrate, only: integrate_1d
         use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
         use shaing_callen_wrappers, only: this_eta, null_eta
         use shaing_callen_wrappers, only: this_fieldline, null_fieldline
@@ -93,10 +93,10 @@ contains
 
         do this = 1, size(eta_grid)
             this_eta = eta_grid(this)
-            call integrate_1d_substituted(wrapper_lambda_over_B_squared, &
-                                          fieldline%phi_max(1), &
-                                          fieldline%phi_max(2), &
-                                          avg_lambda_over_B_squared(this))
+            call integrate_1d(wrapper_lambda_over_B_squared, &
+                              fieldline%phi_max(1), &
+                              fieldline%phi_max(2), &
+                              avg_lambda_over_B_squared(this))
             this_eta = null_eta
         end do
 
