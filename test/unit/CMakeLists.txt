@@ -1,3 +1,8 @@
+add_executable(test_handle_multiple_maxima.x test_handle_multiple_maxima.f90)
+target_link_libraries(test_handle_multiple_maxima.x rabe_lib)
+add_test(TestHandleMultipleMaxima test_handle_multiple_maxima.x)
+set_tests_properties(TestHandleMultipleMaxima PROPERTIES LABELS "quick")
+
 add_executable(test_find_extrema.x test_find_extrema.f90)
 target_link_libraries(test_find_extrema.x rabe_lib)
 add_test(TestFindExtrema test_find_extrema.x)
