@@ -135,7 +135,12 @@ contains
                 err_flag = 1
             end if
         end if
-
+        !> If eta_b is chosen exactly to be 1/B_max, one relies that
+        !> B_max/B_max = 1 so that the pitchparameter does not become negative on
+        !> the field line hitting the global maximum. However,
+        !> B_max/Bmax = 1 +- ULP (~2.2e-16)
+        !> due to floating point arithmetic. To not be dependend on machine/compiler
+        !> specifics, we add a small buffer that does not change the physics.
         fieldlines%eta_b = (1.0_dp - 2.0_dp*machine_eps) &
                            /get_global_B_max(fieldlines)
 
