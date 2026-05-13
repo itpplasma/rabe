@@ -54,7 +54,7 @@ jobs:
       run: |
         git checkout "${{ steps.baseline.outputs.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' $CTEST_LAST_TEST)
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Clean build
@@ -65,7 +65,7 @@ jobs:
       run: |
         git checkout "${{ github.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' $CTEST_LAST_TEST)
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Write step summary
