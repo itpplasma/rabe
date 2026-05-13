@@ -180,6 +180,7 @@ contains
         use shaing_callen_integration, only: get_eta_integration_grid
         use shaing_callen_integration, only: integrate_over_eta_grid
         use fieldline_integrands, only: calc_lambda_squared
+        use make_fieldline, only: get_global_B_max
         class(field_t), intent(in) :: qs_field
         type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
         logical, intent(inout) :: test_failed
@@ -198,7 +199,7 @@ contains
 
         M_pol = qs_fieldlines(1)%M_pol
         nfp = qs_fieldlines(1)%nfp
-        B_globalmax = 1.0_dp/qs_fieldlines(1)%eta_b
+        B_globalmax = get_global_B_max(qs_fieldlines)
 
         eta_grid = get_eta_integration_grid(qs_fieldlines(1)%eta_b, n_eta)
         avg_B_squared = sum(qs_fieldlines%phi_max(2) - qs_fieldlines%phi_max(1))
