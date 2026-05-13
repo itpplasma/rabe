@@ -21,6 +21,7 @@ contains
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+        use constants, only: machine_eps
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
@@ -135,7 +136,8 @@ contains
             end if
         end if
 
-        fieldlines%eta_b = (1.0_dp)/get_global_B_max(fieldlines)
+        fieldlines%eta_b = (1.0_dp - 2.0_dp*machine_eps) &
+                           /get_global_B_max(fieldlines)
 
         do current = 1, n_fieldlines
             call calc_fieldline_integrals(field, fieldlines(current))
