@@ -1,0 +1,143 @@
+name: Benchmark
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-22.04
+    env:
+      CTEST_LAST_TEST: build/test/Testing/Temporary/LastTest.log
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          gfortran cmake ninja-build make \
+          libblas-dev liblapack-dev libsuitesparse-dev libmpfr-dev \
+          libnetcdf-dev libnetcdff-dev libopenmpi-dev openmpi-bin \
+          libhdf5-dev libfftw3-dev libgsl-dev libopenblas-dev pkg-config
+        pip install numpy
+
+    - name: Determine baseline ref
+      id: baseline
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+        elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+          echo "sha=$(git rev-parse HEAD^)" >> "$GITHUB_OUTPUT"
+        else
+          echo "sha=" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Time baseline binary
+      if: steps.baseline.outputs.sha != ''
+      id: time_baseline
+      run: |
+        git checkout "${{ steps.baseline.outputs.sha }}"
+        make CONFIG=Release golden_run
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
+        echo "ms=$MS" >> "$GITHUB_OUTPUT"
+
+    - name: Clean build
+      run: make clean
+
+    - name: Time current binary
+      id: time_current
+      run: |
+        git checkout "${{ github.sha }}"
+        make CONFIG=Release golden_run
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
+        echo "ms=$MS" >> "$GITHUB_OUTPUT"
+
+    - name: Write step summary
+      run: |
+        CURR="${{ steps.time_current.outputs.ms }}"
+        BASE="${{ steps.time_baseline.outputs.ms }}"
+        {
+          echo "## Benchmark Results (Release build)"
+          echo ""
+          echo "| Version  | Time (ms) |"
+          echo "|----------|-----------|"
+          if [ -n "$BASE" ]; then
+            echo "| Baseline | $BASE |"
+            echo "| Current  | $CURR |"
+            DELTA=$(( CURR - BASE ))
+            PCT=$(( DELTA * 100 / BASE ))
+            echo ""
+            if   [ "$DELTA" -lt 0 ]; then
+              echo ":rocket: **Improvement**: ${DELTA} ms (${PCT}%)"
+            elif [ "$DELTA" -gt 0 ]; then
+              echo ":warning: **Regression**: +${DELTA} ms (+${PCT}%)"
+            else
+              echo ":white_check_mark: **No change**"
+            fi
+          else
+            echo "| Current  | $CURR |"
+            echo ""
+            echo "_No baseline available (first commit on branch)_"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Generate benchmark JSON
+      if: steps.baseline.outputs.sha != ''
+      run: |
+        python3 -c "
+        import json, os
+        curr = int(os.environ['CURR'])
+        base = int(os.environ['BASE'])
+        ratio = curr / base
+        entries = [
+            {
+                'name': 'execution time ratio (current/baseline)',
+                'unit': 'ratio',
+                'value': round(ratio, 4),
+                'extra': f'current: {curr} ms, baseline: {base} ms',
+            },
+            {
+                'name': 'execution time (current, Release)',
+                'unit': 'ms',
+                'value': curr,
+            },
+        ]
+        print(json.dumps(entries, indent=2))
+        " > benchmark_result.json
+      env:
+        CURR: ${{ steps.time_current.outputs.ms }}
+        BASE: ${{ steps.time_baseline.outputs.ms }}
+
+    - name: Store benchmark result
+      if: steps.baseline.outputs.sha != ''
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        tool: customSmallerIsBetter
+        output-file-path: benchmark_result.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        auto-push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+
+    - name: Check for regression
+      if: steps.baseline.outputs.sha != ''
+      run: |
+        CURR="${{ steps.time_current.outputs.ms }}"
+        BASE="${{ steps.time_baseline.outputs.ms }}"
+        RATIO=$(awk "BEGIN {printf \"%.4f\", $CURR / $BASE}")
+        echo "Runtime ratio: $RATIO"
+        awk "BEGIN {if ($RATIO > 1.3) exit 1}"
