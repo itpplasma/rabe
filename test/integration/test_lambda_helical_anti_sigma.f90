@@ -5,7 +5,7 @@ program test_lambda_helical_anti_sigma
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use integrate, only: integrate_1d_substituted
+    use integrate, only: integrate_1d
 
     implicit none
 
@@ -51,10 +51,10 @@ program test_lambda_helical_anti_sigma
     lambda_integral = 0.0_dp
     do current = 1, n_fieldlines
         current_fieldline = fieldlines(current)
-        call integrate_1d_substituted(wrapper_lambda, &
-                                      current_fieldline%phi_max(1), &
-                                      current_fieldline%phi_max(2), &
-                                      lambda_integral(current))
+        call integrate_1d(wrapper_lambda, &
+                          current_fieldline%phi_max(1), &
+                          current_fieldline%phi_max(2), &
+                          lambda_integral(current))
     end do
 
     test_failed = .false.

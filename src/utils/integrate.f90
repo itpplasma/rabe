@@ -57,57 +57,6 @@ contains
 
     end subroutine integrate_1d
 
-    subroutine integrate_1d_substituted(f, a, b, result)
-        procedure(integrand) :: f
-        real(dp), intent(in) :: a, b
-        real(dp), intent(out) :: result
-
-        real(dp) :: sub_a, sub_b
-        real(dp) :: left_result, right_result
-
-        if (b < a) then
-            print *, "Error in integrate_1d_substituted: b < a"
-            error stop
-        end if
-
-        ! integration by globally adaptive interval subdivision (quadpack import)
-        ! qags struggels with functions of form sqrt(x-a) and sqrt(b-x)
-        ! Terefore we split the integral in the middle and substitute
-        ! - left integral: t**2 = x - a
-        ! - right integral: t**2 = b - x
-        ! resulting in new limits
-        ! - left integral: 0 to sqrt((b - a)*0.5_dp)
-        ! - right integral: 0 to sqrt((b - a)*0.5_dp) (after absorbing [-] from trafo)
-        sub_a = 0.0_dp
-        sub_b = sqrt((b - a)*0.5_dp)
-        call integrate_1d(left_substituted_integrand, sub_a, sub_b, left_result)
-        call integrate_1d(right_substituted_integrand, sub_a, sub_b, right_result)
-
-        result = left_result + right_result
-
-    contains
-        function left_substituted_integrand(t)
-            real(dp), intent(in) :: t
-            real(dp) :: left_substituted_integrand
-
-            real(dp) :: x
-
-            x = t**2.0_dp + a
-            left_substituted_integrand = f(x)*2.0_dp*t
-        end function left_substituted_integrand
-
-        function right_substituted_integrand(t)
-            real(dp), intent(in) :: t
-            real(dp) :: right_substituted_integrand
-
-            real(dp) :: x
-
-            x = b - t**2.0_dp
-            right_substituted_integrand = f(x)*2.0_dp*t
-        end function right_substituted_integrand
-
-    end subroutine integrate_1d_substituted
-
     function sum_trapez_1d(x, y)
         real(dp), dimension(:), intent(in) :: x, y
         real(dp) :: sum_trapez_1d
