@@ -6,6 +6,8 @@ program test_integrate_1d_substituted
     implicit none
 
     real(dp), parameter :: reltol = 1.0e-8_dp, abstol = 0.0_dp
+    real(dp), dimension(2), parameter :: interval_0 = [-1.0_dp, 1.0_dp]
+    real(dp), parameter :: integral_0 = 2.0_dp/3.0_dp
     real(dp), dimension(2), parameter :: interval_1 = [-1.0_dp, 1.0_dp]
     real(dp), parameter :: integral_1 = 0.5_dp*pi
     real(dp), dimension(2), parameter :: interval_2 = [0.0_dp, 1.0_dp]
@@ -22,6 +24,18 @@ program test_integrate_1d_substituted
     logical :: failed_test
 
     failed_test = .false.
+
+    call integrate_1d_substituted(trial_func_0, &
+                                  interval_0(1), &
+                                  interval_0(2), &
+                                  found_integral)
+    if (not_same(integral_0, found_integral, reltol, abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_integrate_1d_substituted failed: integral 0"
+        print *, "found: ", found_integral
+        print *, "analytic: ", integral_0
+        failed_test = .true.
+    end if
 
     call integrate_1d_substituted(trial_func_1, &
                                   interval_1(1), &
@@ -88,6 +102,12 @@ program test_integrate_1d_substituted
     if (failed_test) error stop
 
 contains
+    function trial_func_0(x)
+        real(dp), intent(in) :: x
+        real(dp) :: trial_func_0
+
+        trial_func_0 = x**2
+    end function trial_func_0
 
     function trial_func_1(x)
         real(dp), intent(in) :: x
