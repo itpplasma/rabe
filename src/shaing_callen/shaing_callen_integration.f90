@@ -5,14 +5,6 @@ module shaing_callen_integration
     use utils, only: linspace
     implicit none
 
-    abstract interface
-        function defined_integral_i(x_start, x_end)
-            use constants, only: dp
-            real(dp), intent(in) :: x_start, x_end
-            real(dp) :: defined_integral_i
-        end function defined_integral_i
-    end interface
-
 contains
 
     function get_eta_integration_grid(eta_b, n_eta) result(eta_grid)
@@ -132,22 +124,5 @@ contains
         dphi_dt = -delta_phi*sin(t)
         integral = sum_trapez_1d(t, integrand*dphi_dt)
     end function integrate_over_phi_grid
-
-    function cumint(x, defined_integral)
-        real(dp), dimension(:), intent(in) :: x
-        procedure(defined_integral_i) :: defined_integral
-        real(dp), dimension(size(x)) :: cumint
-
-        real(dp) :: x_start, x_end
-        integer :: current, n_x
-
-        n_x = size(x)
-        cumint(1) = 0.0_dp ! as integral limits are same for first element
-        do current = 2, n_x
-            x_start = x(current - 1)
-            x_end = x(current)
-            cumint(current) = defined_integral(x_start, x_end) + cumint(current - 1)
-        end do
-    end function cumint
 
 end module shaing_callen_integration

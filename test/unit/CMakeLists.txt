@@ -23,11 +23,6 @@ target_link_libraries(test_sum_trapez_1d.x rabe_lib)
 add_test(TestISumTrapez test_sum_trapez_1d.x)
 set_tests_properties(TestISumTrapez PROPERTIES LABELS "quick")
 
-add_executable(test_cumint.x test_cumint.f90)
-target_link_libraries(test_cumint.x rabe_lib helpers_lib)
-add_test(TestICumint test_cumint.x)
-set_tests_properties(TestICumint PROPERTIES LABELS "quick")
-
 add_executable(test_integrate_wrapper.x test_integrate_wrapper.f90)
 target_link_libraries(test_integrate_wrapper.x rabe_lib)
 add_test(TestIntegrateWrapper test_integrate_wrapper.x)
