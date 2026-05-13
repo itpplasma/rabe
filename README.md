@@ -26,7 +26,7 @@ to execute tests.
 
 ## Third Party
 
-- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (source and license under `plot`, BSD-3-Clause)
+- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (source and license under `plot_lib`, BSD-3-Clause)
 
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (fetched during build, BSD-3-Clause)
 
