@@ -14,6 +14,8 @@ permissions:
 jobs:
   benchmark:
     runs-on: ubuntu-22.04
+    env:
+      CTEST_LAST_TEST: build/test/Testing/Temporary/LastTest.log
 
     steps:
     - name: Checkout repository
@@ -52,7 +54,7 @@ jobs:
       run: |
         git checkout "${{ steps.baseline.outputs.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' build/Testing/Temporary/LastTest.txt)
+        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' $CTEST_LAST_TEST)
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Clean build
@@ -63,7 +65,7 @@ jobs:
       run: |
         git checkout "${{ github.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' build/Testing/Temporary/LastTest.txt)
+        MS=$(awk '/Test time =/ {printf "%d\n", $NF * 1000}' $CTEST_LAST_TEST)
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Write step summary
