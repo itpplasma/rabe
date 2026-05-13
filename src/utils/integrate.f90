@@ -25,13 +25,12 @@ contains
         real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-6
         integer, parameter :: order_key = 6
         real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
-        real(quadpack) :: abs_error
+        real(quadpack) :: abs_error, error_limit
         integer :: error_flag
-        real(quadpack) :: error_limit
+        logical :: error_occurred
 
         integer :: neval_dummy
 
-        ! quadpack operates in and requires real(8)
         a_quadpack = convert_to_quadpack(a)
         b_quadpack = convert_to_quadpack(b)
 
@@ -49,17 +48,18 @@ contains
 
         error_limit = abs(result_quadpack)*rel_error_tol_quadpack &
                       + abs_error_tol_quadpack
+        error_occurred = .false.
 
         if (abs_error > error_limit) then
             print *, "Integration warning: absolute error =", abs_error
             print *, "bigger than required ", error_limit
             print *, "relative error", abs_error/abs(result_quadpack)
-            error stop
+            error_occurred = .true.
         end if
 
         if (error_flag /= 0) then
             print *, "Integration warning: error =", error_flag
-            error stop
+            error_occurred = .true.
         end if
 
         result = convert_to_dp(result_quadpack)
