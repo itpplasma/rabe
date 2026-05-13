@@ -22,6 +22,7 @@ RABE (Redl's Analytical Bootstrap Estimation) is a scientific computing project 
 - `make current` - Run tests marked as current development focus (label: `current`)
 - `make external` - Run external comparison tests (label: `external`)
 - `make golden` - Run golden record tests (label: `golden`)
+- `make golden_run` - Run golden record execution only (no comparison; used for timing)
 - `make golden_update` - Update golden record expected output
 
 Single test: `ctest -R test_name --test-dir build`

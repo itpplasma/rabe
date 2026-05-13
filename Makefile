@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test test_failed install clean plot golden
+.PHONY: all build test test_failed install clean plot golden golden_run
 all: build
 
 build/CMakeCache.txt:
@@ -36,6 +36,9 @@ current: build
 
 golden: build
 	ctest --test-dir build/test --output-on-failure -V -L golden
+
+golden_run: build
+	ctest --test-dir build/test --output-on-failure -V -R GoldenRecordRun
 
 golden_update: build/test/golden/rabe.nc
 	cp $< test/golden/expected/.
