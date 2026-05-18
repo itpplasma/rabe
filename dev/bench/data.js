@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779110973065,
+  "lastUpdate": 1779113687596,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -69,6 +69,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 59570,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45717986d1bb5079e703930ddf9810ed1aeb7198",
+          "message": "Fix/git in build (#66)\n\n* use: main in case of empty branch\n\nIf the current directory is not a git repo, BRANCH is empty but still\nleads to a BRANCH_EXISTS as git ls-remote --heads ${REPO_URL} ${BRANCH}\ngives back all remote branches without failure.\n\n* let: git fail gracefully\n\nIf the directory is not a git repo, the build now still goes through,\nbut sets \"unknown\" as the git hash.\n\n* add: hard git dependance\n\nThe build process requires git for fetching dependencies.",
+          "timestamp": "2026-05-18T16:10:40+02:00",
+          "tree_id": "14147fa9ab5417fcb4b8182331a8ed798d762483",
+          "url": "https://github.com/itpplasma/rabe/commit/45717986d1bb5079e703930ddf9810ed1aeb7198"
+        },
+        "date": 1779113687026,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.004,
+            "unit": "ratio",
+            "extra": "current: 59530 ms, baseline: 59290 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 59530,
             "unit": "ms"
           }
         ]
