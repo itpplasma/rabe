@@ -68,7 +68,8 @@ contains
             error stop
         end if
 
-        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
+        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, &
+                                                  symmetry_violation)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"

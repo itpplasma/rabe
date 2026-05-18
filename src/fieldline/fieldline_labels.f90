@@ -82,7 +82,7 @@ contains
 
     end function calc_iota
 
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol)
+    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, tol)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
@@ -91,10 +91,10 @@ contains
 
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
+        real(dp), intent(in), optional :: tol
         logical :: suspect_omnigenous_origin_not_minimum
 
         real(dp), dimension(2) :: interval
-        real(dp) :: tol
         real(dp), dimension(:), allocatable :: chis, chis_error
         integer :: n
         integer :: id_chi
@@ -102,6 +102,8 @@ contains
         real(dp), parameter :: safety_factor = 3.0_dp
         real(dp), dimension(2) :: extrema
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
+        integer :: closest
+        real(dp) :: Bs(2), B_at_closest, dB_dchi_at_origin, error
         logical :: origin_is_minimum, origin_is_maximum
 
         suspect_omnigenous_origin_not_minimum = .false.
@@ -118,6 +120,19 @@ contains
             end if
         end do
 
+        if (.not. origin_is_minimum .and. present(tol)) then
+            closest = minloc(abs(chis), dim=1)
+            call B_mod_along_pi_line([0.0_dp, chis(closest)], Bs)
+            B_at_origin = Bs(1)
+            B_at_closest = Bs(2)
+            call dB_dchi_along_pi_line(0.0_dp, dB_dchi_at_origin)
+            error = abs(B_at_closest - B_at_origin)
+            error = error + abs(dB_dchi_at_origin*chis(closest))
+            error = error/B_at_origin
+            print *, "error = ", error, " tol = ", tol
+            if (error < tol) origin_is_minimum = .true.
+        end if
+
         if (.not. origin_is_minimum) then
             call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
             n = size(chis)
@@ -127,6 +142,7 @@ contains
                     origin_is_maximum = .true.
                     exit
                 end if
+                print *, "chi = ", chis(id_chi), " chi_error = ", chis_error(id_chi)
             end do
         end if
 
@@ -136,8 +152,7 @@ contains
             error stop
         end if
 
-        tol = 1e-3_dp
-        extrema = find_global_extrema(B_mod_along_pi_line, interval, tol)
+        extrema = find_global_extrema(B_mod_along_pi_line, interval, abstol=1e-3_dp)
         B_min = extrema(1)
         B_max = extrema(2)
         B_range = B_max - B_min
@@ -182,6 +197,31 @@ contains
                 call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_pi_line
+
+        subroutine dB_dchi_along_pi_line(chi, dB_dchi)
+            real(dp), intent(in) :: chi
+            real(dp), intent(out) :: dB_dchi
+
+            real(dp) :: phi, theta
+            real(dp), dimension(3) :: dB_dx
+            real(dp) :: B_mod
+            integer :: idx
+
+            !> as M_pol and N_tor are whole numbers that must no both be zero
+            !> M_pol*pi - N_tor should never zero
+            if (abs(M_pol*pi - N_tor) < 1e-8) then
+                print *, "Error: (M_pol*pi - N_tor) must not be (close) zero."
+                print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*pi - N_tor)
+                error stop
+            end if
+
+            phi = chi/(M_pol*pi - N_tor)
+            theta = pi*phi
+            call field%compute_B_and_dB_dx(theta, phi, B_mod, dB_dx)
+            dB_dchi = dB_dx(2)*pi + dB_dx(3)
+            dB_dchi = dB_dchi/(M_pol*pi - N_tor)
+
+        end subroutine dB_dchi_along_pi_line
 
     end function suspect_omnigenous_origin_not_minimum
 
