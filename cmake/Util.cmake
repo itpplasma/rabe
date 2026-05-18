@@ -52,7 +52,7 @@ function(get_branch_or_main REPO_URL REMOTE_BRANCH)
 
     message(STATUS "Branch ${BRANCH} exists: ${BRANCH_EXISTS}")
 
-    if(BRANCH_EXISTS)
+    if(BRANCH AND BRANCH_EXISTS)
         set(${REMOTE_BRANCH} ${BRANCH} PARENT_SCOPE)
     else()
         set(${REMOTE_BRANCH} "main" PARENT_SCOPE)
