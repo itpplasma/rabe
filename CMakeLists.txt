@@ -7,6 +7,9 @@ enable_language(Fortran)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(compiler)
 
+# required for fetching dependencies
+find_package(Git REQUIRED)
+
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
     set(GIT_HEAD_DEPS
         ${CMAKE_SOURCE_DIR}/.git/HEAD
