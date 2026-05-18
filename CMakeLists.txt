@@ -7,6 +7,16 @@ enable_language(Fortran)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(compiler)
 
+# required for fetching dependencies
+find_package(Git REQUIRED)
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
+    set(GIT_HEAD_DEPS
+        ${CMAKE_SOURCE_DIR}/.git/HEAD
+        ${CMAKE_SOURCE_DIR}/.git/index
+    )
+endif()
+
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/src/git_version.f90
     COMMAND ${CMAKE_COMMAND}
@@ -15,8 +25,7 @@ add_custom_command(
         -P ${CMAKE_SOURCE_DIR}/cmake/git_version.cmake
     DEPENDS
         ${CMAKE_SOURCE_DIR}/src/git_version.f90.in
-        ${CMAKE_SOURCE_DIR}/.git/HEAD
-        ${CMAKE_SOURCE_DIR}/.git/index
+        ${GIT_HEAD_DEPS}
     COMMENT "Generating git_version.f90 with current git hash"
     VERBATIM
 )
