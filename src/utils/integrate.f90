@@ -78,8 +78,10 @@ contains
 
         if (ieee_is_nan(result)) then
             print *, "Integration result is NaN!"
-            error stop
+            error_occurred = .true.
         end if
+
+        if (error_occurred) error stop
 
     contains
 
