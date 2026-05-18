@@ -1,6 +1,6 @@
 # rabe
 
-An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap d**e**viations formula of Ref. [1].
+An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap **e**xpressions of Ref. [1].
 
 ## Build
 
@@ -26,7 +26,9 @@ to execute tests.
 
 ## Third Party
 
-- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (license under `plot`)
+- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization (source and license under `plot_lib`, BSD-3-Clause)
+
+- [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (fetched during build, BSD-3-Clause)
 
 ## References
 

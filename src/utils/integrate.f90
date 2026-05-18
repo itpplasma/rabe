@@ -1,10 +1,11 @@
 module integrate
     use constants, only: dp
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+    use quadpack_double, only: qag => dqag
 
     implicit none
 
-    integer, parameter :: quadpack = 8
+    integer, parameter :: quadkind = 8
 
     abstract interface
         function integrand(x)
@@ -21,66 +22,79 @@ contains
         real(dp), intent(in) :: a, b
         real(dp), intent(out) :: result
 
-        real(quadpack), parameter :: abs_error_tol_quadpack = 0.0_dp
-        real(quadpack), parameter :: rel_error_tol_quadpack = 1.0e-6
+        real(quadkind), parameter :: abs_error_tol_quadkind = 0.0_dp
+        real(quadkind), parameter :: rel_error_tol_quadkind = 1.0e-6
         integer, parameter :: order_key = 6
-        real(quadpack) :: a_quadpack, b_quadpack, result_quadpack
-        real(quadpack) :: abs_error
+        integer, parameter :: limit = 500
+        integer, parameter :: lenw = limit*4
+        real(quadkind) :: a_quadkind, b_quadkind, result_quadkind
+        real(quadkind) :: abs_error, error_limit
         integer :: error_flag
-        real(quadpack) :: error_limit
 
-        integer :: neval_dummy
+        logical :: error_occurred
+
+        integer :: neval_dummy, last
+        integer :: iwork(limit)
+        real(quadkind) :: work(lenw)
 
         ! quadpack operates in and requires real(8)
-        a_quadpack = convert_to_quadpack(a)
-        b_quadpack = convert_to_quadpack(b)
+        a_quadkind = convert_to_quadkind(a)
+        b_quadkind = convert_to_quadkind(b)
 
         ! integration by globally adaptive interval subdivision (quadpack import)
-        call qag(quadpack_integrand, &
-                 a_quadpack, &
-                 b_quadpack, &
-                 abs_error_tol_quadpack, &
-                 rel_error_tol_quadpack, &
+        call qag(quadkind_integrand, &
+                 a_quadkind, &
+                 b_quadkind, &
+                 abs_error_tol_quadkind, &
+                 rel_error_tol_quadkind, &
                  order_key, &
-                 result_quadpack, &
+                 result_quadkind, &
                  abs_error, &
                  neval_dummy, &
-                 error_flag)
+                 error_flag, &
+                 limit, &
+                 lenw, &
+                 last, &
+                 iwork, &
+                 work)
 
-        error_limit = abs(result_quadpack)*rel_error_tol_quadpack &
-                      + abs_error_tol_quadpack
+        error_limit = abs(result_quadkind)*rel_error_tol_quadkind &
+                      + abs_error_tol_quadkind
+        error_occurred = .false.
 
         if (abs_error > error_limit) then
             print *, "Integration warning: absolute error =", abs_error
             print *, "bigger than required ", error_limit
-            print *, "relative error", abs_error/abs(result_quadpack)
-            error stop
+            print *, "relative error", abs_error/abs(result_quadkind)
+            error_occurred = .true.
         end if
 
         if (error_flag /= 0) then
             print *, "Integration warning: error =", error_flag
-            error stop
+            error_occurred = .true.
         end if
 
-        result = convert_to_dp(result_quadpack)
+        result = convert_to_dp(result_quadkind)
 
         if (ieee_is_nan(result)) then
             print *, "Integration result is NaN!"
-            error stop
+            error_occurred = .true.
         end if
+
+        if (error_occurred) error stop
 
     contains
 
         ! the function input also needs to be real(8) for quadpack
-        function quadpack_integrand(x_quadpack)
-            real(quadpack), intent(in) :: x_quadpack
-            real(quadpack) :: quadpack_integrand
+        function quadkind_integrand(x_quadkind)
+            real(quadkind), intent(in) :: x_quadkind
+            real(quadkind) :: quadkind_integrand
 
             real(dp) :: x_dp
 
-            x_dp = real(x_quadpack, kind=dp)
-            quadpack_integrand = real(f(x_dp), kind=quadpack)
-        end function quadpack_integrand
+            x_dp = real(x_quadkind, kind=dp)
+            quadkind_integrand = real(f(x_dp), kind=quadkind)
+        end function quadkind_integrand
 
     end subroutine integrate_1d
 
@@ -135,18 +149,18 @@ contains
 
     end subroutine integrate_1d_substituted
 
-    function convert_to_quadpack(val_dp) result(val_quadpack)
+    function convert_to_quadkind(val_dp) result(val_quadkind)
         real(dp), intent(in) :: val_dp
-        real(quadpack) :: val_quadpack
+        real(quadkind) :: val_quadkind
 
-        val_quadpack = real(val_dp, kind=quadpack)
-    end function convert_to_quadpack
+        val_quadkind = real(val_dp, kind=quadkind)
+    end function convert_to_quadkind
 
-    function convert_to_dp(val_quadpack) result(val_dp)
-        real(quadpack), intent(in) :: val_quadpack
+    function convert_to_dp(val_quadkind) result(val_dp)
+        real(quadkind), intent(in) :: val_quadkind
         real(dp) :: val_dp
 
-        val_dp = real(val_quadpack, kind=dp)
+        val_dp = real(val_quadkind, kind=dp)
     end function convert_to_dp
 
     function sum_trapez_1d(x, y)
