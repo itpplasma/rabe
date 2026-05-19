@@ -57,7 +57,8 @@ boundary correction derived by Helander, Geiger and Maasberg [3].
 ## Example
 
 This example walks through a complete run using the QH stellarator equilibrium
-from Ref. [4], which ships with the repository as a test input. While in `rabe`
+from Ref. [4], which ships with the repository as a test input.
+Commands are given for `bash` shell. While in `rabe`
 run
 
 **Step 1 — build:**
