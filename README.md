@@ -106,7 +106,10 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
     field_file = "wout_example.nc",      ! VMEC equilibrium file (.nc)
     M_pol = -1.0,                        ! poloidal helicity of omnigenity
     N_tor = 4.0,                         ! toroidal helicity of omnigenity
-    s_tor = 0.25, 0.5, 0.75,             ! surfaces by their normalized toroidal flux
+    s_tor = 0.25, 0.5, 0.75,             ! explicit surface list OR
+!   s_tor_min = 0.1,                     ! \
+!   s_tor_max = 0.9,                     !  } uniform range of surfaces
+!   n_s_tor   = 9,                       ! /
     sign_sqrtg = -1.0,                   ! sign of the Jacobian sqrt(g)
     max_n_fieldlines = 200,              ! maximum field lines per surface
     should_calc_shaing_callen = .true.,  ! compute Shaing-Callen proxy
@@ -130,7 +133,8 @@ $$
  B(\vartheta, \varphi) = \sum_{m,n} B_{m,n} \cos{(m\vartheta - n\varphi)}. \tag{4}
 $$
 
-`sign_sqrtg` is globally applied
+The list of surfaces on which to compute can either be given explicitly
+given in `s_tor` OR via a uniform range. `sign_sqrtg` is globally applied
 to all coefficients to account for different coordinate conventions.
 For typical `VMEC` output `sign_sqrtg=-1.0` (same as `signgs` in the `wou_*.nc`).
 
@@ -139,7 +143,7 @@ value per flux surface. Both files contain the same variables:
 
 | Variable | Description |
 | --- | --- |
-| `s_tor` | normalized toroidal flux label |
+| `s_tor` | toroidal flux $\psi$ normalized to flux at edge $\psi_a$ as $s_\mathrm{tor} = \psi/\psi_a$ |
 | `Lambda_bl` | $1/\sqrt{\nu_\ast}$ factor ($\Lambda_\mathrm{A}$ in Eq. 3) |
 | `Lambda_lm` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$ in Eq. 3) |
 | `nu_star_crit` | lower collisionality limit for asymptotic model validity |
