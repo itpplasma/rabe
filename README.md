@@ -37,7 +37,6 @@ needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
 
 - Fortran compiler (e.g. gfortran)
 - CMake ≥ 3.24
-- [Ninja](https://ninja-build.org) build system
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
 - BLAS and LAPACK
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
@@ -57,15 +56,15 @@ make CONFIG=Release
 ```
 
 This builds the executable `rabe.x` in Release mode and writes it to `build`.
-The second line is only needed if you have a enviroment variable `LIBNEO` set
+The second line is only needed if you have an enviroment variable `LIBNEO` set
 (see build instructions below).
 
-**Step 2 — create a working directory and copy the inputs:**
+**Step 2 — create a working directory and link the inputs:**
 
 ```bash
 mkdir run_example && cd run_example
-cp ../test/golden/input/rabe.in .
-cp ../test/integration/vmec/input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc .
+ln -s ../test/golden/input/rabe.in .
+ln -s ../test/integration/vmec/input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc .
 ```
 
 For explanation of the input parameters see the Input / Output section below.
@@ -173,6 +172,13 @@ not a developer, make sure to unset it before build e.g. with
 unset LIBNEO
 ```
 
+We use CMake for build configuration. If it is available on your machine, we
+recommend [Ninja](https://ninja-build.org) as the generator
+
+```bash
+export CMAKE_GENERATOR=Ninja
+```
+
 Run
 
 ```bash
@@ -202,12 +208,12 @@ System libraries required at build time:
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran) for NetCDF output
 - BLAS and LAPACK for linear algebra
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) for sparse linear systems (needed for legacy `.bc` file field readers in tests)
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O (uses `$LIBNEO` if present, otherwise fetched automatically)
 
 Fetched automatically during build:
 
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO` is present, that one is used instead (MIT)
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
-- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) for visualization, source and license under `plot_lib` (BSD-3-Clause)
+- [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 
 ## References
 

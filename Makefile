@@ -1,11 +1,10 @@
-GENERATOR ?= Ninja
 CONFIG ?= Debug
 
 .PHONY: all build test test_failed install clean plot golden golden_run dist
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(CONFIG)
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG)
 
 build: build/CMakeCache.txt
 	cmake --build build
