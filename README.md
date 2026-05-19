@@ -53,10 +53,13 @@ from Ref. [2], which ships with the repository as a test input.
 
 ```bash
 make clean
+unset LIBNEO
 make CONFIG=Release
 ```
 
-This builds `rabe` in Release mode and writes the executable to `build/rabe`.
+This builds the executable `rabe` in Release mode and writes it to `build`.
+The second line is only needed if you have a enviroment variable `LIBNEO` set
+(see build instructions below).
 
 **Step 2 — create a working directory and copy the inputs:**
 
@@ -144,10 +147,10 @@ value per flux surface. Both files contain the same variables:
 | Variable | Description |
 | --- | --- |
 | `s_tor` | toroidal flux $\psi$ normalized to flux at edge $\psi_a$ as $s_\mathrm{tor} = \psi/\psi_a$ |
-| `Lambda_bl` | $1/\sqrt{\nu_\ast}$ factor ($\Lambda_\mathrm{A}$ in Eq. 3) |
-| `Lambda_lm` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$ in Eq. 3) |
+| `Lambda_A` | $1/\sqrt{\nu_\ast}$ factor ($\Lambda_\mathrm{A}$ in Eq. 3) |
+| `Lambda_B` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$ in Eq. 3) |
 | `nu_star_crit` | lower collisionality limit for asymptotic model validity |
-| `Lambda_finite` | $\sqrt{\nu_\ast}$ correction for finite boundary layer width |
+| `Lambda_S` | $\sqrt{\nu_\ast}$ correction for finite boundary layer width |
 | `err_flag` | 1 if omnigeneity violation is too strong, 0 otherwise |
 | `R` | major radius [m] (reference length scale for $\nu_\ast$) |
 
@@ -163,7 +166,14 @@ if `should_calc_shaing_callen = .true.`
 
 ## Build and Tests
 
-Use
+The build uses the enviroment variable `LIBNEO` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
+not a developer, make sure to unset it before build e.g. with
+
+```bash
+unset LIBNEO
+```
+
+Run
 
 ```bash
 make
@@ -192,7 +202,7 @@ System libraries required at build time:
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran) for NetCDF output
 - BLAS and LAPACK for linear algebra
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) for sparse linear systems (needed for legacy `.bc` file field readers in tests)
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O (uses `$CODE/libneo` if present, otherwise fetched automatically)
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O (uses `$LIBNEO` if present, otherwise fetched automatically)
 
 Fetched automatically during build:
 
