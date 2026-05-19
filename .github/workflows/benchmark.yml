@@ -32,9 +32,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           gfortran cmake ninja-build make \
-          libblas-dev liblapack-dev libsuitesparse-dev libmpfr-dev \
-          libnetcdf-dev libnetcdff-dev libopenmpi-dev openmpi-bin \
-          libhdf5-dev libfftw3-dev libgsl-dev libopenblas-dev pkg-config
+          libblas-dev liblapack-dev libsuitesparse-dev \
+          libnetcdf-dev libnetcdff-dev pkg-config
         pip install numpy
 
     - name: Determine baseline ref

@@ -3,7 +3,6 @@ add_library(vmec_lib STATIC
             boozer_field.f90
             )
 
-include(Util)
-find_or_fetch(libneo)
+include(libneo)
 target_link_libraries(vmec_lib PRIVATE utils_lib field_lib LIBNEO::neo)
 target_include_directories(vmec_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
