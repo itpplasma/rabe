@@ -49,7 +49,7 @@ boundary correction derived by Helander, Geiger and Maasberg [3].
 ## Prerequisites
 
 - Fortran compiler (e.g. gfortran)
-- CMake ≥ 3.24
+- CMake >= 3.24
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
 - BLAS and LAPACK
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
