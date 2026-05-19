@@ -42,12 +42,11 @@ needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
 - BLAS and LAPACK
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
-
-
 ## Example
 
 This example walks through a complete run using the QH stellarator equilibrium
-from Ref. [2], which ships with the repository as a test input.
+from Ref. [2], which ships with the repository as a test input. While in `rabe`
+run
 
 **Step 1 — build:**
 
