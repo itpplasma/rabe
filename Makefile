@@ -1,7 +1,7 @@
 GENERATOR ?= Ninja
 CONFIG ?= Debug
 
-.PHONY: all build test test_failed install clean plot golden golden_run
+.PHONY: all build test test_failed install clean plot golden golden_run dist
 all: build
 
 build/CMakeCache.txt:
@@ -45,3 +45,6 @@ golden_update: build/test/golden/rabe.nc
 
 clean:
 	rm -rf build
+
+dist:
+	git archive --format=tar.gz --prefix=rabe/ HEAD -o rabe.tar.gz
