@@ -12,12 +12,12 @@ contains
                                                    dr_dAtheta, &
                                                    B_theta_covariant, &
                                                    B_phi_covariant) &
-        result(Lambda_finite)
+        result(Lambda_S)
         use surface_average_mod, only: surface_average_t, calc_surface_averages
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(in) :: R, dr_dAtheta
         real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
-        real(dp) :: Lambda_finite
+        real(dp) :: Lambda_S
 
         real(dp) :: I_ref, M_pol, N_tor, iota, eta_b
         real(dp) :: I_ref_hat
@@ -63,11 +63,11 @@ contains
                          /(M_pol*iota - N_tor)
 
         I_ref_hat = I_ref/eta_b*covariant_factor/(2.0_dp*pi*R)
-        Lambda_finite = sqrt(I_ref_hat)*average%B_squared*eta_b**2/average%lambda_b
-        Lambda_finite = 1.5_dp*0.855_dp/sqrt(pi)*Lambda_finite
-        Lambda_finite = -helical_factor*dr_dAtheta*Lambda_finite
-        if (ieee_is_nan(Lambda_finite)) then
-            print *, "error: Lambda_finite is NaN."
+        Lambda_S = sqrt(I_ref_hat)*average%B_squared*eta_b**2/average%lambda_b
+        Lambda_S = 1.5_dp*0.855_dp/sqrt(pi)*Lambda_S
+        Lambda_S = -helical_factor*dr_dAtheta*Lambda_S
+        if (ieee_is_nan(Lambda_S)) then
+            print *, "error: Lambda_S is NaN."
             error stop
         end if
     end function calc_finite_boundary_layer_correction
@@ -114,7 +114,7 @@ contains
         nu_star_crit = 0.125_dp*(max_delta_eta/eta_b)**2.0_dp/I_ref_hat
 
         if (ieee_is_nan(nu_star_crit)) then
-            print *, "error: Lambda_finite is NaN."
+            print *, "error: Lambda_S is NaN."
             error stop
         end if
     end function calc_nu_star_crit

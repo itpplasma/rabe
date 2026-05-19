@@ -16,18 +16,18 @@ if has_sc:
 else:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
 
-ax1.plot(s, ds["Lambda_bl"].values, "o-", label=r"$\Lambda_A$ (1/$\sqrt{\nu_*}$)")
-ax1.plot(s, ds["Lambda_lm"].values, "s-", label=r"$\Lambda_B$ (1/$\nu_*$)")
+ax1.plot(s, ds["Lambda_A"].values, "o-", label=r"$\Lambda_A$ (1/$\sqrt{\nu_*}$)")
+ax1.plot(s, ds["Lambda_B"].values, "s-", label=r"$\Lambda_B$ (1/$\nu_*$)")
 ax1.set_xlabel(r"$s_\mathrm{tor}$")
 ax1.set_ylabel("coefficient [1]")
 ax1.set_title("off-set")
 ax1.legend()
 ax1.grid(True)
 
-ax2.plot(s, ds["Lambda_finite"].values, "^-")
+ax2.plot(s, ds["Lambda_S"].values, "^-")
 ax2.set_xlabel(r"$s_\mathrm{tor}$")
 ax2.set_ylabel("coefficient [1]")
-ax2.set_title(r"$\Lambda_\mathrm{HGM}$")
+ax2.set_title(r"$\Lambda_\mathrm{S}$")
 ax2.grid(True)
 
 if has_sc:

@@ -45,7 +45,7 @@ program plot_finite_collisionality_landreman_paul_axi
     real(dp) :: lambda_SC
     real(dp) :: helical_factor
     real(dp) :: I_ref_hat
-    real(dp) :: Lambda_finite
+    real(dp) :: Lambda_S
     type(surface_average_t) :: average
 
     call field%neo_field_init(bc_filename, stor)
@@ -77,15 +77,15 @@ program plot_finite_collisionality_landreman_paul_axi
                      (M_pol*iota - N_tor)
     lambda_SC = helical_factor*dr_dAtheta*trapped_fraction
 
-    Lambda_finite = calc_finite_boundary_layer_correction(fieldlines, &
-                                                          R, &
-                                                          dr_dAtheta, &
-                                                          field%B_theta_covariant, &
-                                                          field%B_phi_covariant)
+    Lambda_S = calc_finite_boundary_layer_correction(fieldlines, &
+                                                     R, &
+                                                     dr_dAtheta, &
+                                                     field%B_theta_covariant, &
+                                                     field%B_phi_covariant)
 
     call plot_asymptotic_model(off_factor_A, &
                                off_factor_B, &
                                lambda_SC, &
-                               Lambda_finite)
+                               Lambda_S)
 
 end program plot_finite_collisionality_landreman_paul_axi

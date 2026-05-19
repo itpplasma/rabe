@@ -11,9 +11,9 @@ else
 end
 
 s             = ncread(path, 's_tor');
-Lambda_bl     = ncread(path, 'Lambda_bl');
-Lambda_lm     = ncread(path, 'Lambda_lm');
-Lambda_finite = ncread(path, 'Lambda_finite');
+Lambda_A     = ncread(path, 'Lambda_A');
+Lambda_B     = ncread(path, 'Lambda_B');
+Lambda_S = ncread(path, 'Lambda_S');
 
 info = ncinfo(path);
 varnames = {info.Variables.Name};
@@ -32,7 +32,7 @@ if has_sc
 else
     subplot(1, 2, 1);
 end
-plot(s, Lambda_bl, 'o-', s, Lambda_lm, 's-');
+plot(s, Lambda_A, 'o-', s, Lambda_B, 's-');
 xlabel('s_{tor}');
 ylabel('coefficient [1]');
 title('off-set');
@@ -44,10 +44,10 @@ if has_sc
 else
     subplot(1, 2, 2);
 end
-plot(s, Lambda_finite, '^-');
+plot(s, Lambda_S, '^-');
 xlabel('s_{tor}');
 ylabel('coefficient [1]');
-title('\Lambda_{HGM}');
+title('\Lambda_{S}');
 grid on;
 
 if has_sc
