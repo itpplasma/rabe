@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779195398411,
+  "lastUpdate": 1779204185014,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -139,6 +139,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 68150,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "92dce3845f77fd887df86246c92894c1609646c0",
+          "message": "check: origin with tol (#67)\n\n* check: origin with tol\n\nDue to the field slightly violating stellator symmetry, the minimum\nmight not lie at the minimum (including error tolerances). We therefore\ncheck the the B value difference between the origin and the found\nminimum is below the symmetry violation.\n\n* archive: git snapeshot",
+          "timestamp": "2026-05-19T17:19:10+02:00",
+          "tree_id": "677f0c24b01393e3d23f42fe95ca8a59b23970c6",
+          "url": "https://github.com/itpplasma/rabe/commit/92dce3845f77fd887df86246c92894c1609646c0"
+        },
+        "date": 1779204184312,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9922,
+            "unit": "ratio",
+            "extra": "current: 71040 ms, baseline: 71600 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 71040,
             "unit": "ms"
           }
         ]
