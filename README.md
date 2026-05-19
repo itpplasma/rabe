@@ -27,8 +27,11 @@ $$
     \lambda_{\text{off}} = \frac{\Lambda_\mathrm{A}}{\sqrt{\nu_\ast}} + \frac{\Lambda_\mathrm{B}}{\nu_\ast},
 $$
 where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
-due to the variation of the trapped-passing boundary layer width and the misalignment of local maxima, respectively (see Ref. [1]). `rabe` computes those
-geometrical factors.
+due to the variation of the trapped-passing boundary layer width and the misalignment
+of local maxima, respectively (see Ref. [1]).
+
+Given a VMEC equilibrium file, `rabe` outputs those geometric coefficients
+needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
 
 ## Prerequisites
 
@@ -134,7 +137,9 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
 
 The type of omnigenity is set by the helicity of its perfect
 omnigenous pendant, where contours of $B$ are closed after `M_pol`
-toroidal and `N_tor` poloidal turns. `sign_sqrtg` is globally applied to all coefficients to account for different coordinate conventions. For typical `VMEC` output `sign_sqrtg=-1.0` (same as `signgs` in the `wou_*.nc`).
+toroidal and `N_tor` poloidal turns. `sign_sqrtg` is globally applied
+to all coefficients to account for different coordinate conventions.
+For typical `VMEC` output `sign_sqrtg=-1.0` (same as `signgs` in the `wou_*.nc`).
 
 Results are written to `rabe.nc` (NetCDF), with one value per flux surface:
 
