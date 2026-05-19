@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779113687596,
+  "lastUpdate": 1779195398411,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -104,6 +104,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 59530,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "550ccebd7993311d30e2598db981bc0624dbff2e",
+          "message": "update/doc (#69)\n\n* added plotting scripts to golden record example\n\n* extended README",
+          "timestamp": "2026-05-19T14:52:44+02:00",
+          "tree_id": "22e5263cde53b19828ef70a4dcbcb59f4e591f2e",
+          "url": "https://github.com/itpplasma/rabe/commit/550ccebd7993311d30e2598db981bc0624dbff2e"
+        },
+        "date": 1779195397696,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9962,
+            "unit": "ratio",
+            "extra": "current: 68150 ms, baseline: 68410 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 68150,
             "unit": "ms"
           }
         ]
