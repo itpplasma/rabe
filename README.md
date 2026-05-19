@@ -151,11 +151,12 @@ value per flux surface. Both files contain the same variables:
 | `Lambda_B` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$ in Eq. 3) |
 | `nu_star_crit` | lower collisionality limit for asymptotic model validity |
 | `Lambda_S` | $\sqrt{\nu_\ast}$ correction for finite boundary layer width |
-| `err_flag` | 1 if omnigeneity violation is too strong, 0 otherwise |
+| `split_maxima` | 1 if omnigeneity violation is too strong, 0 otherwise |
 | `R` | major radius [m] (reference length scale for $\nu_\ast$) |
 
-`err_flag` warns the user to treat the results with caution,
-as more than one local maximum on each side of a magnetic well was detected.
+`split_maxima` warns the user to treat the results with caution. If the
+violation of omnigenity is too strong, local maxima contours are not merely
+deformed, but also split/biforcate, which this flag notes.
 
 if `should_calc_shaing_callen = .true.`
 

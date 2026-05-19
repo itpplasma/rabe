@@ -53,7 +53,7 @@ program rabe
     real(dp), dimension(:), allocatable :: Lambda_A, Lambda_B
     real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_S
-    integer, dimension(:), allocatable :: err_flag
+    integer, dimension(:), allocatable :: split_maxima
     real(dp) :: helical_factor
 
     real(dp) :: trapped_fraction
@@ -70,7 +70,7 @@ program rabe
     allocate (Lambda_B(n_stor))
     allocate (nu_star_crit(n_stor))
     allocate (Lambda_S(n_stor))
-    allocate (err_flag(n_stor))
+    allocate (split_maxima(n_stor))
     if (should_calc_shaing_callen) then
         allocate (lambda_SC(n_stor))
         allocate (remainder(n_stor))
@@ -98,7 +98,7 @@ program rabe
                                       M_pol, &
                                       N_tor, &
                                       nfp, &
-                                      err_flag(this))
+                                      split_maxima(this))
 
         call calc_deviation(fieldlines, deviation_A, deviation_B)
 
@@ -173,8 +173,8 @@ program rabe
                       "sqrt(nu_star) factor accounting for finite boundary layer width")
     call nc_output%add_attr("Lambda_S", "unit", &
                             "[1]")
-    call nc_output%add_int_1d("err_flag", dim_name)
-    call nc_output%add_attr("err_flag", "long_name", &
+    call nc_output%add_int_1d("split_maxima", dim_name)
+    call nc_output%add_attr("split_maxima", "long_name", &
                             "1 if violation of omnigeneity is too strong, 0 otherwise")
     call nc_output%add_real("R")
     call nc_output%add_attr("R", "long_name", &
@@ -201,7 +201,7 @@ program rabe
     call nc_output%write_real_1d("Lambda_B", Lambda_B)
     call nc_output%write_real_1d("nu_star_crit", nu_star_crit)
     call nc_output%write_real_1d("Lambda_S", Lambda_S)
-    call nc_output%write_int_1d("err_flag", err_flag)
+    call nc_output%write_int_1d("split_maxima", split_maxima)
     call nc_output%write_real_1d("s_tor", s_tor)
     call nc_output%write_real("R", field%R)
     call nc_output%close()
@@ -209,12 +209,12 @@ program rabe
     if (should_calc_shaing_callen) then
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
-                              nu_star_crit, Lambda_S, err_flag, &
+                              nu_star_crit, Lambda_S, split_maxima, &
                               lambda_SC=lambda_SC, remainder=remainder)
     else
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
-                              nu_star_crit, Lambda_S, err_flag)
+                              nu_star_crit, Lambda_S, split_maxima)
     end if
 
     if (allocated(Lambda_A)) deallocate (Lambda_A)
@@ -228,7 +228,7 @@ contains
 
     subroutine write_dat_output(filename, git_hash, R, n, s_tor, &
                                 Lambda_A, Lambda_B, nu_star_crit, &
-                                Lambda_S, err_flag, &
+                                Lambda_S, split_maxima, &
                                 lambda_SC, remainder)
         use constants, only: dp
         character(len=*), intent(in) :: filename
@@ -237,7 +237,7 @@ contains
         integer, intent(in) :: n
         real(dp), intent(in) :: s_tor(n), Lambda_A(n), Lambda_B(n)
         real(dp), intent(in) :: nu_star_crit(n), Lambda_S(n)
-        integer, intent(in) :: err_flag(n)
+        integer, intent(in) :: split_maxima(n)
         real(dp), optional, intent(in) :: lambda_SC(n), remainder(n)
 
         integer :: u, i
@@ -254,22 +254,22 @@ contains
         if (with_sc) then
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
-                //"  Lambda_S  err_flag  lambda_SC_bB  remainder"
+                //"  Lambda_S  split_maxima  lambda_SC_bB  remainder"
         else
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
-                //"  Lambda_S  err_flag"
+                //"  Lambda_S  split_maxima"
         end if
         do i = 1, n
             if (with_sc) then
                 write (u, "(ES23.15,4(1X,ES23.15),1X,I2,2(1X,ES23.15))") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &
-                    nu_star_crit(i), Lambda_S(i), err_flag(i), &
+                    nu_star_crit(i), Lambda_S(i), split_maxima(i), &
                     lambda_SC(i), remainder(i)
             else
                 write (u, "(ES23.15,4(1X,ES23.15),1X,I2)") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &
-                    nu_star_crit(i), Lambda_S(i), err_flag(i)
+                    nu_star_crit(i), Lambda_S(i), split_maxima(i)
             end if
         end do
         close (u)
