@@ -4,7 +4,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/expected DESTINATION ${CMAKE_CURRENT_BINAR
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/compare_golden.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_test(NAME GoldenRecordRun
-         COMMAND ${CMAKE_BINARY_DIR}/rabe
+         COMMAND ${CMAKE_BINARY_DIR}/rabe.x
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(GoldenRecordRun PROPERTIES
     FIXTURES_SETUP GoldenOutput)

@@ -57,7 +57,7 @@ unset LIBNEO
 make CONFIG=Release
 ```
 
-This builds the executable `rabe` in Release mode and writes it to `build`.
+This builds the executable `rabe.x` in Release mode and writes it to `build`.
 The second line is only needed if you have a enviroment variable `LIBNEO` set
 (see build instructions below).
 
@@ -74,7 +74,7 @@ For explanation of the input parameters see the Input / Output section below.
 **Step 3 — run:**
 
 ```bash
-../build/rabe
+../build/rabe.x
 ```
 
 `rabe` reads `rabe.in` and `field_file` from the working directory and writes
