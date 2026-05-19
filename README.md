@@ -10,21 +10,21 @@ and $\bar D_{13}$, can be expressed
 via a dimensionless geometry parameter $\lambda_{bB}$,
 
 $$
-\bar D_{31}=\bar D_{13} = \frac{1}{3} v \rho_L B \lambda_{bB},
+\bar D_{31}=\bar D_{13} = \frac{1}{3} v \rho_L B \lambda_{bB}, \tag{1}
 $$
 
 scaling out particle velocity $v$, $\rho_L$ and $B$. This parameter can
 be split into a ''symmetric'' contribution and a ''non-symmetric''  off-set,
 
 $$
-\lambda_{bB} = \lambda_\mathrm{sym} + \lambda_\mathrm{off}.
+\lambda_{bB} = \lambda_\mathrm{sym} + \lambda_\mathrm{off}. \tag{2}
 $$
 
 For near-omnigenous stellarators at low plasma collisionality
 $\nu_\ast=\pi R \nu_{\perp}/v$, where $\nu_\perp$ and $R$ are deflection frequency and
 device major radius, respectively, the off-set can be expressed as
 $$
-    \lambda_{\text{off}} = \frac{\Lambda_\mathrm{A}}{\sqrt{\nu_\ast}} + \frac{\Lambda_\mathrm{B}}{\nu_\ast},
+    \lambda_{\text{off}} = \frac{\Lambda_\mathrm{A}}{\sqrt{\nu_\ast}} + \frac{\Lambda_\mathrm{B}}{\nu_\ast}, \tag{3}
 $$
 where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
 due to the variation of the trapped-passing boundary layer width and the misalignment
@@ -42,28 +42,7 @@ needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
 - BLAS and LAPACK
 - [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
 
-## Build and Tests
 
-Use
-
-```bash
-make
-```
-
-to build the executable (debug build) or `make CONFIG=Release` for an optimized
-build, and
-
-```bash
-make test
-```
-
-or
-
-```bash
-make test_all
-```
-
-to execute tests.
 
 ## Example
 
@@ -96,7 +75,7 @@ For explanation of the input parameters see the Input / Output section below.
 ```
 
 `rabe` reads `rabe.in` and `field_file` from the working directory and writes
-results to `rabe.nc` after completion.
+results to `rabe.nc` and `rabe.dat` after completion.
 
 **Step 4 — visualize:**
 
@@ -125,9 +104,9 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
 ```fortran
 &rabe_config
     field_file = "wout_example.nc",      ! VMEC equilibrium file (.nc)
-    s_tor = 0.25, 0.5, 0.75,             ! surfaces by their normalized toroidal flux
     M_pol = -1.0,                        ! poloidal helicity of omnigenity
     N_tor = 4.0,                         ! toroidal helicity of omnigenity
+    s_tor = 0.25, 0.5, 0.75,             ! surfaces by their normalized toroidal flux
     sign_sqrtg = -1.0,                   ! sign of the Jacobian sqrt(g)
     max_n_fieldlines = 200,              ! maximum field lines per surface
     should_calc_shaing_callen = .true.,  ! compute Shaing-Callen proxy
@@ -135,19 +114,34 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
 /
 ```
 
-The type of omnigenity is set by the helicity of its perfect
-omnigenous pendant, where contours of $B$ are closed after `M_pol`
-toroidal and `N_tor` poloidal turns. `sign_sqrtg` is globally applied
+The type of omnigenity is set by the helicity
+
+| type of omnigenity | `M_pol` | `N_tor` |
+| --- | --- | --- |
+| quasi-axisymmetric | 1 | 0 |
+| quasi-isodynamic | 0 | $N_p$ |
+| quasi-helicalsymmetric | $M$ | $N_p$ |
+
+where $N_p$ is the number of field periods and $M$ is
+given by the poloidal mode number $m$ of the strongest mode
+$(m,n=N_p)$ of the Boozer spectrum
+
+$$
+ B(\vartheta, \varphi) = \sum_{m,n} B_{m,n} \cos{(m\vartheta - n\varphi)}. \tag{4}
+$$
+
+`sign_sqrtg` is globally applied
 to all coefficients to account for different coordinate conventions.
 For typical `VMEC` output `sign_sqrtg=-1.0` (same as `signgs` in the `wou_*.nc`).
 
-Results are written to `rabe.nc` (NetCDF), with one value per flux surface:
+Results are written to `rabe.nc` (NetCDF) and `rabe.dat` (plain text), with one
+value per flux surface. Both files contain the same variables:
 
 | Variable | Description |
-|---|---|
+| --- | --- |
 | `s_tor` | normalized toroidal flux label |
-| `Lambda_bl` | $1/\sqrt{\nu_\ast}$ factor ($\Lambda_\mathrm{A}$) |
-| `Lambda_lm` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$)|
+| `Lambda_bl` | $1/\sqrt{\nu_\ast}$ factor ($\Lambda_\mathrm{A}$ in Eq. 3) |
+| `Lambda_lm` | $1/\nu_\ast$ factor ($\Lambda_\mathrm{B}$ in Eq. 3) |
 | `nu_star_crit` | lower collisionality limit for asymptotic model validity |
 | `Lambda_finite` | $\sqrt{\nu_\ast}$ correction for finite boundary layer width |
 | `err_flag` | 1 if omnigeneity violation is too strong, 0 otherwise |
@@ -159,9 +153,33 @@ as more than one local maximum on each side of a magnetic well was detected.
 if `should_calc_shaing_callen = .true.`
 
 | Variable | Description |
-|---|---|
+| --- | --- |
 | `lambda_SC_bB` | omnigenous Shaing-Callen coefficient |
 | `remainder` | non-omnigenous remainder of Shaing-Callen coefficient |
+
+## Build and Tests
+
+Use
+
+```bash
+make
+```
+
+to build the executable (debug build) or `make CONFIG=Release` for an optimized
+build. You can run the main suite of tests used to ensure correctness
+of the code with
+
+```bash
+make test
+```
+
+or run all tests (including ones that take quite some time)
+
+```bash
+make test_all
+```
+
+The tests as well as their description, can be found in `test`.
 
 ## Third Party
 

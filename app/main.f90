@@ -28,6 +28,7 @@ program rabe
 
     character(len=*), parameter :: input_file = "rabe.in"
     character(len=*), parameter :: output_file = "rabe.nc"
+    character(len=*), parameter :: dat_file = "rabe.dat"
 
     type(boozer_field_t) :: field
 
@@ -205,11 +206,73 @@ program rabe
     call nc_output%write_real("R", field%R)
     call nc_output%close()
 
+    if (should_calc_shaing_callen) then
+        call write_dat_output(dat_file, git_hash, field%R, n_stor, &
+                              s_tor, Lambda_bl, Lambda_lm, &
+                              nu_star_crit, Lambda_finite, err_flag, &
+                              lambda_SC=lambda_SC, remainder=remainder)
+    else
+        call write_dat_output(dat_file, git_hash, field%R, n_stor, &
+                              s_tor, Lambda_bl, Lambda_lm, &
+                              nu_star_crit, Lambda_finite, err_flag)
+    end if
+
     if (allocated(Lambda_bl)) deallocate (Lambda_bl)
     if (allocated(Lambda_lm)) deallocate (Lambda_lm)
     if (allocated(nu_star_crit)) deallocate (nu_star_crit)
     if (allocated(Lambda_finite)) deallocate (Lambda_finite)
     if (allocated(lambda_SC)) deallocate (lambda_SC)
     if (allocated(remainder)) deallocate (remainder)
+
+contains
+
+    subroutine write_dat_output(filename, git_hash, R, n, s_tor, &
+                                Lambda_bl, Lambda_lm, nu_star_crit, &
+                                Lambda_finite, err_flag, &
+                                lambda_SC, remainder)
+        use constants, only: dp
+        character(len=*), intent(in) :: filename
+        character(len=*), intent(in) :: git_hash
+        real(dp), intent(in) :: R
+        integer, intent(in) :: n
+        real(dp), intent(in) :: s_tor(n), Lambda_bl(n), Lambda_lm(n)
+        real(dp), intent(in) :: nu_star_crit(n), Lambda_finite(n)
+        integer, intent(in) :: err_flag(n)
+        real(dp), optional, intent(in) :: lambda_SC(n), remainder(n)
+
+        integer :: u, i
+        logical :: with_sc
+
+        with_sc = present(lambda_SC)
+
+        open (newunit=u, file=filename, status="replace", action="write")
+        write (u, "(A)") "# asymptotic bootstrap coefficient lambda_bB"
+        write (u, "(A)") &
+            "# lambda^{off}_bB = Lambda_bl/sqrt(nu_star) + Lambda_lm/nu_star"
+        write (u, "(A,A)") "# git_hash: ", trim(git_hash)
+        write (u, "(A,ES23.15)") "# R [m]: ", R
+        if (with_sc) then
+            write (u, "(A)") &
+                "# s_tor  Lambda_bl  Lambda_lm  nu_star_crit" &
+                //"  Lambda_finite  err_flag  lambda_SC_bB  remainder"
+        else
+            write (u, "(A)") &
+                "# s_tor  Lambda_bl  Lambda_lm  nu_star_crit" &
+                //"  Lambda_finite  err_flag"
+        end if
+        do i = 1, n
+            if (with_sc) then
+                write (u, "(ES23.15,4(1X,ES23.15),1X,I2,2(1X,ES23.15))") &
+                    s_tor(i), Lambda_bl(i), Lambda_lm(i), &
+                    nu_star_crit(i), Lambda_finite(i), err_flag(i), &
+                    lambda_SC(i), remainder(i)
+            else
+                write (u, "(ES23.15,4(1X,ES23.15),1X,I2)") &
+                    s_tor(i), Lambda_bl(i), Lambda_lm(i), &
+                    nu_star_crit(i), Lambda_finite(i), err_flag(i)
+            end if
+        end do
+        close (u)
+    end subroutine write_dat_output
 
 end program rabe
