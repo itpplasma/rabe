@@ -30,6 +30,15 @@ where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
 due to the variation of the trapped-passing boundary layer width and the misalignment of local maxima, respectively (see Ref. [1]). `rabe` computes those
 geometrical factors.
 
+## Prerequisites
+
+- Fortran compiler (e.g. gfortran)
+- CMake ≥ 3.24
+- [Ninja](https://ninja-build.org) build system
+- [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
+- BLAS and LAPACK
+- [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
+
 ## Build and Tests
 
 Use
@@ -38,7 +47,8 @@ Use
 make
 ```
 
-to build the executable and
+to build the executable (debug build) or `make CONFIG=Release` for an optimized
+build, and
 
 ```bash
 make test
@@ -74,7 +84,7 @@ cp ../test/golden/input/rabe.in .
 cp ../test/integration/vmec/input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc .
 ```
 
-For explaination of the input in `rabe.in` see the section below.
+For explanation of the input parameters see the Input / Output section below.
 
 **Step 3 — run:**
 
@@ -102,7 +112,8 @@ octave plot_golden.m rabe.nc
 Both produce `rabe_output.png` showing the off-set factors ($\Lambda_A$,
 $\Lambda_B$), $\Lambda_\mathrm{HGM}$, and — if `should_calc_shaing_callen =
 .true.` — the Shaing-Callen coefficients, all plotted against $s_\mathrm{tor}$.
-The Python script requires `matplotlib` and `xarray`.
+The Python script requires `matplotlib` and `xarray`. The Octave script
+requires the `netcdf` package (`pkg install -forge netcdf` if not present).
 
 ## Input / Output
 
@@ -121,6 +132,10 @@ The Python script requires `matplotlib` and `xarray`.
 /
 ```
 
+The type of omnigenity is set by the helicity of its perfect
+omnigenous pendant, where contours of $B$ are closed after `M_pol`
+toroidal and `N_tor` poloidal turns. `sign_sqrtg` is globally applied to all coefficients to account for different coordinate conventions. For typical `VMEC` output `sign_sqrtg=-1.0` (same as `signgs` in the `wou_*.nc`).
+
 Results are written to `rabe.nc` (NetCDF), with one value per flux surface:
 
 | Variable | Description |
@@ -132,6 +147,9 @@ Results are written to `rabe.nc` (NetCDF), with one value per flux surface:
 | `Lambda_finite` | $\sqrt{\nu_\ast}$ correction for finite boundary layer width |
 | `err_flag` | 1 if omnigeneity violation is too strong, 0 otherwise |
 | `R` | major radius [m] (reference length scale for $\nu_\ast$) |
+
+`err_flag` warns the user to treat the results with caution,
+as more than one local maximum on each side of a magnetic well was detected.
 
 if `should_calc_shaing_callen = .true.`
 
