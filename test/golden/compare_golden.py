@@ -35,7 +35,7 @@ def main():
                 current[var].values,
                 expected[var].values,
                 rtol=1e-10,
-                atol=1e-14,
+                atol=0.0,
             )
             print(f"PASS: {var}")
         except AssertionError as e:
