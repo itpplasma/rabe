@@ -8,6 +8,7 @@ module field_base
         procedure(compute_B_and_dB_dx), deferred :: compute_B_and_dB_dx
         procedure(compute_B_mod), deferred :: compute_B_mod
         procedure(compute_nabla_s), deferred :: compute_nabla_s
+        procedure(rel_accuracy_B), deferred :: rel_accuracy_B
     end type field_t
 
     interface
@@ -44,6 +45,14 @@ module field_base
             real(dp), intent(in) :: theta, phi
             real(dp), intent(out) :: nabla_s
         end subroutine
+    end interface
+
+    interface
+        !> Relative accuracy of B_mod evaluations for this field representation.
+        real(dp) function rel_accuracy_B(self)
+            import :: field_t, dp
+            class(field_t), intent(in) :: self
+        end function
     end interface
 
 end module field_base

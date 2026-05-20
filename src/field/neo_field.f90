@@ -19,6 +19,7 @@ module neo_field
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
         procedure :: neo_change_stor
+        procedure :: rel_accuracy_B
     end type neo_field_t
 
 contains
@@ -158,5 +159,11 @@ contains
                           self%B_theta_covariant, &
                           self%B_phi_covariant)
     end subroutine
+
+    real(dp) function rel_accuracy_B(self)
+        class(neo_field_t), intent(in) :: self
+
+        rel_accuracy_B = 1e-14_dp
+    end function rel_accuracy_B
 
 end module neo_field

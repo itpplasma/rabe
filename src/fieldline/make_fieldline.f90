@@ -36,7 +36,6 @@ contains
         integer :: n_fieldlines
         integer :: current
         real(dp) :: symmetry_violation
-        real(dp), parameter :: violation_tol = 1e-11_dp
 
         if (present(split_maxima)) then
             split_maxima = 0
@@ -53,15 +52,7 @@ contains
         fieldlines%nfp = nfp
 
         symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
-        if (symmetry_violation > violation_tol) then
-            print *, "error: provided field violates stellarator symmetry too strongly!"
-            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
-                symmetry_violation
-            error stop
-        end if
-
-        symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
-        if (symmetry_violation > violation_tol) then
+        if (symmetry_violation > field%rel_accuracy_B()) then
             print *, "error: provided field violates stellarator symmetry too strongly!"
             print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
                 symmetry_violation

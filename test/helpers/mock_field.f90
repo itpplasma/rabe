@@ -13,6 +13,7 @@ module mock_field
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
+        procedure :: rel_accuracy_B
     end type mock_field_t
 
 contains
@@ -70,5 +71,11 @@ contains
         nabla_s = 1.0_dp
 
     end subroutine compute_nabla_s
+
+    real(dp) function rel_accuracy_B(self)
+        class(mock_field_t), intent(in) :: self
+
+        rel_accuracy_B = 1e-14_dp
+    end function rel_accuracy_B
 
 end module mock_field
