@@ -3,6 +3,9 @@
     M_pol = -1.0d0,
     N_tor = 4.0d0,
     s_tor = 0.255102041, 0.316326531, 0.5, 0.704081633, 0.908163265,
+!   s_tor_min = 0.1,
+!   s_tor_max = 0.9
+!   n_s_tor = 5,  ! alternative: uniform range
     sign_sqrtg = -1.0d0,
     max_n_fieldlines = 200,
     should_calc_shaing_callen = .true.,

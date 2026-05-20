@@ -15,11 +15,18 @@ module read_file
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
 
+    real(dp), public, protected :: s_tor_min
+    real(dp), public, protected :: s_tor_max
+    integer, public, protected :: n_s_tor
+
     namelist /rabe_config/ &
         field_file, &
         M_pol, &
         N_tor, &
         s_tor, &
+        s_tor_min, &
+        s_tor_max, &
+        n_s_tor, &
         sign_sqrtg, &
         max_n_fieldlines, &
         should_calc_shaing_callen, &
@@ -28,6 +35,7 @@ module read_file
 contains
 
     subroutine read_namelist(filename)
+        use utils, only: linspace
         implicit none
         character(len=*), intent(in) :: filename
         integer :: ios, unit
@@ -35,8 +43,9 @@ contains
 
         real(dp), dimension(:), allocatable :: s_tor_temp
         integer, parameter :: n_stor_max = 1000
-        integer :: n_stor
+        integer :: n_list
         real(dp) :: nan_value
+        logical :: has_list, has_range
 
         inquire (file=filename, exist=file_exists)
         if (.not. file_exists) then
@@ -50,12 +59,16 @@ contains
             error stop
         end if
 
+        nan_value = ieee_value(nan_value, ieee_quiet_nan)
+
         ! Default values
         should_calc_shaing_callen = .false.
         n_eta = 100
+        s_tor_min = nan_value
+        s_tor_max = nan_value
+        n_s_tor = 0
         if (allocated(s_tor)) deallocate (s_tor)
         allocate (s_tor(n_stor_max))
-        nan_value = ieee_value(nan_value, ieee_quiet_nan)
         s_tor = nan_value
 
         read (unit, nml=rabe_config, iostat=ios)
@@ -64,28 +77,47 @@ contains
             print *, "iostat = ", ios
             error stop
         end if
+        close (unit)
 
-        n_stor = count(.not. ieee_is_nan(s_tor))
-        if (n_stor == 0) then
-            print *, "Error in read_namelist: no s_tor values provided in namelist"
+        n_list = count(.not. ieee_is_nan(s_tor))
+        has_list = n_list > 0
+        has_range = (.not. ieee_is_nan(s_tor_min)) .and. &
+                    (.not. ieee_is_nan(s_tor_max)) .and. &
+                    (n_s_tor > 0)
+
+        if (has_list .and. has_range) then
+            print *, "Error in read_namelist: both s_tor list and s_tor range " &
+                //"(s_tor_min, s_tor_max, n_s_tor) are specified. Use one or the other."
             error stop
         end if
-        if (n_stor >= n_stor_max) then
-           print *, "Error in read_namelist: too many s_tor values provided in namelist"
+
+        if (.not. has_list .and. .not. has_range) then
+            print *, "Error in read_namelist: no s_tor values provided. " &
+                //"Set either s_tor or (s_tor_min, s_tor_max, n_s_tor)."
             error stop
         end if
-        ! Need temporary storage to reduce the size of s_tor to amount of inputs
-        if (allocated(s_tor_temp)) deallocate (s_tor_temp)
-        allocate (s_tor_temp(n_stor))
-        s_tor_temp = pack(s_tor,.not. ieee_is_nan(s_tor))
-        deallocate (s_tor)
-        allocate (s_tor(n_stor))
-        s_tor = s_tor_temp
-        deallocate (s_tor_temp)
+
+        if (has_range) then
+            deallocate (s_tor)
+            allocate (s_tor(n_s_tor))
+            call linspace(s_tor_min, s_tor_max, n_s_tor, s_tor)
+        else
+            if (n_list >= n_stor_max) then
+                print *, "Error in read_namelist: too many s_tor values ", &
+                    "provided in namelist"
+                error stop
+            end if
+            if (allocated(s_tor_temp)) deallocate (s_tor_temp)
+            allocate (s_tor_temp(n_list))
+            s_tor_temp = pack(s_tor,.not. ieee_is_nan(s_tor))
+            deallocate (s_tor)
+            allocate (s_tor(n_list))
+            s_tor = s_tor_temp
+            deallocate (s_tor_temp)
+        end if
 
         call check_if_valid_namelist()
 
-        close (unit)
     end subroutine read_namelist
 
     subroutine check_if_valid_namelist()
@@ -133,6 +165,16 @@ contains
         if (any(s_tor <= 0.0_dp) .or. any(s_tor >= 1.0_dp)) then
             print *, "s_tor must be in ]0.0, 1.0["
             is_valid = .false.
+        end if
+        if (n_s_tor > 0) then
+            if (s_tor_min >= s_tor_max) then
+                print *, "s_tor_min must be less than s_tor_max"
+                is_valid = .false.
+            end if
+            if (n_s_tor < 2) then
+                print *, "n_s_tor must be at least 2"
+                is_valid = .false.
+            end if
         end if
         if (max_n_fieldlines <= 1) then
             print *, "max_n_fieldlines must be bigger than 1"

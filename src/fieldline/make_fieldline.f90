@@ -17,7 +17,7 @@ contains
 
     subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, &
-                                        err_flag)
+                                        split_maxima)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
@@ -27,7 +27,7 @@ contains
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
-        integer, intent(out), optional :: err_flag
+        integer, intent(out), optional :: split_maxima
 
         real(dp) :: interval(2)
         type(maxima_t) :: maxima
@@ -38,8 +38,8 @@ contains
         real(dp) :: symmetry_violation
         real(dp), parameter :: violation_tol = 1e-11_dp
 
-        if (present(err_flag)) then
-            err_flag = 0
+        if (present(split_maxima)) then
+            split_maxima = 0
         end if
 
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
@@ -132,8 +132,8 @@ contains
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
-            if (present(err_flag)) then
-                err_flag = 1
+            if (present(split_maxima)) then
+                split_maxima = 1
             end if
         end if
         !> If eta_b is chosen exactly to be 1/B_max, one relies that

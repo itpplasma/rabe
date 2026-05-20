@@ -38,6 +38,7 @@ add_subdirectory(src) # for rabe_lib
 
 add_executable(${PROJECT_NAME} app/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
 enable_testing()
 add_subdirectory(test)

@@ -38,14 +38,14 @@ Core type `fieldline_t` representing a single field line between two B maxima.
 
 **Key subroutine:**
 ```fortran
-call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, nfp, phi_tol [, err_flag])
+call make_flock_of_fieldlines(fieldlines, xi_0, iota, field, M_pol, N_tor, nfp, phi_tol [, split_maxima])
 ```
 - `fieldlines`: pre-allocated `fieldline_t(:)` array
 - `xi_0`: fieldline labels from `get_labels`
 - `iota`: rational approximation of iota from `get_labels`
 - `field`: any `field_t` subtype
 - `phi_tol`: tolerance for finding B maxima
-- `err_flag` (optional): set to 1 if more than 2 maxima found per period
+- `split_maxima` (optional): set to 1 if more than 2 maxima found per period
 
 Workflow: places fieldlines on chi=0 line, finds B maxima per fieldline,
 computes all integrals, then derives `eta_b`, `delta_eta`, `I_ref`, and

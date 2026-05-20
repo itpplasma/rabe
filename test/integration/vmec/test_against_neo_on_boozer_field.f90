@@ -37,8 +37,8 @@ program test_against_neo_on_boozer_field
     real(dp) :: iota, approx_iota, B_theta_covariant, B_phi_covariant
     real(dp) :: covariant_factor, R
     real(dp), parameter :: dr_dAtheta = 1.0_dp ! dummy value, same for both field case
-    real(dp), dimension(n_stor) :: neo_Lambda_bl, neo_Lambda_lm
-    real(dp), dimension(n_stor) :: bfield_Lambda_bl, bfield_Lambda_lm
+    real(dp), dimension(n_stor) :: neo_Lambda_A, neo_Lambda_B
+    real(dp), dimension(n_stor) :: bfield_Lambda_A, bfield_Lambda_B
 
     real(dp) :: deviation_A, deviation_B
 
@@ -84,9 +84,9 @@ program test_against_neo_on_boozer_field
         call calc_deviation(fieldlines, deviation_A, deviation_B)
         R = bfield%R
         covariant_factor = B_phi_covariant + approx_iota*B_theta_covariant
-        bfield_Lambda_bl(idx) = deviation_A*dr_dAtheta* &
-                                sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-        bfield_Lambda_lm(idx) = deviation_B*0.5*R*pi*dr_dAtheta
+        bfield_Lambda_A(idx) = deviation_A*dr_dAtheta* &
+                               sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+        bfield_Lambda_B(idx) = deviation_B*0.5*R*pi*dr_dAtheta
         deallocate (fieldlines)
 
         print *, "NEO field"
@@ -107,29 +107,29 @@ program test_against_neo_on_boozer_field
         call calc_deviation(fieldlines, deviation_A, deviation_B)
         R = nfield%R
         covariant_factor = B_phi_covariant + approx_iota*B_theta_covariant
-        neo_Lambda_bl(idx) = deviation_A*dr_dAtheta* &
-                             sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-        neo_Lambda_lm(idx) = deviation_B*0.5*R*pi*dr_dAtheta
+        neo_Lambda_A(idx) = deviation_A*dr_dAtheta* &
+                            sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+        neo_Lambda_B(idx) = deviation_B*0.5*R*pi*dr_dAtheta
         deallocate (fieldlines)
     end do
 
     do idx = 2, 6
-        if (not_same(bfield_Lambda_bl(idx), neo_Lambda_bl(idx), reltol, abstol)) then
-            print *, "Lambda_bl mismatch at s_tor =", stors(idx)
-            print *, "bfield Lambda_bl =", bfield_Lambda_bl(idx)
-            print *, "neo Lambda_bl =", neo_Lambda_bl(idx)
-            print *, "Relative difference =", abs(bfield_Lambda_bl(idx) &
-                                                  - neo_Lambda_bl(idx)) &
-                /abs(neo_Lambda_bl(idx))
+        if (not_same(bfield_Lambda_A(idx), neo_Lambda_A(idx), reltol, abstol)) then
+            print *, "Lambda_A mismatch at s_tor =", stors(idx)
+            print *, "bfield Lambda_A =", bfield_Lambda_A(idx)
+            print *, "neo Lambda_A =", neo_Lambda_A(idx)
+            print *, "Relative difference =", abs(bfield_Lambda_A(idx) &
+                                                  - neo_Lambda_A(idx)) &
+                /abs(neo_Lambda_A(idx))
             test_failed = .true.
         end if
-        if (not_same(bfield_Lambda_lm(idx), neo_Lambda_lm(idx), reltol, abstol)) then
-            print *, "Lambda_lm mismatch at s_tor =", stors(idx)
-            print *, "bfield Lambda_lm =", bfield_Lambda_lm(idx)
-            print *, "neo Lambda_lm =", neo_Lambda_lm(idx)
-            print *, "Relative difference =", abs(bfield_Lambda_lm(idx) - &
-                                                  neo_Lambda_lm(idx)) &
-                /abs(neo_Lambda_lm(idx))
+        if (not_same(bfield_Lambda_B(idx), neo_Lambda_B(idx), reltol, abstol)) then
+            print *, "Lambda_B mismatch at s_tor =", stors(idx)
+            print *, "bfield Lambda_B =", bfield_Lambda_B(idx)
+            print *, "neo Lambda_B =", neo_Lambda_B(idx)
+            print *, "Relative difference =", abs(bfield_Lambda_B(idx) - &
+                                                  neo_Lambda_B(idx)) &
+                /abs(neo_Lambda_B(idx))
             test_failed = .true.
         end if
     end do

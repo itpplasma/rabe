@@ -6,6 +6,9 @@ program test_read_namelist
                          M_pol, &
                          N_tor, &
                          s_tor, &
+                         s_tor_min, &
+                         s_tor_max, &
+                         n_s_tor, &
                          sign_sqrtg, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
@@ -142,6 +145,42 @@ program test_read_namelist
 
     call remove_test_file(test_file)
 
+    ! Test range specification: s_tor_min/s_tor_max/n_s_tor
+    call write_test_file(test_file, &
+                         test_field_file=test_field_file, &
+                         test_M_pol=test_M_pol, &
+                         test_N_tor=test_N_tor, &
+                         test_s_tor_min=0.2_dp, &
+                         test_s_tor_max=0.8_dp, &
+                         test_n_s_tor=4, &
+                         test_sign_sqrtg=test_sign_sqrtg, &
+                         test_max_n_fieldlines=test_max_n_fieldlines, &
+                         test_should_calc_shaing_callen= &
+                         test_should_calc_shaing_callen, &
+                         test_n_eta=test_n_eta)
+    call read_namelist(test_file)
+
+    if (allocated(test_s_tor)) deallocate (test_s_tor)
+    allocate (test_s_tor, source=[0.2_dp, 0.4_dp, 0.6_dp, 0.8_dp])
+    if (size(s_tor) /= size(test_s_tor)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: s_tor size from range"
+        print *, "found: ", size(s_tor)
+        print *, "expected: ", size(test_s_tor)
+        test_failed = .true.
+    else if (not_same(s_tor, &
+                      test_s_tor, &
+                      reltol_in=reltol, &
+                      abstol_in=abstol)) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: s_tor values from range"
+        print *, "found: ", s_tor
+        print *, "expected: ", test_s_tor
+        test_failed = .true.
+    end if
+
+    call remove_test_file(test_file)
+
     if (test_failed) error stop
 
 contains
@@ -151,6 +190,9 @@ contains
                                test_M_pol, &
                                test_N_tor, &
                                test_s_tor, &
+                               test_s_tor_min, &
+                               test_s_tor_max, &
+                               test_n_s_tor, &
                                test_sign_sqrtg, &
                                test_max_n_fieldlines, &
                                test_should_calc_shaing_callen, &
@@ -161,6 +203,9 @@ contains
         real(dp), intent(in), optional :: test_M_pol
         real(dp), intent(in), optional :: test_N_tor
         real(dp), intent(in), dimension(:), optional :: test_s_tor
+        real(dp), intent(in), optional :: test_s_tor_min
+        real(dp), intent(in), optional :: test_s_tor_max
+        integer, intent(in), optional :: test_n_s_tor
         real(dp), intent(in), optional :: test_sign_sqrtg
         integer, intent(in), optional :: test_max_n_fieldlines
         logical, intent(in), optional :: test_should_calc_shaing_callen
@@ -181,6 +226,15 @@ contains
         end if
         if (present(test_s_tor)) then
             write (unit, "(A,*(G0.3,1X),A)") "s_tor = ", test_s_tor, ","
+        end if
+        if (present(test_s_tor_min)) then
+            write (unit, "(A,G0.3,A)") "s_tor_min = ", test_s_tor_min, ","
+        end if
+        if (present(test_s_tor_max)) then
+            write (unit, "(A,G0.3,A)") "s_tor_max = ", test_s_tor_max, ","
+        end if
+        if (present(test_n_s_tor)) then
+            write (unit, "(A,I6,A)") "n_s_tor = ", test_n_s_tor, ","
         end if
         if (present(test_sign_sqrtg)) then
             write (unit, "(A,F4.1,A)") "sign_sqrtg = ", test_sign_sqrtg, ","

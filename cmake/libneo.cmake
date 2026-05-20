@@ -1,8 +1,8 @@
 include(FetchContent)
 
-if(DEFINED ENV{CODE} AND EXISTS "$ENV{CODE}/libneo")
-    message(STATUS "Using libneo in $ENV{CODE}/libneo")
-    add_subdirectory("$ENV{CODE}/libneo"
+if(DEFINED ENV{LIBNEO} AND EXISTS "$ENV{LIBNEO}")
+    message(STATUS "Using libneo in $ENV{LIBNEO}")
+    add_subdirectory("$ENV{LIBNEO}"
                      "${CMAKE_CURRENT_BINARY_DIR}/libneo"
                      EXCLUDE_FROM_ALL)
 else()
