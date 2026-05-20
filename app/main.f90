@@ -57,7 +57,7 @@ program rabe
     real(dp) :: helical_factor
 
     real(dp) :: trapped_fraction
-    real(dp), dimension(:), allocatable :: lambda_SC, remainder
+    real(dp), dimension(:), allocatable :: lambda_LC, remainder
 
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
@@ -72,7 +72,7 @@ program rabe
     allocate (Lambda_S(n_stor))
     allocate (split_maxima(n_stor))
     if (should_calc_shaing_callen) then
-        allocate (lambda_SC(n_stor))
+        allocate (lambda_LC(n_stor))
         allocate (remainder(n_stor))
     end if
 
@@ -124,12 +124,12 @@ program rabe
             trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
             helical_factor = (B_phi_covariant*M_pol + &
                               B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
-            lambda_SC(this) = helical_factor*trapped_fraction
-            lambda_SC(this) = lambda_SC(this)*dr_dAtheta
+            lambda_LC(this) = helical_factor*trapped_fraction
+            lambda_LC(this) = lambda_LC(this)*dr_dAtheta
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
-            print *, "omnigenous lambda_SC_bB: ", lambda_SC(this)
+            print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
         end if
         print *, "1/sqrt(nu_star) factor: ", Lambda_A(this)
@@ -185,16 +185,16 @@ program rabe
         "nu_star = pi*R/(2*mean_free_path) = pi*R*deflection_frequency/particle_speed"
     call nc_output%add_attr("R", "definition", description)
     if (should_calc_shaing_callen) then
-        call nc_output%add_real_1d("lambda_SC_bB", dim_name)
-        call nc_output%add_attr("lambda_SC_bB", "long_name", &
+        call nc_output%add_real_1d("lambda_LC_bB", dim_name)
+        call nc_output%add_attr("lambda_LC_bB", "long_name", &
                                 "omnigenous Shaing-Callen coefficient")
-        call nc_output%add_attr("lambda_SC_bB", "unit", "[1]")
+        call nc_output%add_attr("lambda_LC_bB", "unit", "[1]")
         call nc_output%add_real_1d("remainder", dim_name)
         call nc_output%add_attr("remainder", "long_name", &
                                 "non-omnigenous remainder of Shaing-Callen coefficient")
         call nc_output%add_attr("remainder", "unit", "[1]")
 
-        call nc_output%write_real_1d("lambda_SC_bB", lambda_SC)
+        call nc_output%write_real_1d("lambda_LC_bB", lambda_LC)
         call nc_output%write_real_1d("remainder", remainder)
     end if
     call nc_output%write_real_1d("Lambda_A", Lambda_A)
@@ -210,7 +210,7 @@ program rabe
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
                               nu_star_crit, Lambda_S, split_maxima, &
-                              lambda_SC=lambda_SC, remainder=remainder)
+                              lambda_LC=lambda_LC, remainder=remainder)
     else
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
@@ -221,7 +221,7 @@ program rabe
     if (allocated(Lambda_B)) deallocate (Lambda_B)
     if (allocated(nu_star_crit)) deallocate (nu_star_crit)
     if (allocated(Lambda_S)) deallocate (Lambda_S)
-    if (allocated(lambda_SC)) deallocate (lambda_SC)
+    if (allocated(lambda_LC)) deallocate (lambda_LC)
     if (allocated(remainder)) deallocate (remainder)
 
 contains
@@ -229,7 +229,7 @@ contains
     subroutine write_dat_output(filename, git_hash, R, n, s_tor, &
                                 Lambda_A, Lambda_B, nu_star_crit, &
                                 Lambda_S, split_maxima, &
-                                lambda_SC, remainder)
+                                lambda_LC, remainder)
         use constants, only: dp
         character(len=*), intent(in) :: filename
         character(len=*), intent(in) :: git_hash
@@ -238,12 +238,12 @@ contains
         real(dp), intent(in) :: s_tor(n), Lambda_A(n), Lambda_B(n)
         real(dp), intent(in) :: nu_star_crit(n), Lambda_S(n)
         integer, intent(in) :: split_maxima(n)
-        real(dp), optional, intent(in) :: lambda_SC(n), remainder(n)
+        real(dp), optional, intent(in) :: lambda_LC(n), remainder(n)
 
         integer :: u, i
         logical :: with_sc
 
-        with_sc = present(lambda_SC)
+        with_sc = present(lambda_LC)
 
         open (newunit=u, file=filename, status="replace", action="write")
         write (u, "(A)") "# asymptotic bootstrap coefficient lambda_bB"
@@ -254,7 +254,7 @@ contains
         if (with_sc) then
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
-                //"  Lambda_S  split_maxima  lambda_SC_bB  remainder"
+                //"  Lambda_S  split_maxima  lambda_LC_bB  remainder"
         else
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
@@ -265,7 +265,7 @@ contains
                 write (u, "(ES23.15,4(1X,ES23.15),1X,I2,2(1X,ES23.15))") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &
                     nu_star_crit(i), Lambda_S(i), split_maxima(i), &
-                    lambda_SC(i), remainder(i)
+                    lambda_LC(i), remainder(i)
             else
                 write (u, "(ES23.15,4(1X,ES23.15),1X,I2)") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &

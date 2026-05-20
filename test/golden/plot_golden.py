@@ -8,7 +8,7 @@ path = sys.argv[1] if len(sys.argv) > 1 else "rabe.nc"
 ds = xr.open_dataset(path)
 s = ds["s_tor"].values
 
-has_sc = "lambda_SC_bB" in ds
+has_sc = "lambda_LC_bB" in ds
 
 if has_sc:
     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
@@ -31,10 +31,10 @@ ax2.set_title(r"$\Lambda_\mathrm{S}$")
 ax2.grid(True)
 
 if has_sc:
-    ax3.plot(s, ds["lambda_SC_bB"].values, "o-")
+    ax3.plot(s, ds["lambda_LC_bB"].values, "o-")
     ax3.set_xlabel(r"$s_\mathrm{tor}$")
     ax3.set_ylabel("coefficient [1]")
-    ax3.set_title(r"$\lambda^\mathrm{SC}_{bB}$ (omnigenous Shaing-Callen)")
+    ax3.set_title(r"$\lambda^\mathrm{LC}_{bB}$ (omnigenous Shaing-Callen)")
     ax3.grid(True)
 
     ax4.plot(s, ds["remainder"].values, "s-")

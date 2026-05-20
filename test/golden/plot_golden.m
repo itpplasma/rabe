@@ -17,10 +17,10 @@ Lambda_S = ncread(path, 'Lambda_S');
 
 info = ncinfo(path);
 varnames = {info.Variables.Name};
-has_sc = any(strcmp(varnames, 'lambda_SC_bB'));
+has_sc = any(strcmp(varnames, 'lambda_LC_bB'));
 
 if has_sc
-    lambda_SC = ncread(path, 'lambda_SC_bB');
+    lambda_LC = ncread(path, 'lambda_LC_bB');
     remainder = ncread(path, 'remainder');
     figure('Position', [100 100 900 700]);
 else
@@ -52,10 +52,10 @@ grid on;
 
 if has_sc
     subplot(2, 2, 3);
-    plot(s, lambda_SC, 'o-');
+    plot(s, lambda_LC, 'o-');
     xlabel('s_{tor}');
     ylabel('coefficient [1]');
-    title('\lambda^{SC}_{bB} (omnigenous Shaing-Callen)');
+    title('\lambda^{LC}_{bB} (omnigenous Shaing-Callen)');
     grid on;
 
     subplot(2, 2, 4);

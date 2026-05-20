@@ -172,7 +172,7 @@ if `should_calc_shaing_callen = .true.`, then
 
 | Variable | Description |
 | --- | --- |
-| `lambda_SC_bB` | omnigenous Shaing-Callen coefficient $\lambda_{bB}^\mathrm{LC}$ |
+| `lambda_LC_bB` | omnigenous Shaing-Callen coefficient $\lambda_{bB}^\mathrm{LC}$ |
 | `remainder` | non-omnigenous remainder (only as a prototype) |
 
 The `remainder` is a proxy of how much $\lambda_{bB}^\mathrm{LC}$ differs
