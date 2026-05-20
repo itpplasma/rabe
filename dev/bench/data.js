@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779204185014,
+  "lastUpdate": 1779295316125,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -174,6 +174,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 71040,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e9e2a47ebe446ab00c97c14d681f8a73de48eb82",
+          "message": "Release/improvements (#70)\n\n* write: dat file and update README\n\n* specify: surfaces with range\n\n* rename: output coefficients\n\n* use: explicit env\n\nwe only use it for libneo and want to avoid overlap with other common env names\n\n* change: executable extension\n\n* update: README\n\n* make: build generator choice explicit\n\n* export: PDF on tag release\n\n* update: golden record and adjust tolerances",
+          "timestamp": "2026-05-20T18:37:28+02:00",
+          "tree_id": "eca7aae813ae9db07ed199ea16001042a4796a18",
+          "url": "https://github.com/itpplasma/rabe/commit/e9e2a47ebe446ab00c97c14d681f8a73de48eb82"
+        },
+        "date": 1779295315160,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.0182,
+            "unit": "ratio",
+            "extra": "current: 72580 ms, baseline: 71280 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 72580,
             "unit": "ms"
           }
         ]
