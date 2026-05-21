@@ -38,7 +38,7 @@ endfunction()
 function(get_branch_or_main REPO_URL REMOTE_BRANCH)
     execute_process(
         COMMAND git rev-parse --abbrev-ref HEAD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         OUTPUT_VARIABLE BRANCH
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )

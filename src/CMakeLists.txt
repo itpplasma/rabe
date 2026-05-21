@@ -2,7 +2,7 @@ file(GLOB SRC_FILES "*.f90")
 
 add_library(rabe_lib STATIC
   ${SRC_FILES}
-  ${CMAKE_BINARY_DIR}/src/git_version.f90
+  ${CMAKE_CURRENT_BINARY_DIR}/git_version.f90
   )
 
 add_dependencies(rabe_lib git_version_target)
