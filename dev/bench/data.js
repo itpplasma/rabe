@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779295316125,
+  "lastUpdate": 1779351899850,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -209,6 +209,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 72580,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "efcf0b27e60479fb1f1155648661122ae067eb43",
+          "message": "specify: tolerance as field property (#71)\n\nDepending on the field type, the numerical value of B can deviate from the physics value of B. This puts a limit on how good certain physics properties like stellarator symmetry can be fulfilled. The information is bound to the field.",
+          "timestamp": "2026-05-21T10:20:52+02:00",
+          "tree_id": "ae2af2a7800c5b91b34a9c8199ed82276fc22d1a",
+          "url": "https://github.com/itpplasma/rabe/commit/efcf0b27e60479fb1f1155648661122ae067eb43"
+        },
+        "date": 1779351898836,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9943,
+            "unit": "ratio",
+            "extra": "current: 71530 ms, baseline: 71940 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 71530,
             "unit": "ms"
           }
         ]
