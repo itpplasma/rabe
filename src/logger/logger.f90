@@ -14,15 +14,19 @@ module logger
     end type
 
     type(log_levels_t), parameter :: LOG = log_levels_t()
-    type(log_level_t) :: log_level = LOG%INFO
+
+    private
+    public :: log_init, log_msg, error_stop, debug_probe
+
+    type(log_level_t) :: log_level
 
     integer, parameter :: stdout_unit = 6
-    integer :: log_unit = stdout_unit
-    logical :: unsafe_mode = .false.
+    logical, parameter :: unsafe_mode = .false.
+    integer :: log_unit
 
     integer, parameter :: BUFFER_SIZE = 100
     character(len=256) :: buffer(BUFFER_SIZE)
-    integer :: buf_count = 0
+    integer :: buffer_count = 0
 
     integer, parameter :: MAX_PROBE_FILES = 32
     character(len=256) :: probe_names(MAX_PROBE_FILES)
@@ -31,21 +35,27 @@ module logger
 
 contains
 
-    subroutine log_init(unit, level)
-        integer, intent(in), optional :: unit
-        character(len=*), intent(in), optional :: level
+    subroutine log_init(log_file, level_name)
+        character(len=*), intent(in), optional :: log_file
+        character(len=*), intent(in), optional :: level_name
 
-        if (present(unit)) log_unit = unit
-        if (present(level)) then
-            select case (trim(level))
+        if (present(log_file)) then
+            open (newunit=log_unit, file=log_file, status="replace", action="write")
+        else
+            log_unit = stdout_unit
+        end if
+        if (present(level_name)) then
+            select case (trim(level_name))
             case (LOG%DEBUG%name); log_level = LOG%DEBUG
             case (LOG%INFO%name); log_level = LOG%INFO
             case (LOG%WARN%name); log_level = LOG%WARN
             case (LOG%ERROR%name); log_level = LOG%ERROR
             case default
-                print *, "Unknown log level: ", trim(level)
+                print *, "Unknown log level: ", trim(level_name)
                 error stop
             end select
+        else
+            log_level = LOG%INFO
         end if
     end subroutine log_init
 
@@ -69,27 +79,26 @@ contains
             unsafe_str, &
             trim(msg)
 
-        buf_count = buf_count + 1
-        buffer(buf_count) = entry
+        buffer_count = buffer_count + 1
+        buffer(buffer_count) = entry
 
-        if (level%value >= LOG%ERROR%value .or. buf_count >= BUFFER_SIZE) then
+        if (level%value >= LOG%ERROR%value .or. buffer_count >= BUFFER_SIZE) then
             call log_flush()
         end if
     end subroutine log_msg
 
     subroutine log_flush()
         integer :: i
-        do i = 1, buf_count
+        do i = 1, buffer_count
             write (log_unit, '(A)') trim(buffer(i))
-            if (log_unit /= 6) write (6, '(A)') trim(buffer(i))
         end do
-        buf_count = 0
+        buffer_count = 0
     end subroutine log_flush
 
     subroutine log_finalize()
         integer :: i
         call log_flush()
-        if (log_unit /= 6) close (log_unit)
+        if (log_unit /= stdout_unit) close (log_unit)
         do i = 1, n_probes
             close (probe_units(i))
         end do
@@ -97,7 +106,7 @@ contains
 
     subroutine error_stop(msg)
         character(len=*), intent(in) :: msg
-        call log_flush()
+        call log_finalize()
         error stop msg
     end subroutine error_stop
 
