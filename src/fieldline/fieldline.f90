@@ -11,13 +11,16 @@ module fieldline_mod
         real(dp) :: phi_max(2)
         real(dp) :: phi_max_error(2)
         real(dp) :: B_max(2)
+        real(dp) :: B_max_error(2)
         real(dp) :: iota_p
 
         real(dp) :: eta_b
         real(dp) :: delta_eta
+        real(dp) :: delta_eta_error
         real(dp) :: integral_lambda_b_over_B_squared
         real(dp) :: I_ref
         real(dp) :: delta_aspect_ratio
+        real(dp) :: delta_aspect_ratio_error
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
         real(dp) :: integral_nabla_s_over_B_squared

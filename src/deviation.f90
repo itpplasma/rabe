@@ -37,6 +37,17 @@ contains
             print *, "cos part: ", sum(abs(modes%delta_aspect_ratio%cos_coeffs))
             any_has_sin_part = .true.
         end if
+        print *, size(fieldlines)
+        print *, "max abs sin coeffs of delta aspect ratio: ", &
+            maxval(abs(modes%delta_aspect_ratio%sin_coeffs))
+        print *, "max abs cos coeffs of delta aspect ratio: ", &
+            maxval(abs(modes%delta_aspect_ratio%cos_coeffs))
+        print *, "ratio of sin to cos part of delta aspect ratio: ", &
+            maxval(abs(modes%delta_aspect_ratio%sin_coeffs))/ &
+            maxval(abs(modes%delta_aspect_ratio%cos_coeffs))
+        print *, "normalized ratio: ", &
+            maxval(abs(modes%delta_aspect_ratio%sin_coeffs))/ &
+            maxval(abs(modes%delta_aspect_ratio%cos_coeffs))/size(fieldlines)
         if (has_sin_modes(modes%delta_eta)) then
             print *, "error: non-vanishing sin part of delta eta: "
             print *, "sin part: ", sum(abs(modes%delta_eta%sin_coeffs))

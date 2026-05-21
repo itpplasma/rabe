@@ -150,6 +150,9 @@ contains
         end do
 
         fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
+        print *, "max relative phi_max_error: ", &
+            maxval(max(fieldlines%phi_max_error(1), fieldlines%phi_max_error(2)) &
+                   /abs(fieldlines%phi_max(2) - fieldlines%phi_max(1)))
         ! I_ref can be chosen to be any I
         ! (I_ref/I_j)**0.5 - 1 = (max(I_j)/I_j)**0.5 -1 =
         ! ((I+delta)/(I+delta_j))**0.5 -1 ~ 0.5*(delta/I - delta_j/I)
@@ -164,6 +167,16 @@ contains
                                         fieldlines%I_ref/ &
                                         fieldlines%integral_lambda_b_over_B_squared &
                                         ) - 1.0_dp
+        print *, "max relative phi_max boundary contribution to delta_aspect_ratio: ", &
+            maxval(sqrt(fieldlines%delta_eta*fieldlines%B_max(1)) &
+                   *max(fieldlines%phi_max_error(1), fieldlines%phi_max_error(2)) &
+                   /fieldlines%B_max(1)**2/fieldlines%I_ref &
+                   /abs(fieldlines%delta_aspect_ratio))
+        print *, "avg relative phi_max boundary contribution to delta_aspect_ratio: ", &
+            sum(sqrt(fieldlines%delta_eta*fieldlines%B_max(1)) &
+                *max(fieldlines%phi_max_error(1), fieldlines%phi_max_error(2)) &
+                /fieldlines%B_max(1)**2/fieldlines%I_ref &
+                /abs(fieldlines%delta_aspect_ratio))/n_fieldlines
 
     end subroutine make_flock_of_fieldlines
 
