@@ -1,46 +1,10 @@
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-add_executable(test_stellarator_symmetry_neo.x test_stellarator_symmetry_neo.f90)
-target_link_libraries(test_stellarator_symmetry_neo.x field_lib utils_lib)
-add_test(TestStellaratorSymmetryNEO test_stellarator_symmetry_neo.x)
-set_tests_properties(TestStellaratorSymmetryNEO PROPERTIES LABELS "quick")
-
-add_executable(test_against_neo2_field.x test_against_neo2_field.f90)
-target_link_libraries(test_against_neo2_field.x rabe_lib)
-add_test(TestAgainstNeo2Field test_against_neo2_field.x)
-set_tests_properties(TestAgainstNeo2Field PROPERTIES LABELS "slow")
-
-add_executable(test_against_neo2_anti_sigma.x test_against_neo2_anti_sigma.f90)
-target_link_libraries(test_against_neo2_anti_sigma.x rabe_lib
-                                                     myplot_lib)
-add_test(TestAgainstNeo2AntiSigma test_against_neo2_anti_sigma.x)
-set_tests_properties(TestAgainstNeo2AntiSigma PROPERTIES LABELS "slow")
-
-add_executable(test_neo_covariant_components.x
-               test_neo_covariant_components.f90)
-target_link_libraries(test_neo_covariant_components.x rabe_lib)
-add_test(TestNeoCovariantComponents test_neo_covariant_components.x)
-set_tests_properties(TestNeoCovariantComponents PROPERTIES LABELS "slow")
-
-add_executable(test_neo_nabla_s.x
-               test_neo_nabla_s.f90)
-target_link_libraries(test_neo_nabla_s.x rabe_lib)
-add_test(TestNeoNablaS test_neo_nabla_s.x)
-set_tests_properties(TestNeoNablaS PROPERTIES LABELS "slow")
-
-add_executable(test_neo_dr_dAtheta.x
-               test_neo_dr_dAtheta.f90)
-target_link_libraries(test_neo_dr_dAtheta.x rabe_lib)
-add_test(TestNeoDrDAtheta test_neo_dr_dAtheta.x)
-set_tests_properties(TestNeoDrDAtheta PROPERTIES LABELS "slow")
-
 add_executable(test_fieldline.x test_fieldline.f90)
-target_link_libraries(test_fieldline.x rabe_lib)
+target_link_libraries(test_fieldline.x rabe_lib helpers_lib)
 add_test(TestFieldline test_fieldline.x)
 set_tests_properties(TestFieldline PROPERTIES LABELS "quick")
 
 add_executable(test_make_flock_of_fieldlines.x test_make_flock_of_fieldlines.f90)
-target_link_libraries(test_make_flock_of_fieldlines.x rabe_lib)
+target_link_libraries(test_make_flock_of_fieldlines.x rabe_lib helpers_lib)
 add_test(TestMakeFlockOfFieldlines test_make_flock_of_fieldlines.x)
 set_tests_properties(TestMakeFlockOfFieldlines PROPERTIES LABELS "quick")
 

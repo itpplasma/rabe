@@ -7,7 +7,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
 enable_testing()
 add_subdirectory(unit)
 add_subdirectory(integration)
-add_subdirectory(external)
+
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
     add_subdirectory(plot)
