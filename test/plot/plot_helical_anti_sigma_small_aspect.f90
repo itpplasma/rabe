@@ -2,7 +2,7 @@ program plot_helical_anti_sigma_small_aspect
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace
-    use neo_field, only: neo_field_t
+    use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
@@ -16,20 +16,18 @@ program plot_helical_anti_sigma_small_aspect
     implicit none
 
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = 10.0_dp, nfp = N_tor
-    character(len=*), parameter :: bc_filename = "input/helical_anti_small_aspect.bc"
     real(dp), parameter :: psi_edge = abs(-0.28274_dp)/(2.0_dp*pi)/160000.0_dp !Tm^2
     real(dp), parameter :: R = 8.0_dp
     real(dp), parameter :: J_pol_over_N_tor = -4.0_dp*1e6
     real(dp), parameter :: I_tor = 0.0_dp
 
-    real(dp), parameter :: stor = 0.9999_dp
     real(dp), parameter :: ds_dr = 0.0661777_dp*100.0_dp*400.0_dp !1/m
     real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
 
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.005, eps_1 = -0.00009375_dp
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
-    real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp - 6.0_dp*eps_0)
-    type(neo_field_t) :: field
+    real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp + 16.0_dp/3.0_dp*abs(eps_0))
+    type(anti_sigma_field_t) :: field
 
     integer, parameter :: n_fieldlines = 20
 
@@ -47,9 +45,9 @@ program plot_helical_anti_sigma_small_aspect
     real(dp), parameter :: iota_p = iota*pi/(N_tor - iota*M_pol)
     real(dp) :: off_factor_A_analytic
 
-    logical, parameter :: should_plot_others = .false.
+    logical, parameter :: should_plot_others = .true.
 
-    call field%neo_field_init(bc_filename, stor)
+    call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
