@@ -27,9 +27,6 @@ test_all: build
 plot: build
 	ctest --test-dir build/test --output-on-failure -L plot
 
-external: build
-	ctest --test-dir build/test -V -L external
-
 current: build
 	ctest --test-dir build/test --output-on-failure -V -L current
 
@@ -47,3 +44,7 @@ clean:
 
 dist:
 	git archive --format=tar.gz --prefix=rabe/ HEAD -o rabe.tar.gz
+
+# Private test data and external comparisons (not available in public repo)
+internal: build
+	ctest --test-dir build/test -V -L internal

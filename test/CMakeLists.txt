@@ -15,3 +15,8 @@ else()
     message(STATUS "Python3 not found - plot tests disabled")
 endif()
 add_subdirectory(golden)
+
+ # Private test data and comparisons (not available in public repo)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/internal/CMakeLists.txt)
+    add_subdirectory(internal)
+endif()
