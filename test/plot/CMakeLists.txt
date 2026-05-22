@@ -1,6 +1,3 @@
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../integration/vmec/input/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/input)
-
 add_executable(test_plot.x test_plot.f90)
 target_link_libraries(test_plot.x myplot_lib utils_lib)
 add_test(TestPlot test_plot.x)

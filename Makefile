@@ -1,6 +1,6 @@
 CONFIG ?= Debug
 
-.PHONY: all build test test_failed install clean plot golden golden_run dist
+.PHONY: all build test test_failed install clean plot golden golden_run dist internal
 all: build
 
 build/CMakeCache.txt:
