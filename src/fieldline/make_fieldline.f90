@@ -53,7 +53,7 @@ contains
         fieldlines%nfp = nfp
 
         symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
-        if (symmetry_violation > field%rel_accuracy_B) then
+        if (symmetry_violation > field%rel_accuracy_B()) then
             call log_msg(log_lvl%ERROR, &
                     "error: provided field violates stellarator symmetry too strongly!")
             call log_val(log_lvl%ERROR, &

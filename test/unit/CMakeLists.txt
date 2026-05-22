@@ -75,7 +75,7 @@ add_test(TestLinspace test_linspace.x)
 set_tests_properties(TestLinspace PROPERTIES LABELS "quick")
 
 add_executable(test_diophantine.x test_diophantine.f90)
-target_link_libraries(test_diophantine.x utils_lib)
+target_link_libraries(test_diophantine.x utils_lib constants_lib)
 add_test(TestDiophantine test_diophantine.x)
 set_tests_properties(TestDiophantine PROPERTIES LABELS "quick")
 
