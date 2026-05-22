@@ -13,6 +13,7 @@ program rabe
     use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
+    use logger, only: log_init, log_lvl, log_msg, log_val, log_finalize
 
     use read_file, only: read_namelist
     use read_file, only: field_file, &
@@ -63,6 +64,7 @@ program rabe
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
+    call log_init("rabe.log", "INFO")
     call read_namelist(input_file)
 
     n_stor = size(s_tor)
@@ -119,7 +121,7 @@ program rabe
                                                                B_theta_covariant, &
                                                                B_phi_covariant)
 
-        print *, "s_tor: ", s_tor(this)
+        call log_val(log_lvl%INFO, "s_tor", s_tor(this))
         if (should_calc_shaing_callen) then
             trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
             helical_factor = (B_phi_covariant*M_pol + &
@@ -129,12 +131,14 @@ program rabe
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
-            print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
-            print *, "non-omnigneous remainder: ", remainder(this)
+            call log_val(log_lvl%INFO, "omnigenous lambda_LC_bB", lambda_LC(this))
+            call log_val(log_lvl%INFO, "non-omnigneous remainder", remainder(this))
         end if
-        print *, "1/sqrt(nu_star) factor: ", Lambda_A(this)
-        print *, "1/nu_star factor: ", Lambda_B(this)
-        print *, "Lambda_S: ", Lambda_S(this)
+        call log_val(log_lvl%INFO, "1/sqrt(nu_star) factor Lambda_A", Lambda_A(this))
+        call log_val(log_lvl%INFO, "1/nu_star factor Lambda_B", Lambda_B(this))
+        call log_val(log_lvl%INFO, "nu_star_crit", nu_star_crit(this))
+        call log_val(log_lvl%INFO, "split_maxima", split_maxima(this))
+        call log_val(log_lvl%INFO, "Lambda_S", Lambda_S(this))
 
         if (allocated(fieldlines)) deallocate (fieldlines)
         if (allocated(xi_0)) deallocate (xi_0)
@@ -223,6 +227,8 @@ program rabe
     if (allocated(Lambda_S)) deallocate (Lambda_S)
     if (allocated(lambda_LC)) deallocate (lambda_LC)
     if (allocated(remainder)) deallocate (remainder)
+
+    call log_finalize()
 
 contains
 
