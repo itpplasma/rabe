@@ -1,3 +1,8 @@
+add_executable(test_logger.x test_logger.f90)
+target_link_libraries(test_logger.x logger_lib)
+add_test(TestLogger test_logger.x)
+set_tests_properties(TestLogger PROPERTIES LABELS "quick")
+
 add_executable(test_handle_multiple_maxima.x test_handle_multiple_maxima.f90)
 target_link_libraries(test_handle_multiple_maxima.x rabe_lib)
 add_test(TestHandleMultipleMaxima test_handle_multiple_maxima.x)
