@@ -14,6 +14,8 @@ program rabe
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
+    use trace_mod, only: trace_active, trace_set_surface, trace_scalar, &
+                         trace_real_1d, trace_int
     use read_file, only: read_namelist
     use read_file, only: field_file, &
                          M_pol, &
@@ -77,13 +79,30 @@ program rabe
     end if
 
     call field%boozer_field_init(field_file, grid_refinement=6)
+    if (trace_active()) then
+        call trace_scalar("R", field%R)
+        call trace_scalar("psi_tor_edge", field%psi_tor_edge)
+        call trace_scalar("nfp", field%nfp)
+        call trace_real_1d("s_tor", s_tor)
+        call trace_scalar("M_pol", M_pol)
+        call trace_scalar("N_tor", N_tor)
+        call trace_scalar("sign_sqrtg", sign_sqrtg)
+        call trace_int("max_n_fieldlines", max_n_fieldlines)
+        call trace_int("n_eta", n_eta)
+    end if
     do this = 1, n_stor
+        if (trace_active()) call trace_set_surface(this)
         call field%fix_to_surface(s_tor(this))
         call field%get_iota_and_covariant_components(s_tor(this), &
                                                      iota, &
                                                      B_theta_covariant, &
                                                      B_phi_covariant)
         nfp = field%nfp
+        if (trace_active()) then
+            call trace_scalar("iota_init", iota)
+            call trace_scalar("B_theta_covariant", B_theta_covariant)
+            call trace_scalar("B_phi_covariant", B_phi_covariant)
+        end if
 
         call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
                         xi_0, approx_iota)
@@ -106,6 +125,34 @@ program rabe
         call calc_surface_averages(fieldlines, average)
         dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
+        if (trace_active()) then
+            call trace_scalar("iota_approx", iota)
+            call trace_real_1d("xi_0", xi_0)
+            call trace_int("n_fieldlines", n_fieldlines)
+            call trace_scalar("deviation_A", deviation_A)
+            call trace_scalar("deviation_B", deviation_B)
+            call trace_scalar("avg_normalization", average%normalization)
+            call trace_scalar("avg_B_squared", average%B_squared)
+            call trace_scalar("avg_lambda_b", average%lambda_b)
+            call trace_scalar("avg_nabla_s", average%nabla_s)
+            call trace_scalar("dr_dAtheta", dr_dAtheta)
+            call trace_scalar("covariant_factor", covariant_factor)
+            call trace_real_1d("phi_max_left", fieldlines(:)%phi_max(1))
+            call trace_real_1d("phi_max_right", fieldlines(:)%phi_max(2))
+            call trace_real_1d("B_max_left", fieldlines(:)%B_max(1))
+            call trace_real_1d("B_max_right", fieldlines(:)%B_max(2))
+            call trace_real_1d("eta_b_per_line", fieldlines(:)%eta_b)
+            call trace_real_1d("delta_eta", fieldlines(:)%delta_eta)
+            call trace_real_1d("delta_aspect_ratio", fieldlines(:)%delta_aspect_ratio)
+            call trace_real_1d("radial_drift", fieldlines(:)%radial_drift)
+            call trace_real_1d("integral_lambda_b_over_B_squared", &
+                               fieldlines(:)%integral_lambda_b_over_B_squared)
+            call trace_real_1d("integral_one_over_B_squared", &
+                               fieldlines(:)%integral_one_over_B_squared)
+            call trace_real_1d("integral_nabla_s_over_B_squared", &
+                               fieldlines(:)%integral_nabla_s_over_B_squared)
+            call trace_real_1d("I_ref", fieldlines(:)%I_ref)
+        end if
         Lambda_A(this) = deviation_A*dr_dAtheta* &
                          sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         Lambda_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
@@ -118,6 +165,13 @@ program rabe
                                                                dr_dAtheta, &
                                                                B_theta_covariant, &
                                                                B_phi_covariant)
+        if (trace_active()) then
+            call trace_scalar("Lambda_A", Lambda_A(this))
+            call trace_scalar("Lambda_B", Lambda_B(this))
+            call trace_scalar("nu_star_crit", nu_star_crit(this))
+            call trace_scalar("Lambda_S", Lambda_S(this))
+            call trace_int("split_maxima", split_maxima(this))
+        end if
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
@@ -129,6 +183,12 @@ program rabe
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
+            if (trace_active()) then
+                call trace_scalar("trapped_fraction", trapped_fraction)
+                call trace_scalar("helical_factor", helical_factor)
+                call trace_scalar("lambda_LC_bB", lambda_LC(this))
+                call trace_scalar("remainder", remainder(this))
+            end if
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
         end if

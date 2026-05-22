@@ -5,6 +5,7 @@ add_library(utils_lib STATIC
   fourier.f90
   find_extrema.f90
   diophantine.f90
+  trace.f90
   )
 
 include(quadpack)
