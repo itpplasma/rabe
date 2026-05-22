@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779351899850,
+  "lastUpdate": 1779464187487,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -244,6 +244,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 71530,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a8c3b21d89dc46fb63faeb172d58f7b62a3dd206",
+          "message": "58 prepare codebase for public release remove mandatory suitesparse dependency (#74)\n\n* replace: neo_field_t by analytic fields\n\nAnd correct analytical estimate formula.\n\n* move: neo_field_t to rabe_internal\n\n* move: data/field files to rabe_internal\n\n* use: explicit CMake dir locations\n\n- PROJECT_* instead of CMAKE_* i.e. always in respect to the project CMakeList\n- CMAKE_CURRENT_LIST_DIR for relative to the current CMakeList\n- CMAKE_CURRENT_BINARY_DIR for the mirrored project location in the build directory (i.e. the patched .git_version)\n\n* add: internal as submodul\n\n* update: docs",
+          "timestamp": "2026-05-22T17:32:17+02:00",
+          "tree_id": "327eab7496399af75c26be24ac6b6eb86375661f",
+          "url": "https://github.com/itpplasma/rabe/commit/a8c3b21d89dc46fb63faeb172d58f7b62a3dd206"
+        },
+        "date": 1779464186478,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9905,
+            "unit": "ratio",
+            "extra": "current: 71170 ms, baseline: 71850 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 71170,
             "unit": "ms"
           }
         ]
