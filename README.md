@@ -23,9 +23,11 @@ $$
 For near-omnigenous stellarators at low plasma collisionality
 $\nu_\ast=\pi R \nu_{\perp}/v$, where $\nu_\perp$ and $R$ are deflection frequency and
 device major radius, respectively, the off-set can be expressed as
+
 $$
     \lambda_{\text{off}} = \frac{\Lambda_\mathrm{A}}{\sqrt{\nu_\ast}} + \frac{\Lambda_\mathrm{B}}{\nu_\ast}, \tag{3}
 $$
+
 where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
 due to the variation of the trapped-passing boundary layer width and the misalignment
 of local maxima, respectively (see Ref. [1]).
@@ -51,8 +53,12 @@ boundary correction derived by Helander, Geiger and Maasberg [3].
 - Fortran compiler (e.g. gfortran)
 - CMake >= 3.24
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
-- BLAS and LAPACK
-- [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse)
+
+On Debian/Ubuntu:
+
+```bash
+sudo apt-get install gfortran cmake libnetcdf-dev libnetcdff-dev pkg-config
+```
 
 ## Example
 
@@ -222,8 +228,6 @@ The tests as well as their description, can be found in `test`.
 System libraries required at build time:
 
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran) for NetCDF output
-- BLAS and LAPACK for linear algebra
-- [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) for sparse linear systems (needed for legacy `.bc` file field readers in tests)
 
 Fetched automatically during build:
 
@@ -241,7 +245,5 @@ Fetched automatically during build:
 stellarators and tokamaks”, Phys. Plasmas 18, 092505 [doi.org/10.1063/1.3633940](https://doi.org/10.1063/1.3633940) (2011)
 
 [4] M. Landreman et al., *Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement*, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
-
-
 
 [5] John R. Cary & Svetlana G. Shasharina, *Omnigenity and quasihelicity in helical plasma confinement systems, Phys. Plasmas 4*, 3323–3333, [doi:10.1063/1.872473](https://doi.org/10.1063/1.872473) (1997)

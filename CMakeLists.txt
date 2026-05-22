@@ -10,28 +10,28 @@ include(compiler)
 # required for fetching dependencies
 find_package(Git REQUIRED)
 
-if(EXISTS ${CMAKE_SOURCE_DIR}/.git/HEAD)
+if(EXISTS ${PROJECT_SOURCE_DIR}/.git/HEAD)
     set(GIT_HEAD_DEPS
-        ${CMAKE_SOURCE_DIR}/.git/HEAD
-        ${CMAKE_SOURCE_DIR}/.git/index
+        ${PROJECT_SOURCE_DIR}/.git/HEAD
+        ${PROJECT_SOURCE_DIR}/.git/index
     )
 endif()
 
 add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/src/git_version.f90
+    OUTPUT ${PROJECT_BINARY_DIR}/src/git_version.f90
     COMMAND ${CMAKE_COMMAND}
-        -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/src/git_version.f90
-        -P ${CMAKE_SOURCE_DIR}/cmake/git_version.cmake
+        -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+        -DOUTPUT_FILE=${PROJECT_BINARY_DIR}/src/git_version.f90
+        -P ${PROJECT_SOURCE_DIR}/cmake/git_version.cmake
     DEPENDS
-        ${CMAKE_SOURCE_DIR}/src/git_version.f90.in
+        ${PROJECT_SOURCE_DIR}/src/git_version.f90.in
         ${GIT_HEAD_DEPS}
     COMMENT "Generating git_version.f90 with current git hash"
     VERBATIM
 )
 
 add_custom_target(git_version_target
-    DEPENDS ${CMAKE_BINARY_DIR}/src/git_version.f90
+    DEPENDS ${PROJECT_BINARY_DIR}/src/git_version.f90
 )
 
 add_subdirectory(src) # for rabe_lib

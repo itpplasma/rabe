@@ -102,7 +102,7 @@ use fieldline_labels, only: get_labels
 use make_fieldline, only: make_flock_of_fieldlines
 use fieldline_mod, only: fieldline_t
 
-call field%fix_to_surface(stor)  ! or neo_field_init / neo_change_stor
+call field%fix_to_surface(stor)
 call get_labels(max_n, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
 allocate(fieldlines(size(xi_0)))
 call make_flock_of_fieldlines(fieldlines, xi_0, approx_iota, field, &

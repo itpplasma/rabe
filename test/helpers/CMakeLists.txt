@@ -4,7 +4,6 @@ add_library(helpers_lib STATIC
   anti_sigma_field.f90
   plot_quantities.f90
   readers.f90
-  distribution_function.f90
   test_shaing_callen_mod.f90
   bc_file.f90
 )

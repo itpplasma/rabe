@@ -1,6 +1,6 @@
 program test_make_flock_of_fieldlines
     use constants, only: dp, pi
-    use neo_field, only: neo_field_t
+    use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use utils, only: linspace
@@ -8,24 +8,21 @@ program test_make_flock_of_fieldlines
 
     implicit none
 
-    character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
-    real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
-    type(neo_field_t) :: field
+    real(dp), parameter :: M_pol = -2.0_dp, nfp = 4.0_dp, N_tor = nfp
+    type(mock_field_t) :: field
 
-    real(dp), parameter :: stor = 0.5_dp
     integer, parameter :: n_fieldlines = 10
 
     real(dp), dimension(n_fieldlines) :: theta_0
-    real(dp) :: iota, nfp
+    real(dp), parameter :: iota = -1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 
     integer :: current
     real(dp) :: phi_max(2)
     real(dp) :: abstol
 
-    call field%neo_field_init(bc_filename, stor)
-    nfp = field%nfp
-    iota = field%iota
+    call field%mock_field_init(theta_mode=M_pol, phi_mode=N_tor, &
+                               B_0=1.0_dp, B_amplitude=-0.3_dp)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
     call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &

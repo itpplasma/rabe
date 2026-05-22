@@ -874,52 +874,6 @@ contains
         call plt%show()
     end subroutine plot_asymptotic_model
 
-    subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
-        use surface_average_mod, only: surface_average_t, calc_surface_averages
-        use fit_functions, only: S_A, S_B
-        use neo_field, only: neo_field_t
-        use distribution_function, only: get_g_modes_from_fieldlines
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        type(neo_field_t), intent(in) :: field
-        real(dp), intent(in) :: nu_star
-        type(external_data_t), intent(in), optional :: g_external
-
-        type(modes_t) :: g_off_modes
-
-        integer, parameter :: n_points = 300
-        integer :: max_mode
-        real(dp), dimension(:), allocatable :: theta_mid, g_off
-
-        type(myplot) :: plt
-        character(len=1024) :: label
-
-        call get_g_modes_from_fieldlines(fieldlines, field, nu_star, g_off_modes)
-        max_mode = size(g_off_modes%cos_coeffs, dim=1)
-
-        allocate (theta_mid(n_points), g_off(n_points))
-        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
-
-        g_off = eval_modes(theta_mid, g_off_modes, max_mode)
-
-        call plt%initialize(xlabel="$\vartheta_{mid} [1]$", &
-                            ylabel="$g_\mathrm{off}$ [Tm]", &
-                            legend=.true.)
-        write (label, "(A34,ES10.3E2)") "rabe: $g_\mathrm{off}$ at $\nu_*=$", &
-            nu_star
-        call plt%add_plot(theta_mid, &
-                          g_off, &
-                          label=label, &
-                          linestyle="k-")
-        if (present(g_external)) then
-            call plt%add_plot(g_external%x, &
-                              g_external%y, &
-                              label=g_external%label, &
-                              linestyle="r-")
-        end if
-        call plt%show()
-
-    end subroutine plot_distribution_function
-
     subroutine plot_B_along_fieldline(field, &
                                       fieldline, &
                                       interval)
