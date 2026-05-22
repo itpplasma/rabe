@@ -23,9 +23,11 @@ $$
 For near-omnigenous stellarators at low plasma collisionality
 $\nu_\ast=\pi R \nu_{\perp}/v$, where $\nu_\perp$ and $R$ are deflection frequency and
 device major radius, respectively, the off-set can be expressed as
+
 $$
     \lambda_{\text{off}} = \frac{\Lambda_\mathrm{A}}{\sqrt{\nu_\ast}} + \frac{\Lambda_\mathrm{B}}{\nu_\ast}, \tag{3}
 $$
+
 where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
 due to the variation of the trapped-passing boundary layer width and the misalignment
 of local maxima, respectively (see Ref. [1]).

@@ -14,7 +14,6 @@ program test_make_flock_of_fieldlines
     integer, parameter :: n_fieldlines = 10
 
     real(dp), dimension(n_fieldlines) :: theta_0
-    ! iota=-3 gives |M*iota - N| = |6-4| = 2, period in phi = pi, half-period = 0.5*pi
     real(dp), parameter :: iota = -1.0_dp
     type(fieldline_t), dimension(n_fieldlines) :: fieldlines
 

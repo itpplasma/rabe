@@ -20,7 +20,7 @@ RABE (Redl's Analytical Bootstrap Estimation) is a scientific computing project 
 - `make test_all` - Run quick + slow tests
 - `make plot` - Run plotting/visualization tests (label: `plot`)
 - `make current` - Run tests marked as current development focus (label: `current`)
-- `make external` - Run external comparison tests (label: `external`)
+- `make internal` - Run private/internal tests (label: `internal`; requires `test/internal` submodule)
 - `make golden` - Run golden record tests (label: `golden`)
 - `make golden_run` - Run golden record execution only (no comparison; used for timing)
 - `make golden_update` - Update golden record expected output
@@ -39,7 +39,6 @@ rabe_lib (main static library)
 ├── field_lib (src/field/)
 │   field_base.f90    - Abstract type field_t (deferred: compute_B_mod,
 │                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx)
-│   neo_field.f90     - Concrete field_t from NEO-2 .bc files (type neo_field_t)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
 │   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion
@@ -48,8 +47,6 @@ rabe_lib (main static library)
 │   fieldline_labels.f90, make_fieldline.f90, surface_average.f90
 ├── shaing_callen_lib (src/shaing_callen/)
 │   shaing_callen.f90, shaing_callen_integration.f90, shaing_callen_wrappers.f90
-├── neo_lib (src/neo/)
-│   Legacy NEO-2 code for .bc file reading and spline interpolation (21 files)
 ├── netcdf_lib (src/netcdf/)
 │   netcdf.f90 - NetCDF output via type netcdf_t
 └── Top-level modules:
@@ -68,7 +65,6 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 ### Key derived types
 
 - `field_t` - Abstract base for magnetic field (in `field_base`)
-- `neo_field_t` - Field from `.bc` files (in `neo_field`), init with `neo_field_init(bc_filename, stor)`
 - `boozer_field_t` - Field from VMEC `.nc` files (in `boozer_field`), init with `boozer_field_init(vmec_file, ...)`
 - `fieldline_t` - Field line representation (in `fieldline_mod`)
 - `surface_average_t` - Surface-averaged quantities (in `surface_average_mod`)
@@ -78,23 +74,23 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 
 - `test/unit/` - Unit tests (label: `quick`)
 - `test/integration/` - Integration tests (label: `quick` or `slow`)
-- `test/integration/vmec/` - VMEC-vs-NEO comparison tests
-- `test/external/` - External comparison tests (label: `external`)
+- `test/integration/vmec/` - VMEC field comparison tests
 - `test/plot/` - Visualization tests; see `test/plot/README.md` for API and patterns
 - `test/golden/` - Golden record regression test (label: `golden`)
 - `test/helpers/` - Shared test utilities (analytical fields, mock fields, readers, plot helpers)
+- `test/internal/` - Private tests with legacy NEO-2 comparisons (git submodule, not in public repo)
 
 ## Key Development Patterns
 
-- **Naming**: Derived types use `typename_t` (e.g., `fieldline_t`, `neo_field_t`)
+- **Naming**: Derived types use `typename_t` (e.g., `fieldline_t`, `boozer_field_t`)
 - **Polymorphism**: Field calculations use abstract `field_t` base type. Fortran arrays cannot be polymorphic — use wrapper types with abstract members.
 - **Module organization**: One focused responsibility per module
-- **Test labels**: `quick`, `slow`, `plot`, `current`, `external`, `golden`
+- **Test labels**: `quick`, `slow`, `plot`, `current`, `internal`, `golden`
 
 ## Input/Output
 
 - **Input**: Namelist file `rabe.in` (namelist `rabe_config`)
-- **Field data**: `.bc` files (NEO-2 splines) or VMEC `.nc` files
+- **Field data**: VMEC `.nc` files
 - **Output**: `rabe.nc` (NetCDF)
 
 ## Code Style

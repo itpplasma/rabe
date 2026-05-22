@@ -25,7 +25,7 @@ program plot_deviation_poloidal_anti_sigma
     real(dp), parameter :: ds_dr = 0.387524_dp*100.0_dp !1/m
     real(dp), parameter :: dr_dpsi = 1.0_dp/(ds_dr*psi_edge)
 
-    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.125, eps_1 = -0.005_dp
+    real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.125, eps_1 = -0.05_dp
     real(dp), parameter :: delta_B_1 = 2.0_dp*1e-4
     real(dp), parameter :: M_pol_pert = 1.0_dp, N_tor_pert = 0.0_dp
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
