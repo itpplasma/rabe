@@ -7,5 +7,5 @@ add_library(fieldline_lib STATIC
   surface_average.f90
   )
 
-target_link_libraries(fieldline_lib PRIVATE utils_lib field_lib)
+target_link_libraries(fieldline_lib PRIVATE constants_lib utils_lib field_lib logger_lib)
 target_include_directories(fieldline_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

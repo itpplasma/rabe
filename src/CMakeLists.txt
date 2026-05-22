@@ -8,6 +8,7 @@ add_library(rabe_lib STATIC
 add_dependencies(rabe_lib git_version_target)
 target_include_directories(rabe_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
+add_subdirectory(constants)
 add_subdirectory(utils)
 add_subdirectory(netcdf)
 add_subdirectory(vmec)
@@ -17,6 +18,7 @@ add_subdirectory(shaing_callen)
 add_subdirectory(logger)
 
 target_link_libraries(rabe_lib PUBLIC
+  constants_lib
   utils_lib
   netcdf_lib
   field_lib
