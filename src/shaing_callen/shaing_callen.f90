@@ -4,6 +4,7 @@ module shaing_callen_mod
     use field_base, only: field_t
     use shaing_callen_integration, only: get_eta_integration_grid
     use shaing_callen_integration, only: integrate_over_eta_grid
+    use logger, only: log_msg, log_val, log_lvl
     implicit none
 
 contains
@@ -64,9 +65,11 @@ contains
         allocate (avg_B_squared_over_avg_lambda(n_eta))
 
         if (any(avg_lambda_over_B_squared <= 0.0_dp)) then
-            print *, "Error in calc_avg_B_squared_over_avg_lambda: ", &
-                "average lambda/B^2 is not positiv"
-            print *, "avg_lambda_over_B_squared: ", avg_lambda_over_B_squared
+            call log_msg(log_lvl%ERROR, &
+                         "Error in calc_avg_B_squared_over_avg_lambda: " &
+                         //"average lambda/B^2 is not positiv")
+            call log_val(log_lvl%ERROR, "avg_lambda_over_B_squared: ", &
+                         avg_lambda_over_B_squared)
             error stop
         end if
 
@@ -208,8 +211,8 @@ contains
         call check_has_correct_endpoints(x)
         n = size(x)
         if (n < 3) then
-            print *, "calc_periodic_dydx needs n > 3 points!"
-            print *, "provided n: ", n
+            call log_msg(log_lvl%ERROR, "calc_periodic_dydx needs n > 3 points!")
+            call log_val(log_lvl%ERROR, "provided n: ", n)
             error stop
         end if
 

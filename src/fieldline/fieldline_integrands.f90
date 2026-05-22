@@ -1,6 +1,7 @@
 module fieldline_integrands
     use constants, only: dp
     use field_base, only: field_t
+    use logger, only: log_msg, log_val, log_lvl
 
     implicit none
 
@@ -52,10 +53,11 @@ contains
         lambda_squared = 1.0_dp - B*eta
 
         if (lambda_squared .lt. 0.0_dp) then
-            print *, "Square of pitch parameter (1 - B*eta) is negative!"
-            print *, "B: ", B
-            print *, "eta: ", eta
-            print *, "(1 - B*eta): ", lambda_squared
+            call log_msg(log_lvl%ERROR, &
+                         "Square of pitch parameter (1 - B*eta) is negative!")
+            call log_val(log_lvl%ERROR, "B: ", B)
+            call log_val(log_lvl%ERROR, "eta: ", eta)
+            call log_val(log_lvl%ERROR, "(1 - B*eta): ", lambda_squared)
             error stop
         end if
     end function calc_lambda_squared
