@@ -1,5 +1,6 @@
 module logger
     use constants, only: dp
+    use iso_fortran_env, only: error_unit
     implicit none
 
     type :: log_level_t
@@ -33,7 +34,7 @@ module logger
     logical, parameter :: unsafe_mode = .false.
     integer :: log_unit = stdout_unit
 
-    integer, parameter :: BUFFER_SIZE = 100
+    integer, parameter :: BUFFER_SIZE = 10
     character(len=256) :: buffer(BUFFER_SIZE)
     integer :: buffer_count = 0
 
@@ -73,20 +74,28 @@ contains
         character(len=*), intent(in) :: msg
         character(len=8) :: date
         character(len=10) :: time
-        character(len=8) :: unsafe_str
         character(len=256) :: entry
 
         if (level%value < log_level%value) return
 
         call date_and_time(date, time)
 
-        unsafe_str = merge("UNSAFE  ", "        ", unsafe_mode)
+        if (unsafe_mode) then
+            write (entry, '(A,1X,A,1X,A,1X,A)') &
+                date//'T'//time(1:6), &
+                level%name, &
+                "[UNSAFE]", &
+                trim(msg)
+        else
+            write (entry, '(A,1X,A,1X,A)') &
+                date//'T'//time(1:6), &
+                level%name, &
+                trim(msg)
+        end if
 
-        write (entry, '(A,1X,A,1X,A,1X,A)') &
-            date//'T'//time(1:6), &
-            level%name, &
-            unsafe_str, &
-            trim(msg)
+        if (level%value >= log_lvl%ERROR%value) then
+            write (error_unit, '(A)') trim(entry)
+        end if
 
         buffer_count = buffer_count + 1
         buffer(buffer_count) = entry
@@ -152,10 +161,9 @@ contains
         end do
     end subroutine log_finalize
 
-    subroutine error_stop(msg)
-        character(len=*), intent(in) :: msg
+    subroutine error_stop()
         call log_finalize()
-        error stop msg
+        error stop
     end subroutine error_stop
 
     subroutine debug_probe(value, filename)
