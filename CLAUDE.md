@@ -56,7 +56,7 @@ rabe_lib (main static library)
     coefficients.f90, deviation.f90, fit_functions.f90, read_file.f90
 ```
 
-External dependencies: NetCDF-Fortran, BLAS, LAPACK, libneo, SuiteSparse, quadpack.
+External dependencies: NetCDF-Fortran, libneo, quadpack.
 
 ### Application flow (`app/main.f90`)
 
