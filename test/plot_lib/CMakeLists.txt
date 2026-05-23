@@ -4,5 +4,5 @@ add_library(myplot_lib STATIC
 
 add_subdirectory(pyplot-fortran)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/pyplot-fortran)
-target_link_libraries(myplot_lib PRIVATE pyplot_fortran)
-target_link_libraries(myplot_lib PRIVATE utils_lib)
+target_link_libraries(myplot_lib PUBLIC pyplot_fortran)
+target_link_libraries(myplot_lib PUBLIC utils_lib)

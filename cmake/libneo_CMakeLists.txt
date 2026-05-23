@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 project(libneo Fortran)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(NetCDF_Fortran REQUIRED IMPORTED_TARGET netcdf-fortran)
-
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_subdirectory(src/interpolate)
@@ -18,7 +15,7 @@ add_library(neo STATIC
     src/plag_coeff.f90
     src/binsrc.f90
 )
-target_link_libraries(neo PUBLIC interpolate PkgConfig::NetCDF_Fortran)
+target_link_libraries(neo PUBLIC interpolate netcdf::netcdff)
 target_include_directories(neo PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 )

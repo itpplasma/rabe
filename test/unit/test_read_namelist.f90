@@ -211,7 +211,7 @@ contains
         logical, intent(in), optional :: test_should_calc_shaing_callen
         integer, intent(in), optional :: test_n_eta
 
-        integer :: unit
+        integer :: unit, i
 
         open (newunit=unit, file=filename, status="replace")
         write (unit, "(A)") "&rabe_config"
@@ -225,7 +225,11 @@ contains
             write (unit, "(A,F4.1,A)") "N_tor = ", test_N_tor, ","
         end if
         if (present(test_s_tor)) then
-            write (unit, "(A,*(G0.3,1X),A)") "s_tor = ", test_s_tor, ","
+            write (unit, "(A)", advance="no") "s_tor = "
+            do i = 1, size(test_s_tor)
+                write (unit, "(G0.3,1X)", advance="no") test_s_tor(i)
+            end do
+            write (unit, "(A)") ","
         end if
         if (present(test_s_tor_min)) then
             write (unit, "(A,G0.3,A)") "s_tor_min = ", test_s_tor_min, ","
