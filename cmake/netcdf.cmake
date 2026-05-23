@@ -82,6 +82,7 @@ function(rabe_add_fetched_netcdf)
             -DHDF5_BUILD_HL_LIB=ON
             -DHDF5_ENABLE_PARALLEL=OFF
             -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
+            -DHDF5_ENABLE_SZIP_SUPPORT=OFF
             -DBUILD_TESTING=OFF
             -DHDF5_BUILD_TESTING=OFF
         BUILD_BYPRODUCTS
@@ -119,6 +120,12 @@ function(rabe_add_fetched_netcdf)
         INSTALL_DIR ${deps_prefix}
         CMAKE_ARGS
             ${common_cmake_args}
+            -DCMAKE_DISABLE_FIND_PACKAGE_Blosc=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_Bz2=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_CURL=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_LibXml2=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_Szip=ON
+            -DCMAKE_DISABLE_FIND_PACKAGE_Zstd=ON
             -DHDF5_ROOT=${deps_prefix}
             -DHDF5_DIR=${deps_prefix}
             -DENABLE_DAP=OFF
