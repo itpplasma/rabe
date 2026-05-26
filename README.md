@@ -50,7 +50,7 @@ boundary correction derived by Helander, Geiger and Maasberg [3].
 
 ## Prerequisites
 
-- Fortran compiler (e.g. gfortran)
+- Fortran compiler (gfortran)
 - CMake >= 3.24
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
 
@@ -182,7 +182,9 @@ value per flux surface. Both files contain the same variables:
 violation of omnigenity is too strong, local maxima contours are not merely
 deformed, but also get split, which this flag notes.
 
-if `should_calc_shaing_callen = .true.`, then
+For fast runs suited for **optimization**, we recommend to set
+`should_calc_shaing_callen = .false.`. If it is enabled, the output
+is extended by
 
 | Variable | Description |
 | --- | --- |
