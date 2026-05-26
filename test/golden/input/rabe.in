@@ -11,3 +11,7 @@
     should_calc_shaing_callen = .true.,
     n_eta = 100
 /
+
+&error_handling
+    unsafe_mode = .false.
+/

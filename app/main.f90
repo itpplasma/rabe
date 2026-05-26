@@ -14,6 +14,8 @@ program rabe
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
+    use error_handling, only: read_error_handling_config
+
     use read_file, only: read_namelist
     use read_file, only: field_file, &
                          M_pol, &
@@ -63,6 +65,7 @@ program rabe
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
+    call read_error_handling_config(input_file)
     call read_namelist(input_file)
 
     n_stor = size(s_tor)

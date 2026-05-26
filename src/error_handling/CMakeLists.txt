@@ -1,0 +1,2 @@
+add_library(error_handling_lib STATIC error_handling.f90)
+target_include_directories(error_handling_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
