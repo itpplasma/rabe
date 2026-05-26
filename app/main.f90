@@ -1,4 +1,5 @@
 program rabe
+    use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use constants, only: dp, pi
     use utils, only: linspace
     use boozer_field, only: boozer_field_t
@@ -15,6 +16,7 @@ program rabe
     use git_version, only: git_hash
 
     use error_handling, only: set_unsafe_mode
+    use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
 
     use read_file, only: read_namelist
     use read_file, only: field_file, &
@@ -62,12 +64,15 @@ program rabe
     real(dp) :: trapped_fraction
     real(dp), dimension(:), allocatable :: lambda_LC, remainder
 
+    real(dp) :: nan_value
+
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
     call read_namelist(input_file)
     call set_unsafe_mode(unsafe_mode)
+    nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
 
     n_stor = size(s_tor)
@@ -83,6 +88,7 @@ program rabe
 
     call field%boozer_field_init(field_file, grid_refinement=6)
     do this = 1, n_stor
+        call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))
         call field%get_iota_and_covariant_components(s_tor(this), &
                                                      iota, &
@@ -143,6 +149,17 @@ program rabe
 
         if (allocated(fieldlines)) deallocate (fieldlines)
         if (allocated(xi_0)) deallocate (xi_0)
+
+        if (unsafe_mode .and. did_fail_any_sanity_check()) then
+            lambda_A(this) = nan_value
+            lambda_B(this) = nan_value
+            nu_star_crit(this) = nan_value
+            Lambda_S(this) = nan_value
+            if (should_calc_shaing_callen) then
+                lambda_LC(this) = nan_value
+                remainder(this) = nan_value
+            endif
+        end if
 
     end do
 
