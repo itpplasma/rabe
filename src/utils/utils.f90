@@ -1,6 +1,6 @@
 module utils
     use constants, only: dp
-    use logger, only: log_msg, log_lvl
+    use logger, only: log_msg, LOG
 
     implicit none
 
@@ -20,11 +20,11 @@ contains
         integer :: i
 
         if (n < 2) then
-            call log_msg(log_lvl%ERROR, "Error in linspace: n must be at least 2.")
+            call log_msg(LOG%ERROR, "Error in linspace: n must be at least 2.")
             error stop
         end if
         if (size(x) < n) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Error in linspace: output array size must be at least n.")
             error stop
         end if

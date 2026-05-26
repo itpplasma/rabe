@@ -1,6 +1,6 @@
 module fourier
     use constants, only: dp, pi
-    use logger, only: log_msg, log_val, log_lvl
+    use logger, only: log_msg, log_val, LOG
     implicit none
 
 contains
@@ -63,8 +63,8 @@ contains
         is_equidistant = all(abs(dx - dx(1)) < retol*dx(1) + abstol)
 
         if (.not. is_equidistant) then
-            call log_msg(log_lvl%ERROR, "Input x has to be equidistant!")
-            call log_val(log_lvl%ERROR, "violation by ", maxval(abs(dx - dx(1))))
+            call log_msg(LOG%ERROR, "Input x has to be equidistant!")
+            call log_val(LOG%ERROR, "violation by ", maxval(abs(dx - dx(1))))
             error stop
         end if
     end subroutine check_is_equidistant
@@ -82,11 +82,11 @@ contains
         correct_range = 2.0_dp*pi*(1 - 1/real(N, kind=dp))
         has_correct_range = abs(correct_range - range) < tol*correct_range
         if (.not. has_correct_range) then
-            call log_msg(log_lvl%ERROR, "Input x has wrong endpoints!")
-            call log_val(log_lvl%ERROR, "actual x(1) = ", x(1))
-            call log_val(log_lvl%ERROR, "required x(1) = ", x(1))
-            call log_val(log_lvl%ERROR, "actual x(N) = ", x(N))
-            call log_val(log_lvl%ERROR, "required x(N) = ", x(1) + correct_range)
+            call log_msg(LOG%ERROR, "Input x has wrong endpoints!")
+            call log_val(LOG%ERROR, "actual x(1) = ", x(1))
+            call log_val(LOG%ERROR, "required x(1) = ", x(1))
+            call log_val(LOG%ERROR, "actual x(N) = ", x(N))
+            call log_val(LOG%ERROR, "required x(N) = ", x(1) + correct_range)
             error stop
         end if
     end subroutine check_has_correct_endpoints

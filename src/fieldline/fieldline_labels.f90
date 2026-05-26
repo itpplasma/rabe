@@ -1,6 +1,6 @@
 module fieldline_labels
     use constants, only: dp, pi
-    use logger, only: log_msg, log_val, log_lvl
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -130,8 +130,8 @@ contains
             error = abs(B_at_closest - B_at_origin)
             error = error + abs(dB_dchi_at_origin*chis(closest))
             error = error/B_at_origin
-            call log_val(log_lvl%DEBUG, "error = ", error)
-            call log_val(log_lvl%DEBUG, "tol = ", tol)
+            call log_val(LOG%DEBUG, "error = ", error)
+            call log_val(LOG%DEBUG, "tol = ", tol)
             if (error < tol) origin_is_minimum = .true.
         end if
 
@@ -144,15 +144,15 @@ contains
                     origin_is_maximum = .true.
                     exit
                 end if
-                call log_val(log_lvl%DEBUG, "chi = ", chis(id_chi))
-                call log_val(log_lvl%DEBUG, "chi_error = ", chis_error(id_chi))
+                call log_val(LOG%DEBUG, "chi = ", chis(id_chi))
+                call log_val(LOG%DEBUG, "chi_error = ", chis_error(id_chi))
             end do
         end if
 
         if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "origin is neither local minimum nor maximum!")
-            call log_msg(log_lvl%ERROR, "Stellarator symmetry is violated!")
+            call log_msg(LOG%ERROR, "Stellarator symmetry is violated!")
             error stop
         end if
 
@@ -161,20 +161,20 @@ contains
         B_max = extrema(2)
         B_range = B_max - B_min
         if (B_range <= eps*B_max) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Error: provided field must not be flat (B_max = B_min)!")
-            call log_val(log_lvl%ERROR, "B_max = ", B_max)
-            call log_val(log_lvl%ERROR, "B_min = ", B_min)
-            call log_val(log_lvl%ERROR, "relative B range = ", B_range/B_max)
+            call log_val(LOG%ERROR, "B_max = ", B_max)
+            call log_val(LOG%ERROR, "B_min = ", B_min)
+            call log_val(LOG%ERROR, "relative B range = ", B_range/B_max)
             error stop
         end if
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
         if (height/B_range > height_tol) then
-            call log_msg(log_lvl%WARN, "Detected that origin in provided field is")
-            call log_val(log_lvl%WARN, "a significant local maximum of height > ", &
+            call log_msg(LOG%WARN, "Detected that origin in provided field is")
+            call log_val(LOG%WARN, "a significant local maximum of height > ", &
                          height_tol*100.0_dp)
-            call log_msg(log_lvl%WARN, "% of the total B range!")
+            call log_msg(LOG%WARN, "% of the total B range!")
             suspect_omnigenous_origin_not_minimum = .true.
         end if
 
@@ -192,9 +192,9 @@ contains
             !> as M_pol and N_tor are whole numbers that must no both be zero
             !> M_pol*pi - N_tor should never zero
             if (abs(M_pol*pi - N_tor) < 1e-8) then
-                call log_msg(log_lvl%ERROR, &
+                call log_msg(LOG%ERROR, &
                              "Error: (M_pol*pi - N_tor) must not be (close) zero.")
-                call log_val(log_lvl%ERROR, "abs(M_pol*pi - N_tor) = ", &
+                call log_val(LOG%ERROR, "abs(M_pol*pi - N_tor) = ", &
                              abs(M_pol*pi - N_tor))
                 error stop
             end if
@@ -219,9 +219,9 @@ contains
             !> as M_pol and N_tor are whole numbers that must no both be zero
             !> M_pol*pi - N_tor should never zero
             if (abs(M_pol*pi - N_tor) < 1e-8) then
-                call log_msg(log_lvl%ERROR, &
+                call log_msg(LOG%ERROR, &
                              "Error: (M_pol*pi - N_tor) must not be (close) zero.")
-                call log_val(log_lvl%ERROR, "abs(M_pol*pi - N_tor) = ", &
+                call log_val(LOG%ERROR, "abs(M_pol*pi - N_tor) = ", &
                              abs(M_pol*pi - N_tor))
                 error stop
             end if

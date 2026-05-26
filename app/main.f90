@@ -13,7 +13,7 @@ program rabe
     use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
-    use logger, only: log_init, log_lvl, log_msg, log_val, log_finalize
+    use logger, only: log_init, LOG, log_msg, log_val, log_finalize
     use logger_config, only: read_logger_config, log_file
     use error_handling, only: read_error_handling_config, unsafe_mode
 
@@ -126,7 +126,7 @@ program rabe
                                                                B_theta_covariant, &
                                                                B_phi_covariant)
 
-        call log_val(log_lvl%INFO, "s_tor: ", s_tor(this))
+        call log_val(LOG%INFO, "s_tor: ", s_tor(this))
         if (should_calc_shaing_callen) then
             trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
             helical_factor = (B_phi_covariant*M_pol + &
@@ -136,14 +136,14 @@ program rabe
             remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
-            call log_val(log_lvl%INFO, "omnigenous lambda_LC_bB: ", lambda_LC(this))
-            call log_val(log_lvl%INFO, "non-omnigneous remainder: ", remainder(this))
+            call log_val(LOG%INFO, "omnigenous lambda_LC_bB: ", lambda_LC(this))
+            call log_val(LOG%INFO, "non-omnigneous remainder: ", remainder(this))
         end if
-        call log_val(log_lvl%INFO, "1/sqrt(nu_star) factor Lambda_A: ", Lambda_A(this))
-        call log_val(log_lvl%INFO, "1/nu_star factor Lambda_B: ", Lambda_B(this))
-        call log_val(log_lvl%INFO, "nu_star_crit: ", nu_star_crit(this))
-        call log_val(log_lvl%INFO, "split_maxima: ", split_maxima(this))
-        call log_val(log_lvl%INFO, "Lambda_S: ", Lambda_S(this))
+        call log_val(LOG%INFO, "1/sqrt(nu_star) factor Lambda_A: ", Lambda_A(this))
+        call log_val(LOG%INFO, "1/nu_star factor Lambda_B: ", Lambda_B(this))
+        call log_val(LOG%INFO, "nu_star_crit: ", nu_star_crit(this))
+        call log_val(LOG%INFO, "split_maxima: ", split_maxima(this))
+        call log_val(LOG%INFO, "Lambda_S: ", Lambda_S(this))
 
         if (allocated(fieldlines)) deallocate (fieldlines)
         if (allocated(xi_0)) deallocate (xi_0)

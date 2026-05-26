@@ -353,7 +353,7 @@ contains
         use binsrc_sub, only: binsrc
         use plag_coeff_sub, only: plag_coeff
         use spline_vmec_sub
-        use logger, only: log_msg, log_lvl
+        use logger, only: log_msg, LOG
 
         implicit none
 
@@ -388,12 +388,12 @@ contains
         nder = 0
         nshift = npoilag/2
 
-        call log_msg(log_lvl%INFO, 'Transforming to Boozer coordinates')
+        call log_msg(LOG%INFO, 'Transforming to Boozer coordinates')
 
         if (use_B_r) then
-            call log_msg(log_lvl%INFO, 'B_r is computed')
+            call log_msg(LOG%INFO, 'B_r is computed')
         else
-            call log_msg(log_lvl%INFO, 'B_r is not computed')
+            call log_msg(LOG%INFO, 'B_r is not computed')
         end if
 
         G00 = 0.0_dp
@@ -628,7 +628,7 @@ contains
                     wint_t, wint_p, coef, theta_V, theta_B, phi_V, phi_B, &
                     perqua_t, perqua_p, perqua_2D)
 
-        call log_msg(log_lvl%INFO, 'done')
+        call log_msg(LOG%INFO, 'done')
 
     end subroutine compute_boozer_data
 

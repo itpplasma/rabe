@@ -2,7 +2,7 @@ module make_fieldline
     use constants, only: dp, pi
     use field_base, only: field_t
     use fieldline_mod, only: fieldline_t
-    use logger, only: log_msg, log_val, log_lvl
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -54,9 +54,9 @@ contains
 
         symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
         if (symmetry_violation > field%rel_accuracy_B()) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                     "error: provided field violates stellarator symmetry too strongly!")
-            call log_val(log_lvl%ERROR, &
+            call log_val(LOG%ERROR, &
                       "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
                          symmetry_violation)
             error stop
@@ -64,11 +64,11 @@ contains
 
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, &
                                                   symmetry_violation)) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "error: The origin of the IDEAL omnigenous configuration")
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "(theta=phi=0) must be a global and local minimum!")
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Origin of provided field suggests that this is not the case!")
             error stop
         end if
@@ -86,20 +86,20 @@ contains
             call find_maxima_along_fieldline(field, fieldlines(current), &
                                              interval, maxima)
             if (maxima%n < 2) then
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
-                call log_msg(log_lvl%ERROR, &
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, &
                              "Found less than two maxima in provided interval!")
-                call log_val(log_lvl%ERROR, "theta_0: ", fieldlines(current)%theta_0)
-                call log_val(log_lvl%ERROR, "phi_0: ", fieldlines(current)%phi_0)
-                call log_val(log_lvl%ERROR, "interval(1): ", interval(1))
-                call log_val(log_lvl%ERROR, "interval(2): ", interval(2))
-                call log_val(log_lvl%ERROR, "phi_max: ", maxima%phi)
-                call log_val(log_lvl%ERROR, "B_max: ", maxima%B)
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
-                call log_msg(log_lvl%ERROR, repeat("-", 57))
+                call log_val(LOG%ERROR, "theta_0: ", fieldlines(current)%theta_0)
+                call log_val(LOG%ERROR, "phi_0: ", fieldlines(current)%phi_0)
+                call log_val(LOG%ERROR, "interval(1): ", interval(1))
+                call log_val(LOG%ERROR, "interval(2): ", interval(2))
+                call log_val(LOG%ERROR, "phi_max: ", maxima%phi)
+                call log_val(LOG%ERROR, "B_max: ", maxima%B)
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
                 error stop
             elseif (maxima%n > 2) then
                 call pick_maximum_on_each_side(maxima, &
@@ -119,22 +119,22 @@ contains
         end do
 
         if (more_than_two_maxima) then
-            call log_msg(log_lvl%WARN, repeat("-", 57))
-            call log_msg(log_lvl%WARN, repeat("-", 57))
-            call log_msg(log_lvl%WARN, repeat("-", 57))
-            call log_msg(log_lvl%WARN, "warning in make_flock_of_fieldlines:")
-            call log_msg(log_lvl%WARN, &
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, "warning in make_flock_of_fieldlines:")
+            call log_msg(LOG%WARN, &
                          "The provided field violates omnigeneity too strongly!")
-            call log_msg(log_lvl%WARN, &
+            call log_msg(LOG%WARN, &
                          "-> Found more than two local maxima per period" &
                          //" for at least one fieldline!")
-            call log_msg(log_lvl%WARN, &
+            call log_msg(LOG%WARN, &
                          "Calculation done with biggest maximum in each half period!")
-            call log_msg(log_lvl%WARN, &
+            call log_msg(LOG%WARN, &
                          "Final result for bootstrap deviation can not be trusted!")
-            call log_msg(log_lvl%WARN, repeat("-", 57))
-            call log_msg(log_lvl%WARN, repeat("-", 57))
-            call log_msg(log_lvl%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
             if (present(split_maxima)) then
                 split_maxima = 1
             end if
@@ -180,47 +180,47 @@ contains
         is_valid = .true.
 
         if (is_not_integer(M_pol, tol)) then
-            call log_msg(log_lvl%ERROR, "M_pol must be integer")
+            call log_msg(LOG%ERROR, "M_pol must be integer")
             is_valid = .false.
         end if
         if (is_not_integer(N_tor, tol)) then
-            call log_msg(log_lvl%ERROR, "N_tor must be integer")
+            call log_msg(LOG%ERROR, "N_tor must be integer")
             is_valid = .false.
         end if
         if (is_not_integer(nfp, tol)) then
-            call log_msg(log_lvl%ERROR, "nfp must be integer")
+            call log_msg(LOG%ERROR, "nfp must be integer")
             is_valid = .false.
         end if
         if (nint(nfp) <= 0) then
-            call log_msg(log_lvl%ERROR, "nfp must be positiv")
+            call log_msg(LOG%ERROR, "nfp must be positiv")
             is_valid = .false.
         end if
         if (nint(N_tor) /= 0) then
             if (not_same(N_tor, nfp, reltol_in=tol, abstol_in=0.0_dp)) then
-                call log_msg(log_lvl%ERROR, "nonzero N_tor must be equal nfp")
+                call log_msg(LOG%ERROR, "nonzero N_tor must be equal nfp")
                 is_valid = .false.
             end if
         else
             if (nint(M_pol) /= 1) then
                 is_valid = .false.
-                call log_msg(log_lvl%ERROR, "M_pol must be 1 if N_tor=0")
+                call log_msg(LOG%ERROR, "M_pol must be 1 if N_tor=0")
             end if
         end if
 
         if (abs(M_pol*iota - N_tor) < tol) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Error: (M_pol*iota - N_tor) must not be (close) zero.")
-            call log_val(log_lvl%ERROR, "abs(M_pol*iota - N_tor) = ", &
+            call log_val(LOG%ERROR, "abs(M_pol*iota - N_tor) = ", &
                          abs(M_pol*iota - N_tor))
             is_valid = .false.
         end if
 
         if (.not. is_valid) then
-            call log_msg(log_lvl%ERROR, "Error: not valid input:")
-            call log_val(log_lvl%ERROR, "M_pol: ", M_pol)
-            call log_val(log_lvl%ERROR, "N_tor: ", N_tor)
-            call log_val(log_lvl%ERROR, "nfp: ", nfp)
-            call log_val(log_lvl%ERROR, "iota: ", iota)
+            call log_msg(LOG%ERROR, "Error: not valid input:")
+            call log_val(LOG%ERROR, "M_pol: ", M_pol)
+            call log_val(LOG%ERROR, "N_tor: ", N_tor)
+            call log_val(LOG%ERROR, "nfp: ", nfp)
+            call log_val(LOG%ERROR, "iota: ", iota)
             error stop
         end if
 

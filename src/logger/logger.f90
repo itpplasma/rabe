@@ -15,7 +15,7 @@ module logger
         type(log_level_t) :: ERROR = log_level_t(3, 'ERROR')
     end type
 
-    type(log_levels_t), parameter :: log_lvl = log_levels_t()
+    type(log_levels_t), parameter :: LOG = log_levels_t()
 
     interface log_val
         module procedure log_val_real
@@ -26,7 +26,7 @@ module logger
 
     private
     public :: log_init, log_msg, log_val, log_finalize, debug_probe
-    public :: log_lvl, log_level_t, log_levels_t
+    public :: LOG, log_level_t, log_levels_t
 
     type(log_level_t) :: log_level = log_level_t(1, 'INFO ')
 
@@ -62,16 +62,16 @@ contains
         end if
         if (present(level_name)) then
             select case (trim(level_name))
-            case (log_lvl%DEBUG%name); log_level = log_lvl%DEBUG
-            case (log_lvl%INFO%name); log_level = log_lvl%INFO
-            case (log_lvl%WARN%name); log_level = log_lvl%WARN
-            case (log_lvl%ERROR%name); log_level = log_lvl%ERROR
+            case (LOG%DEBUG%name); log_level = LOG%DEBUG
+            case (LOG%INFO%name); log_level = LOG%INFO
+            case (LOG%WARN%name); log_level = LOG%WARN
+            case (LOG%ERROR%name); log_level = LOG%ERROR
             case default
                 print *, "Unknown log level: ", trim(level_name)
                 error stop
             end select
         else
-            log_level = log_lvl%INFO
+            log_level = LOG%INFO
         end if
         if (present(unsafe_mode)) then
             add_unsafe_tag = unsafe_mode
@@ -102,14 +102,14 @@ contains
                 trim(msg)
         end if
 
-        if (level%value >= log_lvl%ERROR%value) then
+        if (level%value >= LOG%ERROR%value) then
             write (error_unit, '(A)') trim(entry)
         end if
 
         buffer_count = buffer_count + 1
         buffer(buffer_count) = entry
 
-        if (level%value >= log_lvl%ERROR%value .or. buffer_count >= BUFFER_SIZE) then
+        if (level%value >= LOG%ERROR%value .or. buffer_count >= BUFFER_SIZE) then
             call log_flush()
         end if
     end subroutine log_msg
@@ -174,7 +174,7 @@ contains
         real, intent(in) :: value
         character(len=*), intent(in) :: filename
         integer :: unit, i
-        if (log_lvl%DEBUG%value < log_level%value) return
+        if (LOG%DEBUG%value < log_level%value) return
         do i = 1, n_probes
             if (trim(probe_names(i)) == trim(filename)) then
                 write (probe_units(i), '(ES20.10)') value

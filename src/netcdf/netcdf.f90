@@ -1,7 +1,7 @@
 module netcdf_mod
     use constants, only: dp
     use netcdf
-    use logger, only: log_msg, log_lvl
+    use logger, only: log_msg, LOG
 
     implicit none
     private
@@ -499,7 +499,7 @@ contains
         character(len=*), intent(in) :: operation
 
         if (status /= NF90_NOERR) then
-            call log_msg(log_lvl%ERROR, "NetCDF error during "//trim(operation)//": " &
+            call log_msg(LOG%ERROR, "NetCDF error during "//trim(operation)//": " &
                          //trim(nf90_strerror(status)))
             error stop "NetCDF operation failed"
         end if

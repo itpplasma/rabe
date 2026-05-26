@@ -2,7 +2,7 @@ module integrate
     use constants, only: dp
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
     use quadpack_double, only: qag => dqag
-    use logger, only: log_msg, log_val, log_lvl
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -64,24 +64,24 @@ contains
         error_occurred = .false.
 
         if (abs_error > error_limit) then
-            call log_val(log_lvl%ERROR, "Integration warning: absolute error = ", &
+            call log_val(LOG%ERROR, "Integration warning: absolute error = ", &
                          convert_to_dp(abs_error))
-            call log_val(log_lvl%ERROR, "bigger than required ", &
+            call log_val(LOG%ERROR, "bigger than required ", &
                          convert_to_dp(error_limit))
-            call log_val(log_lvl%ERROR, "relative error ", &
+            call log_val(LOG%ERROR, "relative error ", &
                          convert_to_dp(abs_error/abs(result_quadkind)))
             error_occurred = .true.
         end if
 
         if (error_flag /= 0) then
-            call log_val(log_lvl%ERROR, "Integration warning: error = ", error_flag)
+            call log_val(LOG%ERROR, "Integration warning: error = ", error_flag)
             error_occurred = .true.
         end if
 
         result = convert_to_dp(result_quadkind)
 
         if (ieee_is_nan(result)) then
-            call log_msg(log_lvl%ERROR, "Integration result is NaN!")
+            call log_msg(LOG%ERROR, "Integration result is NaN!")
             error_occurred = .true.
         end if
 
@@ -111,7 +111,7 @@ contains
         real(dp) :: left_result, right_result
 
         if (b < a) then
-            call log_msg(log_lvl%ERROR, "Error in integrate_1d_substituted: b < a")
+            call log_msg(LOG%ERROR, "Error in integrate_1d_substituted: b < a")
             error stop
         end if
 
@@ -175,12 +175,12 @@ contains
 
         n = size(x)
         if (.not. n == size(y)) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Error in sum_trapez_1d: x and y need to have same length!")
             error stop
         end if
         if (n < 2) then
-            call log_msg(log_lvl%ERROR, &
+            call log_msg(LOG%ERROR, &
                          "Error in sum_trapez_1d: len(x) must be at least 2!")
             error stop
         end if

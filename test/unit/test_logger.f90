@@ -1,5 +1,5 @@
 program test_logger
-    use logger, only: log_init, log_msg, log_finalize, log_lvl
+    use logger, only: log_init, log_msg, log_finalize, LOG
     implicit none
 
     character(len=*), parameter :: log_file = "test_logger_smoke.log"
@@ -12,10 +12,10 @@ program test_logger
 
     ! --- smoke: all four levels appear when configured at DEBUG ---
     call log_init(log_file=log_file, level_name="DEBUG")
-    call log_msg(log_lvl%DEBUG, "debug message")
-    call log_msg(log_lvl%INFO, "info message")
-    call log_msg(log_lvl%WARN, "warn message")
-    call log_msg(log_lvl%ERROR, "error message")
+    call log_msg(LOG%DEBUG, "debug message")
+    call log_msg(LOG%INFO, "info message")
+    call log_msg(LOG%WARN, "warn message")
+    call log_msg(LOG%ERROR, "error message")
     call log_finalize()
 
     open (newunit=unit, file=log_file, status="old", action="read")
@@ -60,8 +60,8 @@ program test_logger
 
     ! --- level filtering: DEBUG suppressed when configured at INFO ---
     call log_init(log_file=log_file, level_name="INFO")
-    call log_msg(log_lvl%DEBUG, "suppressed debug")
-    call log_msg(log_lvl%INFO, "visible info")
+    call log_msg(LOG%DEBUG, "suppressed debug")
+    call log_msg(LOG%INFO, "visible info")
     call log_finalize()
 
     open (newunit=unit, file=log_file, status="old", action="read")
