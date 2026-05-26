@@ -104,23 +104,21 @@ contains
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
         integer :: closest
         real(dp) :: Bs(2), B_at_closest, dB_dchi_at_origin, error
-        logical :: origin_is_minimum, origin_is_maximum
 
         suspect_omnigenous_origin_not_minimum = .false.
-        origin_is_maximum = .false.
-        origin_is_minimum = .false.
 
+        !> is the origin a local minimum?
         interval = [-pi, pi]
         call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
         n = size(chis)
         do id_chi = 1, n
             if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi)*safety_factor)) then
-                origin_is_minimum = .true.
-                exit
+                return
             end if
         end do
 
-        if (.not. origin_is_minimum .and. present(tol)) then
+        !> is the origin inside the error margin of a local minimum?
+        if (present(tol)) then
             closest = minloc(abs(chis), dim=1)
             call B_mod_along_pi_line([0.0_dp, chis(closest)], Bs)
             B_at_origin = Bs(1)
@@ -130,44 +128,23 @@ contains
             error = error + abs(dB_dchi_at_origin*chis(closest))
             error = error/B_at_origin
             print *, "error = ", error, " tol = ", tol
-            if (error < tol) origin_is_minimum = .true.
-        end if
+            if (error < tol) return
+        endif
 
-        if (.not. origin_is_minimum) then
-            call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
-            n = size(chis)
-            do id_chi = 1, n
-                if (is_multiple_of_2pi(chis(id_chi), &
-                                       chis_error(id_chi)*safety_factor)) then
-                    origin_is_maximum = .true.
-                    exit
-                end if
-                print *, "chi = ", chis(id_chi), " chi_error = ", chis_error(id_chi)
-            end do
-        end if
-
-        if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
-            print *, "warning: origin is neither local minimum nor maximum!"
-            print *, "Stellarator symmetry is violated!"
-            error stop
-        end if
-
+        !> is the B-difference of origin and minimum small compared to the B-range?
         extrema = find_global_extrema(B_mod_along_pi_line, interval, abstol=1e-3_dp)
         B_min = extrema(1)
         B_max = extrema(2)
         B_range = B_max - B_min
-        if (B_range <= eps*B_max) then
-            print *, "Error: provided field must not be flat (B_max = B_min)!"
-            print *, "B_max = ", B_max, " B_min = ", B_min
-            print *, "relative B range = ", B_range/B_max
-            error stop
-        end if
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
-        if (height/B_range > height_tol) then
-            print *, "Detected that origin in provided field is"
-            print *, "a significant local maximum of height > "
+        if (height/B_range > height_tol*B_range) then
+            print *, "Detected that B at origin of provided field is"
+            print *, "significantly above the minimum B i.e. difference > "
             print *, height_tol*100.0_dp, "% of the total B range!"
+            print *, "(B_at_origin - B_min) = ", height
+            print *, "B_max = ", B_max, " B_min = ", B_min
+            print *, "(B_max-B_min) = ", B_range
             suspect_omnigenous_origin_not_minimum = .true.
         end if
 
