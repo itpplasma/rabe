@@ -14,6 +14,8 @@ program rabe
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
     use logger, only: log_init, log_lvl, log_msg, log_val, log_finalize
+    use logger_config, only: read_logger_config, log_file
+    use error_handling, only: read_error_handling_config, unsafe_mode
 
     use read_file, only: read_namelist
     use read_file, only: field_file, &
@@ -64,7 +66,10 @@ program rabe
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
-    call log_init("rabe.log", "INFO")
+    call read_error_handling_config(input_file)
+    call read_logger_config(input_file)
+    call log_init(log_file, "INFO", unsafe_mode)
+
     call read_namelist(input_file)
 
     n_stor = size(s_tor)
