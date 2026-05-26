@@ -148,7 +148,8 @@ contains
         B_range_error = B_min_error + B_max_error
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
-        height_error = B_min_error + retol*B_at_origin
+        height_error = B_min_error
+        if (present(retol)) height_error = height_error + retol*B_at_origin
         if ((height - height_error) > height_retol*(B_range + B_range_error)) then
             print *, "Detected that B at origin of provided field is"
             print *, "significantly above the minimum B i.e. difference > "
