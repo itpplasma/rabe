@@ -82,7 +82,7 @@ contains
 
     end function calc_iota
 
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, tol)
+    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, retol)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
         use find_extrema, only: find_global_extrema
@@ -91,60 +91,73 @@ contains
 
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: tol
+        real(dp), intent(in), optional :: retol
         logical :: suspect_omnigenous_origin_not_minimum
 
         real(dp), dimension(2) :: interval
-        real(dp), dimension(:), allocatable :: chis, chis_error
-        integer :: n
-        integer :: id_chi
-        real(dp), parameter :: height_tol = 0.3_dp
-        real(dp), parameter :: safety_factor = 3.0_dp
+        real(dp), dimension(:), allocatable :: chis, chis_error, Bs
+        integer :: n, idx
+        real(dp) :: dB_dchi
+        real(dp), parameter :: height_retol = 0.3_dp
         real(dp), dimension(2) :: extrema
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
-        integer :: closest
-        real(dp) :: Bs(2), B_at_closest, dB_dchi_at_origin, error
+        real(dp) :: B_min_error, B_max_error, B_range_error
+        real(dp) :: height_error
 
         suspect_omnigenous_origin_not_minimum = .false.
 
-        !> is the origin a local minimum?
         interval = [-pi, pi]
+
         call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
         n = size(chis)
-        do id_chi = 1, n
-            if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi)*safety_factor)) then
-                return
-            end if
-        end do
+        if (n == 0) then
+            deallocate(chis, chis_error)
+            n = size(interval)
+            allocate (chis(n), chis_error(n))
+            chis = interval
+            chis_error = 0.0_dp
+        endif
+        allocate (Bs(n))
+        call B_mod_along_pi_line(chis, Bs)
+        idx = minloc(Bs, dim=1)
+        call dB_dchi_along_pi_line(chis(idx), dB_dchi)
+        B_min_error = abs(dB_dchi)*chis_error(idx)
+        B_min = Bs(idx)
+        deallocate (Bs)
 
-        !> is the origin inside the error margin of a local minimum?
-        if (present(tol)) then
-            closest = minloc(abs(chis), dim=1)
-            call B_mod_along_pi_line([0.0_dp, chis(closest)], Bs)
-            B_at_origin = Bs(1)
-            B_at_closest = Bs(2)
-            call dB_dchi_along_pi_line(0.0_dp, dB_dchi_at_origin)
-            error = abs(B_at_closest - B_at_origin)
-            error = error + abs(dB_dchi_at_origin*chis(closest))
-            error = error/B_at_origin
-            print *, "error = ", error, " tol = ", tol
-            if (error < tol) return
+        call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
+        n = size(chis)
+        if (n == 0) then
+            deallocate(chis, chis_error)
+            n = size(interval)
+            allocate (chis(n), chis_error(n))
+            chis = interval
+            chis_error = 0.0_dp
         endif
 
+        allocate (Bs(n))
+        call B_mod_along_pi_line(chis, Bs)
+        idx = maxloc(Bs, dim=1)
+        call dB_dchi_along_pi_line(chis(idx), dB_dchi)
+        B_max_error = abs(dB_dchi)*chis_error(idx)
+        B_max = Bs(idx)
+        deallocate (Bs)
+
         !> is the B-difference of origin and minimum small compared to the B-range?
-        extrema = find_global_extrema(B_mod_along_pi_line, interval, abstol=1e-3_dp)
-        B_min = extrema(1)
-        B_max = extrema(2)
         B_range = B_max - B_min
+        B_range_error = B_min_error + B_max_error
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
-        if (height/B_range > height_tol*B_range) then
+        height_error = B_min_error + retol*B_at_origin
+        if ((height - height_error) > height_retol*(B_range + B_range_error)) then
             print *, "Detected that B at origin of provided field is"
             print *, "significantly above the minimum B i.e. difference > "
-            print *, height_tol*100.0_dp, "% of the total B range!"
+            print *, height_retol*100.0_dp, "% of the total B range!"
             print *, "(B_at_origin - B_min) = ", height
+            print *, "with estimated error = ", height_error
             print *, "B_max = ", B_max, " B_min = ", B_min
             print *, "(B_max-B_min) = ", B_range
+            print *, "with estimated error = ", B_range_error
             suspect_omnigenous_origin_not_minimum = .true.
         end if
 
