@@ -14,7 +14,7 @@ program rabe
     use netcdf_mod, only: netcdf_t
     use git_version, only: git_hash
 
-    use error_handling, only: read_error_handling_config
+    use error_handling, only: set_unsafe_mode
 
     use read_file, only: read_namelist
     use read_file, only: field_file, &
@@ -24,7 +24,8 @@ program rabe
                          sign_sqrtg, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta
+                         n_eta, &
+                         unsafe_mode
 
     implicit none
 
@@ -65,8 +66,9 @@ program rabe
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
-    call read_error_handling_config(input_file)
     call read_namelist(input_file)
+    call set_unsafe_mode(unsafe_mode)
+
 
     n_stor = size(s_tor)
     allocate (Lambda_A(n_stor))
