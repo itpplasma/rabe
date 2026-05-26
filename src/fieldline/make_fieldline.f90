@@ -22,6 +22,7 @@ contains
         use fieldline_labels, only: calc_iota_p
         use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
         use constants, only: machine_eps
+        use error_handling, only: failed_sanity_check
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
@@ -56,7 +57,7 @@ contains
             print *, "error: provided field violates stellarator symmetry too strongly!"
             print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
                 symmetry_violation
-            error stop
+            call failed_sanity_check()
         end if
 
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, &
@@ -64,7 +65,7 @@ contains
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"
             print *, "Origin of provided field suggests that this is not the case!"
-            error stop
+            call failed_sanity_check()
         end if
         !> if the origin of the ideal omnigenous field is a minimum (above)
         !> we can put the labels along the chi = 0 line

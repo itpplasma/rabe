@@ -74,6 +74,11 @@ target_link_libraries(test_diophantine.x utils_lib)
 add_test(TestDiophantine test_diophantine.x)
 set_tests_properties(TestDiophantine PROPERTIES LABELS "quick")
 
+add_executable(test_error_handling.x test_error_handling.f90)
+target_link_libraries(test_error_handling.x rabe_lib)
+add_test(TestErrorHandling test_error_handling.x)
+set_tests_properties(TestErrorHandling PROPERTIES LABELS "quick")
+
 add_executable(plot_fit_functions.x plot_fit_functions.f90)
 target_link_libraries(plot_fit_functions.x rabe_lib
                                   myplot_lib)

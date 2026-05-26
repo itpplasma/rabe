@@ -14,6 +14,7 @@ contains
         use surface_average_mod, only: surface_average_t
         use surface_average_mod, only: calc_surface_averages
         use fit_functions, only: S_A, S_B
+        use error_handling, only: failed_sanity_check
 
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp), intent(out) :: deviation_A, deviation_B
@@ -43,7 +44,7 @@ contains
             print *, "cos part: ", sum(abs(modes%delta_eta%cos_coeffs))
             any_has_sin_part = .true.
         end if
-        if (any_has_sin_part) error stop
+        if (any_has_sin_part) call failed_sanity_check()
 
         call calc_surface_averages(fieldlines, average)
 

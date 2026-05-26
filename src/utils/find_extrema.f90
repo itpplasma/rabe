@@ -33,7 +33,8 @@ contains
 
     subroutine find_local_maxima(func, interval, location, achieved_error)
         use utils, only: linspace, not_same
-
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
         real(dp), dimension(:), allocatable, intent(out) :: location
@@ -57,7 +58,9 @@ contains
 
         allocate (brackets(2, n_maxima))
         allocate (location(n_maxima))
+        location = ieee_value(location, ieee_quiet_nan)
         allocate (errors(n_maxima))
+        errors = ieee_value(errors, ieee_quiet_nan)
 
         n_maxima = 0
         do i = 2, n_coarse - 1
@@ -71,6 +74,15 @@ contains
         do i = 1, n_maxima
             call refine_maximum(brackets(:, i), location(i), errors(i))
         end do
+
+        if (any(ieee_is_nan(location))) then
+            print *, "error in find_local_maxima: NaN in location"
+            error stop
+        end if
+        if (any(ieee_is_nan(errors))) then
+            print *, "error in find_local_maxima: NaN in errors"
+            error stop
+        end if
 
         if (present(achieved_error)) achieved_error = errors
 
