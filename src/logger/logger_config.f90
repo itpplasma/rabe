@@ -11,7 +11,7 @@ module logger_config
 
 contains
 
-    subroutine read_namelist(filename)
+    subroutine read_logger_config(filename)
         character(len=*), intent(in) :: filename
         integer :: ios, unit
         logical :: file_exists
@@ -42,7 +42,7 @@ contains
 
         call check_if_valid_namelist()
 
-    end subroutine read_namelist
+    end subroutine read_logger_config
 
     subroutine check_if_valid_namelist()
         logical :: is_valid

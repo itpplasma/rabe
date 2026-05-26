@@ -25,14 +25,16 @@ module logger
     end interface log_val
 
     private
-    public :: log_init, log_msg, log_val, log_finalize, error_stop, debug_probe
+    public :: log_init, log_msg, log_val, log_finalize, debug_probe
     public :: log_lvl, log_level_t, log_levels_t
 
     type(log_level_t) :: log_level = log_level_t(1, 'INFO ')
 
     integer, parameter :: stdout_unit = 6
-    logical, parameter :: unsafe_mode = .false.
     integer :: log_unit = stdout_unit
+
+    logical :: add_unsafe_tag = .false.
+    character(len=*), parameter :: unsafe_tag = "[UNSAFE]"
 
     integer, parameter :: BUFFER_SIZE = 10
     character(len=256) :: buffer(BUFFER_SIZE)
@@ -45,12 +47,16 @@ module logger
 
 contains
 
-    subroutine log_init(log_file, level_name)
+    subroutine log_init(log_file, level_name, unsafe_mode)
         character(len=*), intent(in), optional :: log_file
         character(len=*), intent(in), optional :: level_name
+        logical, intent(in), optional :: unsafe_mode
 
         if (present(log_file)) then
-            open (newunit=log_unit, file=log_file, status="replace", action="write")
+            if (len(trim(log_file)) /= 0) then
+                open (newunit=log_unit, file=log_file, &
+                      status="replace", action="write")
+            end if
         else
             log_unit = stdout_unit
         end if
@@ -67,6 +73,9 @@ contains
         else
             log_level = log_lvl%INFO
         end if
+        if (present(unsafe_mode)) then
+            add_unsafe_tag = unsafe_mode
+        end if
     end subroutine log_init
 
     subroutine log_msg(level, msg)
@@ -80,11 +89,11 @@ contains
 
         call date_and_time(date, time)
 
-        if (unsafe_mode) then
+        if (add_unsafe_tag) then
             write (entry, '(A,1X,A,1X,A,1X,A)') &
                 date//'T'//time(1:6), &
+                unsafe_tag, &
                 level%name, &
-                "[UNSAFE]", &
                 trim(msg)
         else
             write (entry, '(A,1X,A,1X,A)') &
@@ -160,11 +169,6 @@ contains
             close (probe_units(i))
         end do
     end subroutine log_finalize
-
-    subroutine error_stop()
-        call log_finalize()
-        error stop
-    end subroutine error_stop
 
     subroutine debug_probe(value, filename)
         real, intent(in) :: value
