@@ -111,11 +111,10 @@ contains
         call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
         n = size(chis)
         if (n == 0) then
-            deallocate(chis, chis_error)
-            n = size(interval)
-            allocate (chis(n), chis_error(n))
-            chis = interval
-            chis_error = 0.0_dp
+            print*, "Warning in suspect_omnigenous_origin_not_minimum: ", &
+                   "No local minima found in well around origin! "
+            suspect_omnigenous_origin_not_minimum = .true.
+            return
         endif
         allocate (Bs(n))
         call B_mod_along_pi_line(chis, Bs)
@@ -143,7 +142,7 @@ contains
         B_max = Bs(idx)
         deallocate (Bs)
 
-        !> is the B-difference of origin and minimum small compared to the B-range?
+        !> is the B-difference of origin and minimum significant compared to the B-range?
         B_range = B_max - B_min
         B_range_error = B_min_error + B_max_error
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
