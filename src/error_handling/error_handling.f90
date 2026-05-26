@@ -1,8 +1,7 @@
 module error_handling
     implicit none
 
-    private
-    public :: unsafe_mode, error_unless_unsafe, read_error_handling_config
+    public :: error_stop_unless_unsafe, read_error_handling_config
 
     logical, protected :: unsafe_mode
 
@@ -30,9 +29,9 @@ contains
 
     end subroutine read_error_handling_config
 
-    subroutine error_unless_unsafe()
+    subroutine error_stop_unless_unsafe()
         if (unsafe_mode) return
         error stop
-    end subroutine error_unless_unsafe
+    end subroutine error_stop_unless_unsafe
 
 end module error_handling
