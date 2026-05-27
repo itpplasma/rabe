@@ -37,7 +37,7 @@ add_custom_target(git_version_target
 add_subdirectory(src) # for rabe_lib
 
 add_executable(${PROJECT_NAME} app/main.f90)
-target_link_libraries(${PROJECT_NAME} rabe_lib utils_lib netcdf_lib)
+target_link_libraries(${PROJECT_NAME} rabe_lib read_file_lib utils_lib netcdf_lib)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
 enable_testing()

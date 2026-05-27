@@ -60,7 +60,7 @@ add_test(TestCalcPeriodicDerivative test_calc_periodic_dydx.x)
 set_tests_properties(TestCalcPeriodicDerivative PROPERTIES LABELS "quick")
 
 add_executable(test_read_namelist.x test_read_namelist.f90)
-target_link_libraries(test_read_namelist.x rabe_lib utils_lib)
+target_link_libraries(test_read_namelist.x read_file_lib utils_lib)
 add_test(TestReadNamelist test_read_namelist.x)
 set_tests_properties(TestReadNamelist PROPERTIES LABELS "quick")
 
