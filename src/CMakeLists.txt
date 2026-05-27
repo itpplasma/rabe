@@ -16,7 +16,7 @@ add_subdirectory(field)
 add_subdirectory(fieldline)
 add_subdirectory(shaing_callen)
 
-target_link_libraries(rabe_lib PUBLIC
+target_link_libraries(rabe_lib PRIVATE
   error_handling_lib
   utils_lib
   netcdf_lib
