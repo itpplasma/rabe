@@ -14,6 +14,7 @@ add_subdirectory(netcdf)
 add_subdirectory(vmec)
 add_subdirectory(field)
 add_subdirectory(fieldline)
+add_subdirectory(offset)
 add_subdirectory(shaing_callen)
 
 target_link_libraries(rabe_lib PRIVATE
@@ -23,4 +24,5 @@ target_link_libraries(rabe_lib PRIVATE
   field_lib
   vmec_lib
   fieldline_lib
-  shaing_callen_lib)
+  shaing_callen_lib
+  offset_lib)

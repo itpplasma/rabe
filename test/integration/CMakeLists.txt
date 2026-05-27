@@ -29,26 +29,24 @@ add_test(TestPertAntiSigmaAnalytic test_pert_anti_sigma_analytic.x)
 set_tests_properties(TestPertAntiSigmaAnalytic PROPERTIES LABELS "quick")
 
 add_executable(test_I_integral_helical_anti_sigma.x test_I_integral_helical_anti_sigma.f90)
-target_link_libraries(test_I_integral_helical_anti_sigma.x
-                                                          rabe_lib
-                                                          helpers_lib
-                                                          myplot_lib
-                                                          utils_lib
-                                                          fieldline_lib)
+target_link_libraries(test_I_integral_helical_anti_sigma.x offset_lib
+                                                           helpers_lib
+                                                           myplot_lib
+                                                           utils_lib
+                                                           fieldline_lib)
 add_test(TestIIntegralHelicalAntiSigma test_I_integral_helical_anti_sigma.x)
 set_tests_properties(TestIIntegralHelicalAntiSigma PROPERTIES LABELS "quick")
 
 add_executable(test_lambda_helical_anti_sigma.x test_lambda_helical_anti_sigma.f90)
-target_link_libraries(test_lambda_helical_anti_sigma.x
-                                                          helpers_lib
-                                                          myplot_lib
-                                                          utils_lib
-                                                          fieldline_lib)
+target_link_libraries(test_lambda_helical_anti_sigma.x helpers_lib
+                                                       myplot_lib
+                                                       utils_lib
+                                                       fieldline_lib)
 add_test(TestLambdaHelicalAntiSigma test_lambda_helical_anti_sigma.x)
 set_tests_properties(TestLambdaHelicalAntiSigma PROPERTIES LABELS "quick")
 
 add_executable(test_set_fieldline_labels.x test_set_fieldline_labels.f90)
-target_link_libraries(test_set_fieldline_labels.x rabe_lib helpers_lib utils_lib fieldline_lib)
+target_link_libraries(test_set_fieldline_labels.x offset_lib helpers_lib utils_lib fieldline_lib)
 add_test(TestSetFieldlineLabels test_set_fieldline_labels.x)
 set_tests_properties(TestSetFieldlineLabels PROPERTIES LABELS "quick")
 

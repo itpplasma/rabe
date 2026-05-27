@@ -34,7 +34,7 @@ add_test(TestRealFt test_real_ft.x)
 set_tests_properties(TestRealFt PROPERTIES LABELS "quick")
 
 add_executable(test_fit_functions.x test_fit_functions.f90)
-target_link_libraries(test_fit_functions.x rabe_lib utils_lib)
+target_link_libraries(test_fit_functions.x offset_lib utils_lib)
 add_test(TestFitFunctions test_fit_functions.x)
 set_tests_properties(TestFitFunctions PROPERTIES LABELS "quick")
 
@@ -80,6 +80,6 @@ add_test(TestErrorHandling test_error_handling.x)
 set_tests_properties(TestErrorHandling PROPERTIES LABELS "quick")
 
 add_executable(plot_fit_functions.x plot_fit_functions.f90)
-target_link_libraries(plot_fit_functions.x rabe_lib utils_lib myplot_lib)
+target_link_libraries(plot_fit_functions.x offset_lib utils_lib myplot_lib)
 add_test(PlotFitFunctions plot_fit_functions.x)
 set_tests_properties(PlotFitFunctions PROPERTIES LABELS "plot")
