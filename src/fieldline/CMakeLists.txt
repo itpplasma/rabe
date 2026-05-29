@@ -1,6 +1,8 @@
 add_library(fieldline_lib STATIC
   fieldline.f90
   fieldline_labels.f90
+  field_along_fieldline.f90
+  field_checks.f90
   make_fieldline.f90
   fieldline_integrals.f90
   fieldline_integrands.f90

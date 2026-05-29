@@ -8,9 +8,9 @@ module deviation
 contains
 
     subroutine calc_deviation(fieldlines, deviation_A, deviation_B)
-        use fieldline_integrals, only: fieldline_modes_t
-        use fieldline_integrals, only: allocate_modes
-        use fieldline_integrals, only: fourier_transform_over_label
+        use fieldline_labels, only: fieldline_modes_t
+        use fieldline_labels, only: allocate_modes
+        use fieldline_labels, only: fourier_transform_over_label
         use surface_average_mod, only: surface_average_t
         use surface_average_mod, only: calc_surface_averages
         use fit_functions, only: S_A, S_B
@@ -90,7 +90,7 @@ contains
     end subroutine calc_deviation
 
     function has_sin_modes(modes)
-        use fieldline_integrals, only: modes_t
+        use fieldline_labels, only: modes_t
         type(modes_t), intent(in) :: modes
         logical :: has_sin_modes
 

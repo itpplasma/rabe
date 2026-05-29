@@ -20,7 +20,7 @@ contains
                                         split_maxima)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
-        use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+        use field_checks, only: suspect_omnigenous_origin_not_minimum
         use constants, only: machine_eps
         use error_handling, only: failed_sanity_check
         type(fieldline_t), dimension(:), intent(inout) :: fieldlines
@@ -248,11 +248,16 @@ contains
                                            interval, &
                                            maxima)
         use find_extrema, only: find_local_maxima
+        use field_along_fieldline, only: set_field_and_fieldline
+        use field_along_fieldline, only: unset_field_and_fieldline
+        use field_along_fieldline, only: B_mod_along_fieldline, dB_dphi_along_fieldline
 
         class(field_t), intent(in) :: field
         type(fieldline_t), intent(inout) :: fieldline
         real(dp), intent(in) :: interval(2)
         type(maxima_t), intent(out) :: maxima
+
+        call set_field_and_fieldline(field, fieldline)
 
         call find_local_maxima(B_mod_along_fieldline, interval, &
                                maxima%phi, maxima%phi_error)
@@ -264,35 +269,8 @@ contains
         call dB_dphi_along_fieldline(maxima%phi, maxima%B_error)
         maxima%B_error(1:maxima%n) = abs(maxima%B_error)*maxima%phi_error
 
-    contains
-        subroutine B_mod_along_fieldline(phi, B_mod)
-            real(dp), dimension(:), intent(in) :: phi
-            real(dp), dimension(:), intent(out) :: B_mod
+        call unset_field_and_fieldline()
 
-            real(dp), dimension(size(phi)) :: theta
-            integer :: idx
-
-            theta = fieldline%get_theta(phi)
-            do idx = 1, size(phi)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
-            end do
-        end subroutine B_mod_along_fieldline
-
-        subroutine dB_dphi_along_fieldline(phi, dB_dphi)
-            real(dp), dimension(:), intent(in) :: phi
-            real(dp), dimension(:), intent(out) :: dB_dphi
-
-            real(dp), dimension(size(phi)) :: theta
-            real(dp) :: B_mod, dB_dx(3)
-            integer :: idx
-
-            theta = fieldline%get_theta(phi)
-            do idx = 1, size(phi)
-                call field%compute_B_and_dB_dx(theta(idx), phi(idx), &
-                                               B_mod, dB_dx)
-                dB_dphi(idx) = dB_dx(3) + fieldline%iota*dB_dx(2)
-            end do
-        end subroutine dB_dphi_along_fieldline
     end subroutine find_maxima_along_fieldline
 
     !> Pick the biggest maximum on each side of phi_0, with ties broken by

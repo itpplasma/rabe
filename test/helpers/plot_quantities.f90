@@ -4,9 +4,9 @@ module plot_quantities
     use fieldline_mod, only: fieldline_t
     use utils, only: linspace
     use field_base, only: field_t
-    use fieldline_integrals, only: fourier_transform_over_label
-    use fieldline_integrals, only: fieldline_modes_t
-    use fieldline_integrals, only: modes_t
+    use fieldline_labels, only: fourier_transform_over_label
+    use fieldline_labels, only: fieldline_modes_t
+    use fieldline_labels, only: modes_t
 
     implicit none
 

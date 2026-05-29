@@ -3,7 +3,7 @@ program test_integration_along_fieldline
     use utils, only: not_same
     use mock_field, only: mock_field_t
     use fieldline_mod, only: fieldline_t
-    use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+    use field_checks, only: suspect_omnigenous_origin_not_minimum
     use make_fieldline, only: find_maxima_along_fieldline
     use make_fieldline, only: maxima_t
     use integrate, only: integrate_1d

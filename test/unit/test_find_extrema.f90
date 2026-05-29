@@ -116,14 +116,18 @@ contains
 
         real(dp) :: extrema(2), expected_extrema(2)
         real(dp), parameter :: interval(2) = [0.0_dp, 2.0_dp*pi]
+        real(dp), parameter :: range = abs(interval(2) - interval(1))
         real(dp), parameter :: tol = 1e-3
 
-        expected_extrema = [-1.0_dp, 1.0_dp]
+        expected_extrema = [0.5_dp, 1.5_dp]*pi
         extrema = find_global_extrema(sin_func, interval)
 
-        if (any(abs(extrema/expected_extrema - 1) > tol)) then
+        if (any(abs(extrema - expected_extrema)/range > tol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_find_global_extrema"
+            print *, "found extrema: ", extrema
+            print *, "expected extrema: ", expected_extrema
+            print *, "relative error: ", abs(extrema - expected_extrema)/range
             error stop
         end if
     end subroutine test_find_global_extrema

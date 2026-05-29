@@ -4,8 +4,8 @@ program test_anti_sigma_analytic
     use fieldline_mod, only: fieldline_t
     use make_fieldline, only: make_flock_of_fieldlines
     use surface_average_mod, only: surface_average_t, calc_surface_averages
-    use fieldline_integrals, only: fourier_transform_over_label
-    use fieldline_integrals, only: fieldline_modes_t
+    use fieldline_labels, only: fourier_transform_over_label
+    use fieldline_labels, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
     use fieldline_labels, only: get_labels

@@ -79,7 +79,7 @@ contains
 
     function calc_avg_lambda_over_B_squared(fieldline, eta_grid) &
         result(avg_lambda_over_B_squared)
-        use integrate, only: integrate_1d_substituted
+        use integrate_substituted, only: integrate_1d_substituted
         use shaing_callen_wrappers, only: wrapper_lambda_over_B_squared
         use shaing_callen_wrappers, only: this_eta, null_eta
         use shaing_callen_wrappers, only: this_fieldline, null_fieldline
@@ -137,7 +137,7 @@ contains
     function calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines) &
         result(res)
         use fourier, only: real_ft
-        use fieldline_integrals, only: allocate_modes
+        use fieldline_labels, only: allocate_modes
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp) :: res
 
@@ -159,7 +159,7 @@ contains
     function calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, eta_grid) &
         result(res)
         use fourier, only: real_ft
-        use fieldline_integrals, only: allocate_modes
+        use fieldline_labels, only: allocate_modes
         use shaing_callen_wrappers, only: this_field
         use fieldline_integrands, only: calc_lambda_squared
         class(field_t), intent(in) :: field

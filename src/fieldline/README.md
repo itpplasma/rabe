@@ -64,6 +64,12 @@ call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
 **Helper:** `suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)` —
 checks whether the origin is a B minimum (required assumption).
 
+**Fourier analysis:** `fourier_transform_over_label(fieldlines, fieldline_modes)` —
+Fourier analysis of radial drift, delta_eta, and delta_aspect_ratio over the label.
+
+**Types:** `modes_t` (cos/sin coefficients + mode numbers), `fieldline_modes_t`
+(contains modes for radial_drift, delta_eta, delta_aspect_ratio).
+
 ### `fieldline_integrals` (`fieldline_integrals.f90`)
 
 Computes per-fieldline integrals between B maxima:
@@ -71,12 +77,6 @@ Computes per-fieldline integrals between B maxima:
 - `integral_one_over_B_squared` (normalization)
 - `radial_drift`
 - `integral_nabla_s_over_B_squared`
-
-Also provides `fourier_transform_over_label(fieldlines, fieldline_modes)` for
-Fourier analysis of radial drift, delta_eta, and delta_aspect_ratio over the label.
-
-**Types:** `modes_t` (cos/sin coefficients + mode numbers), `fieldline_modes_t`
-(contains modes for radial_drift, delta_eta, delta_aspect_ratio).
 
 ### `fieldline_integrands` (`fieldline_integrands.f90`)
 
