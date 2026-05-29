@@ -2,7 +2,7 @@ program test_pert_anti_sigma_analytic
     use constants, only: dp, pi
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use fieldline_labels, only: fourier_transform_over_label
     use fieldline_labels, only: fieldline_modes_t
@@ -36,7 +36,7 @@ program test_pert_anti_sigma_analytic
     real(dp) :: approx_iota
     integer :: n_fieldlines
     integer :: n_modes
-    type(fieldline_t), dimension(:), allocatable :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
     type(fieldline_modes_t) :: fieldline_modes
 
     integer :: current
@@ -57,16 +57,15 @@ program test_pert_anti_sigma_analytic
     call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
     n_fieldlines = size(xi_0)
     n_modes = n_fieldlines/2 + 1
-    allocate (fieldlines(n_fieldlines))
 
-    call make_flock_of_fieldlines(fieldlines, &
+    call make_flock_of_fieldlines(flock, &
                                   xi_0, &
                                   approx_iota, &
                                   perturbed_field, &
                                   M_pol, &
                                   N_tor, &
                                   nfp)
-    call fourier_transform_over_label(fieldlines, &
+    call fourier_transform_over_label(flock, &
                                       fieldline_modes)
 
     if (not_same(delta_eta_1, fieldline_modes%delta_eta%cos_coeffs(2), &
@@ -119,9 +118,9 @@ program test_pert_anti_sigma_analytic
     end do
 
     if (should_plot) then
-        call plot_fieldlines_over_field(fieldlines, field)
-        call plot_delta_A(fieldlines)
-        call plot_delta_eta(fieldlines, delta_eta_1)
+        call plot_fieldlines_over_field(flock%fieldlines, field)
+        call plot_delta_A(flock%fieldlines)
+        call plot_delta_eta(flock%fieldlines, flock%iota_p, delta_eta_1)
     end if
 
     if (test_failed) error stop

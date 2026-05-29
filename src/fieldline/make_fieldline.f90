@@ -1,7 +1,7 @@
 module make_fieldline
     use constants, only: dp, pi
     use field_base, only: field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
 
     implicit none
 
@@ -15,7 +15,7 @@ module make_fieldline
 
 contains
 
-    subroutine make_flock_of_fieldlines(fieldlines, xi_0, iota, &
+    subroutine make_flock_of_fieldlines(flock, xi_0, iota, &
                                         field, M_pol, N_tor, nfp, &
                                         split_maxima)
         use fieldline_integrals, only: calc_fieldline_integrals
@@ -23,7 +23,7 @@ contains
         use field_checks, only: suspect_omnigenous_origin_not_minimum
         use constants, only: machine_eps
         use error_handling, only: failed_sanity_check
-        type(fieldline_t), dimension(:), intent(inout) :: fieldlines
+        type(flock_of_fieldlines_t), intent(inout) :: flock
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
@@ -33,7 +33,6 @@ contains
         real(dp) :: interval(2)
         type(maxima_t) :: maxima
         logical :: more_than_two_maxima
-        real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
         real(dp) :: symmetry_violation
@@ -44,13 +43,16 @@ contains
 
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
 
-        n_fieldlines = size(fieldlines)
+        if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
+        allocate (flock%fieldlines(size(xi_0)))
+        n_fieldlines = size(flock%fieldlines)
 
-        fieldlines%xi_0 = xi_0
-        fieldlines%iota = iota
-        fieldlines%M_pol = M_pol
-        fieldlines%N_tor = N_tor
-        fieldlines%nfp = nfp
+        flock%iota = iota
+        flock%M_pol = M_pol
+        flock%N_tor = N_tor
+        flock%nfp = nfp
+        flock%fieldlines%xi_0 = xi_0
+        flock%fieldlines%iota = flock%iota
 
         symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
         if (symmetry_violation > field%rel_accuracy_B()) then
@@ -69,24 +71,24 @@ contains
         end if
         !> if the origin of the ideal omnigenous field is a minimum (above)
         !> we can put the labels along the chi = 0 line
-        fieldlines%theta_0 = N_tor*fieldlines%xi_0/nfp
-        fieldlines%phi_0 = M_pol*fieldlines%xi_0/nfp
+        flock%fieldlines%theta_0 = N_tor*flock%fieldlines%xi_0/nfp
+        flock%fieldlines%phi_0 = M_pol*flock%fieldlines%xi_0/nfp
 
-        fieldlines%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
+        flock%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
 
         more_than_two_maxima = .false.
         do current = 1, n_fieldlines
             interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - iota*M_pol) + &
-                       fieldlines(current)%phi_0
-            call find_maxima_along_fieldline(field, fieldlines(current), &
+                       flock%fieldlines(current)%phi_0
+            call find_maxima_along_fieldline(field, flock%fieldlines(current), &
                                              interval, maxima)
             if (maxima%n < 2) then
                 print *, "---------------------------------------------------------"
                 print *, "---------------------------------------------------------"
                 print *, "---------------------------------------------------------"
                 print *, "Found less than two maxima in provided interval!"
-                print *, "theta_0: ", fieldlines(current)%theta_0
-                print *, "phi_0: ", fieldlines(current)%phi_0
+                print *, "theta_0: ", flock%fieldlines(current)%theta_0
+                print *, "phi_0: ", flock%fieldlines(current)%phi_0
                 print *, "interval: ", interval
                 print *, "phi_max: ", maxima%phi
                 print *, "B_max: ", maxima%B
@@ -96,19 +98,19 @@ contains
                 error stop
             elseif (maxima%n > 2) then
                 call pick_maximum_on_each_side(maxima, &
-                                               fieldlines(current)%phi_0, &
+                                               flock%fieldlines(current)%phi_0, &
                                                symmetry_violation, &
-                                               fieldlines(current)%phi_max, &
-                                               fieldlines(current)%phi_max_error)
+                                               flock%fieldlines(current)%phi_max, &
+                                               flock%fieldlines(current)%phi_max_error)
                 more_than_two_maxima = .true.
             else
-                fieldlines(current)%phi_max = maxima%phi(1:2)
-                fieldlines(current)%phi_max_error = maxima%phi_error(1:2)
+                flock%fieldlines(current)%phi_max = maxima%phi(1:2)
+                flock%fieldlines(current)%phi_max_error = maxima%phi_error(1:2)
             end if
 
             ! To ensure that there are no maxima in between found phi_max
             ! we move phi_max inside the well by the maximal potential error
-            call nudge_maxima_inward(field, fieldlines(current))
+            call nudge_maxima_inward(field, flock%fieldlines(current))
         end do
 
         if (more_than_two_maxima) then
@@ -134,28 +136,30 @@ contains
         !> B_max/Bmax = 1 +- ULP (~2.2e-16)
         !> due to floating point arithmetic. To not be dependend on machine/compiler
         !> specifics, we add a small buffer that does not change the physics.
-        fieldlines%eta_b = (1.0_dp - 2.0_dp*machine_eps) &
-                           /get_global_B_max(fieldlines)
+        flock%eta_b = (1.0_dp - 2.0_dp*machine_eps) &
+                      /get_global_B_max(flock%fieldlines)
+        flock%fieldlines%eta_b = flock%eta_b
 
         do current = 1, n_fieldlines
-            call calc_fieldline_integrals(field, fieldlines(current))
+            call calc_fieldline_integrals(field, flock%fieldlines(current))
         end do
 
-        fieldlines%delta_eta = 1.0_dp/fieldlines(:)%B_max(1) - fieldlines(:)%eta_b
+        flock%fieldlines%delta_eta = 1.0_dp/flock%fieldlines(:)%B_max(1) &
+                                     - flock%eta_b
         ! I_ref can be chosen to be any I
         ! (I_ref/I_j)**0.5 - 1 = (max(I_j)/I_j)**0.5 -1 =
         ! ((I+delta)/(I+delta_j))**0.5 -1 ~ 0.5*(delta/I - delta_j/I)
         ! and the result in linear order only differs by a constant delta/I
         ! which does not enter the offset formula
         ! We choose I_ref so that the average of delta_aspect is zero
-        fieldlines%I_ref = ( &
-                           n_fieldlines/ &
-                       (sum(1.0_dp/sqrt(fieldlines%integral_lambda_b_over_B_squared))) &
-                           )**2.0_dp
-        fieldlines%delta_aspect_ratio = sqrt( &
-                                        fieldlines%I_ref/ &
-                                        fieldlines%integral_lambda_b_over_B_squared &
-                                        ) - 1.0_dp
+        flock%I_ref = ( &
+                      n_fieldlines/ &
+                 (sum(1.0_dp/sqrt(flock%fieldlines%integral_lambda_b_over_B_squared))) &
+                      )**2.0_dp
+        flock%fieldlines%delta_aspect_ratio = sqrt( &
+                                              flock%I_ref/ &
+                                     flock%fieldlines%integral_lambda_b_over_B_squared &
+                                              ) - 1.0_dp
 
     end subroutine make_flock_of_fieldlines
 

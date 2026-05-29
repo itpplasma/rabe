@@ -1,13 +1,13 @@
 module deviation
     use constants, only: dp, pi
     use field_base, only: field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
 
     implicit none
 
 contains
 
-    subroutine calc_deviation(fieldlines, deviation_A, deviation_B)
+    subroutine calc_deviation(flock, deviation_A, deviation_B)
         use fieldline_labels, only: fieldline_modes_t
         use fieldline_labels, only: allocate_modes
         use fieldline_labels, only: fourier_transform_over_label
@@ -16,7 +16,7 @@ contains
         use fit_functions, only: S_A, S_B
         use error_handling, only: failed_sanity_check
 
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(out) :: deviation_A, deviation_B
 
         real(dp), parameter :: tol = 1e-12
@@ -29,7 +29,7 @@ contains
 
         logical :: any_has_sin_part
 
-        call fourier_transform_over_label(fieldlines, modes)
+        call fourier_transform_over_label(flock, modes)
 
         any_has_sin_part = .false.
         if (has_sin_modes(modes%delta_aspect_ratio)) then
@@ -46,10 +46,10 @@ contains
         end if
         if (any_has_sin_part) call failed_sanity_check()
 
-        call calc_surface_averages(fieldlines, average)
+        call calc_surface_averages(flock, average)
 
-        iota_p = fieldlines(1)%iota_p
-        eta_b = fieldlines(1)%eta_b
+        iota_p = flock%iota_p
+        eta_b = flock%eta_b
 
         deviation_A = pi*sum(modes%radial_drift%sin_coeffs* &
                              modes%delta_aspect_ratio%cos_coeffs* &
@@ -67,7 +67,7 @@ contains
         end if
 
         deviation_A = deviation_A*average%B_squared/average%lambda_b* &
-                      sqrt(eta_b)*sqrt(fieldlines(1)%I_ref)/average%normalization
+                      sqrt(eta_b)*sqrt(flock%I_ref)/average%normalization
 
         deviation_B = pi*sum(modes%radial_drift%sin_coeffs* &
                              modes%delta_eta%cos_coeffs* &

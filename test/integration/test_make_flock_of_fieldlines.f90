@@ -1,7 +1,7 @@
 program test_make_flock_of_fieldlines
     use constants, only: dp, pi
     use mock_field, only: mock_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use utils, only: linspace
     use utils, only: not_same
@@ -15,7 +15,7 @@ program test_make_flock_of_fieldlines
 
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), parameter :: iota = -1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
 
     integer :: current
     real(dp) :: phi_max(2)
@@ -25,17 +25,17 @@ program test_make_flock_of_fieldlines
                                B_0=1.0_dp, B_amplitude=-0.3_dp)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
-    call make_flock_of_fieldlines(fieldlines, theta_0, iota, field, M_pol, N_tor, &
+    call make_flock_of_fieldlines(flock, theta_0, iota, field, M_pol, N_tor, &
                                   nfp)
 
-    abstol = max(2.0_dp*max(maxval(fieldlines%phi_max_error(1)), &
-                            maxval(fieldlines%phi_max_error(2))), 1e-6_dp)
+    abstol = max(2.0_dp*max(maxval(flock%fieldlines%phi_max_error(1)), &
+                            maxval(flock%fieldlines%phi_max_error(2))), 1e-6_dp)
     do current = 1, n_fieldlines
-        phi_max = [-0.5*pi, 0.5*pi] + fieldlines(current)%phi_0
-        if (not_same(phi_max, fieldlines(current)%phi_max, abstol_in=abstol)) then
+        phi_max = [-0.5*pi, 0.5*pi] + flock%fieldlines(current)%phi_0
+        if (not_same(phi_max, flock%fieldlines(current)%phi_max, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
             print *, "test_make_flock_of_fieldlines failed: phi_max"
-            print *, "found: ", fieldlines(current)%phi_max
+            print *, "found: ", flock%fieldlines(current)%phi_max
             print *, "expected: ", phi_max
             error stop
         end if

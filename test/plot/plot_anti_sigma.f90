@@ -4,7 +4,7 @@ program test_plot_anti_sigma
     use utils, only: linspace
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
 
     use plot_quantities, only: plot_fieldlines_over_field
@@ -22,7 +22,7 @@ program test_plot_anti_sigma
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call perturbed_field%mock_perturbed_field_init(field, &
@@ -32,7 +32,7 @@ program test_plot_anti_sigma
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(fieldlines, &
+    call make_flock_of_fieldlines(flock, &
                                   theta_0, &
                                   iota, &
                                   perturbed_field, &
@@ -40,6 +40,6 @@ program test_plot_anti_sigma
                                   N_tor, &
                                   nfp)
 
-    call plot_fieldlines_over_field(fieldlines, perturbed_field)
+    call plot_fieldlines_over_field(flock%fieldlines, perturbed_field)
 
 end program test_plot_anti_sigma

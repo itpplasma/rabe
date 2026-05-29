@@ -1,6 +1,6 @@
 program test_shaing_callen_against_quasi_symmetric
     use mock_field, only: mock_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use constants, only: dp, pi
     use utils, only: linspace, not_same
@@ -20,7 +20,7 @@ program test_shaing_callen_against_quasi_symmetric
 
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
 
     real(dp), parameter :: nfp = 10.0_dp, iota = 0.47_dp
     real(dp), parameter :: M_pol = 2.0_dp, N_tor = nfp
@@ -41,7 +41,7 @@ program test_shaing_callen_against_quasi_symmetric
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(fieldlines, &
+    call make_flock_of_fieldlines(flock, &
                                   xi_0, &
                                   iota, &
                                   field, &
@@ -50,15 +50,15 @@ program test_shaing_callen_against_quasi_symmetric
                                   nfp)
 
     if (should_plot) then
-        call plot_fieldlines_over_field(fieldlines, field)
-        call plot_phi_max_over_xi_0(fieldlines)
+        call plot_fieldlines_over_field(flock%fieldlines, field)
+        call plot_phi_max_over_xi_0(flock%fieldlines, flock%M_pol, flock%nfp)
     end if
 
     call test_trapped_fraction_against_circular_tokamak(test_failed)
-    call test_trapped_fraction_against_qs(field, fieldlines, test_failed)
-    call test_calc_avg_normalized_B_squared_dphimax_dxi0(fieldlines, test_failed)
-    call test_calc_avg_normalized_lambda_dphimax_dxi0(field, fieldlines, test_failed)
-    call test_get_non_omnigenous_remainder(field, fieldlines, test_failed)
+    call test_trapped_fraction_against_qs(field, flock, test_failed)
+    call test_calc_avg_normalized_B_squared_dphimax_dxi0(flock, test_failed)
+    call test_calc_avg_normalized_lambda_dphimax_dxi0(field, flock, test_failed)
+    call test_get_non_omnigenous_remainder(field, flock, test_failed)
 
     if (test_failed) error stop
 

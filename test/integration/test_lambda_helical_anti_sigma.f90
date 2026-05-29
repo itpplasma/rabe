@@ -3,7 +3,7 @@ program test_lambda_helical_anti_sigma
     use utils, only: linspace, not_same
     use fieldline_labels, only: get_labels
     use anti_sigma_field, only: anti_sigma_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use integrate_substituted, only: integrate_1d_substituted
 
@@ -19,7 +19,7 @@ program test_lambda_helical_anti_sigma
     real(dp), parameter :: iota = 0.0_dp, nfp = max(1.0_dp, abs(N_tor))
     real(dp) :: approx_iota
     integer :: n_fieldlines
-    type(fieldline_t), dimension(:), allocatable :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
     type(fieldline_t) :: current_fieldline
 
     real(dp), dimension(:), allocatable :: lambda_integral_analytic
@@ -33,10 +33,9 @@ program test_lambda_helical_anti_sigma
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
     call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
     n_fieldlines = size(xi_0)
-    allocate (fieldlines(n_fieldlines))
     allocate (lambda_integral_analytic(n_fieldlines))
     allocate (lambda_integral(n_fieldlines))
-    call make_flock_of_fieldlines(fieldlines, &
+    call make_flock_of_fieldlines(flock, &
                                   xi_0, &
                                   approx_iota, &
                                   field, &
@@ -46,11 +45,11 @@ program test_lambda_helical_anti_sigma
 
     lambda_integral_analytic = sqrt(abs(eps_0)/(1.0_dp + abs(eps_0))) &
                                /N_tor*4.0_dp*sqrt(2.0_dp) &
-                               *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(fieldlines%theta_0))
+                          *sqrt(1.0_dp - eps_1/abs(eps_0)*cos(flock%fieldlines%theta_0))
 
     lambda_integral = 0.0_dp
     do current = 1, n_fieldlines
-        current_fieldline = fieldlines(current)
+        current_fieldline = flock%fieldlines(current)
         call integrate_1d_substituted(wrapper_lambda, &
                                       current_fieldline%phi_max(1), &
                                       current_fieldline%phi_max(2), &

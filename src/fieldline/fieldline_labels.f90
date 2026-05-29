@@ -16,36 +16,36 @@ module fieldline_labels
 
 contains
 
-    subroutine fourier_transform_over_label(fieldlines, fieldline_modes)
+    subroutine fourier_transform_over_label(flock, fieldline_modes)
         use fourier, only: real_ft
-        use fieldline_mod, only: fieldline_t
+        use fieldline_mod, only: flock_of_fieldlines_t
 
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(flock_of_fieldlines_t), intent(in) :: flock
         type(fieldline_modes_t), intent(out) :: fieldline_modes
 
         integer :: n_modes
 
-        real(dp), dimension(size(fieldlines)) :: shifted_label
+        real(dp), dimension(size(flock%fieldlines)) :: shifted_label
 
-        n_modes = size(fieldlines)/2 + 1
+        n_modes = size(flock%fieldlines)/2 + 1
 
         call allocate_modes(fieldline_modes%radial_drift, n_modes)
         call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
         call allocate_modes(fieldline_modes%delta_eta, n_modes)
 
-        call real_ft(fieldlines%xi_0, &
-                     fieldlines%radial_drift, &
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%radial_drift, &
                      fieldline_modes%radial_drift%cos_coeffs, &
                      fieldline_modes%radial_drift%sin_coeffs)
 
-        call real_ft(fieldlines%xi_0, &
-                     fieldlines%delta_aspect_ratio, &
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%delta_aspect_ratio, &
                      fieldline_modes%delta_aspect_ratio%cos_coeffs, &
                      fieldline_modes%delta_aspect_ratio%sin_coeffs)
 
-        shifted_label = fieldlines%xi_0 - fieldlines%iota_p
+        shifted_label = flock%fieldlines%xi_0 - flock%iota_p
         call real_ft(shifted_label, &
-                     fieldlines%delta_eta, &
+                     flock%fieldlines%delta_eta, &
                      fieldline_modes%delta_eta%cos_coeffs, &
                      fieldline_modes%delta_eta%sin_coeffs)
 

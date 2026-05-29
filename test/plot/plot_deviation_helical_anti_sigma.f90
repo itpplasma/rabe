@@ -3,7 +3,7 @@ program plot_deviation_helical_anti_sigma
     use constants, only: dp, pi
     use utils, only: linspace
     use anti_sigma_field, only: anti_sigma_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
 
@@ -22,7 +22,8 @@ program plot_deviation_helical_anti_sigma
     real(dp), parameter :: R = 8.0_dp
     real(dp), parameter :: B_0 = 1.0_dp, eps_0 = -0.05_dp, eps_1 = -0.0375_dp
     real(dp), parameter :: eps_ratio = eps_1/abs(eps_0)
-    real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio*(1.0_dp + 16.0_dp/3.0_dp*abs(eps_0))
+    real(dp), parameter :: delta_A_1 = 0.25_dp*eps_ratio* &
+                           (1.0_dp + 16.0_dp/3.0_dp*abs(eps_0))
     type(anti_sigma_field_t) :: field
 
     integer, parameter :: n_fieldlines = 20
@@ -30,7 +31,7 @@ program plot_deviation_helical_anti_sigma
     real(dp), dimension(n_fieldlines) :: theta_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.47_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
 
     real(dp) :: deviation_A, deviation_B
     integer, parameter :: n_points = 100
@@ -43,7 +44,7 @@ program plot_deviation_helical_anti_sigma
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(fieldlines, &
+    call make_flock_of_fieldlines(flock, &
                                   theta_0, &
                                   iota, &
                                   field, &
@@ -51,11 +52,11 @@ program plot_deviation_helical_anti_sigma
                                   N_tor, &
                                   nfp)
 
-    call plot_fieldlines_over_field(fieldlines, field)
-    call plot_delta_eta(fieldlines)
-    call plot_delta_A(fieldlines, delta_A_1)
+    call plot_fieldlines_over_field(flock%fieldlines, field)
+    call plot_delta_eta(flock%fieldlines, flock%iota_p)
+    call plot_delta_A(flock%fieldlines, delta_A_1)
 
-    call calc_deviation(fieldlines, deviation_A, deviation_B)
+    call calc_deviation(flock, deviation_A, deviation_B)
 
     covariant_factor = -2.0_dp*1e-7*(J_pol_over_N_tor*abs(N_tor) + I_tor*iota)
     off_factor_A = deviation_A*dr_dpsi*sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)

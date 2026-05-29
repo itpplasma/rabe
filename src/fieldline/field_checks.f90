@@ -89,7 +89,8 @@ contains
 
         call unset_field_and_fieldline()
 
-        !> is the B-difference of origin and minimum significant compared to the B-range?
+        !> is the B-difference of origin and minimum significant
+        !> compared to the B-range?
         B_range = B_max - B_min
         B_range_error = B_min_error + B_max_error
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)

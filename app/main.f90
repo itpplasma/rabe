@@ -3,7 +3,7 @@ program rabe
     use constants, only: dp, pi
     use utils, only: linspace
     use boozer_field, only: boozer_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use fieldline_labels, only: get_labels
     use make_fieldline, only: make_flock_of_fieldlines
     use deviation, only: calc_deviation
@@ -49,8 +49,7 @@ program rabe
 
     real(dp), dimension(:), allocatable :: xi_0
 
-    integer :: n_fieldlines
-    type(fieldline_t), dimension(:), allocatable :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
     logical :: too_strong_violation
 
     real(dp) :: deviation_A, deviation_B
@@ -73,7 +72,6 @@ program rabe
     call read_namelist(input_file)
     call set_unsafe_mode(unsafe_mode)
     nan_value = ieee_value(nan_value, ieee_quiet_nan)
-
 
     n_stor = size(s_tor)
     allocate (Lambda_A(n_stor))
@@ -98,11 +96,9 @@ program rabe
 
         call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
                         xi_0, approx_iota)
-        n_fieldlines = size(xi_0)
-        allocate (fieldlines(n_fieldlines))
         iota = approx_iota
 
-        call make_flock_of_fieldlines(fieldlines, &
+        call make_flock_of_fieldlines(flock, &
                                       xi_0, &
                                       iota, &
                                       field, &
@@ -111,20 +107,20 @@ program rabe
                                       nfp, &
                                       split_maxima(this))
 
-        call calc_deviation(fieldlines, deviation_A, deviation_B)
+        call calc_deviation(flock, deviation_A, deviation_B)
 
         covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
-        call calc_surface_averages(fieldlines, average)
+        call calc_surface_averages(flock, average)
         dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
         Lambda_A(this) = deviation_A*dr_dAtheta* &
                          sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
         Lambda_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
+        nu_star_crit(this) = calc_nu_star_crit(flock, &
                                                R, &
                                                B_theta_covariant, &
                                                B_phi_covariant)
-        Lambda_S(this) = calc_finite_boundary_layer_correction(fieldlines, &
+        Lambda_S(this) = calc_finite_boundary_layer_correction(flock, &
                                                                R, &
                                                                dr_dAtheta, &
                                                                B_theta_covariant, &
@@ -132,12 +128,12 @@ program rabe
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
-            trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
+            trapped_fraction = calc_trapped_fraction(field, flock, n_eta)
             helical_factor = (B_phi_covariant*M_pol + &
                               B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
             lambda_LC(this) = helical_factor*trapped_fraction
             lambda_LC(this) = lambda_LC(this)*dr_dAtheta
-            remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
+            remainder(this) = get_non_omnigenous_remainder(field, flock, n_eta)
             remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
                               nfp/(M_pol*iota - N_tor)
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
@@ -147,7 +143,7 @@ program rabe
         print *, "1/nu_star factor: ", Lambda_B(this)
         print *, "Lambda_S: ", Lambda_S(this)
 
-        if (allocated(fieldlines)) deallocate (fieldlines)
+        if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
         if (allocated(xi_0)) deallocate (xi_0)
 
         if (unsafe_mode .and. did_fail_any_sanity_check()) then
@@ -158,7 +154,7 @@ program rabe
             if (should_calc_shaing_callen) then
                 lambda_LC(this) = nan_value
                 remainder(this) = nan_value
-            endif
+            end if
         end if
 
     end do

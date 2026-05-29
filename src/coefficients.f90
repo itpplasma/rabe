@@ -1,20 +1,20 @@
 module coefficients
     use constants, only: dp, pi, machine_eps
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
 
 contains
 
-    function calc_finite_boundary_layer_correction(fieldlines, &
+    function calc_finite_boundary_layer_correction(flock, &
                                                    R, &
                                                    dr_dAtheta, &
                                                    B_theta_covariant, &
                                                    B_phi_covariant) &
         result(Lambda_S)
         use surface_average_mod, only: surface_average_t, calc_surface_averages
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: R, dr_dAtheta
         real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
         real(dp) :: Lambda_S
@@ -42,13 +42,13 @@ contains
             error stop
         end if
 
-        call calc_surface_averages(fieldlines, average)
+        call calc_surface_averages(flock, average)
 
-        M_pol = fieldlines(1)%M_pol
-        N_tor = fieldlines(1)%N_tor
-        iota = fieldlines(1)%iota
-        I_ref = fieldlines(1)%I_ref
-        eta_b = fieldlines(1)%eta_b
+        M_pol = flock%M_pol
+        N_tor = flock%N_tor
+        iota = flock%iota
+        I_ref = flock%I_ref
+        eta_b = flock%eta_b
 
         covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
         if (covariant_factor < machine_eps) then
@@ -72,11 +72,11 @@ contains
         end if
     end function calc_finite_boundary_layer_correction
 
-    function calc_nu_star_crit(fieldlines, &
+    function calc_nu_star_crit(flock, &
                                R, &
                                B_theta_covariant, &
                                B_phi_covariant) result(nu_star_crit)
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: R
         real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
         real(dp) :: nu_star_crit
@@ -98,8 +98,8 @@ contains
             error stop
         end if
 
-        eta_b = fieldlines(1)%eta_b
-        iota = fieldlines(1)%iota
+        eta_b = flock%eta_b
+        iota = flock%iota
         covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
         if (covariant_factor < machine_eps) then
             print *, "error: covariant factor must be positive."
@@ -108,8 +108,8 @@ contains
             print *, "iota =", iota
             error stop
         end if
-        I_ref_hat = 1.0_dp/(2.0_dp*pi*R*eta_b)*fieldlines(1)%I_ref*covariant_factor
-        max_delta_eta = eta_b - 1.0_dp/minval(fieldlines%B_max(1))
+        I_ref_hat = 1.0_dp/(2.0_dp*pi*R*eta_b)*flock%I_ref*covariant_factor
+        max_delta_eta = eta_b - 1.0_dp/minval(flock%fieldlines%B_max(1))
 
         nu_star_crit = 0.125_dp*(max_delta_eta/eta_b)**2.0_dp/I_ref_hat
 
