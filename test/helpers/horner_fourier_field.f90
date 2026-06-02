@@ -1,0 +1,196 @@
+module horner_fourier_field
+
+    use constants, only: dp
+    use field_base, only: field_t
+
+    implicit none
+
+    type, extends(field_t) :: horner_fourier_field_t
+        integer :: number_of_modes
+        integer, allocatable :: m(:), n(:)
+        real(dp), allocatable :: B_mn(:)
+        integer :: nfp, n_min
+    contains
+        procedure :: horner_fourier_field_init
+        procedure :: fix_to_surface
+        procedure :: compute_B_sqrtg_dB_dx
+        procedure :: compute_B_and_dB_dx
+        procedure :: compute_B_mod
+        procedure :: compute_nabla_s
+        procedure :: rel_accuracy_B
+    end type horner_fourier_field_t
+
+contains
+
+    ! Initialize from 2D coefficient array.
+    ! B = sum_{m,n} B_mn(m_idx,n_idx) * cos(m*theta - n*phi)
+    subroutine horner_fourier_field_init(self, m_arr, n_arr, B_mn, nfp)
+        class(horner_fourier_field_t), intent(out) :: self
+        integer, intent(in) :: m_arr(:), n_arr(:)
+        real(dp), intent(in) :: B_mn(:)
+        real(dp), intent(in), optional :: nfp
+
+        integer :: nm, nn, im, in_, k
+
+        integer, allocatable :: idx(:)
+        integer :: i, j, n
+        integer :: temp_idx
+
+        self%number_of_modes = size(m_arr)
+        if (present(nfp)) then
+            self%nfp = nfp
+        else
+            self%nfp = 1
+        end if
+
+        allocate (self%m(self%number_of_modes))
+        allocate (self%n(self%number_of_modes))
+        allocate (self%B_mn(self%number_of_modes))
+
+        allocate (idx(self%number_of_modes))
+        do i = 1, self%number_of_modes
+            idx(i) = i
+        end do
+        self%m = m_arr
+        self%n = n_arr
+        self%B_mn = B_mn
+        call sorted_idx(self%n, idx)
+        self%m = self%m(idx)
+        self%n = self%n(idx)
+        self%B_mn = self%B_mn(idx)
+        self%n_min = self%n(1)
+        call sorted_idx(self%m, idx)
+        self%m = self%m(idx)
+        self%n = self%n(idx)
+        self%B_mn = self%B_mn(idx)
+
+        ! print *, "m unsorted: ", m_arr
+        ! print *, "n unsorted: ", n_arr
+      print *, "Initialized Fourier field with ", self%number_of_modes, " sorted modes."
+        ! print *, "m: ", self%m(1:min(self%number_of_modes,10)), "..."
+        ! print *, "n: ", self%n(1:min(self%number_of_modes,10)), "..."
+
+    end subroutine horner_fourier_field_init
+
+    subroutine sorted_idx(arr_in, idx)
+        integer, intent(in) :: arr_in(:)
+        integer, intent(out) :: idx(:)
+
+        integer, dimension(size(arr_in)) :: arr
+
+        integer :: i, j, temp, temp_idx
+
+        arr = arr_in
+
+        do i = 1, size(arr)
+            idx(i) = i
+        end do
+
+        do i = 1, size(arr) - 1
+            do j = 1, size(arr) - i
+                if (arr(j) > arr(j + 1)) then
+                    temp = arr(j)
+                    temp_idx = idx(j)
+                    arr(j) = arr(j + 1)
+                    idx(j) = idx(j + 1)
+                    arr(j + 1) = temp
+                    idx(j + 1) = temp_idx
+                end if
+            end do
+        end do
+    end subroutine sorted_idx
+
+    ! Fourier field has no s-dependence; this is a no-op.
+    subroutine fix_to_surface(self, stor)
+        class(horner_fourier_field_t), intent(inout) :: self
+        real(dp), intent(in) :: stor
+    end subroutine fix_to_surface
+
+    subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
+        class(horner_fourier_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
+
+        print *, "horner_fourier_field_t does not provide sqrtg. "// &
+            "Use compute_B_mod or compute_B_and_dB_dx instead!"
+        error stop
+
+    end subroutine compute_B_sqrtg_dB_dx
+
+    subroutine compute_B_and_dB_dx(self, theta, phi, B_mod, dB_dx)
+        class(horner_fourier_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod, dB_dx(3)
+
+        integer :: k, idx_m, idx_n, prev_m, prev_n
+        integer :: dm, dn, dn_min
+        complex(dp) :: fac_m, fac_n, fac_n_min, i, prod, prod_m, prod_n
+        complex(dp) :: B_temp, dB_dx_temp(3)
+
+        fac_m = exp(cmplx(0.0_dp, theta, kind=dp))
+        fac_n = exp(cmplx(0.0_dp, -phi*real(self%nfp, dp), kind=dp))
+        fac_n_min = exp(cmplx(0.0_dp, -phi*real(self%n_min*self%nfp, dp), kind=dp))
+        i = cmplx(0.0_dp, 1.0_dp, kind=dp)
+        prod_m = cmplx(1.0_dp, 0.0_dp, kind=dp)
+        prod_n = fac_n_min
+
+        B_temp = 0.0_dp
+        dB_dx_temp(1) = 0.0_dp
+        dB_dx_temp(2) = 0.0_dp
+        dB_dx_temp(3) = 0.0_dp
+
+        k = 0
+        prev_m = 0
+        prev_n = self%n_min
+        do k = 1, self%number_of_modes
+            dm = self%m(k) - prev_m
+            do idx_m = 1, dm
+                prod_m = prod_m*fac_m
+            end do
+            dn = self%n(k) - prev_n
+            prod_n = merge(prod_n, fac_n_min, dn >= 0)
+            dn_min = self%n(k) - self%n_min
+            dn = merge(dn, dn_min, dn >= 0)
+            do idx_n = 1, dn
+                prod_n = prod_n*fac_n
+            end do
+            prod = prod_m*prod_n
+            B_temp = B_temp + self%B_mn(k)*prod
+            dB_dx_temp(2) = dB_dx_temp(2) - self%B_mn(k)*real(self%m(k), dp)*prod
+          dB_dx_temp(3) = dB_dx_temp(3) + self%B_mn(k)*real(self%n(k)*self%nfp, dp)*prod
+            prev_m = self%m(k)
+            prev_n = self%n(k)
+        end do
+        B_mod = real(B_temp, dp)
+        dB_dx(1) = 0.0_dp
+        dB_dx(2) = aimag(dB_dx_temp(2))
+        dB_dx(3) = aimag(dB_dx_temp(3))
+    end subroutine compute_B_and_dB_dx
+
+    subroutine compute_B_mod(self, theta, phi, B_mod)
+        class(horner_fourier_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod
+
+        real(dp) :: dummy(3)
+
+        call self%compute_B_and_dB_dx(theta, phi, B_mod, dummy)
+
+    end subroutine compute_B_mod
+
+    subroutine compute_nabla_s(self, theta, phi, nabla_s)
+        class(horner_fourier_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: nabla_s
+
+        nabla_s = 1.0_dp
+
+    end subroutine compute_nabla_s
+
+    real(dp) function rel_accuracy_B(self)
+        class(horner_fourier_field_t), intent(in) :: self
+
+        rel_accuracy_B = epsilon(1.0_dp)
+    end function rel_accuracy_B
+
+end module horner_fourier_field

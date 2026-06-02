@@ -5,7 +5,6 @@ set_tests_properties(TestPlot PROPERTIES LABELS "plot")
 
 add_executable(plot_anti_sigma.x plot_anti_sigma.f90)
 target_link_libraries(plot_anti_sigma.x myplot_lib
-                                            
                                              helpers_lib
                                              utils_lib
                                              fieldline_lib)
@@ -41,9 +40,16 @@ set_tests_properties(PlotDeviationPoloidalAntiSigma PROPERTIES LABELS "plot")
 
 add_executable(plot_local_drift.x plot_local_drift.f90)
 target_link_libraries(plot_local_drift.x myplot_lib
-                                            
                                              helpers_lib
                                              utils_lib
                                              fieldline_lib)
 add_test(PlotLocalDrift plot_local_drift.x)
 set_tests_properties(PlotLocalDrift PROPERTIES LABELS "plot")
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../integration/vmec/input
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_executable(plot_fourier_field_timing.x plot_fourier_field_timing.f90)
+target_link_libraries(plot_fourier_field_timing.x myplot_lib rabe_lib helpers_lib)
+add_test(PlotFourierFieldTiming plot_fourier_field_timing.x)
+set_tests_properties(PlotFourierFieldTiming PROPERTIES LABELS "plot;current")
