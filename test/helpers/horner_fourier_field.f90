@@ -12,7 +12,6 @@ module horner_fourier_field
         integer :: nfp, n_min
     contains
         procedure :: horner_fourier_field_init
-        procedure :: fix_to_surface
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
@@ -99,12 +98,6 @@ contains
             end do
         end do
     end subroutine sorted_idx
-
-    ! Fourier field has no s-dependence; this is a no-op.
-    subroutine fix_to_surface(self, stor)
-        class(horner_fourier_field_t), intent(inout) :: self
-        real(dp), intent(in) :: stor
-    end subroutine fix_to_surface
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
         class(horner_fourier_field_t), intent(in) :: self

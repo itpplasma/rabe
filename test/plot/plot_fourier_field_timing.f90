@@ -3,13 +3,15 @@ program plot_fourier_field_timing
     use constants, only: dp, pi
     use boozer_field, only: boozer_field_t
     use horner_fourier_field, only: horner_fourier_field_t
+    use fourier_field, only: fourier_field_t
 
     implicit none
 
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
     type(boozer_field_t) :: bfield
-    type(horner_fourier_field_t) :: ffield
+    type(horner_fourier_field_t) :: hfield
+    type(fourier_field_t) :: sfield
     real(dp), parameter :: stor = 0.5_dp
 
     ! 50x50 fake Fourier modes: B = sum_{m,n} B_mn * cos(m*theta - n*phi)
@@ -22,8 +24,7 @@ program plot_fourier_field_timing
     integer, parameter :: n_trials = 4
     integer :: eval_counts(n_trials)
     real(dp) :: eval_counts_dp(n_trials)
-    real(dp) :: t_boozer(n_trials)
-    real(dp) :: t_fourier(n_trials)
+    real(dp) :: t_boozer(n_trials), t_horner(n_trials), t_spline(n_trials)
 
     real(dp) :: theta, phi, B_mod, dB_dx(3)
     real(dp) :: t_start, t_end
@@ -36,7 +37,6 @@ program plot_fourier_field_timing
 
     eval_counts = [100, 1000, 10000, 100000]
 
-    ! --- Build flat mode lists: m = [0,0,...,1,1,...], n = [-24,..,25,-24,..,25,...] ---
     ! Dominant B_00 = 1, others decay as 1/(m+|n|+2)
     k_mode = 0
     do m_idx = 1, n_m
@@ -53,7 +53,7 @@ program plot_fourier_field_timing
         end do
     end do
 
-    ! --- Shuffle mode lists (Fisher-Yates) to exercise sorting in fourier_field_init ---
+    ! --- Shuffle mode lists (Fisher-Yates) to test sorting in fourier_field_init ---
     do k_mode = n_total, 2, -1
         call random_number(rnd)
         j = int(rnd*k_mode) + 1
@@ -62,18 +62,16 @@ program plot_fourier_field_timing
         tmp_B = B_modes(k_mode); B_modes(k_mode) = B_modes(j); B_modes(j) = tmp_B
     end do
 
-    ! --- Initialize boozer_field_t and fix to surface ---
     call bfield%boozer_field_init(nc_filename, &
                                   radial_spline_order=5, &
                                   angular_spline_order=5, &
                                   grid_refinement=3)
     call bfield%fix_to_surface(stor)
 
-    ! --- Initialize fourier_field_t ---
-    call ffield%horner_fourier_field_init(m, n, B_modes)
-    call ffield%fix_to_surface(stor)
+    call hfield%horner_fourier_field_init(m, n, B_modes)
 
-    ! --- Timing loop ---
+    call sfield%fourier_field_init(m, n, B_modes)
+
     do k = 1, n_trials
         eval = eval_counts(k)
         eval_counts_dp(k) = real(eval, dp)
@@ -88,31 +86,43 @@ program plot_fourier_field_timing
         call cpu_time(t_end)
         t_boozer(k) = t_end - t_start
 
-        ! Time fourier_field_t
+        ! Time horner_fourier_field_t
         call cpu_time(t_start)
         do i = 1, eval
             theta = real(i, dp)/real(eval, dp)*2.0_dp*pi
             phi = real(i, dp)/real(eval, dp)*2.0_dp*pi
-            call ffield%compute_B_and_dB_dx(theta, phi, B_mod, dB_dx)
+            call hfield%compute_B_and_dB_dx(theta, phi, B_mod, dB_dx)
         end do
         call cpu_time(t_end)
-        t_fourier(k) = t_end - t_start
+        t_horner(k) = t_end - t_start
+
+        ! Time fourier_field_t (spline)
+        call cpu_time(t_start)
+        do i = 1, eval
+            theta = real(i, dp)/real(eval, dp)*2.0_dp*pi
+            phi = real(i, dp)/real(eval, dp)*2.0_dp*pi
+            call sfield%compute_B_and_dB_dx(theta, phi, B_mod, dB_dx)
+        end do
+        call cpu_time(t_end)
+        t_spline(k) = t_end - t_start
     end do
 
-    ! --- Plot ---
     call plt%initialize( &
         xlabel="Number of evaluations", &
         ylabel="CPU time (s)", &
-        title="compute\_B\_and\_dB\_dx timing: boozer vs. Fourier", &
+        title="compute_B_and_dB_dx timing", &
         legend=.true.)
     call plt%add_plot(eval_counts_dp, t_boozer, &
-                      label="boozer\_field\_t (QH)", &
+                      label="boozer_field_t (QH)", &
                       linestyle="-o", &
                       xscale="log", &
                       yscale="log")
-    call plt%add_plot(eval_counts_dp, t_fourier, &
-                      label="fourier\_field\_t (50x50 modes)", &
+    call plt%add_plot(eval_counts_dp, t_horner, &
+                      label="horner_fourier_field_t (50x50)", &
                       linestyle="-s")
+    call plt%add_plot(eval_counts_dp, t_spline, &
+                      label="fourier_field_t spline (50x50)", &
+                      linestyle="-^")
     call plt%show()
 
 end program plot_fourier_field_timing
