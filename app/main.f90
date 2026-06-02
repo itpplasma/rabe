@@ -1,25 +1,9 @@
-program rabe
+program main
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use constants, only: dp, pi
-    use utils, only: linspace
-    use boozer_field, only: boozer_field_t
-    use fieldline_mod, only: flock_of_fieldlines_t
-    use fieldline_labels, only: get_labels
-    use make_fieldline, only: make_flock_of_fieldlines
-    use deviation, only: calc_deviation
-    use surface_average_mod, only: surface_average_t, calc_surface_averages
-    use coefficients, only: calc_nu_star_crit
-    use coefficients, only: calc_finite_boundary_layer_correction
-    use shaing_callen_mod, only: calc_trapped_fraction
-    use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
-    use git_version, only: git_hash
-
-    use error_handling, only: set_unsafe_mode
-    use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
-
-    use read_file, only: read_namelist
-    use read_file, only: field_file, &
+    use read_file, only: read_namelist, &
+                         field_file, &
                          M_pol, &
                          N_tor, &
                          s_tor, &
@@ -28,6 +12,17 @@ program rabe
                          should_calc_shaing_callen, &
                          n_eta, &
                          unsafe_mode
+    use boozer_field, only: boozer_field_t
+    use fieldline_mod, only: flock_of_fieldlines_t
+    use fieldline_labels, only: get_labels
+    use make_fieldline, only: make_flock_of_fieldlines
+    use deviation, only: calc_deviation
+    use surface_average_mod, only: surface_average_t, calc_surface_averages
+    use coefficients, only: calc_nu_star_crit, calc_finite_boundary_layer_correction
+    use shaing_callen_mod, only: calc_trapped_fraction, get_non_omnigenous_remainder
+    use error_handling, only: set_unsafe_mode
+    use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
+    use git_version, only: git_hash
 
     implicit none
 
@@ -293,4 +288,4 @@ contains
         close (u)
     end subroutine write_dat_output
 
-end program rabe
+end program main
