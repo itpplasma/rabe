@@ -27,7 +27,7 @@ contains
         class(horner_fourier_field_t), intent(out) :: self
         integer, intent(in) :: m_arr(:), n_arr(:)
         real(dp), intent(in) :: B_mn(:)
-        real(dp), intent(in), optional :: nfp
+        integer, intent(in), optional :: nfp
 
         integer :: nm, nn, im, in_, k
 

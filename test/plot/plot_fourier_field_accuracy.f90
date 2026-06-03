@@ -24,7 +24,7 @@ program plot_fourier_field_accuracy
     real(dp) :: B_spl, dB_spl(3)
     real(dp) :: rnd, rel_err_B, rel_err_dB
     real(dp) :: ref_line_B(n_sweep), ref_line_dB(n_sweep)
-    real(dp), parameter :: nfp = 2.0_dp
+    integer, parameter :: nfp = 2
 
     type(horner_fourier_field_t) :: hfield
     type(fourier_field_t) :: sfield

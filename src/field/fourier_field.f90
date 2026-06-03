@@ -6,8 +6,6 @@ module fourier_field
 
     implicit none
 
-    integer, parameter :: n_grid_default = 200
-
     type, extends(field_t) :: fourier_field_t
         type(SplineData2D) :: spl
         real(dp) :: nfp
@@ -26,42 +24,44 @@ contains
     ! Build 2D spline from flat Fourier mode lists.
     ! B = sum_k B_mn(k) * cos(m(k)*theta - n(k)*phi)
     subroutine fourier_field_init(self, m, n, B_mn, nfp, n_grid)
+        use utils, only: linspace
         class(fourier_field_t), intent(out) :: self
         integer, intent(in) :: m(:), n(:)
         real(dp), intent(in) :: B_mn(:)
-        real(dp), intent(in), optional :: nfp
+        integer, intent(in), optional :: nfp
         integer, intent(in), optional :: n_grid
 
+        integer, parameter :: n_grid_default = 200
+
         integer :: n_theta, n_phi, i_theta, i_phi
-        real(dp) :: theta, phi, dtheta, dphi
-        real(dp), allocatable :: grid_B(:, :)
+        real(dp), allocatable :: theta(:), phi(:), grid_B(:, :)
 
         if (present(nfp)) then
-            self%nfp = nfp
+            self%nfp = real(nfp, dp)
         else
             self%nfp = 1.0_dp
         end if
 
-        n_theta = n_grid_default
-        n_phi = n_grid_default
         if (present(n_grid)) then
             n_theta = n_grid
             n_phi = n_grid
+        else
+            n_theta = n_grid_default
+            n_phi = n_grid_default
         end if
         self%n_grid = n_theta
         self%mn_max = max(maxval(abs(m)), maxval(abs(n)))
 
-        dtheta = 2.0_dp*pi/real(n_theta - 1, dp)
-        dphi = 2.0_dp*pi/(self%nfp*real(n_phi - 1, dp))
-
+        allocate (theta(n_theta), phi(n_phi))
         allocate (grid_B(n_theta, n_phi))
 
+        call linspace(0.0_dp, 2.0_dp*pi, n_theta, theta)
+        call linspace(0.0_dp, 2.0_dp*pi/self%nfp, n_phi, phi)
+
         do i_phi = 1, n_phi
-            phi = real(i_phi - 1, dp)*dphi
             do i_theta = 1, n_theta
-                theta = real(i_theta - 1, dp)*dtheta
-                grid_B(i_theta, i_phi) = sum(B_mn* &
-                                      cos(real(m, dp)*theta - real(n, dp)*self%nfp*phi))
+                grid_B(i_theta, i_phi) = sum(B_mn*cos(real(m, dp)*theta(i_theta) &
+                                                     - real(n, dp)*self%nfp*phi(i_phi)))
             end do
         end do
 
