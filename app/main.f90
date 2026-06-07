@@ -19,7 +19,7 @@ program main
     use deviation, only: calc_deviation
     use surface_average_mod, only: surface_average_t, calc_surface_averages
     use coefficients, only: calc_nu_star_crit, calc_finite_boundary_layer_correction
-    use shaing_callen_mod, only: calc_trapped_fraction, get_non_omnigenous_remainder
+    use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
     use error_handling, only: set_unsafe_mode
     use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
     use git_version, only: git_hash
@@ -48,7 +48,6 @@ program main
     logical :: too_strong_violation
 
     real(dp) :: deviation_A, deviation_B
-    real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: Lambda_A, Lambda_B
     real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_S
@@ -83,10 +82,7 @@ program main
     do this = 1, n_stor
         call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))
-        call field%get_iota_and_covariant_components(s_tor(this), &
-                                                     iota, &
-                                                     B_theta_covariant, &
-                                                     B_phi_covariant)
+        call field%get_iota(s_tor(this), iota)
         nfp = field%nfp
 
         call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
@@ -104,33 +100,21 @@ program main
 
         call calc_deviation(flock, deviation_A, deviation_B)
 
-        covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
         call calc_surface_averages(flock, average)
         dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
-        Lambda_A(this) = deviation_A*dr_dAtheta* &
-                         sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
+        Lambda_A(this) = deviation_A*dr_dAtheta*sqrt(0.5_dp*R*pi)
         Lambda_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        nu_star_crit(this) = calc_nu_star_crit(flock, &
-                                               R, &
-                                               B_theta_covariant, &
-                                               B_phi_covariant)
-        Lambda_S(this) = calc_finite_boundary_layer_correction(flock, &
+        nu_star_crit(this) = calc_nu_star_crit(flock, R)
+        Lambda_S(this) = calc_finite_boundary_layer_correction(flock, field, &
                                                                R, &
-                                                               dr_dAtheta, &
-                                                               B_theta_covariant, &
-                                                               B_phi_covariant)
+                                                               dr_dAtheta)
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
-            trapped_fraction = calc_trapped_fraction(field, flock, n_eta)
-            helical_factor = (B_phi_covariant*M_pol + &
-                              B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
-            lambda_LC(this) = helical_factor*trapped_fraction
-            lambda_LC(this) = lambda_LC(this)*dr_dAtheta
-            remainder(this) = get_non_omnigenous_remainder(field, flock, n_eta)
-            remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
-                              nfp/(M_pol*iota - N_tor)
+            lambda_LC(this) = calc_lambda_LC(flock, field, n_eta, dr_dAtheta)
+            remainder(this) = get_non_omnigenous_remainder(field, flock, &
+                                                           n_eta, dr_dAtheta)
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
         end if

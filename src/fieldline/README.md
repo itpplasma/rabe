@@ -23,8 +23,8 @@ Core type `fieldline_t` representing a single field line between two B maxima.
 | `B_max(2)` | B values at left/right maxima |
 | `eta_b` | 1/B_max_global (bounce parameter) |
 | `delta_eta` | 1/B_max_local - eta_b (well depth variation) |
-| `integral_lambda_b_over_B_squared` | Boundary layer width integral I_j |
-| `I_ref` | Reference I chosen so average delta_aspect = 0 (same for all fieldlines in a flock) |
+| `integral_lambda_b_over_B_squared` | Boundary layer width integral I_j (up to covariant factor) |
+| `I_ref` | Reference I = (n/Σ1/√(I_j))², chosen so that average delta_aspect = 0 |
 | `delta_aspect_ratio` | sqrt(I_ref/I_j) - 1 |
 | `integral_one_over_B_squared` | Used for surface average normalization |
 | `radial_drift` | Integrated radial drift |

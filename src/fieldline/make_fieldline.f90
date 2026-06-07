@@ -36,6 +36,8 @@ contains
         integer :: n_fieldlines
         integer :: current
         real(dp) :: symmetry_violation
+        real(dp) :: B_theta_cov, B_phi_cov
+        real(dp), allocatable :: I_j(:)
 
         if (present(split_maxima)) then
             split_maxima = 0
@@ -146,20 +148,28 @@ contains
 
         flock%fieldlines%delta_eta = 1.0_dp/flock%fieldlines(:)%B_max(1) &
                                      - flock%eta_b
-        ! I_ref can be chosen to be any I
+
+        call field%get_covariant_components(B_theta_cov, B_phi_cov)
+        if (B_phi_cov + flock%iota*B_theta_cov <= machine_eps) then
+            print *, "error: covariant factor B_phi + iota*B_theta must be positive."
+            print *, "B_phi_covariant = ", B_phi_cov
+            print *, "B_theta_covariant = ", B_theta_cov
+            print *, "iota = ", flock%iota
+            error stop
+        end if
+        allocate (I_j(n_fieldlines))
+        I_j = flock%fieldlines%integral_lambda_b_over_B_squared* &
+              (B_phi_cov + flock%iota*B_theta_cov)
+
+        ! I_ref can be chosen to be any I_j
         ! (I_ref/I_j)**0.5 - 1 = (max(I_j)/I_j)**0.5 -1 =
         ! ((I+delta)/(I+delta_j))**0.5 -1 ~ 0.5*(delta/I - delta_j/I)
         ! and the result in linear order only differs by a constant delta/I
-        ! which does not enter the offset formula
-        ! We choose I_ref so that the average of delta_aspect is zero
-        flock%I_ref = ( &
-                      n_fieldlines/ &
-                 (sum(1.0_dp/sqrt(flock%fieldlines%integral_lambda_b_over_B_squared))) &
-                      )**2.0_dp
-        flock%fieldlines%delta_aspect_ratio = sqrt( &
-                                              flock%I_ref/ &
-                                     flock%fieldlines%integral_lambda_b_over_B_squared &
-                                              ) - 1.0_dp
+        ! which does not enter the offset formula.
+        ! We choose I_ref so that the average of delta_aspect is zero.
+        flock%I_ref = (n_fieldlines/sum(1.0_dp/sqrt(I_j)))**2.0_dp
+        flock%fieldlines%delta_aspect_ratio = sqrt(flock%I_ref/I_j) - 1.0_dp
+        deallocate (I_j)
 
     end subroutine make_flock_of_fieldlines
 

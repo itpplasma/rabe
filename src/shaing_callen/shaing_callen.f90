@@ -8,6 +8,23 @@ module shaing_callen_mod
 
 contains
 
+    function calc_lambda_LC(flock, field, n_eta, dr_dAtheta) result(lambda_LC)
+        type(flock_of_fieldlines_t), intent(in) :: flock
+        class(field_t), intent(in) :: field
+        integer, intent(in) :: n_eta
+        real(dp), intent(in) :: dr_dAtheta
+        real(dp) :: lambda_LC
+
+        real(dp) :: trapped_fraction, helicity_factor
+        real(dp) :: B_phi_cov, B_theta_cov
+
+        trapped_fraction = calc_trapped_fraction(field, flock, n_eta)
+        call field%get_covariant_components(B_theta_cov, B_phi_cov)
+        helicity_factor = (B_phi_cov*flock%M_pol + B_theta_cov*flock%N_tor) &
+                          /(flock%M_pol*flock%iota - flock%N_tor)
+        lambda_LC = dr_dAtheta*helicity_factor*trapped_fraction
+    end function calc_lambda_LC
+
     function calc_trapped_fraction(field, &
                                    flock, &
                                    n_eta) result(trapped_fraction)
@@ -105,17 +122,21 @@ contains
 
     end function calc_avg_lambda_over_B_squared
 
-    function get_non_omnigenous_remainder(field, flock, n_eta) result(remainder)
+    function get_non_omnigenous_remainder(field, flock, n_eta, dr_dAtheta) &
+        result(remainder)
         use shaing_callen_integration, only: get_eta_integration_grid
         use shaing_callen_integration, only: integrate_over_eta_grid
         class(field_t), intent(in) :: field
         type(flock_of_fieldlines_t), intent(in) :: flock
         integer, intent(in) :: n_eta
+        real(dp), intent(in) :: dr_dAtheta
         real(dp) :: remainder
 
         real(dp), dimension(:), allocatable :: eta_grid
         real(dp), dimension(:), allocatable :: integrand
         real(dp), dimension(:), allocatable :: avg_B_squared_over_avg_lambda
+
+        real(dp) :: B_varphi_covariant, B_vartheta_covariant
 
         eta_grid = get_eta_integration_grid(flock%eta_b, n_eta)
         allocate (integrand(n_eta))
@@ -132,6 +153,11 @@ contains
         deallocate (eta_grid)
         deallocate (integrand)
         deallocate (avg_B_squared_over_avg_lambda)
+
+        call field%get_covariant_components(B_vartheta_covariant, B_varphi_covariant)
+        remainder = remainder*flock%nfp/(flock%M_pol*flock%iota - flock%N_tor)
+        remainder = remainder*(B_varphi_covariant + flock%iota*B_vartheta_covariant)
+        remainder = remainder*dr_dAtheta
 
     end function get_non_omnigenous_remainder
 

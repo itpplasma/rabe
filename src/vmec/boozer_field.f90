@@ -22,7 +22,8 @@ module boozer_field
     contains
         procedure :: boozer_field_init
         procedure :: evaluate
-        procedure :: get_iota_and_covariant_components
+        procedure :: get_iota
+        procedure :: get_covariant_components
         procedure :: fix_to_surface
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
@@ -132,14 +133,43 @@ contains
 
     end subroutine evaluate
 
-    subroutine get_iota_and_covariant_components(self, stor, iota, &
-                                                 B_theta_covariant, &
-                                                 B_phi_covariant)
+    subroutine get_iota(self, stor, iota)
         use new_vmec_stuff_mod, only: nper
 
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: stor
-        real(dp), intent(out) :: iota, B_theta_covariant, B_phi_covariant
+        real(dp), intent(out) :: iota
+
+        real(dp) :: A_phi, A_theta, dA_phi_dr, dA_theta_dr
+        real(dp) :: d2A_phi_dr2, d3A_phi_dr3
+        real(dp) :: B_vartheta_B, B_varphi_B
+        real(dp) :: dB_vartheta_B, d2B_vartheta_B
+        real(dp) :: dB_varphi_B, d2B_varphi_B
+        real(dp) :: Bmod_B, sqrt_g_ss_B, B_r
+        real(dp), dimension(3) :: dBmod_B, dB_r
+        real(dp), dimension(6) :: d2Bmod_B, d2B_r
+
+        call splint_boozer_coord(stor, 0.0_dp, 0.0_dp, 0, &
+                                 A_theta, A_phi, dA_theta_dr, &
+                                 dA_phi_dr, d2A_phi_dr2, &
+                                 d3A_phi_dr3, &
+                                 B_vartheta_B, dB_vartheta_B, &
+                                 d2B_vartheta_B, &
+                                 B_varphi_B, dB_varphi_B, &
+                                 d2B_varphi_B, &
+                                 Bmod_B, dBmod_B, d2Bmod_B, &
+                                 sqrt_g_ss_B, &
+                                 B_r, dB_r, d2B_r)
+
+        iota = -dA_phi_dr/dA_theta_dr
+    end subroutine get_iota
+
+    !> Returns the covariant components of the magnetic field
+    !> for the surface set by fix_to_surface.
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(boozer_field_t), intent(in) :: self
+
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
 
         real(dp) :: A_phi, A_theta, dA_phi_dr, dA_theta_dr
         real(dp) :: d2A_phi_dr2, d3A_phi_dr3
@@ -149,7 +179,10 @@ contains
         real(dp), dimension(3) :: dBmod_B, dB_r
         real(dp), dimension(6) :: d2Bmod_B, d2B_r
 
-        call splint_boozer_coord(stor, 0.0_dp, 0.0_dp, 0, &
+        if (.not. self%fixed_to_surface) &
+            error stop "get_covariant_components: call fix_stor first"
+
+        call splint_boozer_coord(self%fixed_stor, 0.0_dp, 0.0_dp, 0, &
                                  A_theta, A_phi, dA_theta_dr, &
                                  dA_phi_dr, d2A_phi_dr2, &
                                  d3A_phi_dr3, &
@@ -161,10 +194,9 @@ contains
                                  sqrt_g_ss_B, &
                                  B_r, dB_r, d2B_r)
 
-        iota = -dA_phi_dr/dA_theta_dr
         B_phi_covariant = B_phi_covariant*cm2m*gauss2tesla
         B_theta_covariant = B_theta_covariant*cm2m*gauss2tesla
-    end subroutine get_iota_and_covariant_components
+    end subroutine get_covariant_components
 
     subroutine fix_to_surface(self, stor)
         class(boozer_field_t), intent(inout) :: self

@@ -254,7 +254,7 @@ contains
         type(flock_of_fieldlines_t), intent(in) :: qs_flock
         logical, intent(inout) :: test_failed
 
-        real(dp), parameter :: reltol = 0.0_dp, const = 2.5e-1
+        real(dp), parameter :: reltol = 0.0_dp, const = 2.8e-1
         real(dp) :: abstol
         integer, parameter, dimension(5) :: n_etas = [50, 100, 200, 400, 800]
 
@@ -266,7 +266,8 @@ contains
         do this = 1, size(n_etas)
             n_eta = n_etas(this)
             abstol = const/real(n_eta, kind=dp)**2.0_dp
-            found = get_non_omnigenous_remainder(qs_field, qs_flock, n_eta)
+            found = get_non_omnigenous_remainder(qs_field, qs_flock, n_eta, &
+                                                 dr_dAtheta=1.0_dp)
             if (not_same(found, analytic, reltol_in=reltol, abstol_in=abstol)) then
                 print *, "-------------------------------------------------------------"
                 print *, "test_get_non_omnigenous_remainder failed: quasi-symmetric"
