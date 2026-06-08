@@ -74,12 +74,12 @@ run
 
 ```bash
 make clean
-unset LIBNEO
+unset LIBNEO_PATH
 make CONFIG=Release
 ```
 
 This builds the executable `rabe.x` in Release mode and writes it to `build`.
-The second line is only needed if you have an enviroment variable `LIBNEO` set
+The second line is only needed if you have an enviroment variable `LIBNEO_PATH` set
 (see build instructions below).
 
 **Step 2 — create a working directory and link the inputs:**
@@ -246,11 +246,11 @@ effect of bootstrap resonances and is not yet fully validated.
 
 ## Build and Tests
 
-The build uses the enviroment variable `LIBNEO` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
+The build uses the enviroment variable `LIBNEO_PATH` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
 not a developer, make sure to unset it before build e.g. with
 
 ```bash
-unset LIBNEO
+unset LIBNEO_PATH
 ```
 
 We use CMake for build configuration. If it is available on your machine, we
@@ -290,7 +290,7 @@ System libraries required at build time:
 
 Fetched automatically during build:
 
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO` is present, that one is used instead (MIT)
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO_PATH` is present, that one is used instead (MIT)
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 

@@ -5,6 +5,12 @@ on:
     branches:
       - '**'
   workflow_dispatch:
+    inputs:
+      libneo_ref:
+        default: ''
+
+env:
+  LIBNEO_REF: ${{ inputs.libneo_ref }}
 
 jobs:
   test:
