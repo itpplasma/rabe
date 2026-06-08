@@ -7,6 +7,15 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch or tag to build against
+        required: false
+        default: ''
+
+env:
+  LIBNEO_REF: ${{ inputs.libneo_ref }}
 
 jobs:
   test:
