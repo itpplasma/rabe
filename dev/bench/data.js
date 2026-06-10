@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779464187487,
+  "lastUpdate": 1781113187654,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -279,6 +279,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 71170,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "albert@tugraz.at",
+            "name": "Christopher Albert",
+            "username": "krystophny"
+          },
+          "committer": {
+            "email": "albert@tugraz.at",
+            "name": "Christopher Albert",
+            "username": "krystophny"
+          },
+          "distinct": true,
+          "id": "2fac90c7d2e55aad911afbceab0249649fe4774c",
+          "message": "Widen golden-record tolerance for cross-platform runs\n\nmacOS ARM and Linux x86 builds diverge at ~3e-9 relative for most\noutputs and ~4e-7 for Lambda_A through libm and adaptive-quadrature\ndifferences. rtol=1e-10 failed on any machine other than the one\nthat produced the expected record; 1e-6 still catches algorithmic\nregressions, which start at 1e-3 in practice.",
+          "timestamp": "2026-06-10T19:36:45+02:00",
+          "tree_id": "053728382e77ea0b9c7824f95377001d6932b117",
+          "url": "https://github.com/itpplasma/rabe/commit/2fac90c7d2e55aad911afbceab0249649fe4774c"
+        },
+        "date": 1781113186698,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.0005,
+            "unit": "ratio",
+            "extra": "current: 38580 ms, baseline: 38560 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 38580,
             "unit": "ms"
           }
         ]
