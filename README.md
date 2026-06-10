@@ -1,3 +1,6 @@
+<img width="0" height="20" align="right">
+<img src="assets/rabe_logo.png#gh-light-mode-only" alt="rabe logo by Georg Grassler" width="200" align="right"><img src="assets/rabe_logo_dark.png#gh-dark-mode-only" alt="rabe logo by Georg Grassler" width="200" align="right">
+
 # rabe
 
 An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap **e**xpressions of Ref. [1].
