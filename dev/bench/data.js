@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781113187654,
+  "lastUpdate": 1781115214451,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -314,6 +314,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 38580,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "albert@tugraz.at",
+            "name": "Christopher Albert",
+            "username": "krystophny"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "baabd080e77a0a46d8630ae929fff3b297dba336",
+          "message": "Revert quadpack link and golden tolerance changes (#86)\n\nReverts 32566ea and 2fac90c.",
+          "timestamp": "2026-06-10T20:09:36+02:00",
+          "tree_id": "18233626bf914324cb5dd1adc4de5a51fccd810e",
+          "url": "https://github.com/itpplasma/rabe/commit/baabd080e77a0a46d8630ae929fff3b297dba336"
+        },
+        "date": 1781115213754,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9956,
+            "unit": "ratio",
+            "extra": "current: 70650 ms, baseline: 70960 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 70650,
             "unit": "ms"
           }
         ]
