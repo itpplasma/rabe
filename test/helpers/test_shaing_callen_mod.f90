@@ -12,7 +12,7 @@ contains
     subroutine test_trapped_fraction_against_circular_tokamak(test_failed)
         use shaing_callen_mod, only: calc_trapped_fraction
         use mock_field, only: mock_field_t
-        use make_fieldline, only: make_flock_of_fieldlines
+        use make_fieldline, only: make_flock_from_labels
         use utils, only: linspace
 
         logical, intent(inout) :: test_failed
@@ -38,14 +38,14 @@ contains
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
         xi_0 = temp(1:n_fieldlines)
 
-        call make_flock_of_fieldlines(flock, &
-                                      xi_0, &
-                                      iota, &
-                                      circular_tok_field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp)
-        found = calc_trapped_fraction(circular_tok_field, flock, n_eta)
+        call make_flock_from_labels(flock, &
+                                    xi_0, &
+                                    iota, &
+                                    circular_tok_field, &
+                                    M_pol, &
+                                    N_tor, &
+                                    nfp)
+        found = calc_trapped_fraction(flock, circular_tok_field, n_eta)
 
         if (not_same(found, analytical_approx, &
                      reltol_in=reltol, abstol_in=abstol)) then
@@ -73,7 +73,7 @@ contains
         real(dp) :: trapped_fraction, trapped_fraction_qs
 
         eta_b = qs_flock%eta_b
-        trapped_fraction = calc_trapped_fraction(qs_field, qs_flock, n_eta)
+        trapped_fraction = calc_trapped_fraction(qs_flock, qs_field, n_eta)
         trapped_fraction_qs = calc_quasi_symmetric_trapped_fraction(qs_field, &
                                                                     eta_b, &
                                                                     n_eta)
@@ -266,7 +266,7 @@ contains
         do this = 1, size(n_etas)
             n_eta = n_etas(this)
             abstol = const/real(n_eta, kind=dp)**2.0_dp
-            found = get_non_omnigenous_remainder(qs_field, qs_flock, n_eta, &
+            found = get_non_omnigenous_remainder(qs_flock, qs_field, n_eta, &
                                                  dr_dAtheta=1.0_dp)
             if (not_same(found, analytic, reltol_in=reltol, abstol_in=abstol)) then
                 print *, "-------------------------------------------------------------"

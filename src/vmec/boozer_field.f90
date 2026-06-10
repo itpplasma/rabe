@@ -1,6 +1,6 @@
 module boozer_field
 
-    use, intrinsic :: iso_fortran_env, only: dp => real64
+    use constants, only: dp
     use field_base, only: field_t
     use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
 

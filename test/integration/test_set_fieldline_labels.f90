@@ -5,7 +5,7 @@ program test_set_fieldline_labels
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use field_checks, only: suspect_omnigenous_origin_not_minimum
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
     use deviation, only: calc_deviation
 
     use plot_quantities, only: plot_fieldlines_over_field
@@ -78,8 +78,7 @@ program test_set_fieldline_labels
                 test_failed = .true.
             end if
         end do
-        call make_flock_of_fieldlines(flock, xi_0, iota, field, M_pol, N_tor, &
-                                      nfp)
+        call make_flock_from_labels(flock, xi_0, iota, field, M_pol, N_tor, nfp)
         if (should_plot) then
             call plot_fieldlines_over_field_chi_xi(flock%fieldlines, field, &
                                                    flock%M_pol, flock%N_tor, flock%nfp)

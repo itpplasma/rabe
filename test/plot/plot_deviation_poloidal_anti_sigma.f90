@@ -5,7 +5,7 @@ program plot_deviation_poloidal_anti_sigma
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
     use deviation, only: calc_deviation
     use fit_functions, only: S_A, S_B
 
@@ -64,13 +64,13 @@ program plot_deviation_poloidal_anti_sigma
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(flock, &
-                                  xi_0, &
-                                  iota, &
-                                  field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp)
+    call make_flock_from_labels(flock, &
+                                xi_0, &
+                                iota, &
+                                field, &
+                                M_pol, &
+                                N_tor, &
+                                nfp)
 
     if (should_plot_others) then
         call plot_fieldlines_over_field(flock%fieldlines, field)

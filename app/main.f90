@@ -14,11 +14,11 @@ program main
                          unsafe_mode
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use fieldline_labels, only: get_labels
     use make_fieldline, only: make_flock_of_fieldlines
-    use deviation, only: calc_deviation
-    use surface_average_mod, only: surface_average_t, calc_surface_averages
-    use coefficients, only: calc_nu_star_crit, calc_finite_boundary_layer_correction
+    use coefficients, only: calc_nu_star_crit, &
+                            calc_finite_boundary_layer_correction, &
+                            calc_gradient_scaling_factor_r_eff, &
+                            calc_offset_coefficients
     use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
     use error_handling, only: set_unsafe_mode
     use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
@@ -36,18 +36,13 @@ program main
     integer :: this
 
     real(dp) :: R ![m]
-    type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
-    real(dp) :: iota, approx_iota
-    real(dp) :: B_theta_covariant, B_phi_covariant
+    real(dp) :: iota
     real(dp) :: nfp
-
-    real(dp), dimension(:), allocatable :: xi_0
 
     type(flock_of_fieldlines_t) :: flock
     logical :: too_strong_violation
 
-    real(dp) :: deviation_A, deviation_B
     real(dp), dimension(:), allocatable :: Lambda_A, Lambda_B
     real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_S
@@ -85,26 +80,15 @@ program main
         call field%get_iota(s_tor(this), iota)
         nfp = field%nfp
 
-        call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
-                        xi_0, approx_iota)
-        iota = approx_iota
-
-        call make_flock_of_fieldlines(flock, &
-                                      xi_0, &
-                                      iota, &
-                                      field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp, &
+        call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
+                                      field, M_pol, N_tor, nfp, &
                                       split_maxima(this))
 
-        call calc_deviation(flock, deviation_A, deviation_B)
-
-        call calc_surface_averages(flock, average)
-        dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
+        dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
+                                                        nint(sign_sqrtg))
         R = field%R
-        Lambda_A(this) = deviation_A*dr_dAtheta*sqrt(0.5_dp*R*pi)
-        Lambda_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
+        call calc_offset_coefficients(flock, R, dr_dAtheta, &
+                                      Lambda_A(this), Lambda_B(this))
         nu_star_crit(this) = calc_nu_star_crit(flock, R)
         Lambda_S(this) = calc_finite_boundary_layer_correction(flock, field, &
                                                                R, &
@@ -113,7 +97,7 @@ program main
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
             lambda_LC(this) = calc_lambda_LC(flock, field, n_eta, dr_dAtheta)
-            remainder(this) = get_non_omnigenous_remainder(field, flock, &
+            remainder(this) = get_non_omnigenous_remainder(flock, field, &
                                                            n_eta, dr_dAtheta)
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
@@ -123,7 +107,6 @@ program main
         print *, "Lambda_S: ", Lambda_S(this)
 
         if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
-        if (allocated(xi_0)) deallocate (xi_0)
 
         if (unsafe_mode .and. did_fail_any_sanity_check()) then
             lambda_A(this) = nan_value

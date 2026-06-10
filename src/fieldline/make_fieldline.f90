@@ -15,9 +15,29 @@ module make_fieldline
 
 contains
 
-    subroutine make_flock_of_fieldlines(flock, xi_0, iota, &
+    subroutine make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
                                         field, M_pol, N_tor, nfp, &
                                         split_maxima)
+        use fieldline_labels, only: get_labels
+        type(flock_of_fieldlines_t), intent(inout) :: flock
+        integer, intent(in) :: max_n_fieldlines
+        real(dp), intent(in) :: iota
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: M_pol, N_tor, nfp
+        integer, intent(out), optional :: split_maxima
+
+        real(dp), allocatable :: xi_0(:)
+        real(dp) :: approx_iota
+
+        call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
+                        xi_0, approx_iota)
+        call make_flock_from_labels(flock, xi_0, approx_iota, field, &
+                                    M_pol, N_tor, nfp, split_maxima)
+    end subroutine make_flock_of_fieldlines
+
+    subroutine make_flock_from_labels(flock, xi_0, iota, &
+                                      field, M_pol, N_tor, nfp, &
+                                      split_maxima)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use field_checks, only: suspect_omnigenous_origin_not_minimum
@@ -119,7 +139,7 @@ contains
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"
-            print *, "warning in make_flock_of_fieldlines: "
+            print *, "warning in make_flock_from_labels: "
             print *, "The provided field violates omnigeneity too strongly!"
             print *, "-> Found more than two local maxima per period", &
                 " for at least one fieldline!"
@@ -171,7 +191,7 @@ contains
         flock%fieldlines%delta_aspect_ratio = sqrt(flock%I_ref/I_j) - 1.0_dp
         deallocate (I_j)
 
-    end subroutine make_flock_of_fieldlines
+    end subroutine make_flock_from_labels
 
     subroutine check_if_valid_input(M_pol, N_tor, nfp, iota)
         use utils, only: not_same

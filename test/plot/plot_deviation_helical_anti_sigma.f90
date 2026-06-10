@@ -4,7 +4,7 @@ program plot_deviation_helical_anti_sigma
     use utils, only: linspace
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
     use deviation, only: calc_deviation
 
     use plot_quantities, only: plot_fieldlines_over_field
@@ -44,13 +44,13 @@ program plot_deviation_helical_anti_sigma
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     theta_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(flock, &
-                                  theta_0, &
-                                  iota, &
-                                  field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp)
+    call make_flock_from_labels(flock, &
+                                theta_0, &
+                                iota, &
+                                field, &
+                                M_pol, &
+                                N_tor, &
+                                nfp)
 
     call plot_fieldlines_over_field(flock%fieldlines, field)
     call plot_delta_eta(flock%fieldlines, flock%iota_p)

@@ -18,18 +18,18 @@ contains
         real(dp) :: trapped_fraction, helicity_factor
         real(dp) :: B_phi_cov, B_theta_cov
 
-        trapped_fraction = calc_trapped_fraction(field, flock, n_eta)
+        trapped_fraction = calc_trapped_fraction(flock, field, n_eta)
         call field%get_covariant_components(B_theta_cov, B_phi_cov)
         helicity_factor = (B_phi_cov*flock%M_pol + B_theta_cov*flock%N_tor) &
                           /(flock%M_pol*flock%iota - flock%N_tor)
         lambda_LC = dr_dAtheta*helicity_factor*trapped_fraction
     end function calc_lambda_LC
 
-    function calc_trapped_fraction(field, &
-                                   flock, &
+    function calc_trapped_fraction(flock, &
+                                   field, &
                                    n_eta) result(trapped_fraction)
-        class(field_t), intent(in) :: field
         type(flock_of_fieldlines_t), intent(in) :: flock
+        class(field_t), intent(in) :: field
         integer, intent(in) :: n_eta
         real(dp) :: trapped_fraction
 
@@ -122,12 +122,12 @@ contains
 
     end function calc_avg_lambda_over_B_squared
 
-    function get_non_omnigenous_remainder(field, flock, n_eta, dr_dAtheta) &
+    function get_non_omnigenous_remainder(flock, field, n_eta, dr_dAtheta) &
         result(remainder)
         use shaing_callen_integration, only: get_eta_integration_grid
         use shaing_callen_integration, only: integrate_over_eta_grid
-        class(field_t), intent(in) :: field
         type(flock_of_fieldlines_t), intent(in) :: flock
+        class(field_t), intent(in) :: field
         integer, intent(in) :: n_eta
         real(dp), intent(in) :: dr_dAtheta
         real(dp) :: remainder

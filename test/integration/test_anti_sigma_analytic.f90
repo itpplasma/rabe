@@ -8,8 +8,6 @@ program test_anti_sigma_analytic
     use fieldline_labels, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
-    use fieldline_labels, only: get_labels
-
     implicit none
 
     real(dp), parameter :: M_pol = 0.0_dp, N_tor = 1.0_dp
@@ -30,10 +28,8 @@ program test_anti_sigma_analytic
     real(dp), parameter :: abstol = 1e-13
     integer, parameter :: max_n_fieldlines = 60
 
-    real(dp), dimension(:), allocatable :: xi_0
     real(dp), parameter :: iota = 0.0_dp ! analytic formula for small iota
     real(dp), parameter :: nfp = 1.0_dp
-    real(dp) :: approx_iota
     integer :: n_fieldlines
     type(flock_of_fieldlines_t) :: flock
     type(fieldline_modes_t) :: fieldline_modes
@@ -51,11 +47,9 @@ program test_anti_sigma_analytic
     failed_test = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
-    n_fieldlines = size(xi_0)
-
-    call make_flock_of_fieldlines(flock, xi_0, approx_iota, field, M_pol, &
-                                  N_tor, nfp)
+    call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, field, &
+                                  M_pol, N_tor, nfp)
+    n_fieldlines = size(flock%fieldlines)
 
     do current = 1, n_fieldlines
         phi_max_abstol = 2.0_dp*maxval(flock%fieldlines(current)%phi_max_error)

@@ -8,7 +8,6 @@ program test_pert_anti_sigma_analytic
     use fieldline_labels, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
-    use fieldline_labels, only: get_labels
 
     use plot_quantities, only: plot_delta_eta
     use plot_quantities, only: plot_delta_A
@@ -30,10 +29,8 @@ program test_pert_anti_sigma_analytic
 
     integer, parameter :: max_n_fieldlines = 50
 
-    real(dp), dimension(:), allocatable :: xi_0
     real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
     real(dp), parameter :: nfp = 1.0_dp
-    real(dp) :: approx_iota
     integer :: n_fieldlines
     integer :: n_modes
     type(flock_of_fieldlines_t) :: flock
@@ -54,17 +51,9 @@ program test_pert_anti_sigma_analytic
                                                    M_pol_pert, &
                                                    N_tor_pert, &
                                                    B_pert)
-    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
-    n_fieldlines = size(xi_0)
+    call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, perturbed_field, M_pol, N_tor, nfp)
+    n_fieldlines = size(flock%fieldlines)
     n_modes = n_fieldlines/2 + 1
-
-    call make_flock_of_fieldlines(flock, &
-                                  xi_0, &
-                                  approx_iota, &
-                                  perturbed_field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp)
     call fourier_transform_over_label(flock, &
                                       fieldline_modes)
 

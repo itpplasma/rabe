@@ -2,7 +2,7 @@ program test_make_flock_of_fieldlines
     use constants, only: dp, pi
     use mock_field, only: mock_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
     use utils, only: linspace
     use utils, only: not_same
 
@@ -25,8 +25,7 @@ program test_make_flock_of_fieldlines
                                B_0=1.0_dp, B_amplitude=-0.3_dp)
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
 
-    call make_flock_of_fieldlines(flock, theta_0, iota, field, M_pol, N_tor, &
-                                  nfp)
+    call make_flock_from_labels(flock, theta_0, iota, field, M_pol, N_tor, nfp)
 
     abstol = max(2.0_dp*max(maxval(flock%fieldlines%phi_max_error(1)), &
                             maxval(flock%fieldlines%phi_max_error(2))), 1e-6_dp)

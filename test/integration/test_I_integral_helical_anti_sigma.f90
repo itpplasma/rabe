@@ -2,7 +2,6 @@ program test_I_integral_helical_anti_sigma
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use utils, only: linspace, not_same
-    use fieldline_labels, only: get_labels
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -41,10 +40,8 @@ program test_I_integral_helical_anti_sigma
     integer, parameter :: max_n_fieldlines = 20
     real(dp), dimension(2) :: phi_max
 
-    real(dp), dimension(:), allocatable :: xi_0
     real(dp), parameter :: iota = 0.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, N_tor)
-    real(dp) :: approx_iota
     integer :: n_fieldlines
     type(flock_of_fieldlines_t) :: flock
 
@@ -60,16 +57,10 @@ program test_I_integral_helical_anti_sigma
     logical, parameter :: should_plot = .false.
 
     call field%anti_sigma_field_init(M_pol, N_tor, B_0, eps_0, eps_1)
-    call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
-    n_fieldlines = size(xi_0)
+    call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, field, &
+                                  M_pol, N_tor, nfp)
+    n_fieldlines = size(flock%fieldlines)
     allocate (I_shifted(n_fieldlines))
-    call make_flock_of_fieldlines(flock, &
-                                  xi_0, &
-                                  approx_iota, &
-                                  field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp)
 
     test_failed = .false.
     do current = 1, n_fieldlines

@@ -1,7 +1,7 @@
 program test_shaing_callen_against_quasi_symmetric
     use mock_field, only: mock_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
     use constants, only: dp, pi
     use utils, only: linspace, not_same
 
@@ -41,13 +41,13 @@ program test_shaing_callen_against_quasi_symmetric
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(flock, &
-                                  xi_0, &
-                                  iota, &
-                                  field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp)
+    call make_flock_from_labels(flock, &
+                                xi_0, &
+                                iota, &
+                                field, &
+                                M_pol, &
+                                N_tor, &
+                                nfp)
 
     if (should_plot) then
         call plot_fieldlines_over_field(flock%fieldlines, field)

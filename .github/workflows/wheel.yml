@@ -1,0 +1,85 @@
+name: Build and publish wheels
+
+on:
+  push:
+    tags:
+      - 'v*/pypi'
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        env:
+          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-* cp313-*"
+          CIBW_SKIP: "*-musllinux_* *-win_*"
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+
+          CIBW_BEFORE_ALL_LINUX: |
+            dnf install -y epel-release
+            dnf install -y netcdf-fortran-devel gcc-gfortran cmake
+
+          CIBW_BUILD_VERBOSITY: 3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  test_wheels:
+    name: Test wheels on ${{ matrix.os }}
+    needs: build_wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-${{ matrix.os }}
+          merge-multiple: true
+          path: wheelhouse
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install wheel
+        run: pip install wheelhouse/*.whl
+
+      - name: Check symbols
+        run: python python/check_symbols.py
+
+  publish:
+    name: Publish
+    needs: [build_wheels, test_wheels]
+    runs-on: ubuntu-22.04
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: wheelhouse
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ vars.PYPI_URL }}
+          packages-dir: wheelhouse/

@@ -4,7 +4,7 @@ program test_find_global_maximum
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use make_fieldline, only: make_flock_from_labels
 
     implicit none
 
@@ -30,8 +30,8 @@ program test_find_global_maximum
     call perturbed_field%mock_perturbed_field_init(field, theta_mode, 0.0_dp, B_pert)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, theta_0)
-    call make_flock_of_fieldlines(flock, theta_0, iota, perturbed_field, &
-                                  theta_mode, phi_mode, nfp)
+    call make_flock_from_labels(flock, theta_0, iota, perturbed_field, &
+                                theta_mode, phi_mode, nfp)
 
     tol_phi_max = max(maxval(flock%fieldlines%phi_max_error(1)), &
                       maxval(flock%fieldlines%phi_max_error(2)))
