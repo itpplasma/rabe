@@ -1,6 +1,6 @@
 CONFIG ?= Debug
 
-.PHONY: all build test test_failed install clean plot golden golden_run dist internal
+.PHONY: all build test test_failed install clean plot golden golden_run dist internal python
 all: build
 
 build/CMakeCache.txt:
@@ -44,6 +44,10 @@ clean:
 
 dist:
 	git archive --format=tar.gz --prefix=rabe/ HEAD -o rabe.tar.gz
+
+python:
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_BINDINGS=ON
+	cmake --build build
 
 # Private test data and external comparisons (not available in public repo)
 internal: build

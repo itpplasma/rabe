@@ -38,7 +38,8 @@ rabe_lib (main static library)
 │   fourier.f90, integrate.f90
 ├── field_lib (src/field/)
 │   field_base.f90    - Abstract type field_t (deferred: compute_B_mod,
-│                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx)
+│                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx,
+│                       get_covariant_components)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
 │   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion

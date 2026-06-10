@@ -9,6 +9,7 @@ module field_base
         procedure(compute_B_mod), deferred :: compute_B_mod
         procedure(compute_nabla_s), deferred :: compute_nabla_s
         procedure(rel_accuracy_B), deferred :: rel_accuracy_B
+        procedure(get_covariant_components), deferred :: get_covariant_components
     end type field_t
 
     interface
@@ -53,6 +54,15 @@ module field_base
             import :: field_t, dp
             class(field_t), intent(in) :: self
         end function
+    end interface
+
+    interface
+        !> Covariant components of B (flux-surface constants in Boozer coordinates).
+        subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+            import :: field_t, dp
+            class(field_t), intent(in) :: self
+            real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+        end subroutine
     end interface
 
 end module field_base
