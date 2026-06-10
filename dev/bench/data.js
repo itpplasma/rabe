@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781115214451,
+  "lastUpdate": 1781116605873,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -349,6 +349,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 70650,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "100583655+GeorgGrassler@users.noreply.github.com",
+            "name": "GeorgGrassler",
+            "username": "GeorgGrassler"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d14bbc6506b28af02ac455bed755abde93bb18f",
+          "message": "Merge pull request #85 from GeorgGrassler/main\n\nupdate: upstream",
+          "timestamp": "2026-06-10T20:32:35+02:00",
+          "tree_id": "821fc7253b64c76b7dccabce8d2c7894c22a3ec6",
+          "url": "https://github.com/itpplasma/rabe/commit/8d14bbc6506b28af02ac455bed755abde93bb18f"
+        },
+        "date": 1781116605200,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.0027,
+            "unit": "ratio",
+            "extra": "current: 71470 ms, baseline: 71280 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 71470,
             "unit": "ms"
           }
         ]
