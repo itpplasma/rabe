@@ -134,9 +134,12 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
     should_calc_shaing_callen = .true.,  ! compute $\lambda_{bB}^\mathrm{LC}$
     n_eta = 100,                         ! level resolution for trapped
                                          ! particle fraction computation
-    unsafe_mode = .false.                ! if .true., NaN-fill outputs for
+    unsafe_mode = .false.,               ! if .true., NaN-fill outputs for
                                          ! surfaces that fail a sanity check
                                          ! instead of aborting execution
+    spectral_surface_b = .false.         ! if .true., evaluate field-line
+                                         ! |B| maxima with a spectral angular
+                                         ! surface representation
 /
 ```
 
@@ -164,6 +167,10 @@ By default (`unsafe_mode = .false.`), any failed sanity check halts the run
 immediately with an error. This is the recommended behaviour as those checks point out not suited inputs e.g. violation of stellarator symmetry.
 Setting `unsafe_mode = .true.` allows the run to continue, but outputs
 are set to `NaN` for any surface where a check failed.
+
+Set `spectral_surface_b = .true.` to evaluate field-line `|B|` maxima
+through a trigonometric surface representation on each fixed flux surface.
+The field-line quadratures still use the spline field.
 
 Results are written to `rabe.nc` (NetCDF) and `rabe.dat` (plain text), with one
 value per flux surface. Both files contain the same variables:

@@ -1,4 +1,5 @@
 add_library(vmec_lib STATIC
+            bmod_spectral.f90
             boozer_converter.F90
             boozer_field.f90
             )

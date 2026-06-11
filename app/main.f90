@@ -1,7 +1,6 @@
 program rabe
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use constants, only: dp, pi
-    use utils, only: linspace
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: fieldline_t
     use fieldline_labels, only: get_labels
@@ -27,7 +26,8 @@ program rabe
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta, &
-                         unsafe_mode
+                         unsafe_mode, &
+                         spectral_surface_b
 
     implicit none
 
@@ -51,8 +51,6 @@ program rabe
 
     integer :: n_fieldlines
     type(fieldline_t), dimension(:), allocatable :: fieldlines
-    logical :: too_strong_violation
-
     real(dp) :: deviation_A, deviation_B
     real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: Lambda_A, Lambda_B
@@ -86,7 +84,8 @@ program rabe
         allocate (remainder(n_stor))
     end if
 
-    call field%boozer_field_init(field_file, grid_refinement=6)
+    call field%boozer_field_init(field_file, grid_refinement=6, &
+                                 spectral_surface_b=spectral_surface_b)
     do this = 1, n_stor
         call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))

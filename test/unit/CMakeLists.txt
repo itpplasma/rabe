@@ -33,6 +33,11 @@ target_link_libraries(test_real_ft.x rabe_lib)
 add_test(TestRealFt test_real_ft.x)
 set_tests_properties(TestRealFt PROPERTIES LABELS "quick")
 
+add_executable(test_bmod_spectral.x test_bmod_spectral.f90)
+target_link_libraries(test_bmod_spectral.x rabe_lib)
+add_test(TestBmodSpectral test_bmod_spectral.x)
+set_tests_properties(TestBmodSpectral PROPERTIES LABELS "quick")
+
 add_executable(test_fit_functions.x test_fit_functions.f90)
 target_link_libraries(test_fit_functions.x rabe_lib)
 add_test(TestFitFunctions test_fit_functions.x)

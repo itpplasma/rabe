@@ -33,7 +33,6 @@ contains
         real(dp) :: interval(2)
         type(maxima_t) :: maxima
         logical :: more_than_two_maxima
-        real(dp) :: I_ref
         integer :: n_fieldlines
         integer :: current
         real(dp) :: symmetry_violation
@@ -134,8 +133,12 @@ contains
         !> B_max/Bmax = 1 +- ULP (~2.2e-16)
         !> due to floating point arithmetic. To not be dependend on machine/compiler
         !> specifics, we add a small buffer that does not change the physics.
+        !> The representation buffer additionally covers the gap between the
+        !> accurate B_max and the interpolated B of the integrands; it is
+        !> exactly zero unless the spectral surface representation is on.
         fieldlines%eta_b = (1.0_dp - 2.0_dp*machine_eps) &
-                           /get_global_B_max(fieldlines)
+                           /(get_global_B_max(fieldlines) &
+                             + representation_buffer(field, fieldlines))
 
         do current = 1, n_fieldlines
             call calc_fieldline_integrals(field, fieldlines(current))
@@ -274,7 +277,7 @@ contains
 
             theta = fieldline%get_theta(phi)
             do idx = 1, size(phi)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+                call field%compute_B_mod_accurate(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
 
@@ -362,16 +365,46 @@ contains
 
             theta = fieldline%get_theta(phi)
             do idx = 1, size(phi)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
+                call field%compute_B_mod_accurate(theta(idx), phi(idx), B_mod(idx))
             end do
         end subroutine B_mod_along_fieldline
     end subroutine nudge_maxima_inward
+
+    !> The integrands evaluate B through the fast interpolating
+    !> representation, while B_max and eta_b come from the accurate one.
+    !> Where the two differ (spectral surface B on), the interpolant can
+    !> overshoot the accurate maximum, and 1 - eta_b*B would go negative
+    !> at the integration endpoints. The buffer below measures that
+    !> discrepancy at the actual maxima and widens eta_b by it; with both
+    !> representations identical it is exactly zero and eta_b is unchanged.
+    function representation_buffer(field, fieldlines) result(buffer)
+        class(field_t), intent(in) :: field
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: buffer
+
+        real(dp) :: theta(2), B_interp(2)
+        integer :: current, idx
+
+        buffer = 0.0_dp
+        do current = 1, size(fieldlines)
+            theta = fieldlines(current)%get_theta(fieldlines(current)%phi_max)
+            do idx = 1, 2
+                call field%compute_B_mod(theta(idx), &
+                                         fieldlines(current)%phi_max(idx), &
+                                         B_interp(idx))
+            end do
+            buffer = max(buffer, &
+                         maxval(B_interp - fieldlines(current)%B_max))
+        end do
+        !> factor 2: the interpolant's own nearby local maximum can exceed
+        !> its value at the accurate maximum position by the same order again
+        buffer = 2.0_dp*max(buffer, 0.0_dp)
+    end function representation_buffer
 
     function get_global_B_max(fieldlines) result(global_B_max)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
         real(dp) :: global_B_max
 
-        integer :: current
         real(dp) :: B_max_1, B_max_2
 
         B_max_1 = maxval(fieldlines(:)%B_max(1))

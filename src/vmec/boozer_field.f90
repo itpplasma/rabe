@@ -3,6 +3,7 @@ module boozer_field
     use, intrinsic :: iso_fortran_env, only: dp => real64
     use field_base, only: field_t
     use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
+    use bmod_spectral, only: bmod_spectral_t
 
     implicit none
     private
@@ -19,6 +20,11 @@ module boozer_field
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
         real(dp) :: R
+        !> Spectral surface |B| for the maxima search: removes the angular
+        !> between-node spline error from maxima heights (the driver of the
+        !> offset coefficients) while quadratures keep the fast splines.
+        logical :: spectral_surface_b = .false.
+        type(bmod_spectral_t) :: bmod_spec
     contains
         procedure :: boozer_field_init
         procedure :: evaluate
@@ -27,6 +33,7 @@ module boozer_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
+        procedure :: compute_B_mod_accurate
         procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
     end type boozer_field_t
@@ -36,7 +43,8 @@ contains
     subroutine boozer_field_init(self, vmec_file, &
                                  radial_spline_order, &
                                  angular_spline_order, &
-                                 grid_refinement)
+                                 grid_refinement, &
+                                 spectral_surface_b)
         use vector_potentail_mod, only: torflux
         use new_vmec_stuff_mod, only: nper, rmajor
         use boozer_coordinates_mod, only: use_B_r
@@ -45,7 +53,10 @@ contains
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
+        logical, intent(in), optional :: spectral_surface_b
 
+        self%spectral_surface_b = .false.
+        if (present(spectral_surface_b)) self%spectral_surface_b = spectral_surface_b
         use_B_r = .true.
         call get_boozer_coordinates(vmec_file, &
                                     radial_spline_order, &
@@ -172,7 +183,38 @@ contains
 
         self%fixed_stor = stor
         self%fixed_to_surface = .true.
+        if (self%spectral_surface_b) call build_surface_spectrum(self)
     end subroutine fix_to_surface
+
+    subroutine build_surface_spectrum(self)
+        !> Sample the angular grid nodes of the fixed surface, where the
+        !> tensor splines reproduce the grid data exactly, and build the
+        !> trigonometric interpolant through them.
+        use boozer_coordinates_mod, only: n_theta_B, n_phi_B, h_theta_B, h_phi_B
+        class(boozer_field_t), intent(inout) :: self
+
+        real(dp), allocatable :: nodes(:, :)
+        real(dp) :: dummy(32), B_node
+        integer :: j, k
+
+        allocate (nodes(n_theta_B - 1, n_phi_B - 1))
+        do k = 1, n_phi_B - 1
+            do j = 1, n_theta_B - 1
+                call splint_boozer_coord(self%fixed_stor, &
+                                         real(j - 1, dp)*h_theta_B, &
+                                         real(k - 1, dp)*h_phi_B, 0, &
+                                         dummy(1), dummy(2), dummy(3), &
+                                         dummy(4), dummy(5), dummy(6), &
+                                         dummy(7), dummy(8), dummy(9), &
+                                         dummy(10), dummy(11), dummy(12), &
+                                         B_node, dummy(14:16), dummy(17:22), &
+                                         dummy(13), &
+                                         dummy(23), dummy(24:26), dummy(27:32))
+                nodes(j, k) = B_node*gauss2tesla
+            end do
+        end do
+        call self%bmod_spec%build(nodes, nint(self%nfp))
+    end subroutine build_surface_spectrum
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, &
                                      dB_dx)
@@ -221,6 +263,18 @@ contains
         call self%evaluate(x, B_mod, dummy_sqrtg, dummy_dB_dx, &
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod
+
+    subroutine compute_B_mod_accurate(self, theta, phi, B_mod)
+        class(boozer_field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod
+
+        if (self%spectral_surface_b .and. self%bmod_spec%ready) then
+            B_mod = self%bmod_spec%evaluate(theta, phi)
+        else
+            call self%compute_B_mod(theta, phi, B_mod)
+        end if
+    end subroutine compute_B_mod_accurate
 
     subroutine compute_nabla_s(self, theta, phi, nabla_s)
         class(boozer_field_t), intent(in) :: self

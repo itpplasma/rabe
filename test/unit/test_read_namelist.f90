@@ -1,5 +1,5 @@
 program test_read_namelist
-    use constants, only: dp, pi
+    use constants, only: dp
     use utils, only: not_same
     use read_file, only: read_namelist
     use read_file, only: field_file, &
@@ -12,11 +12,12 @@ program test_read_namelist
                          sign_sqrtg, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta
+                         n_eta, &
+                         unsafe_mode, &
+                         spectral_surface_b
 
     implicit none
 
-    integer :: this
     real(dp), parameter :: abstol = 0.0_dp, reltol = 1e-14
     character(len=*), parameter :: test_file = "rabe.in"
 
@@ -30,6 +31,8 @@ program test_read_namelist
     integer, parameter :: test_max_n_fieldlines = 10
     logical, parameter :: test_should_calc_shaing_callen = .true.
     integer, parameter :: test_n_eta = 11
+    logical, parameter :: test_unsafe_mode = .true.
+    logical, parameter :: test_spectral_surface_b = .true.
 
     test_failed = .false.
 
@@ -44,7 +47,9 @@ program test_read_namelist
                          test_max_n_fieldlines=test_max_n_fieldlines, &
                          test_should_calc_shaing_callen= &
                          test_should_calc_shaing_callen, &
-                         test_n_eta=test_n_eta)
+                         test_n_eta=test_n_eta, &
+                         test_unsafe_mode=test_unsafe_mode, &
+                         test_spectral_surface_b=test_spectral_surface_b)
     call read_namelist(test_file)
 
     if (field_file /= test_field_file) then
@@ -115,6 +120,20 @@ program test_read_namelist
         print *, "expected: ", test_n_eta
         test_failed = .true.
     end if
+    if (unsafe_mode .neqv. test_unsafe_mode) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: unsafe_mode"
+        print *, "found: ", unsafe_mode
+        print *, "expected: ", test_unsafe_mode
+        test_failed = .true.
+    end if
+    if (spectral_surface_b .neqv. test_spectral_surface_b) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: spectral_surface_b"
+        print *, "found: ", spectral_surface_b
+        print *, "expected: ", test_spectral_surface_b
+        test_failed = .true.
+    end if
 
     call remove_test_file(test_file)
 
@@ -140,6 +159,14 @@ program test_read_namelist
         print *, "test_read_namelist failed: s_tor"
         print *, "found: ", s_tor
         print *, "expected: ", test_s_tor
+        test_failed = .true.
+    end if
+
+    if (unsafe_mode .or. spectral_surface_b) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: logical defaults"
+        print *, "unsafe_mode: ", unsafe_mode
+        print *, "spectral_surface_b: ", spectral_surface_b
         test_failed = .true.
     end if
 
@@ -196,7 +223,9 @@ contains
                                test_sign_sqrtg, &
                                test_max_n_fieldlines, &
                                test_should_calc_shaing_callen, &
-                               test_n_eta)
+                               test_n_eta, &
+                               test_unsafe_mode, &
+                               test_spectral_surface_b)
 
         character(len=*), intent(in) :: filename
         character(len=*), intent(in), optional :: test_field_file
@@ -210,6 +239,8 @@ contains
         integer, intent(in), optional :: test_max_n_fieldlines
         logical, intent(in), optional :: test_should_calc_shaing_callen
         integer, intent(in), optional :: test_n_eta
+        logical, intent(in), optional :: test_unsafe_mode
+        logical, intent(in), optional :: test_spectral_surface_b
 
         integer :: unit
 
@@ -247,7 +278,14 @@ contains
                 test_should_calc_shaing_callen, ","
         end if
         if (present(test_n_eta)) then
-            write (unit, "(A,I6,A)") "n_eta = ", test_n_eta
+            write (unit, "(A,I6,A)") "n_eta = ", test_n_eta, ","
+        end if
+        if (present(test_unsafe_mode)) then
+            write (unit, "(A,L,A)") "unsafe_mode = ", test_unsafe_mode, ","
+        end if
+        if (present(test_spectral_surface_b)) then
+            write (unit, "(A,L,A)") "spectral_surface_b = ", &
+                test_spectral_surface_b, ","
         end if
         write (unit, "(A)") "/"
         close (unit)

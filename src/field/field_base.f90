@@ -9,6 +9,10 @@ module field_base
         procedure(compute_B_mod), deferred :: compute_B_mod
         procedure(compute_nabla_s), deferred :: compute_nabla_s
         procedure(rel_accuracy_B), deferred :: rel_accuracy_B
+        !> Highest-accuracy |B| the representation can offer; defaults to
+        !> compute_B_mod. Used where between-node interpolation error
+        !> matters (field-line maxima heights), not in bulk quadratures.
+        procedure :: compute_B_mod_accurate
     end type field_t
 
     interface
@@ -54,5 +58,15 @@ module field_base
             class(field_t), intent(in) :: self
         end function
     end interface
+
+contains
+
+    subroutine compute_B_mod_accurate(self, theta, phi, B_mod)
+        class(field_t), intent(in) :: self
+        real(dp), intent(in) :: theta, phi
+        real(dp), intent(out) :: B_mod
+
+        call self%compute_B_mod(theta, phi, B_mod)
+    end subroutine compute_B_mod_accurate
 
 end module field_base
