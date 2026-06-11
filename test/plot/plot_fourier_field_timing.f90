@@ -20,6 +20,8 @@ program plot_fourier_field_timing
     integer :: m(n_total), n(n_total)
     real(dp) :: B_modes(n_total)
     integer :: m_idx, n_idx, k_mode
+    real(dp), parameter :: B_vartheta_covariant = 0.0_dp
+    real(dp), parameter :: B_varphi_covariant = 1.0_dp
 
     integer, parameter :: n_trials = 4
     integer :: eval_counts(n_trials)
@@ -70,7 +72,8 @@ program plot_fourier_field_timing
 
     call hfield%horner_fourier_field_init(m, n, B_modes)
 
-    call sfield%fourier_field_init(m, n, B_modes)
+    call sfield%fourier_field_init(m, n, B_modes, &
+                                   B_vartheta_covariant, B_varphi_covariant)
 
     do k = 1, n_trials
         eval = eval_counts(k)

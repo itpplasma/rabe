@@ -11,6 +11,8 @@ program plot_fourier_field_accuracy
     real(dp) :: B_modes(n_total)
     integer :: m_idx, n_idx, k_mode
 
+    real(dp), parameter :: B_vartheta_covariant = 0.0_dp
+    real(dp), parameter :: B_varphi_covariant = 1.0_dp
     integer, parameter :: n_sweep = 13
     integer :: n_grids(n_sweep)
     real(dp) :: n_grids_dp(n_sweep)
@@ -63,7 +65,9 @@ program plot_fourier_field_accuracy
     do k = 1, n_sweep
         n_grids_dp(k) = real(n_grids(k), dp)
 
-        call sfield%fourier_field_init(m, n, B_modes, nfp=nfp, n_grid=n_grids(k))
+        call sfield%fourier_field_init(m, n, B_modes, &
+                                       B_vartheta_covariant, B_varphi_covariant, &
+                                       nfp=nfp, n_grid=n_grids(k))
 
         max_rel_err_B(k) = 0.0_dp
         max_rel_err_dB(k) = 0.0_dp

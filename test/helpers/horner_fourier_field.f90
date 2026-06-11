@@ -17,6 +17,7 @@ module horner_fourier_field
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
+        procedure :: get_covariant_components
     end type horner_fourier_field_t
 
 contains
@@ -185,5 +186,14 @@ contains
 
         rel_accuracy_B = epsilon(1.0_dp)
     end function rel_accuracy_B
+
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(horner_fourier_field_t), intent(in) :: self
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+
+        print *, "horner_fourier_field_t does not provide covariant components."
+        error stop
+
+    end subroutine get_covariant_components
 
 end module horner_fourier_field

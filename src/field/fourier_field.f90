@@ -9,6 +9,7 @@ module fourier_field
     type, extends(field_t) :: fourier_field_t
         type(SplineData2D) :: spl
         real(dp) :: nfp
+        real(dp) :: B_theta_covariant, B_phi_covariant
         integer :: n_grid, mn_max
     contains
         procedure :: fourier_field_init
@@ -17,17 +18,21 @@ module fourier_field
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
+        procedure :: get_covariant_components
     end type fourier_field_t
 
 contains
 
     ! Build 2D spline from flat Fourier mode lists.
     ! B = sum_k B_mn(k) * cos(m(k)*theta - n(k)*phi)
-    subroutine fourier_field_init(self, m, n, B_mn, nfp, n_grid)
+    subroutine fourier_field_init(self, m, n, B_mn, &
+                                  B_theta_covariant, B_phi_covariant, &
+                                  nfp, n_grid)
         use utils, only: linspace
-        class(fourier_field_t), intent(out) :: self
+        class(fourier_field_t), intent(inout) :: self
         integer, intent(in) :: m(:), n(:)
         real(dp), intent(in) :: B_mn(:)
+        real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
         integer, intent(in), optional :: nfp
         integer, intent(in), optional :: n_grid
 
@@ -36,13 +41,16 @@ contains
         integer :: n_theta, n_phi, i_theta, i_phi
         real(dp), allocatable :: theta(:), phi(:), grid_B(:, :)
 
-        if (present(nfp)) then
+        self%B_theta_covariant = B_theta_covariant
+        self%B_phi_covariant = B_phi_covariant
+
+        if (present(nfp) .and. nfp > 0) then
             self%nfp = real(nfp, dp)
         else
             self%nfp = 1.0_dp
         end if
 
-        if (present(n_grid)) then
+        if (present(n_grid) .and. n_grid >= 2) then
             n_theta = n_grid
             n_phi = n_grid
         else
@@ -126,5 +134,14 @@ contains
 
         rel_accuracy_B = (real(self%mn_max, dp)/real(self%n_grid, dp))**6
     end function rel_accuracy_B
+
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(fourier_field_t), intent(in) :: self
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+
+        B_theta_covariant = self%B_theta_covariant
+        B_phi_covariant = self%B_phi_covariant
+
+    end subroutine get_covariant_components
 
 end module fourier_field
