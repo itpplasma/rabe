@@ -3,6 +3,7 @@ import rabe
 # Top-level submodules
 for mod in [
     "boozer_field",
+    "fourier_field",
     "fieldline_mod",
     "surface_average_mod",
     "error_handling",
@@ -14,6 +15,9 @@ for mod in [
 assert hasattr(
     rabe.boozer_field, "BoozerField"
 ), "Missing rabe.boozer_field.BoozerField"
+assert hasattr(
+    rabe.fourier_field, "FourierField"
+), "Missing rabe.fourier_field.FourierField"
 assert hasattr(
     rabe.fieldline_mod, "FlockOfFieldlines"
 ), "Missing rabe.fieldline_mod.FlockOfFieldlines"
@@ -39,6 +43,16 @@ for m in flock_methods:
     assert hasattr(
         rabe.fieldline_mod.FlockOfFieldlines, m
     ), f"Missing rabe.fieldline_mod.FlockOfFieldlines.{m}"
+
+# Methods on FourierField
+fourier_methods = [
+    "fourier_field_init",
+    "get_covariant_components",
+]
+for m in fourier_methods:
+    assert hasattr(
+        rabe.fourier_field.FourierField, m
+    ), f"Missing rabe.fourier_field.FourierField.{m}"
 
 # Methods on BoozerField
 boozer_methods = [

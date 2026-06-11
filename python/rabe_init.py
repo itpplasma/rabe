@@ -4,4 +4,5 @@ from . import (
     error_handling,
     fieldline_mod,
     surface_average_mod,
+    fourier_field,
 )

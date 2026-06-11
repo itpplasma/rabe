@@ -7,6 +7,7 @@ find_program(F90WRAP_EXECUTABLE f90wrap REQUIRED)
 
 set(F90WRAP_SOURCES
     ${PROJECT_SOURCE_DIR}/src/field/field_base.f90
+    ${PROJECT_SOURCE_DIR}/src/field/fourier_field.f90
     ${PROJECT_SOURCE_DIR}/src/fieldline/fieldline.f90
     ${PROJECT_SOURCE_DIR}/src/vmec/boozer_field.f90
     ${PROJECT_SOURCE_DIR}/src/fieldline/surface_average.f90
@@ -35,6 +36,7 @@ add_custom_command(
             --class-names ${CMAKE_CURRENT_SOURCE_DIR}/class_names.py
             ${F90WRAP_SOURCES}
             --only
+                fourier_field_t
                 boozer_field_t
                 boozer_field_init
                 fix_to_surface
