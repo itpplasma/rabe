@@ -44,18 +44,24 @@ contains
         self%B_theta_covariant = B_theta_covariant
         self%B_phi_covariant = B_phi_covariant
 
-        if (present(nfp) .and. nfp > 0) then
+        if (.not. present(nfp)) then
+            self%nfp = 1.0_dp
+        elseif (nfp > 0) then
             self%nfp = real(nfp, dp)
         else
-            self%nfp = 1.0_dp
+            print *, "Error: nfp must be positive!"
+            error stop
         end if
 
-        if (present(n_grid) .and. n_grid >= 2) then
+        if (.not. present(n_grid)) then
+            n_theta = n_grid_default
+            n_phi = n_grid_default
+        elseif (n_grid >= 2) then
             n_theta = n_grid
             n_phi = n_grid
         else
-            n_theta = n_grid_default
-            n_phi = n_grid_default
+            print *, "Error: n_grid must be at least 2!"
+            error stop
         end if
         self%n_grid = n_theta
         self%mn_max = max(maxval(abs(m)), maxval(abs(n)))
