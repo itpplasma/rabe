@@ -7,6 +7,17 @@ module fourier_field
     implicit none
 
     type, extends(field_t) :: fourier_field_t
+        !>
+        !! \brief Magnetic field from a flat list of Boozer Fourier modes,
+        !! evaluated via 2D spline interpolation.
+        !!
+        !! \details The field strength is given by
+        !! `B(theta, phi) = sum_k B_mn(k) * cos(m(k)*theta - nfp*n(k)*phi)`
+        !! where `theta` and `phi` are Boozer angles and `nfp` the number of field
+        !! periods. The Fourier series is computed during initialisation and then
+        !! splined on an `n_grid` x `n_grid` equidistant grid of the angles for
+        !! later evaluation.
+        !<
         type(SplineData2D) :: spl
         real(dp) :: nfp
         real(dp) :: B_theta_covariant, B_phi_covariant
@@ -23,8 +34,23 @@ module fourier_field
 
 contains
 
-    ! Build 2D spline from flat Fourier mode lists.
-    ! B = sum_k B_mn(k) * cos(m(k)*theta - n(k)*phi)
+    !>
+    !! \brief Initialise the field from flat Fourier mode lists and build the 2D spline.
+    !!
+    !! \details Evaluates
+    !! `B(theta, phi) = sum_k B_mn(k) * cos(m(k)*theta - nfp*n(k)*phi)`
+    !! on an `n_grid` x `n_grid` equidistant grid of the angles, then fits a 2D
+    !! periodic quintic spline. Note again that `n` is normalized to the number of
+    !! field periods `nfp`.
+    !!
+    !! \param[in] m poloidal mode numbers (flat array, length mn_max)
+    !! \param[in] n toroidal mode numbers normalised to nfp (flat array, length mn_max)
+    !! \param[in] B_mn Fourier coefficients of B in Tesla (flat array, length mn_max)
+    !! \param[in] B_theta_covariant covariant poloidal component of B in T*m
+    !! \param[in] B_phi_covariant covariant toroidal component of B in T*m
+    !! \param[in] nfp number of field periods
+    !! \param[in] n_grid spline grid points per angle direction
+    !<
     subroutine fourier_field_init(self, m, n, B_mn, &
                                   B_theta_covariant, B_phi_covariant, &
                                   nfp, n_grid)
@@ -115,6 +141,13 @@ contains
 
     end subroutine compute_B_and_dB_dx
 
+    !>
+    !! \brief Evaluate the spline-interpolated field strength `B_mod` at Boozer angles.
+    !!
+    !! \param[in] theta poloidal Boozer angle in radians
+    !! \param[in] phi toroidal Boozer angle in radians
+    !! \param[out] B_mod magnetic field strength in Tesla
+    !<
     subroutine compute_B_mod(self, theta, phi, B_mod)
         class(fourier_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi

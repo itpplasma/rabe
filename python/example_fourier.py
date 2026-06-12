@@ -21,7 +21,7 @@ def S_B(iota_p):
 def calc_lambda_a_analytic(
     ds_datheta, R, B_0, eps_1, eps_2, N_TOR, M_POL, iota_p, iota
 ):
-    """Small-aspect-ratio analytical estimate for lambda_A."""
+    """Small-aspect-ratio anti-sigma analytical estimate for lambda_A."""
     result = -ds_datheta * np.sqrt(2.0 * np.pi) * R * B_0 * np.abs(eps_2) ** 2
     result *= N_TOR * S_A(iota_p) / (2.0 * np.abs(eps_1)) ** 0.75 * 0.5
     result /= (N_TOR - iota * M_POL) ** 1.5
@@ -30,7 +30,7 @@ def calc_lambda_a_analytic(
 
 
 def calc_lambda_b_analytic(ds_datheta, R, eps_2, delta_B_1, iota_p):
-    """Small-aspect-ratio analytical estimate for lambda_B."""
+    """Small-aspect-ratio anti-sigma analytical estimate for lambda_B."""
     return -abs(eps_2) * ds_datheta * R * np.pi * delta_B_1 * S_B(iota_p) * 0.25
 
 
@@ -107,7 +107,7 @@ def plot_offset_vs_nu_star(lam_a, lam_b, lam_a_ana=None, lam_b_ana=None):
 
 
 # ---------------------------------------------------------------------------
-# Setup
+# Offset for anti-sigma field in Fourier modes representation
 # ---------------------------------------------------------------------------
 
 PLOT_FIELD = False
