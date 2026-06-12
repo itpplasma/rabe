@@ -11,7 +11,11 @@ contains
         real(dp) :: S_A
 
         real(dp) :: angle_in_period
-        real(dp), parameter :: fit_fac = 0.3_dp
+        !> Sawtooth amplitude of the offset function S_A from Albert et al.,
+        !> J. Plasma Phys. 91 (2025), fit below Eq. (133). An independent solve
+        !> of the boundary-layer integral chain (Eq. 103-105) gives 0.231; the
+        !> prior 0.30 here had no source and overshoots by ~25%.
+        real(dp), parameter :: fit_fac = 0.26_dp
 
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 
@@ -24,7 +28,10 @@ contains
         real(dp) :: S_B
 
         real(dp) :: angle_in_period
-        real(dp), parameter :: fit_fac = 2.0_dp
+        !> Square-wave amplitude of the offset function S_B from Albert et al.,
+        !> J. Plasma Phys. 91 (2025), fit below Eq. (133). The independent solve
+        !> gives 1.846, confirming 1.85; the prior 2.00 here had no source.
+        real(dp), parameter :: fit_fac = 1.85_dp
 
         angle_in_period = modulo(angle + pi, 2.0_dp*pi) - pi
 

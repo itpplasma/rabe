@@ -12,15 +12,15 @@ program test_fit_functions
     real(dp), parameter :: positive_out_of_period_angle = 1.3_dp*pi
     real(dp), parameter :: negative_out_of_period_angle = -1.25_dp*pi
 
-    real(dp), parameter :: S_A_positive_angle = 0.3_dp*(-0.25_dp*pi)
-    real(dp), parameter :: S_A_negative_angle = 0.3_dp*(+0.25_dp*pi)
-    real(dp), parameter :: S_A_positive_out_of_period_angle = 0.3_dp*(-0.20_dp*pi)
-    real(dp), parameter :: S_A_negative_out_of_period_angle = 0.3_dp*(+0.25_dp*pi)
+    real(dp), parameter :: S_A_positive_angle = 0.26_dp*(-0.25_dp*pi)
+    real(dp), parameter :: S_A_negative_angle = 0.26_dp*(+0.25_dp*pi)
+    real(dp), parameter :: S_A_positive_out_of_period_angle = 0.26_dp*(-0.20_dp*pi)
+    real(dp), parameter :: S_A_negative_out_of_period_angle = 0.26_dp*(+0.25_dp*pi)
 
-    real(dp), parameter :: S_B_positive_angle = 2.0_dp
-    real(dp), parameter :: S_B_negative_angle = -2.0_dp
-    real(dp), parameter :: S_B_positive_out_of_period_angle = -2.0_dp
-    real(dp), parameter :: S_B_negative_out_of_period_angle = 2.0_dp
+    real(dp), parameter :: S_B_positive_angle = 1.85_dp
+    real(dp), parameter :: S_B_negative_angle = -1.85_dp
+    real(dp), parameter :: S_B_positive_out_of_period_angle = -1.85_dp
+    real(dp), parameter :: S_B_negative_out_of_period_angle = 1.85_dp
 
     call check_S_A(positive_angle, S_A(positive_angle), S_A_positive_angle)
     call check_S_A(negative_angle, S_A(negative_angle), S_A_negative_angle)
