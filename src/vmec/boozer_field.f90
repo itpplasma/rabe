@@ -13,8 +13,11 @@ module boozer_field
     public :: boozer_field_t
 
     type, extends(field_t) :: boozer_field_t
-        !> \brief Magnetic field loaded from a VMEC .nc file and converted to Boozer coordinates.
-        !> Call boozer_field_init to load, then fix_to_surface before any evaluation.
+        !>
+        !! \brief Magnetic field loaded from a VMEC .nc file and converted to Boozer coordinates.
+        !!
+        !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
+        !<
         logical :: initialized = .false.
         logical :: fixed_to_surface = .false.
         real(dp) :: fixed_stor
@@ -36,9 +39,13 @@ module boozer_field
 
 contains
 
-    !> \brief Load Boozer-coordinate splines from a VMEC netCDF file.
-    !> Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
-    !> \param vmec_file path to VMEC .nc file
+    !>
+    !! \brief Load Boozer-coordinate splines from a VMEC netCDF file.
+    !!
+    !! \details Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
+    !!
+    !! \param[in] vmec_file path to VMEC .nc file
+    !<
     subroutine boozer_field_init(self, vmec_file, &
                                  radial_spline_order, &
                                  angular_spline_order, &
@@ -138,8 +145,10 @@ contains
 
     end subroutine evaluate
 
-    !> \brief Return the rotational transform iota at flux surface stor.
-    !> \param stor normalized toroidal flux s, range [0, 1]
+    !>
+    !! \brief Return the rotational transform iota at flux surface stor.
+    !! \param[in] stor normalized toroidal flux s, range [0, 1]
+    !<
     subroutine get_iota(self, stor, iota)
         use new_vmec_stuff_mod, only: nper
 
@@ -171,9 +180,11 @@ contains
         iota = -dA_phi_dr/dA_theta_dr
     end subroutine get_iota
 
-    !> \brief Return covariant B_theta and B_phi for the surface fixed by fix_to_surface.
-    !> These are flux-surface constants in Boozer coordinates, angle-independent, SI: T*m.
-    !> Requires fix_to_surface to have been called first.
+    !>
+    !! \brief Return covariant B_theta and B_phi for the surface fixed by fix_to_surface.
+    !! These are flux-surface constants in Boozer coordinates, angle-independent, SI: T*m.
+    !! Requires fix_to_surface to have been called first.
+    !<
     subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
         class(boozer_field_t), intent(in) :: self
 
@@ -206,9 +217,11 @@ contains
         B_theta_covariant = B_theta_covariant*cm2m*gauss2tesla
     end subroutine get_covariant_components
 
-    !> \brief Fix the field to the flux surface at normalized toroidal flux stor.
-    !> Must be called before any compute_* call or get_covariant_components.
-    !> \param stor normalized toroidal flux s, range [0, 1]
+    !>
+    !! \brief Fix the field to the flux surface at normalized toroidal flux stor.
+    !! Must be called before any compute_* call or get_covariant_components.
+    !! \param stor[in] normalized toroidal flux s, range [0, 1]
+    !<
     subroutine fix_to_surface(self, stor)
         class(boozer_field_t), intent(inout) :: self
         real(dp), intent(in) :: stor
