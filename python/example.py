@@ -29,13 +29,6 @@ for s in S_TOR:
 
     flock = FlockOfFieldlines(MAX_N_FIELDLINES, iota, field, M_POL, N_TOR, nfp)
 
-    # A priori, bootstrap coefficients are given for radial gradients in
-    # terms of the poloidal Boozer angle component of the vector potential.
-    # Converting the coefficients e.g. for gradients of the effective radius r,
-    # dV/dr = S
-    # where V is the enclosed volume and S the surface area of the flux surface,
-    # the scaling factor dr/dA_theta can be calculated from the field line flock.
-    # r is the default radius choice for rabe's output. Users may choose their own.
     dr_datheta = flock.calc_gradient_scaling_factor_r_eff(
         field.psi_tor_edge, SIGN_SQRTG
     )
