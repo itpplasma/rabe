@@ -1,5 +1,5 @@
 module bc_file
-    use constants, only: dp
+    use constants, only: dp, pi
     use boozer_field, only: boozer_field_t
     implicit none
 
@@ -65,8 +65,11 @@ contains
         write (iunit, '(A)') 'CC shot:    0'
         write (iunit, '(A)') ' m0b   n0b  nsurf  nper    flux [Tm^2]'// &
             '        a [m]          R [m]'
-        write (iunit, '(2I6, 2I6, 3ES16.6)') &
-            m_max, n_max, n_surf, int(field%nfp), field%psi_tor_edge, 0.0_dp, field%R
+        ! The flux column carries the full toroidal flux (NEO-2 convention),
+        ! 2 pi times rabe's psi_tor_edge.
+        write (iunit, '(2I6, 2I6, 3ES16.8)') &
+            m_max, n_max, n_surf, int(field%nfp), &
+            2.0_dp*pi*field%psi_tor_edge, 0.0_dp, field%R
 
         ! --- Per-surface blocks ---
         do is = 1, n_surf
