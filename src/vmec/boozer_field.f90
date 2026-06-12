@@ -10,15 +10,11 @@ module boozer_field
     real(dp), parameter :: cm2m = 1e-2_dp
     real(dp), parameter :: gauss2tesla = 1e-4_dp
 
+    logical, save :: initialized = .false.
+
     public :: boozer_field_t
 
     type, extends(field_t) :: boozer_field_t
-        !>
-        !! \brief Magnetic field loaded from a VMEC .nc file and converted to Boozer coordinates.
-        !!
-        !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
-        !<
-        logical :: initialized = .false.
         logical :: fixed_to_surface = .false.
         real(dp) :: fixed_stor
         real(dp) :: nfp
@@ -42,7 +38,10 @@ contains
     !>
     !! \brief Load Boozer-coordinate splines from a VMEC netCDF file.
     !!
-    !! \details Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
+    !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
+    !! Only one Boozer field can be active at a time (singleton — the splines are
+    !! stored in module-global state). Calling boozer_field_init a second time aborts.
+    !! Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
     !!
     !! \param[in] vmec_file path to VMEC .nc file
     !<
@@ -59,6 +58,10 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
+        if (initialized) error stop &
+            "boozer_field_init: a Boozer field is already loaded; "// &
+            "only one can be active at a time (singleton)."
+
         use_B_r = .true.
         call get_boozer_coordinates(vmec_file, &
                                     radial_spline_order, &
@@ -67,7 +70,7 @@ contains
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
-        self%initialized = .true.
+        initialized = .true.
     end subroutine boozer_field_init
 
     subroutine evaluate(self, x, bmod, sqrtg, bder, &
@@ -91,8 +94,9 @@ contains
 
         integer, parameter :: mode_secders = 0
 
-        if (.not. self%initialized) then
-            error stop "boozer_field_evaluate: field not initialized"
+        if (.not. initialized) then
+            error stop "boozer_field_evaluate: field not initialized. "// &
+                "Call boozer_field_init first!"
         end if
 
         r = x(1)
