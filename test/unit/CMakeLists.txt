@@ -83,3 +83,8 @@ add_executable(plot_fit_functions.x plot_fit_functions.f90)
 target_link_libraries(plot_fit_functions.x offset_lib utils_lib myplot_lib)
 add_test(PlotFitFunctions plot_fit_functions.x)
 set_tests_properties(PlotFitFunctions PROPERTIES LABELS "plot")
+
+add_executable(test_bc_field_nabla_s.x test_bc_field_nabla_s.f90)
+target_link_libraries(test_bc_field_nabla_s.x field_lib utils_lib)
+add_test(TestBcFieldNablaS test_bc_field_nabla_s.x)
+set_tests_properties(TestBcFieldNablaS PROPERTIES LABELS "quick")

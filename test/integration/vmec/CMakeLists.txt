@@ -24,3 +24,8 @@ add_executable(test_stellarator_symmetry_qa.x test_stellarator_symmetry_qa.f90)
 target_link_libraries(test_stellarator_symmetry_qa.x vmec_lib utils_lib)
 add_test(TestStellaratorSymmetryQA test_stellarator_symmetry_qa.x)
 set_tests_properties(TestStellaratorSymmetryQA PROPERTIES LABELS "quick")
+
+add_executable(test_bc_roundtrip.x test_bc_roundtrip.f90)
+target_link_libraries(test_bc_roundtrip.x vmec_lib field_lib utils_lib helpers_lib)
+add_test(TestBcRoundtrip test_bc_roundtrip.x)
+set_tests_properties(TestBcRoundtrip PROPERTIES LABELS "quick")
