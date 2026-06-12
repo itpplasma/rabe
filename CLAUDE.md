@@ -40,6 +40,9 @@ rabe_lib (main static library)
 │   field_base.f90    - Abstract type field_t (deferred: compute_B_mod,
 │                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx,
 │                       get_covariant_components)
+│   fourier_field.f90 - Concrete field_t from flat Fourier mode lists
+│   bc_field.f90      - Concrete field_t reading Boozer .bc files directly
+│                       (type bc_field_t)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
 │   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion
@@ -63,7 +66,7 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 ### Application flow (`app/main.f90`)
 
 1. Read namelist configuration from `rabe.in`
-2. Initialize `boozer_field_t` from VMEC `.nc` file
+2. Initialize the field from `field_file` by extension: `.nc` loads a VMEC file via `boozer_field_t`, `.bc` loads a Boozer file via `bc_field_t`
 3. Per flux surface: fix field, compute field lines, deviation factors, surface averages, optionally Shaing-Callen trapped fraction; if `unsafe_mode = .true.` and a sanity check fails, NaN-fill that surface's outputs instead of halting
 4. Write results to `rabe.nc` (NetCDF)
 
@@ -71,6 +74,7 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 
 - `field_t` - Abstract base for magnetic field (in `field_base`)
 - `boozer_field_t` - Field from VMEC `.nc` files (in `boozer_field`), init with `boozer_field_init(vmec_file, ...)`
+- `bc_field_t` - Field from Boozer `.bc` files (in `bc_field`), init with `bc_field_init(bc_filename, ...)`; namelist option `neo2_nabla_s` selects the legacy NEO-2 v-sign convention for `compute_nabla_s`
 - `fieldline_t` - Field line representation (in `fieldline_mod`)
 - `surface_average_t` - Surface-averaged quantities (in `surface_average_mod`)
 - `netcdf_t` - NetCDF output handle (in `netcdf_mod`)
@@ -95,7 +99,7 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 ## Input/Output
 
 - **Input**: Namelist file `rabe.in` (namelist `rabe_config`)
-- **Field data**: VMEC `.nc` files
+- **Field data**: VMEC `.nc` files or Boozer `.bc` files (stellarator-symmetric)
 - **Output**: `rabe.nc` (NetCDF)
 
 ## Code Style
