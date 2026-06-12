@@ -15,6 +15,27 @@ module make_fieldline
 
 contains
 
+    !>
+    !! \brief Build a flock of field lines spanning the region between neighbouring
+    !! maxima contours centered around the minima contours through the field origin.
+    !!
+    !! \details The field lines are placed equidistant in the label `xi`, spaced so that the
+    !! discrete set still displays stellarator symmetry. To achieve this symmetry
+    !! respecting spacing with < `max_n_fieldlines`, `iota` needs to be approximated.
+    !! Its approximation is then used as rotational transform of the field lines.
+    !! `M_pol` and `N_tor` are integer-valued reals giving the dominant helicity.
+    !! `N_tor` must equal `nfp` when nonzero; use `N_tor=0`, `M_pol=1` for QA.
+    !! If the violation is too strong, maxima of contours of the omnigenous field
+    !! are not merely deformed, but also split. Results should be treated with caution.
+    !!
+    !! \param[in] max_n_fieldlines upper bound on number of field lines
+    !! \param[in] iota rotational transform of field lines
+    !! \param[in] field magnetic field representation in Boozer coordinates
+    !! \param[in] M_pol poloidal helicity mode number; may be negative
+    !! \param[in] N_tor toroidal helicity mode number; must equal nfp when nonzero
+    !! \param[in] nfp number of field periods; must be positive integer
+    !! \param[out] split_maxima 1 if a split of maxima contours was detected
+    !<
     subroutine make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
                                         field, M_pol, N_tor, nfp, &
                                         split_maxima)
@@ -23,7 +44,9 @@ contains
         integer, intent(in) :: max_n_fieldlines
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp), intent(in) :: M_pol
+        real(dp), intent(in) :: N_tor
+        real(dp), intent(in) :: nfp
         integer, intent(out), optional :: split_maxima
 
         real(dp), allocatable :: xi_0(:)

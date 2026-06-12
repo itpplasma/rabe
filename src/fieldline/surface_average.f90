@@ -3,6 +3,9 @@ module surface_average_mod
     implicit none
 
     type :: surface_average_t
+        !>
+        !! \brief flux surface averaged quantities computed by calc_surface_averages.
+        !<
         real(dp) :: normalization
         real(dp) :: B_squared
         real(dp) :: lambda_b
@@ -11,6 +14,11 @@ module surface_average_mod
 
 contains
 
+    !>
+    !! \brief Compute bounce-averaged surface quantities from a flock of field lines.
+    !!
+    !! \details Requires at least two field lines in flock.
+    !<
     subroutine calc_surface_averages(flock, surface_average)
         use fieldline_mod, only: flock_of_fieldlines_t
         use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
