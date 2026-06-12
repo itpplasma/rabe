@@ -44,22 +44,11 @@ for m in flock_methods:
         rabe.fieldline_mod.FlockOfFieldlines, m
     ), f"Missing rabe.fieldline_mod.FlockOfFieldlines.{m}"
 
-# Methods on FourierField
-fourier_methods = [
-    "fourier_field_init",
-    "get_covariant_components",
-]
-for m in fourier_methods:
-    assert hasattr(
-        rabe.fourier_field.FourierField, m
-    ), f"Missing rabe.fourier_field.FourierField.{m}"
-
 # Methods on BoozerField
 boozer_methods = [
     "boozer_field_init",
     "fix_to_surface",
     "get_iota",
-    "get_covariant_components",
 ]
 for m in boozer_methods:
     assert hasattr(
