@@ -29,7 +29,7 @@ add_custom_command(
     OUTPUT
         ${F90WRAP_GENERATED_F90}
         ${CMAKE_CURRENT_BINARY_DIR}/_rabe.c
-    COMMAND ${F90WRAP_EXECUTABLE} --direct-c -P -M -C make_flock_of_fieldlines -m rabe
+    COMMAND ${F90WRAP_EXECUTABLE} --direct-c -P -M -C make_flock_of_fieldlines fourier_field_init -m rabe
             --f90-mod-name rabe._rabe
             -k ${CMAKE_CURRENT_SOURCE_DIR}/kind_map.py
             --joint-modules ${CMAKE_CURRENT_SOURCE_DIR}/joint_modules.py
@@ -37,6 +37,7 @@ add_custom_command(
             ${F90WRAP_SOURCES}
             --only
                 fourier_field_t
+                fourier_field_init
                 boozer_field_t
                 boozer_field_init
                 fix_to_surface

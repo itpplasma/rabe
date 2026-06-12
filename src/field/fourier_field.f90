@@ -18,12 +18,12 @@ module fourier_field
         !! splined on an `n_grid` x `n_grid` equidistant grid of the angles for
         !! later evaluation.
         !<
+        logical :: initialized = .false.
         type(SplineData2D) :: spl
         real(dp) :: nfp
         real(dp) :: B_theta_covariant, B_phi_covariant
         integer :: n_grid, mn_max
     contains
-        procedure :: fourier_field_init
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
@@ -51,11 +51,11 @@ contains
     !! \param[in] nfp number of field periods
     !! \param[in] n_grid spline grid points per angle direction
     !<
-    subroutine fourier_field_init(self, m, n, B_mn, &
+    subroutine fourier_field_init(field, m, n, B_mn, &
                                   B_theta_covariant, B_phi_covariant, &
                                   nfp, n_grid)
         use utils, only: linspace
-        class(fourier_field_t), intent(inout) :: self
+        type(fourier_field_t), intent(inout) :: field
         integer, intent(in) :: m(:), n(:)
         real(dp), intent(in) :: B_mn(:)
         real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
@@ -67,13 +67,13 @@ contains
         integer :: n_theta, n_phi, i_theta, i_phi
         real(dp), allocatable :: theta(:), phi(:), grid_B(:, :)
 
-        self%B_theta_covariant = B_theta_covariant
-        self%B_phi_covariant = B_phi_covariant
+        field%B_theta_covariant = B_theta_covariant
+        field%B_phi_covariant = B_phi_covariant
 
         if (.not. present(nfp)) then
-            self%nfp = 1.0_dp
+            field%nfp = 1.0_dp
         elseif (nfp > 0) then
-            self%nfp = real(nfp, dp)
+            field%nfp = real(nfp, dp)
         else
             print *, "Error: nfp must be positive!"
             error stop
@@ -89,29 +89,31 @@ contains
             print *, "Error: n_grid must be at least 2!"
             error stop
         end if
-        self%n_grid = n_theta
-        self%mn_max = max(maxval(abs(m)), maxval(abs(n)))
+        field%n_grid = n_theta
+        field%mn_max = max(maxval(abs(m)), maxval(abs(n)))
 
         allocate (theta(n_theta), phi(n_phi))
         allocate (grid_B(n_theta, n_phi))
 
         call linspace(0.0_dp, 2.0_dp*pi, n_theta, theta)
-        call linspace(0.0_dp, 2.0_dp*pi/self%nfp, n_phi, phi)
+        call linspace(0.0_dp, 2.0_dp*pi/field%nfp, n_phi, phi)
 
         do i_phi = 1, n_phi
             do i_theta = 1, n_theta
                 grid_B(i_theta, i_phi) = sum(B_mn*cos(real(m, dp)*theta(i_theta) &
-                                                     - real(n, dp)*self%nfp*phi(i_phi)))
+                                                    - real(n, dp)*field%nfp*phi(i_phi)))
             end do
         end do
 
         call construct_splines_2d( &
             x_min=[0.0_dp, 0.0_dp], &
-            x_max=[2.0_dp*pi, 2.0_dp*pi/self%nfp], &
+            x_max=[2.0_dp*pi, 2.0_dp*pi/field%nfp], &
             y=grid_B, &
             order=[5, 5], &
             periodic=[.true., .true.], &
-            spl=self%spl)
+            spl=field%spl)
+
+        field%initialized = .true.
 
     end subroutine fourier_field_init
 
@@ -120,6 +122,8 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: B_mod, sqrtg, dB_dx(3)
 
+        if (.not. self%initialized) &
+            error stop "compute_B_sqrtg_dB_dx: fourier_field_t not initialized"
         print *, "fourier_field_t does not provide sqrtg. "// &
             "Use compute_B_mod or compute_B_and_dB_dx instead!"
         error stop
@@ -133,6 +137,8 @@ contains
 
         real(dp) :: x(2), dy(2)
 
+        if (.not. self%initialized) &
+            error stop "compute_B_and_dB_dx: fourier_field_t not initialized"
         x = [theta, phi]
         call evaluate_splines_2d_der(self%spl, x, B_mod, dy)
         dB_dx(1) = 0.0_dp
@@ -164,6 +170,8 @@ contains
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: nabla_s
 
+        if (.not. self%initialized) &
+            error stop "compute_nabla_s: fourier_field_t not initialized"
         nabla_s = 1.0_dp
 
     end subroutine compute_nabla_s
@@ -178,6 +186,8 @@ contains
         class(fourier_field_t), intent(in) :: self
         real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
 
+        if (.not. self%initialized) &
+            error stop "get_covariant_components: fourier_field_t not initialized"
         B_theta_covariant = self%B_theta_covariant
         B_phi_covariant = self%B_phi_covariant
 

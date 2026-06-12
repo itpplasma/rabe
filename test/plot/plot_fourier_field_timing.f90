@@ -3,7 +3,7 @@ program plot_fourier_field_timing
     use constants, only: dp, pi
     use boozer_field, only: boozer_field_t
     use horner_fourier_field, only: horner_fourier_field_t
-    use fourier_field, only: fourier_field_t
+    use fourier_field, only: fourier_field_t, fourier_field_init
 
     implicit none
 
@@ -72,8 +72,8 @@ program plot_fourier_field_timing
 
     call hfield%horner_fourier_field_init(m, n, B_modes)
 
-    call sfield%fourier_field_init(m, n, B_modes, &
-                                   B_vartheta_covariant, B_varphi_covariant)
+    call fourier_field_init(sfield, m, n, B_modes, &
+                            B_vartheta_covariant, B_varphi_covariant)
 
     do k = 1, n_trials
         eval = eval_counts(k)

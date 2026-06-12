@@ -2,7 +2,7 @@ program plot_fourier_field_accuracy
     use myplot_module, only: myplot
     use constants, only: dp, pi
     use horner_fourier_field, only: horner_fourier_field_t
-    use fourier_field, only: fourier_field_t
+    use fourier_field, only: fourier_field_t, fourier_field_init
 
     implicit none
 
@@ -65,9 +65,9 @@ program plot_fourier_field_accuracy
     do k = 1, n_sweep
         n_grids_dp(k) = real(n_grids(k), dp)
 
-        call sfield%fourier_field_init(m, n, B_modes, &
-                                       B_vartheta_covariant, B_varphi_covariant, &
-                                       nfp=nfp, n_grid=n_grids(k))
+        call fourier_field_init(sfield, m, n, B_modes, &
+                                B_vartheta_covariant, B_varphi_covariant, &
+                                nfp=nfp, n_grid=n_grids(k))
 
         max_rel_err_B(k) = 0.0_dp
         max_rel_err_dB(k) = 0.0_dp
