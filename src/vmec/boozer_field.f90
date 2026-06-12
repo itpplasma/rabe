@@ -15,13 +15,6 @@ module boozer_field
     public :: boozer_field_t
 
     type, extends(field_t) :: boozer_field_t
-        !>
-        !! \brief Magnetic field loaded from a VMEC .nc file and converted to Boozer coordinates.
-        !!
-        !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
-        !! Only one Boozer field can be active at a time (singleton — the VMEC splines are
-        !! stored in module-global state). Calling boozer_field_init a second time aborts.
-        !<
         logical :: fixed_to_surface = .false.
         real(dp) :: fixed_stor
         real(dp) :: nfp
@@ -45,7 +38,10 @@ contains
     !>
     !! \brief Load Boozer-coordinate splines from a VMEC netCDF file.
     !!
-    !! \details Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
+    !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
+    !! Only one Boozer field can be active at a time (singleton — the splines are
+    !! stored in module-global state). Calling boozer_field_init a second time aborts.
+    !! Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
     !!
     !! \param[in] vmec_file path to VMEC .nc file
     !<

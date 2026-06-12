@@ -14,9 +14,7 @@ module fourier_field
         !! \details The field strength is given by
         !! `B(theta, phi) = sum_k B_mn(k) * cos(m(k)*theta - nfp*n(k)*phi)`
         !! where `theta` and `phi` are Boozer angles and `nfp` the number of field
-        !! periods. The Fourier series is computed during initialisation and then
-        !! splined on an `n_grid` x `n_grid` equidistant grid of the angles for
-        !! later evaluation.
+        !! periods.
         !<
         logical :: initialized = .false.
         type(SplineData2D) :: spl
@@ -35,13 +33,16 @@ module fourier_field
 contains
 
     !>
-    !! \brief Initialise the field from flat Fourier mode lists and build the 2D spline.
+    !! \brief Initialise magnetic field from flat Fourier mode lists and
+    !! evaluated via 2D spline interpolation.
     !!
-    !! \details Evaluates
+    !! \details The field strength is given by
     !! `B(theta, phi) = sum_k B_mn(k) * cos(m(k)*theta - nfp*n(k)*phi)`
-    !! on an `n_grid` x `n_grid` equidistant grid of the angles, then fits a 2D
-    !! periodic quintic spline. Note again that `n` is normalized to the number of
-    !! field periods `nfp`.
+    !! where `theta` and `phi` are Boozer angles and `nfp` the number of field
+    !! periods. During initialisation the series is evaluated on a
+    !! `n_grid` x `n_grid` equidistant grid of the angles, then fits a 2D
+    !! periodic quintic spline. Note again that `n` is considered normalized to
+    !! the number of field periods `nfp`.
     !!
     !! \param[in] m poloidal mode numbers (flat array, length mn_max)
     !! \param[in] n toroidal mode numbers normalised to nfp (flat array, length mn_max)
