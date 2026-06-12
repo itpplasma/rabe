@@ -90,8 +90,4 @@ set_target_properties(_rabe PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 install(TARGETS _rabe DESTINATION "${SKBUILD_PROJECT_NAME}")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rabe/
         DESTINATION "${SKBUILD_PROJECT_NAME}"
-        FILES_MATCHING PATTERN "*.py"
-        PATTERN "__init__.py" EXCLUDE)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/rabe_init.py
-        DESTINATION "${SKBUILD_PROJECT_NAME}"
-        RENAME "__init__.py")
+        FILES_MATCHING PATTERN "*.py")

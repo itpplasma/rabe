@@ -130,7 +130,7 @@ delta_B_1 = B_0 * EPS_2 * 0.01
 B_mn[1] += delta_B_1
 
 field = FourierField()
-field.fourier_field_init(m, n, B_mn, B_THETA_COV, B_PHI_COV, nfp=NFP)
+field.fourier_field_init(m, n, B_mn, B_THETA_COV, B_PHI_COV, nfp=NFP, n_grid=200)
 
 # M_POL is the mode of the maximal B_mn mode where n=NFP (1 if normalized to NFP)
 M_POL = m[np.argmax(np.abs(B_mn * (n == 1)))]
