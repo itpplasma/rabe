@@ -16,7 +16,8 @@ contains
 
     !>
     !! \brief Compute bounce-averaged surface quantities from a flock of field lines.
-    !! Requires at least two field lines in flock.
+    !!
+    !! \details Requires at least two field lines in flock.
     !<
     subroutine calc_surface_averages(flock, surface_average)
         use fieldline_mod, only: flock_of_fieldlines_t

@@ -182,7 +182,9 @@ contains
 
     !>
     !! \brief Return covariant B_theta and B_phi for the surface fixed by fix_to_surface.
-    !! These are flux-surface constants in Boozer coordinates, angle-independent, SI: T*m.
+    !!
+    !! \details These are flux-surface constants in Boozer coordinates, angle-independent, SI: T*m.
+    !!
     !! Requires fix_to_surface to have been called first.
     !<
     subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
@@ -219,7 +221,9 @@ contains
 
     !>
     !! \brief Fix the field to the flux surface at normalized toroidal flux stor.
-    !! Must be called before any compute_* call or get_covariant_components.
+    !!
+    !! \details Must be called before any compute_* call or get_covariant_components.
+    !!
     !! \param stor[in] normalized toroidal flux s, range [0, 1]
     !<
     subroutine fix_to_surface(self, stor)
