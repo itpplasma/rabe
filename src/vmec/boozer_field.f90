@@ -62,9 +62,9 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        if (initialized) &
-            error stop "boozer_field_init: a Boozer field is already loaded. &
-                       &Only one can be active at a time (singleton)."
+        if (initialized) error stop &
+            "boozer_field_init: a Boozer field is already loaded; "// &
+            "only one can be active at a time (singleton)."
 
         use_B_r = .true.
         call get_boozer_coordinates(vmec_file, &
