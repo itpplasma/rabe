@@ -15,6 +15,8 @@ module read_file
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
     logical, public, protected :: unsafe_mode
+    !> Legacy NEO-2 v-sign convention for nabla_s of .bc field files.
+    logical, public, protected :: neo2_nabla_s
 
     real(dp), public, protected :: s_tor_min
     real(dp), public, protected :: s_tor_max
@@ -32,7 +34,8 @@ module read_file
         max_n_fieldlines, &
         should_calc_shaing_callen, &
         n_eta, &
-        unsafe_mode
+        unsafe_mode, &
+        neo2_nabla_s
 
 contains
 
@@ -65,6 +68,7 @@ contains
 
         ! Default values
         unsafe_mode = .false.
+        neo2_nabla_s = .false.
         should_calc_shaing_callen = .false.
         n_eta = 100
         s_tor_min = nan_value

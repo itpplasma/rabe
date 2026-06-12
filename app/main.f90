@@ -11,8 +11,11 @@ program main
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta, &
-                         unsafe_mode
+                         unsafe_mode, &
+                         neo2_nabla_s
+    use field_base, only: field_t
     use boozer_field, only: boozer_field_t
+    use bc_field, only: bc_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use coefficients, only: calc_nu_star_crit, &
@@ -30,7 +33,7 @@ program main
     character(len=*), parameter :: output_file = "rabe.nc"
     character(len=*), parameter :: dat_file = "rabe.dat"
 
-    type(boozer_field_t) :: field
+    class(field_t), allocatable :: field
 
     integer :: n_stor
     integer :: this
@@ -39,6 +42,7 @@ program main
     real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota
     real(dp) :: nfp
+    real(dp) :: psi_tor_edge ![Tm^2]
 
     type(flock_of_fieldlines_t) :: flock
     logical :: too_strong_violation
@@ -73,20 +77,18 @@ program main
         allocate (remainder(n_stor))
     end if
 
-    call field%boozer_field_init(field_file, grid_refinement=6)
+    call init_field(field_file, field, psi_tor_edge, R, nfp)
     do this = 1, n_stor
         call reset_failed_check_counter()
-        call field%fix_to_surface(s_tor(this))
-        call field%get_iota(s_tor(this), iota)
-        nfp = field%nfp
+        call fix_field_to_surface(field, s_tor(this))
+        call get_field_iota(field, s_tor(this), iota)
 
         call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
                                       field, M_pol, N_tor, nfp, &
                                       split_maxima(this))
 
-        dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
+        dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, psi_tor_edge, &
                                                         nint(sign_sqrtg))
-        R = field%R
         call calc_offset_coefficients(flock, R, dr_dAtheta, &
                                       Lambda_A(this), Lambda_B(this))
         nu_star_crit(this) = calc_nu_star_crit(flock, R)
@@ -183,16 +185,16 @@ program main
     call nc_output%write_real_1d("Lambda_S", Lambda_S)
     call nc_output%write_int_1d("split_maxima", split_maxima)
     call nc_output%write_real_1d("s_tor", s_tor)
-    call nc_output%write_real("R", field%R)
+    call nc_output%write_real("R", R)
     call nc_output%close()
 
     if (should_calc_shaing_callen) then
-        call write_dat_output(dat_file, git_hash, field%R, n_stor, &
+        call write_dat_output(dat_file, git_hash, R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
                               nu_star_crit, Lambda_S, split_maxima, &
                               lambda_LC=lambda_LC, remainder=remainder)
     else
-        call write_dat_output(dat_file, git_hash, field%R, n_stor, &
+        call write_dat_output(dat_file, git_hash, R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
                               nu_star_crit, Lambda_S, split_maxima)
     end if
@@ -205,6 +207,73 @@ program main
     if (allocated(remainder)) deallocate (remainder)
 
 contains
+
+    !>
+    !! \brief Allocate and initialize the field from the input file extension:
+    !! .nc loads a VMEC file via boozer_field_t, .bc loads a Boozer file
+    !! via bc_field_t.
+    !<
+    subroutine init_field(filename, field, psi_tor_edge, R_major, nfp)
+        character(len=*), intent(in) :: filename
+        class(field_t), allocatable, intent(out) :: field
+        real(dp), intent(out) :: psi_tor_edge, R_major, nfp
+
+        type(boozer_field_t), allocatable :: field_from_nc
+        type(bc_field_t), allocatable :: field_from_bc
+        integer :: l
+
+        l = len_trim(filename)
+        if (l < 4) error stop "init_field: cannot infer field type from "// &
+            "field_file extension (expected .nc or .bc)"
+
+        if (filename(l - 2:l) == ".nc") then
+            allocate (field_from_nc)
+            call field_from_nc%boozer_field_init(filename, grid_refinement=6)
+            psi_tor_edge = field_from_nc%psi_tor_edge
+            R_major = field_from_nc%R
+            nfp = field_from_nc%nfp
+            call move_alloc(field_from_nc, field)
+        else if (filename(l - 2:l) == ".bc") then
+            allocate (field_from_bc)
+            call field_from_bc%bc_field_init(filename, neo2_nabla_s=neo2_nabla_s)
+            psi_tor_edge = field_from_bc%psi_tor_edge
+            R_major = field_from_bc%R
+            nfp = field_from_bc%nfp
+            call move_alloc(field_from_bc, field)
+        else
+            error stop "init_field: unsupported field_file extension "// &
+                "(expected .nc or .bc)"
+        end if
+    end subroutine init_field
+
+    subroutine fix_field_to_surface(field, stor)
+        class(field_t), intent(inout) :: field
+        real(dp), intent(in) :: stor
+
+        select type (f => field)
+        type is (boozer_field_t)
+            call f%fix_to_surface(stor)
+        type is (bc_field_t)
+            call f%fix_to_surface(stor)
+        class default
+            error stop "fix_field_to_surface: unsupported field type"
+        end select
+    end subroutine fix_field_to_surface
+
+    subroutine get_field_iota(field, stor, iota)
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: stor
+        real(dp), intent(out) :: iota
+
+        select type (f => field)
+        type is (boozer_field_t)
+            call f%get_iota(stor, iota)
+        type is (bc_field_t)
+            call f%get_iota(stor, iota)
+        class default
+            error stop "get_field_iota: unsupported field type"
+        end select
+    end subroutine get_field_iota
 
     subroutine write_dat_output(filename, git_hash, R, n, s_tor, &
                                 Lambda_A, Lambda_B, nu_star_crit, &
