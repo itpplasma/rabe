@@ -38,6 +38,11 @@ target_link_libraries(test_fit_functions.x offset_lib utils_lib)
 add_test(TestFitFunctions test_fit_functions.x)
 set_tests_properties(TestFitFunctions PROPERTIES LABELS "quick")
 
+add_executable(test_offset_factors.x test_offset_factors.f90)
+target_link_libraries(test_offset_factors.x offset_lib utils_lib)
+add_test(TestOffsetFactors test_offset_factors.x)
+set_tests_properties(TestOffsetFactors PROPERTIES LABELS "quick")
+
 add_executable(test_netcdf.x test_netcdf.f90)
 target_include_directories(test_netcdf.x PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
 target_link_libraries(test_netcdf.x utils_lib netcdf_lib)

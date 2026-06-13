@@ -11,7 +11,9 @@ program main
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta, &
-                         unsafe_mode
+                         unsafe_mode, &
+                         offset_factor_exact
+    use offset_factors, only: set_offset_factor_mode
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -60,6 +62,7 @@ program main
 
     call read_namelist(input_file)
     call set_unsafe_mode(unsafe_mode)
+    call set_offset_factor_mode(offset_factor_exact)
     nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
     n_stor = size(s_tor)

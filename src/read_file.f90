@@ -15,6 +15,7 @@ module read_file
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
     logical, public, protected :: unsafe_mode
+    logical, public, protected :: offset_factor_exact
 
     real(dp), public, protected :: s_tor_min
     real(dp), public, protected :: s_tor_max
@@ -32,7 +33,8 @@ module read_file
         max_n_fieldlines, &
         should_calc_shaing_callen, &
         n_eta, &
-        unsafe_mode
+        unsafe_mode, &
+        offset_factor_exact
 
 contains
 
@@ -65,6 +67,7 @@ contains
 
         ! Default values
         unsafe_mode = .false.
+        offset_factor_exact = .false.
         should_calc_shaing_callen = .false.
         n_eta = 100
         s_tor_min = nan_value

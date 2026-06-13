@@ -29,6 +29,7 @@ program test_integration_along_fieldline
 
     call field%mock_field_init(M_pol, N_tor, B_0, B_amplitude)
 
+    fieldline(1)%xi_0 = 0.0_dp
     fieldline(1)%theta_0 = theta_0
     fieldline(1)%iota = iota
 
