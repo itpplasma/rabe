@@ -10,7 +10,7 @@ else()
     if(DEFINED ENV{LIBNEO_REF} AND NOT "$ENV{LIBNEO_REF}" STREQUAL "")
         set(_libneo_ref "$ENV{LIBNEO_REF}")
     else()
-        set(_libneo_ref "752aae9c8e31136121bbd77ce439f51e47a754be")
+        set(_libneo_ref "622980918aef250693c8cb64c5115d49f8677033")
     endif()
     FetchContent_Declare(
         libneo
