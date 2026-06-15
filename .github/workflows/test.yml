@@ -7,7 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       libneo_ref:
+        description: libneo branch, tag or commit to build against
         default: ''
+      full:
+        description: also run the slow suite (golden record)
+        type: boolean
+        default: false
 
 env:
   LIBNEO_REF: ${{ inputs.libneo_ref }}
@@ -27,5 +32,25 @@ jobs:
     - name: Build project
       run: make
 
-    - name: Run tests
+    # Fast tier (default): the quick ctest label only (sub-minute). The libneo
+    # gate dispatches without `full`, so a candidate libneo is fast-gated here.
+    - name: Run fast tests
+      if: github.event_name == 'workflow_dispatch' && inputs.full != true
+      run: make test
+
+    # On push (rabe's own CI) keep the quick + slow ctest labels.
+    - name: Run quick and slow tests
+      if: github.event_name != 'workflow_dispatch'
       run: make test_all
+
+    # Full tier: quick + slow ctest labels and the golden record. Triggered when
+    # the libneo PR is labeled full-ci (gate dispatches `-f full=true`).
+    - name: Install full-tier Python dependencies
+      if: github.event_name == 'workflow_dispatch' && inputs.full == true
+      run: pip install xarray numpy netCDF4
+
+    - name: Run full tests
+      if: github.event_name == 'workflow_dispatch' && inputs.full == true
+      run: |
+        make test_all
+        make golden
