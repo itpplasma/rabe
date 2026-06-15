@@ -14,9 +14,6 @@ on:
         type: boolean
         default: false
 
-env:
-  LIBNEO_REF: ${{ inputs.libneo_ref }}
-
 jobs:
   test:
     runs-on: ubuntu-22.04
@@ -30,7 +27,12 @@ jobs:
         sudo apt-get install -y gfortran cmake make libnetcdf-dev libnetcdff-dev pkg-config
 
     - name: Build project
-      run: make
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          make
+        fi
 
     # Fast tier (default): the quick ctest label only (sub-minute). The libneo
     # gate dispatches without `full`, so a candidate libneo is fast-gated here.

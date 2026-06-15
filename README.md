@@ -74,13 +74,10 @@ run
 
 ```bash
 make clean
-unset LIBNEO_PATH
 make CONFIG=Release
 ```
 
 This builds the executable `rabe.x` in Release mode and writes it to `build`.
-The second line is only needed if you have an enviroment variable `LIBNEO_PATH` set
-(see build instructions below).
 
 **Step 2 — create a working directory and link the inputs:**
 
@@ -246,13 +243,6 @@ effect of bootstrap resonances and is not yet fully validated.
 
 ## Build and Tests
 
-The build uses the enviroment variable `LIBNEO_PATH` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
-not a developer, make sure to unset it before build e.g. with
-
-```bash
-unset LIBNEO_PATH
-```
-
 We use CMake for build configuration. If it is available on your machine, we
 recommend [Ninja](https://ninja-build.org) as the generator
 
@@ -282,6 +272,27 @@ make test_all
 
 The tests as well as their description, can be found in `test`.
 
+### Overriding the libneo dependency
+
+By default the build fetches a pinned libneo commit. Two explicit options change this:
+
+- `-DLIBNEO_REF=<branch|tag|sha>` selects a different git ref:
+
+  ```bash
+  make LIBNEO_REF=main
+  # or directly: cmake -S . -B build -DLIBNEO_REF=main
+  ```
+
+- `-DLIBNEO_PATH=<dir>` uses a local checkout instead of fetching:
+
+  ```bash
+  make LIBNEO_PATH=/path/to/libneo
+  # or directly: cmake -S . -B build -DLIBNEO_PATH=/path/to/libneo
+  ```
+
+Shell environment variables with those names are intentionally ignored; pass the
+value on the command line only.
+
 ## Third Party
 
 System libraries required at build time:
@@ -290,7 +301,7 @@ System libraries required at build time:
 
 Fetched automatically during build:
 
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO_PATH` is present, that one is used instead (MIT)
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O; pass `-DLIBNEO_PATH=<dir>` to use a local checkout instead (MIT)
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 

@@ -1,16 +1,23 @@
 include(FetchContent)
 
-if(DEFINED ENV{LIBNEO_PATH} AND EXISTS "$ENV{LIBNEO_PATH}")
-    message(STATUS "Using libneo in $ENV{LIBNEO_PATH}")
-    add_subdirectory("$ENV{LIBNEO_PATH}"
+# Override via -DLIBNEO_PATH=<dir> to use a local checkout instead of fetching.
+# Override via -DLIBNEO_REF=<branch|tag|sha> to pin a specific libneo revision.
+# Neither variable is read from the shell environment; set them only as CMake
+# cache options to keep the build hermetic.
+
+set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fetch)")
+set(LIBNEO_REF  "" CACHE STRING "libneo git ref (branch, tag, or sha) to fetch")
+
+if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
+    message(STATUS "Using libneo in ${LIBNEO_PATH}")
+    add_subdirectory("${LIBNEO_PATH}"
                      "${CMAKE_CURRENT_BINARY_DIR}/libneo"
                      EXCLUDE_FROM_ALL)
 else()
-    # LIBNEO_REF env overrides the pinned ref so a release can test a candidate.
-    if(DEFINED ENV{LIBNEO_REF} AND NOT "$ENV{LIBNEO_REF}" STREQUAL "")
-        set(_libneo_ref "$ENV{LIBNEO_REF}")
-    else()
+    if(LIBNEO_REF STREQUAL "")
         set(_libneo_ref "752aae9c8e31136121bbd77ce439f51e47a754be")
+    else()
+        set(_libneo_ref "${LIBNEO_REF}")
     endif()
     FetchContent_Declare(
         libneo
