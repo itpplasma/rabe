@@ -30,13 +30,5 @@ jobs:
           make
         fi
 
-    # libneo gate dispatch: quick ctest label only. The gate runs the slow tier
-    # by dispatching golden.yml and benchmark.yml on full-ci (rabe's own split).
-    - name: Run fast tests
-      if: github.event_name == 'workflow_dispatch'
-      run: make test
-
-    # rabe's own push CI: quick + slow ctest labels.
-    - name: Run quick and slow tests
-      if: github.event_name != 'workflow_dispatch'
+    - name: Run tests
       run: make test_all
