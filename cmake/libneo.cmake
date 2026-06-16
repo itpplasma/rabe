@@ -1,11 +1,9 @@
 include(FetchContent)
 
-# Override via -DLIBNEO_PATH=<dir> to use a local checkout instead of fetching.
-# Override via -DLIBNEO_REF=<branch|tag|sha> to pin a specific libneo revision.
-# Neither variable is read from the shell environment; set them only as CMake
-# cache options to keep the build hermetic.
-
+# -DLIBNEO_PATH=<dir>: build against a local libneo checkout instead of fetching.
 set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fetch)")
+
+# -DLIBNEO_REF=<branch|tag|sha>: fetch this libneo revision instead of the pin.
 set(LIBNEO_REF  "" CACHE STRING "libneo git ref (branch, tag, or sha) to fetch")
 
 if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
