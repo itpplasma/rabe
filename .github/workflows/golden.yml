@@ -5,10 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      libneo_ref:
-        description: libneo branch, tag or commit to build against
-        default: ''
 
 jobs:
   golden:
@@ -37,12 +33,7 @@ jobs:
         '
 
     - name: Build project
-      run: |
-        if [ -n "${{ inputs.libneo_ref }}" ]; then
-          nix develop .#default --command make LIBNEO_REF=${{ inputs.libneo_ref }}
-        else
-          nix develop .#default --command make
-        fi
+      run: nix develop .#default --command make
 
     - name: Run golden record test
       run: nix develop .#default --command make golden
