@@ -1,10 +1,19 @@
 CONFIG ?= Debug
 
+# Forward LIBNEO_REF and LIBNEO_PATH only when given on the make command line;
+# an ambient shell value is ignored.
+ifeq ($(origin LIBNEO_REF),command line)
+  _LIBNEO_REF_ARG := -DLIBNEO_REF=$(LIBNEO_REF)
+endif
+ifeq ($(origin LIBNEO_PATH),command line)
+  _LIBNEO_PATH_ARG := -DLIBNEO_PATH=$(LIBNEO_PATH)
+endif
+
 .PHONY: all build test test_failed install clean plot golden golden_run dist internal python
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG)
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
 
 build: build/CMakeCache.txt
 	cmake --build build
