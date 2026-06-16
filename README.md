@@ -290,9 +290,6 @@ By default the build fetches a pinned libneo commit. Two explicit options change
   # or directly: cmake -S . -B build -DLIBNEO_PATH=/path/to/libneo
   ```
 
-Shell environment variables with those names are intentionally ignored; pass the
-value on the command line only.
-
 ## Third Party
 
 System libraries required at build time:

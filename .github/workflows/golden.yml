@@ -5,6 +5,10 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch, tag or commit to build against
+        default: ''
 
 jobs:
   golden:
@@ -24,7 +28,12 @@ jobs:
         pip install numpy
 
     - name: Build project
-      run: make
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          make
+        fi
 
     - name: Install Python dependencies
       run: pip install xarray numpy netCDF4

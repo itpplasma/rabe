@@ -1,23 +1,19 @@
 CONFIG ?= Debug
 
-# Prevent ambient shell values from silently changing the fetched libneo ref.
-# Pass them explicitly: make test LIBNEO_REF=main  or  LIBNEO_PATH=/path/to/libneo
-unexport LIBNEO_REF LIBNEO_PATH
-
-# Forward only values that were explicitly supplied on the make command line.
-_LIBNEO_CMAKE_ARGS :=
-ifdef LIBNEO_REF
-  _LIBNEO_CMAKE_ARGS += -DLIBNEO_REF=$(LIBNEO_REF)
+# Forward LIBNEO_REF and LIBNEO_PATH only when given on the make command line;
+# an ambient shell value is ignored.
+ifeq ($(origin LIBNEO_REF),command line)
+  _LIBNEO_REF_ARG := -DLIBNEO_REF=$(LIBNEO_REF)
 endif
-ifdef LIBNEO_PATH
-  _LIBNEO_CMAKE_ARGS += -DLIBNEO_PATH=$(LIBNEO_PATH)
+ifeq ($(origin LIBNEO_PATH),command line)
+  _LIBNEO_PATH_ARG := -DLIBNEO_PATH=$(LIBNEO_PATH)
 endif
 
 .PHONY: all build test test_failed install clean plot golden golden_run dist internal python
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_LIBNEO_CMAKE_ARGS)
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
 
 build: build/CMakeCache.txt
 	cmake --build build
