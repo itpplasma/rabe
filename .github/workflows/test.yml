@@ -5,6 +5,10 @@ on:
     branches:
       - '**'
   workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch, tag or commit to build against
+        default: ''
 
 jobs:
   test:
@@ -19,7 +23,12 @@ jobs:
         sudo apt-get install -y gfortran cmake make libnetcdf-dev libnetcdff-dev pkg-config
 
     - name: Build project
-      run: make
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          make
+        fi
 
     - name: Run tests
       run: make test_all
