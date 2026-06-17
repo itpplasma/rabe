@@ -74,13 +74,10 @@ run
 
 ```bash
 make clean
-unset LIBNEO
 make CONFIG=Release
 ```
 
 This builds the executable `rabe.x` in Release mode and writes it to `build`.
-The second line is only needed if you have an enviroment variable `LIBNEO` set
-(see build instructions below).
 
 **Step 2 — create a working directory and link the inputs:**
 
@@ -118,6 +115,52 @@ $\Lambda_B$), $\Lambda_\mathrm{S}$, and — if `should_calc_shaing_callen =
 .true.` — the Shaing-Callen asymptotic, all plotted against $s_\mathrm{tor}$.
 The Python script requires `matplotlib` and `xarray`. The Octave script
 requires the `netcdf` package (`pkg install -forge netcdf` if not present).
+
+## Python interface
+
+In addition to the Fortran executable, `rabe` ships a Python package with the
+same name that exposes the core computation through a thin f90wrap binding.
+
+### Installation
+
+As a wheel (no compiler required if a matching binary is available):
+
+```bash
+pip install rabe
+```
+
+Or directly from source (requires the same Fortran and NetCDF prerequisites
+listed under Prerequisites above):
+
+```bash
+pip install -e .
+```
+
+### Examples
+
+Ready-to-run scripts are in the `python/` directory:
+
+| Script | Field type | Use case |
+| --- | --- | --- |
+| `python/example.py` | `BoozerField` | Real VMEC equilibrium from a `.nc` file |
+| `python/example_fourier.py` | `FourierField` | Analytical Fourier-mode field |
+
+**`BoozerField`** (`boozer_field_t`): loads a VMEC NetCDF 3D equilibrium and
+converts it to Boozer coordinates. This is the same field representation used
+by the executable.
+
+**`FourierField`** (`fourier_field_t`): builds an 2D field directly from
+a flat list of Boozer Fourier modes plus surface values for covariant components.
+Useful for benchmark and optimisation studies.
+
+Both field types are accepted by the main downstream API via `FlockOfFieldlines`:
+
+```python
+from rabe.fieldline_mod import FlockOfFieldlines
+flock = FlockOfFieldlines(max_n_fieldlines, iota, field, M_pol, N_tor, nfp)
+lambda_a, lambda_b = flock.calc_offset_coefficients(R, dr_dAtheta)
+nu_star_crit       = flock.calc_nu_star_crit(R)
+```
 
 ## Input / Output
 
@@ -200,13 +243,6 @@ effect of bootstrap resonances and is not yet fully validated.
 
 ## Build and Tests
 
-The build uses the enviroment variable `LIBNEO` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
-not a developer, make sure to unset it before build e.g. with
-
-```bash
-unset LIBNEO
-```
-
 We use CMake for build configuration. If it is available on your machine, we
 recommend [Ninja](https://ninja-build.org) as the generator
 
@@ -236,6 +272,24 @@ make test_all
 
 The tests as well as their description, can be found in `test`.
 
+### Overriding the libneo dependency
+
+By default the build fetches a pinned libneo commit. Two explicit options change this:
+
+- `-DLIBNEO_REF=<branch|tag|sha>` selects a different git ref:
+
+  ```bash
+  make LIBNEO_REF=main
+  # or directly: cmake -S . -B build -DLIBNEO_REF=main
+  ```
+
+- `-DLIBNEO_PATH=<dir>` uses a local checkout instead of fetching:
+
+  ```bash
+  make LIBNEO_PATH=/path/to/libneo
+  # or directly: cmake -S . -B build -DLIBNEO_PATH=/path/to/libneo
+  ```
+
 ## Third Party
 
 System libraries required at build time:
@@ -244,7 +298,7 @@ System libraries required at build time:
 
 Fetched automatically during build:
 
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO` is present, that one is used instead (MIT)
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O; pass `-DLIBNEO_PATH=<dir>` to use a local checkout instead (MIT)
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 

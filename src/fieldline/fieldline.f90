@@ -4,6 +4,9 @@ module fieldline_mod
     implicit none
 
     type :: flock_of_fieldlines_t
+        !>
+        !! \brief Collection of field lines on a flux surface and surface properties.
+        !<
         type(fieldline_t), allocatable :: fieldlines(:)
         real(dp) :: iota
         real(dp) :: M_pol
@@ -15,6 +18,9 @@ module fieldline_mod
     end type flock_of_fieldlines_t
 
     type :: fieldline_t
+        !>
+        !! \brief Single magnetic field line: starting label, extrema, and bounce integrals.
+        !<
         real(dp) :: xi_0
         real(dp) :: theta_0
         real(dp) :: phi_0

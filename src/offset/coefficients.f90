@@ -7,6 +7,15 @@ module coefficients
 
 contains
 
+    !>
+    !! \brief Finite boundary layer correction Lambda_S to the bootstrap current.
+    !!
+    !! \details Accounts for the finite width of the trapped-passing boundary layer
+    !! (Helander, Geiger and Maaßberg, Phys. Plasmas 2011)
+    !!
+    !! \param[in] R major radius in metres
+    !! \param[in] dr_dAtheta from calc_gradient_scaling_factor_r_eff
+    !<
     function calc_finite_boundary_layer_correction(flock, &
                                                    field, &
                                                    R, &
@@ -16,7 +25,8 @@ contains
         use field_base, only: field_t
         type(flock_of_fieldlines_t), intent(in) :: flock
         class(field_t), intent(in) :: field
-        real(dp), intent(in) :: R, dr_dAtheta
+        real(dp), intent(in) :: R
+        real(dp), intent(in) :: dr_dAtheta
         real(dp) :: Lambda_S
 
         real(dp) :: I_ref, M_pol, N_tor, iota, eta_b
@@ -66,6 +76,16 @@ contains
         end if
     end function calc_finite_boundary_layer_correction
 
+    !>
+    !! \brief Scaling factor dr/dA_theta for choice of effective radius
+    !!
+    !! \details Computes the factor to convert bootstrap coefficients so that
+    !! they can be used with gradients of the "effective radius" r, defined by
+    !! dV/dr = S, where V is the enclosed volume and S the flux surface area.
+    !!
+    !! \param[in] psi_tor_edge total toroidal flux at the plasma edge in Weber
+    !! \param[in] sign_sqrtg sign of the Boozer Jacobian: +1 or -1
+    !<
     function calc_gradient_scaling_factor_r_eff(flock, psi_tor_edge, sign_sqrtg) &
         result(dr_dAtheta)
         use surface_average_mod, only: surface_average_t, calc_surface_averages
@@ -99,12 +119,26 @@ contains
         end if
     end function calc_gradient_scaling_factor_r_eff
 
+    !>
+    !! \brief Compute offset coefficients Lambda_A and Lambda_B.
+    !!
+    !! \details Coefficients are internally computed for gradients in respect to the
+    !! poloidal Boozer vector-potential component i.e.
+    !! boostrap current = coefficient * dp/dA_theta
+    !! One needs to apply a conversion factor dr_dA_theta to use them with
+    !! gradients of other surface labels r. Furthermore, they are given for a
+    !! specific collisionality defintion which is set by major radius R.
+    !!
+    !! \param[in] R major radius in metres
+    !! \param[in] dr_dAtheta defining the surface label r
+    !<
     subroutine calc_offset_coefficients(flock, R, dr_dAtheta, &
                                         Lambda_A, Lambda_B)
         use deviation, only: calc_deviation
         use field_base, only: field_t
         type(flock_of_fieldlines_t), intent(in) :: flock
-        real(dp), intent(in) :: R, dr_dAtheta
+        real(dp), intent(in) :: R
+        real(dp), intent(in) :: dr_dAtheta
         real(dp), intent(out) :: Lambda_A, Lambda_B
 
         real(dp) :: deviation_A, deviation_B
@@ -115,6 +149,12 @@ contains
         Lambda_B = deviation_B*0.5_dp*R*pi*dr_dAtheta
     end subroutine calc_offset_coefficients
 
+    !>
+    !! \brief Critical collisionality marking the lower limit of validity for the
+    !! asymptotic model. Collisionality is defined by major radius R.
+    !!
+    !! \param[in] R major radius in metres
+    !<
     function calc_nu_star_crit(flock, R) result(nu_star_crit)
         type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: R

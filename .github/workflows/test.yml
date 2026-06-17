@@ -5,6 +5,10 @@ on:
     branches:
       - '**'
   workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch, tag or commit to build against
+        default: ''
 
 jobs:
   test:
@@ -19,7 +23,12 @@ jobs:
           experimental-features = nix-command flakes
 
     - name: Build project
-      run: nix develop .#default --command make
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          nix develop .#default --command make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          nix develop .#default --command make
+        fi
 
     - name: Run tests
       run: nix develop .#default --command make test_all
