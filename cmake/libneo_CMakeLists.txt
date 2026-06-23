@@ -10,11 +10,28 @@ add_subdirectory(src/interpolate)
 
 add_library(neo STATIC
     src/libneo_kinds.f90
+    src/math_constants.f90
     src/nctools_module.f90
     src/canonical_coordinates_mod.f90
     src/new_vmec_allocation_stuff.f90
     src/vmecinm_m.f90
+    src/spl_three_to_five.f90
     src/spline_vmec_data.f90
+    src/magfie/geqdsk_tools.f90
+    src/coordinates/libneo_coordinate_conventions.f90
+    src/coordinates/cylindrical_cartesian.f90
+    src/coordinates/geoflux_coordinates.f90
+    src/coordinates/libneo_coordinates_base.f90
+    src/coordinates/libneo_coordinates_validator.f90
+    src/coordinates/libneo_coordinates_file_detection.f90
+    src/coordinates/libneo_coordinates_geoflux.f90
+    src/coordinates/libneo_coordinates_vmec.f90
+    src/coordinates/libneo_coordinates_chartmap.f90
+    src/coordinates/libneo_coordinates.f90
+    src/field/magnetic_field_base.f90
+    src/field/boozer_chartmap_io.f90
+    src/field/vmec_field_eval.f90
+    src/field/field_vmec.f90
     src/boozer_converter.F90
     src/plag_coeff.f90
     src/binsrc.f90
