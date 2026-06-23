@@ -60,9 +60,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install wheel and example deps
-        run: |
-          pip install --no-index --find-links=wheelhouse rabe
-          pip install numpy matplotlib
+        run: pip install wheelhouse/*cp313*-manylinux*.whl numpy matplotlib
 
       - name: Run Fourier example
         env:
