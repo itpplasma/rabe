@@ -16,7 +16,7 @@ add_library(neo STATIC
     src/vmecinm_m.f90
     src/spl_three_to_five.f90
     src/spline_vmec_data.f90
-    src/field/boozer_chartmap_io.f90
+    src/boozer_chartmap_types.f90
     src/boozer_converter.F90
     src/plag_coeff.f90
     src/binsrc.f90
