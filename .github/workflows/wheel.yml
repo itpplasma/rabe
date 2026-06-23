@@ -29,6 +29,8 @@ jobs:
             dnf install -y epel-release
             dnf install -y netcdf-fortran-devel gcc-gfortran cmake
 
+          CIBW_TEST_COMMAND: "python {project}/python/check_symbols.py"
+
           CIBW_BUILD_VERBOSITY: 3
 
       - uses: actions/upload-artifact@v4
@@ -36,8 +38,8 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
 
-  test_wheels:
-    name: Test wheels on ${{ matrix.os }}
+  smoke_test:
+    name: Smoke test (latest Python)
     needs: build_wheels
     runs-on: ${{ matrix.os }}
     strategy:
@@ -55,17 +57,21 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
-      - name: Install wheel
-        run: pip install wheelhouse/*.whl
+      - name: Install wheel and example deps
+        run: |
+          pip install --no-index --find-links=wheelhouse rabe
+          pip install numpy matplotlib
 
-      - name: Check symbols
-        run: python python/check_symbols.py
+      - name: Run Fourier example
+        env:
+          MPLBACKEND: Agg
+        run: python python/example_fourier.py
 
   publish:
     name: Publish
-    needs: [build_wheels, test_wheels]
+    needs: [build_wheels, smoke_test]
     runs-on: ubuntu-22.04
     environment: pypi
     permissions:
