@@ -5,6 +5,10 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch, tag or commit to build against
+        default: ''
 
 jobs:
   golden:
@@ -13,21 +17,32 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v5
+    - uses: cachix/install-nix-action@v31.10.6
       with:
-        python-version: '3.12'
+        extra_nix_config: |
+          experimental-features = nix-command flakes
 
-    - name: Install dependencies
+    - name: Show pinned toolchain
       run: |
-        sudo apt-get update
-        sudo apt-get install -y gfortran cmake make libnetcdf-dev libnetcdff-dev pkg-config
-        pip install numpy
+        nix develop .#default --command bash -c '
+          set -e
+          uname -m
+          gfortran --version | head -1
+          ldd --version | head -1
+          cmake --version | head -1
+          make --version | head -1
+          pkg-config --modversion netcdf
+          pkg-config --modversion netcdf-fortran
+          python --version
+        '
 
     - name: Build project
-      run: make
-
-    - name: Install Python dependencies
-      run: pip install xarray numpy netCDF4
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          nix develop .#default --command make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          nix develop .#default --command make
+        fi
 
     - name: Run golden record test
-      run: make golden
+      run: nix develop .#default --command make golden
