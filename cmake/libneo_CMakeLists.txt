@@ -14,7 +14,6 @@ add_library(neo STATIC
     src/canonical_coordinates_mod.f90
     src/new_vmec_allocation_stuff.f90
     src/vmecinm_m.f90
-    src/spl_three_to_five.f90
     src/spline_vmec_data.f90
     src/boozer_chartmap_types.f90
     src/boozer_converter.F90
