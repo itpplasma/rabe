@@ -63,6 +63,15 @@ On Debian/Ubuntu:
 sudo apt-get install gfortran cmake libnetcdf-dev libnetcdff-dev pkg-config
 ```
 
+On macOS (Homebrew):
+
+```bash
+brew install gfortran netcdf-fortran pkg-config
+export PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
+```
+
+Make sure that `PKG_CONFIG_PATH` points to your installed Netcdf-Fortran package.
+
 ## Example
 
 This example walks through a complete run using the QH stellarator equilibrium
@@ -73,11 +82,12 @@ run
 **Step 1 — build:**
 
 ```bash
+export FC=gfortran
 make clean
 make CONFIG=Release
 ```
 
-This builds the executable `rabe.x` in Release mode and writes it to `build`.
+This sets `gfortran` as the compiler, builds the executable `rabe.x` in Release mode and writes it to `build`.
 
 **Step 2 — create a working directory and link the inputs:**
 
