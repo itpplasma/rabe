@@ -67,10 +67,11 @@ On macOS (Homebrew):
 
 ```bash
 brew install gfortran netcdf-fortran pkg-config
+export FC=$(ls $(brew --prefix)/bin/gfortran-* | sort -V | tail -1)
 export PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
 ```
 
-Make sure that `PKG_CONFIG_PATH` points to your installed Netcdf-Fortran package.
+Make sure that `FC` and `PKG_CONFIG_PATH` point to your installed gfortran compiler and Netcdf-Fortran package, respectively.
 
 ## Example
 
@@ -82,12 +83,11 @@ run
 **Step 1 — build:**
 
 ```bash
-export FC=gfortran
 make clean
 make CONFIG=Release
 ```
 
-This sets `gfortran` as the compiler, builds the executable `rabe.x` in Release mode and writes it to `build`.
+This builds the executable `rabe.x` in Release mode and writes it to `build`.
 
 **Step 2 — create a working directory and link the inputs:**
 
