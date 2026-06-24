@@ -63,6 +63,16 @@ On Debian/Ubuntu:
 sudo apt-get install gfortran cmake libnetcdf-dev libnetcdff-dev pkg-config
 ```
 
+On macOS (Homebrew):
+
+```bash
+brew install gfortran netcdf-fortran pkg-config
+export FC=$(ls $(brew --prefix)/bin/gfortran-* | sort -V | tail -1)
+export PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
+```
+
+Make sure that `FC` and `PKG_CONFIG_PATH` point to your installed gfortran compiler and Netcdf-Fortran package, respectively.
+
 ## Example
 
 This example walks through a complete run using the QH stellarator equilibrium
