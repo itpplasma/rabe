@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core", "f90wrap", "numpy"]
+requires = ["scikit-build-core", "f90wrap>=0.3.0", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -9,7 +9,7 @@ description = "Analytical bootstrap current estimation for stellarators"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.9"
-dependencies = ["numpy", "f90wrap"]
+dependencies = ["numpy"]
 dynamic = ["version"]
 
 [tool.scikit-build]

@@ -35,7 +35,7 @@ jobs:
             dnf install -y netcdf-fortran-devel gcc-gfortran cmake
 
           CIBW_ARCHS_MACOS: auto
-          CIBW_BEFORE_ALL_MACOS: brew install netcdf-fortran pkg-config
+          CIBW_BEFORE_ALL_MACOS: brew install gfortran netcdf-fortran pkg-config
           CIBW_ENVIRONMENT_MACOS: >-
             FC=gfortran
             PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
