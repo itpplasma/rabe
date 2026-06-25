@@ -7,6 +7,7 @@ module boozer_sub
                            evaluate_batch_splines_3d_der, &
                            evaluate_batch_splines_3d_der2, &
                            destroy_batch_splines_1d, destroy_batch_splines_3d
+    use math_constants, only: TWOPI
     use, intrinsic :: iso_fortran_env, only: dp => real64
 
     implicit none
@@ -19,8 +20,6 @@ module boozer_sub
     public :: splint_boozer_coord
     public :: reset_boozer_batch_splines
 
-    ! Constants
-    real(dp), parameter :: TWOPI = 2.0_dp*3.14159265358979_dp
     integer, parameter :: MAX_FIELD3D_QUANTITIES = 3
 
     ! Batch spline data for 3D field quantities (Bmod, sqrt_g_ss, optionally B_r)
@@ -897,15 +896,16 @@ contains
 
         character(len=*), intent(in) :: chartmap_file
 
-        integer :: ncid
+        integer :: ncid, varid, ncstat
         integer :: nrho, ntheta, nzeta
         integer :: nfp_int
-        real(dp) :: torflux_val, rmajor_val
+        real(dp) :: torflux_val
         real(dp), allocatable :: rho(:), theta(:), zeta(:)
         real(dp), allocatable :: Bmod_raw(:, :, :)
         real(dp), allocatable :: A_phi(:), B_theta(:), B_phi(:)
+        real(dp), allocatable :: xyz_outer(:, :)
         real(dp), allocatable :: aphi_batch(:, :)
-        real(dp) :: rho_min, rho_max, s_min, s_max
+        real(dp) :: rho_min, rho_max, s_min, s_max, rmajor_cm
         real(dp) :: h_rho
 
         call nc_open(trim(chartmap_file), ncid)
@@ -937,15 +937,39 @@ contains
         allocate (Bmod_raw(nrho, ntheta, nzeta))
         call nc_get(ncid, 'Bmod', Bmod_raw)
 
+        ! Estimate major radius from x,y coordinates on outermost surface (units: cm).
+        ! Falls back to 1 cm if the variables are absent.
+        allocate (xyz_outer(ntheta*nzeta, 2))
+        ncstat = nf90_inq_varid(ncid, 'x', varid)
+        if (ncstat == nf90_noerr) then
+            block
+                real(dp), allocatable :: x3(:, :, :), y3(:, :, :)
+                integer :: it, iz, idx
+                allocate (x3(nzeta, ntheta, nrho), y3(nzeta, ntheta, nrho))
+                call nc_get(ncid, 'x', x3)
+                call nc_get(ncid, 'y', y3)
+                idx = 0
+                do iz = 1, nzeta
+                    do it = 1, ntheta
+                        idx = idx + 1
+                        xyz_outer(idx, 1) = x3(iz, it, nrho)
+                        xyz_outer(idx, 2) = y3(iz, it, nrho)
+                    end do
+                end do
+                deallocate (x3, y3)
+                rmajor_cm = sum(sqrt(xyz_outer(:, 1)**2 + xyz_outer(:, 2)**2)) &
+                            /real(ntheta*nzeta, dp)
+            end block
+        else
+            rmajor_cm = 1.0_dp
+        end if
+        deallocate (xyz_outer)
+
         call nc_close(ncid)
 
         torflux = torflux_val
-
         nper = nfp_int
-        rmajor_val = 0.0_dp
-        call chartmap_estimate_rmajor(Bmod_raw, rho, theta, zeta, nrho, ntheta, nzeta, &
-                                      rmajor_val)
-        rmajor = rmajor_val
+        rmajor = rmajor_cm
 
         ns_s = 3
         ns_tp = 3
@@ -1032,18 +1056,6 @@ contains
 
     end subroutine get_boozer_coordinates_from_chartmap
 
-    !> Rough estimate of major radius from Bmod minimum on outermost surface.
-    !> Used only when the chartmap does not carry rmajor explicitly.
-    subroutine chartmap_estimate_rmajor(Bmod, rho, theta, zeta, nrho, ntheta, nzeta, &
-                                        rmajor_out)
-        real(dp), intent(in) :: Bmod(nrho, ntheta, nzeta)
-        real(dp), intent(in) :: rho(nrho), theta(ntheta), zeta(nzeta)
-        integer, intent(in) :: nrho, ntheta, nzeta
-        real(dp), intent(out) :: rmajor_out
-
-        rmajor_out = 1.0_dp
-    end subroutine chartmap_estimate_rmajor
-
     !> Initialize Boozer splines from a booz_xform boozmn NetCDF.
     !>
     !> Reads the Fourier harmonics bmnc_b, iota_b, buco_b, bvco_b, phi_b
@@ -1077,13 +1089,13 @@ contains
         real(dp), allocatable :: rho_out(:), s_out(:)
         real(dp), allocatable :: B_theta(:), B_phi(:), A_phi_out(:)
         real(dp), allocatable :: bmnc_out(:, :)
+        real(dp), allocatable :: rmnc_h(:, :)
         real(dp), allocatable :: Bmod(:, :, :)
         real(dp), allocatable :: theta(:), zeta(:)
         real(dp), allocatable :: aphi_batch(:, :)
-        integer :: ir, k, it, iz, mn
-        real(dp) :: angle, torflux_si, torflux_cgs
+        integer :: ir, k, it, iz, mn, mn00
+        real(dp) :: angle, torflux_si, torflux_cgs, rmajor_m
         real(dp) :: rho_min, rho_max, s_min, s_max
-        real(dp), parameter :: TWOPI = 2.0_dp*3.14159265358979_dp
         real(dp), parameter :: MU0 = 4.0e-7_dp*3.14159265358979_dp
         real(dp), parameter :: GAUSS_CM2_PER_TM2 = 1.0e8_dp
         real(dp), parameter :: GAUSS_CM_PER_TM = 1.0e6_dp
@@ -1105,6 +1117,7 @@ contains
         allocate (ixm(nmn), ixn(nmn))
         allocate (iota_full(ns), buco_full(ns), bvco_full(ns), phi_full(ns))
         allocate (bmnc_h(nmn, nsurf_computed))
+        allocate (rmnc_h(nmn, nsurf_computed))
 
         call nc_get(ncid, 'nfp_b', nfp_int)
         call nc_get(ncid, 'jlist', jlist)
@@ -1115,6 +1128,7 @@ contains
         call nc_get(ncid, 'bvco_b', bvco_full)
         call nc_get(ncid, 'phi_b', phi_full)
         call nc_get(ncid, 'bmnc_b', bmnc_h)
+        call nc_get(ncid, 'rmnc_b', rmnc_h)
         call nc_close(ncid)
 
         allocate (s_half(nsurf_computed))
@@ -1179,9 +1193,22 @@ contains
             end do
         end do
 
+        mn00 = 0
+        do mn = 1, nmn
+            if (ixm(mn) == 0 .and. ixn(mn) == 0) then
+                mn00 = mn
+                exit
+            end if
+        end do
+        if (mn00 > 0) then
+            rmajor_m = rmnc_h(mn00, nsurf_computed)
+        else
+            rmajor_m = 1.0_dp
+        end if
+
         torflux = torflux_cgs
         nper = nfp_int
-        rmajor = 1.0_dp
+        rmajor = rmajor_m*1.0e2_dp
 
         ns_s = 3
         ns_tp = 3
@@ -1260,7 +1287,7 @@ contains
         end block
 
         deallocate (jlist, ixm, ixn, iota_full, buco_full, bvco_full, phi_full)
-        deallocate (bmnc_h, s_half, rho_half, rho_out, s_out)
+        deallocate (bmnc_h, rmnc_h, s_half, rho_half, rho_out, s_out)
         deallocate (theta, zeta, B_theta, B_phi, A_phi_out, bmnc_out, Bmod)
 
     end subroutine get_boozer_coordinates_from_boozmn

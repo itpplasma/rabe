@@ -2,7 +2,7 @@ program test_check_field_origin
     use constants, only: dp
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
-    use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+    use field_checks, only: suspect_omnigenous_origin_not_minimum
 
     implicit none
 

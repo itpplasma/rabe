@@ -1,3 +1,6 @@
+<img width="0" height="20" align="right">
+<img src="assets/rabe_logo.png#gh-light-mode-only" alt="rabe logo by Georg Grassler" width="200" align="right"><img src="assets/rabe_logo_dark.png#gh-dark-mode-only" alt="rabe logo by Georg Grassler" width="200" align="right">
+
 # rabe
 
 An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap **e**xpressions of Ref. [1].
@@ -50,7 +53,7 @@ boundary correction derived by Helander, Geiger and Maasberg [3].
 
 ## Prerequisites
 
-- Fortran compiler (e.g. gfortran)
+- Fortran compiler (gfortran)
 - CMake >= 3.24
 - [NetCDF-Fortran](https://github.com/Unidata/netcdf-fortran)
 
@@ -59,6 +62,16 @@ On Debian/Ubuntu:
 ```bash
 sudo apt-get install gfortran cmake libnetcdf-dev libnetcdff-dev pkg-config
 ```
+
+On macOS (Homebrew):
+
+```bash
+brew install gfortran netcdf-fortran pkg-config
+export FC=$(ls $(brew --prefix)/bin/gfortran-* | sort -V | tail -1)
+export PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
+```
+
+Make sure that `FC` and `PKG_CONFIG_PATH` point to your installed gfortran compiler and Netcdf-Fortran package, respectively.
 
 ## Example
 
@@ -71,13 +84,10 @@ run
 
 ```bash
 make clean
-unset LIBNEO
 make CONFIG=Release
 ```
 
 This builds the executable `rabe.x` in Release mode and writes it to `build`.
-The second line is only needed if you have an enviroment variable `LIBNEO` set
-(see build instructions below).
 
 **Step 2 — create a working directory and link the inputs:**
 
@@ -116,6 +126,52 @@ $\Lambda_B$), $\Lambda_\mathrm{S}$, and — if `should_calc_shaing_callen =
 The Python script requires `matplotlib` and `xarray`. The Octave script
 requires the `netcdf` package (`pkg install -forge netcdf` if not present).
 
+## Python interface
+
+In addition to the Fortran executable, `rabe` ships a Python package with the
+same name that exposes the core computation through a thin f90wrap binding.
+
+### Installation
+
+As a wheel (no compiler required if a matching binary is available):
+
+```bash
+pip install rabe
+```
+
+Or directly from source (requires the same Fortran and NetCDF prerequisites
+listed under Prerequisites above):
+
+```bash
+pip install -e .
+```
+
+### Examples
+
+Ready-to-run scripts are in the `python/` directory:
+
+| Script | Field type | Use case |
+| --- | --- | --- |
+| `python/example.py` | `BoozerField` | Real VMEC equilibrium from a `.nc` file |
+| `python/example_fourier.py` | `FourierField` | Analytical Fourier-mode field |
+
+**`BoozerField`** (`boozer_field_t`): loads a VMEC NetCDF 3D equilibrium and
+converts it to Boozer coordinates. This is the same field representation used
+by the executable.
+
+**`FourierField`** (`fourier_field_t`): builds an 2D field directly from
+a flat list of Boozer Fourier modes plus surface values for covariant components.
+Useful for benchmark and optimisation studies.
+
+Both field types are accepted by the main downstream API via `FlockOfFieldlines`:
+
+```python
+from rabe.fieldline_mod import FlockOfFieldlines
+flock = FlockOfFieldlines(max_n_fieldlines, iota, field, M_pol, N_tor, nfp)
+lambda_a, lambda_b = flock.calc_offset_coefficients(R, dr_dAtheta)
+nu_star_crit       = flock.calc_nu_star_crit(R)
+```
+
 ## Input / Output
 
 `rabe` reads its configuration from a namelist file `rabe.in` in the working directory:
@@ -132,8 +188,11 @@ requires the `netcdf` package (`pkg install -forge netcdf` if not present).
     sign_sqrtg = -1.0,                   ! sign of the Jacobian sqrt(g)
     max_n_fieldlines = 200,              ! maximum field lines per surface
     should_calc_shaing_callen = .true.,  ! compute $\lambda_{bB}^\mathrm{LC}$
-    n_eta = 100                          ! level resolution for trapped
+    n_eta = 100,                         ! level resolution for trapped
                                          ! particle fraction computation
+    unsafe_mode = .false.                ! if .true., NaN-fill outputs for
+                                         ! surfaces that fail a sanity check
+                                         ! instead of aborting execution
 /
 ```
 
@@ -157,6 +216,11 @@ The list of surfaces on which to compute can either be given explicitly in `s_to
 to all output coefficients to account for different coordinate conventions.
 It should be set to the same value as `signgs` in the `VMEC` output `wout_*.nc` and is usually `sign_sqrtg=-1.0`.
 
+By default (`unsafe_mode = .false.`), any failed sanity check halts the run
+immediately with an error. This is the recommended behaviour as those checks point out not suited inputs e.g. violation of stellarator symmetry.
+Setting `unsafe_mode = .true.` allows the run to continue, but outputs
+are set to `NaN` for any surface where a check failed.
+
 Results are written to `rabe.nc` (NetCDF) and `rabe.dat` (plain text), with one
 value per flux surface. Both files contain the same variables:
 
@@ -174,7 +238,9 @@ value per flux surface. Both files contain the same variables:
 violation of omnigenity is too strong, local maxima contours are not merely
 deformed, but also get split, which this flag notes.
 
-if `should_calc_shaing_callen = .true.`, then
+For fast runs suited for **optimization**, we recommend to set
+`should_calc_shaing_callen = .false.`. If it is enabled, the output
+is extended by
 
 | Variable | Description |
 | --- | --- |
@@ -186,13 +252,6 @@ from the actual $\lambda_{bB}^\mathrm{SC}$, but it does not include the
 effect of bootstrap resonances and is not yet fully validated.
 
 ## Build and Tests
-
-The build uses the enviroment variable `LIBNEO` to detect if a local copy of `libneo` (see third party dependencies below) is present. As a rule, if you are
-not a developer, make sure to unset it before build e.g. with
-
-```bash
-unset LIBNEO
-```
 
 We use CMake for build configuration. If it is available on your machine, we
 recommend [Ninja](https://ninja-build.org) as the generator
@@ -223,6 +282,24 @@ make test_all
 
 The tests as well as their description, can be found in `test`.
 
+### Overriding the libneo dependency
+
+By default the build fetches a pinned libneo commit. Two explicit options change this:
+
+- `-DLIBNEO_REF=<branch|tag|sha>` selects a different git ref:
+
+  ```bash
+  make LIBNEO_REF=main
+  # or directly: cmake -S . -B build -DLIBNEO_REF=main
+  ```
+
+- `-DLIBNEO_PATH=<dir>` uses a local checkout instead of fetching:
+
+  ```bash
+  make LIBNEO_PATH=/path/to/libneo
+  # or directly: cmake -S . -B build -DLIBNEO_PATH=/path/to/libneo
+  ```
+
 ## Third Party
 
 System libraries required at build time:
@@ -231,7 +308,7 @@ System libraries required at build time:
 
 Fetched automatically during build:
 
-- [libneo](https://github.com/itpplasma/libneo) for field file I/O; if a local copy at `$LIBNEO` is present, that one is used instead (MIT)
+- [libneo](https://github.com/itpplasma/libneo) for field file I/O; pass `-DLIBNEO_PATH=<dir>` to use a local checkout instead (MIT)
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 

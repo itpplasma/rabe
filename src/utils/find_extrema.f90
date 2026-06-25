@@ -10,6 +10,8 @@ module find_extrema
         end subroutine func1d
     end interface
 
+    procedure(func1d), private, pointer, save :: func_ptr => null()
+
 contains
 
     subroutine find_local_minima(func, interval, location, achieved_error)
@@ -18,22 +20,24 @@ contains
         real(dp), dimension(:), allocatable, intent(out) :: location
         real(dp), dimension(:), allocatable, intent(out), optional :: achieved_error
 
+        func_ptr => func
         call find_local_maxima(negative_func, interval, location, achieved_error)
-
-    contains
-        subroutine negative_func(x, value)
-            use constants, only: dp
-            real(dp), dimension(:), intent(in) :: x
-            real(dp), dimension(:), intent(out) :: value
-            call func(x, value)
-            value = -value
-        end subroutine negative_func
+        func_ptr => null()
 
     end subroutine find_local_minima
 
+    subroutine negative_func(x, value)
+        use constants, only: dp
+        real(dp), dimension(:), intent(in) :: x
+        real(dp), dimension(:), intent(out) :: value
+        call func_ptr(x, value)
+        value = -value
+    end subroutine negative_func
+
     subroutine find_local_maxima(func, interval, location, achieved_error)
         use utils, only: linspace, not_same
-
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
         procedure(func1d) :: func
         real(dp), intent(in) :: interval(2)
         real(dp), dimension(:), allocatable, intent(out) :: location
@@ -57,7 +61,9 @@ contains
 
         allocate (brackets(2, n_maxima))
         allocate (location(n_maxima))
+        location = ieee_value(location, ieee_quiet_nan)
         allocate (errors(n_maxima))
+        errors = ieee_value(errors, ieee_quiet_nan)
 
         n_maxima = 0
         do i = 2, n_coarse - 1
@@ -71,6 +77,15 @@ contains
         do i = 1, n_maxima
             call refine_maximum(brackets(:, i), location(i), errors(i))
         end do
+
+        if (any(ieee_is_nan(location))) then
+            print *, "error in find_local_maxima: NaN in location"
+            error stop
+        end if
+        if (any(ieee_is_nan(errors))) then
+            print *, "error in find_local_maxima: NaN in errors"
+            error stop
+        end if
 
         if (present(achieved_error)) achieved_error = errors
 
@@ -153,6 +168,7 @@ contains
         real(dp) :: extrema(2)
 
         integer :: n_steps
+        integer :: idx
         real(dp), dimension(:), allocatable :: x, value
 
         if (present(abstol)) then
@@ -164,8 +180,10 @@ contains
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
-        extrema(1) = minval(value)
-        extrema(2) = maxval(value)
+        idx = maxloc(value, dim=1)
+        extrema(1) = x(idx)
+        idx = minloc(value, dim=1)
+        extrema(2) = x(idx)
     end function find_global_extrema
 
 end module find_extrema

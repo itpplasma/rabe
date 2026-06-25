@@ -10,6 +10,7 @@ add_subdirectory(src/interpolate)
 
 add_library(neo STATIC
     src/libneo_kinds.f90
+    src/math_constants.f90
     src/nctools_module.f90
     src/canonical_coordinates_mod.f90
     src/new_vmec_allocation_stuff.f90

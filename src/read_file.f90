@@ -15,6 +15,7 @@ module read_file
     integer, public, protected :: max_n_fieldlines
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
+    logical, public, protected :: unsafe_mode
 
     real(dp), public, protected :: s_tor_min
     real(dp), public, protected :: s_tor_max
@@ -32,7 +33,8 @@ module read_file
         sign_sqrtg, &
         max_n_fieldlines, &
         should_calc_shaing_callen, &
-        n_eta
+        n_eta, &
+        unsafe_mode
 
 contains
 
@@ -65,6 +67,7 @@ contains
 
         ! Default values
         field_type = 'vmec_nc'
+        unsafe_mode = .false.
         should_calc_shaing_callen = .false.
         n_eta = 100
         s_tor_min = nan_value

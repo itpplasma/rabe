@@ -1,21 +1,9 @@
-program rabe
+program main
+    use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use constants, only: dp, pi
-    use utils, only: linspace
-    use boozer_field, only: boozer_field_t
-    use fieldline_mod, only: fieldline_t
-    use fieldline_labels, only: get_labels
-    use make_fieldline, only: make_flock_of_fieldlines
-    use deviation, only: calc_deviation
-    use surface_average_mod, only: surface_average_t, calc_surface_averages
-    use coefficients, only: calc_nu_star_crit
-    use coefficients, only: calc_finite_boundary_layer_correction
-    use shaing_callen_mod, only: calc_trapped_fraction
-    use shaing_callen_mod, only: get_non_omnigenous_remainder
     use netcdf_mod, only: netcdf_t
-    use git_version, only: git_hash
-
-    use read_file, only: read_namelist
-    use read_file, only: field_file, &
+    use read_file, only: read_namelist, &
+                         field_file, &
                          field_type, &
                          M_pol, &
                          N_tor, &
@@ -23,7 +11,19 @@ program rabe
                          sign_sqrtg, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta
+                         n_eta, &
+                         unsafe_mode
+    use boozer_field, only: boozer_field_t
+    use fieldline_mod, only: flock_of_fieldlines_t
+    use make_fieldline, only: make_flock_of_fieldlines
+    use coefficients, only: calc_nu_star_crit, &
+                            calc_finite_boundary_layer_correction, &
+                            calc_gradient_scaling_factor_r_eff, &
+                            calc_offset_coefficients
+    use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
+    use error_handling, only: set_unsafe_mode
+    use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
+    use git_version, only: git_hash
 
     implicit none
 
@@ -37,20 +37,13 @@ program rabe
     integer :: this
 
     real(dp) :: R ![m]
-    type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
-    real(dp) :: iota, approx_iota
-    real(dp) :: B_theta_covariant, B_phi_covariant
+    real(dp) :: iota
     real(dp) :: nfp
 
-    real(dp), dimension(:), allocatable :: xi_0
-
-    integer :: n_fieldlines
-    type(fieldline_t), dimension(:), allocatable :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
     logical :: too_strong_violation
 
-    real(dp) :: deviation_A, deviation_B
-    real(dp) :: covariant_factor
     real(dp), dimension(:), allocatable :: Lambda_A, Lambda_B
     real(dp), dimension(:), allocatable :: nu_star_crit
     real(dp), dimension(:), allocatable :: Lambda_S
@@ -60,11 +53,15 @@ program rabe
     real(dp) :: trapped_fraction
     real(dp), dimension(:), allocatable :: lambda_LC, remainder
 
+    real(dp) :: nan_value
+
     type(netcdf_t) :: nc_output
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
     call read_namelist(input_file)
+    call set_unsafe_mode(unsafe_mode)
+    nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
     n_stor = size(s_tor)
     allocate (Lambda_A(n_stor))
@@ -79,57 +76,30 @@ program rabe
 
     call field%boozer_field_init(field_file, grid_refinement=6, field_type=field_type)
     do this = 1, n_stor
+        call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))
-        call field%get_iota_and_covariant_components(s_tor(this), &
-                                                     iota, &
-                                                     B_theta_covariant, &
-                                                     B_phi_covariant)
+        call field%get_iota(s_tor(this), iota)
         nfp = field%nfp
 
-        call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
-                        xi_0, approx_iota)
-        n_fieldlines = size(xi_0)
-        allocate (fieldlines(n_fieldlines))
-        iota = approx_iota
-
-        call make_flock_of_fieldlines(fieldlines, &
-                                      xi_0, &
-                                      iota, &
-                                      field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp, &
+        call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
+                                      field, M_pol, N_tor, nfp, &
                                       split_maxima(this))
 
-        call calc_deviation(fieldlines, deviation_A, deviation_B)
-
-        covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
-        call calc_surface_averages(fieldlines, average)
-        dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
+        dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
+                                                        nint(sign_sqrtg))
         R = field%R
-        Lambda_A(this) = deviation_A*dr_dAtheta* &
-                         sqrt(covariant_factor)*sqrt(0.5_dp*R*pi)
-        Lambda_B(this) = deviation_B*0.5*R*pi*dr_dAtheta
-        nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
-                                               R, &
-                                               B_theta_covariant, &
-                                               B_phi_covariant)
-        Lambda_S(this) = calc_finite_boundary_layer_correction(fieldlines, &
+        call calc_offset_coefficients(flock, R, dr_dAtheta, &
+                                      Lambda_A(this), Lambda_B(this))
+        nu_star_crit(this) = calc_nu_star_crit(flock, R)
+        Lambda_S(this) = calc_finite_boundary_layer_correction(flock, field, &
                                                                R, &
-                                                               dr_dAtheta, &
-                                                               B_theta_covariant, &
-                                                               B_phi_covariant)
+                                                               dr_dAtheta)
 
         print *, "s_tor: ", s_tor(this)
         if (should_calc_shaing_callen) then
-            trapped_fraction = calc_trapped_fraction(field, fieldlines, n_eta)
-            helical_factor = (B_phi_covariant*M_pol + &
-                              B_theta_covariant*N_tor)/(M_pol*iota - N_tor)
-            lambda_LC(this) = helical_factor*trapped_fraction
-            lambda_LC(this) = lambda_LC(this)*dr_dAtheta
-            remainder(this) = get_non_omnigenous_remainder(field, fieldlines, n_eta)
-            remainder(this) = remainder(this)*covariant_factor*dr_dAtheta* &
-                              nfp/(M_pol*iota - N_tor)
+            lambda_LC(this) = calc_lambda_LC(flock, field, n_eta, dr_dAtheta)
+            remainder(this) = get_non_omnigenous_remainder(flock, field, &
+                                                           n_eta, dr_dAtheta)
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
         end if
@@ -137,8 +107,18 @@ program rabe
         print *, "1/nu_star factor: ", Lambda_B(this)
         print *, "Lambda_S: ", Lambda_S(this)
 
-        if (allocated(fieldlines)) deallocate (fieldlines)
-        if (allocated(xi_0)) deallocate (xi_0)
+        if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
+
+        if (unsafe_mode .and. did_fail_any_sanity_check()) then
+            lambda_A(this) = nan_value
+            lambda_B(this) = nan_value
+            nu_star_crit(this) = nan_value
+            Lambda_S(this) = nan_value
+            if (should_calc_shaing_callen) then
+                lambda_LC(this) = nan_value
+                remainder(this) = nan_value
+            end if
+        end if
 
     end do
 
@@ -276,4 +256,4 @@ contains
         close (u)
     end subroutine write_dat_output
 
-end program rabe
+end program main

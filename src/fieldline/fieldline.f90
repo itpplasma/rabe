@@ -3,7 +3,24 @@ module fieldline_mod
 
     implicit none
 
+    type :: flock_of_fieldlines_t
+        !>
+        !! \brief Collection of field lines on a flux surface and surface properties.
+        !<
+        type(fieldline_t), allocatable :: fieldlines(:)
+        real(dp) :: iota
+        real(dp) :: M_pol
+        real(dp) :: N_tor
+        real(dp) :: nfp
+        real(dp) :: iota_p
+        real(dp) :: I_ref
+        real(dp) :: eta_b
+    end type flock_of_fieldlines_t
+
     type :: fieldline_t
+        !>
+        !! \brief Single magnetic field line: starting label, extrema, and bounce integrals.
+        !<
         real(dp) :: xi_0
         real(dp) :: theta_0
         real(dp) :: phi_0
@@ -11,19 +28,14 @@ module fieldline_mod
         real(dp) :: phi_max(2)
         real(dp) :: phi_max_error(2)
         real(dp) :: B_max(2)
-        real(dp) :: iota_p
 
         real(dp) :: eta_b
         real(dp) :: delta_eta
         real(dp) :: integral_lambda_b_over_B_squared
-        real(dp) :: I_ref
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
         real(dp) :: integral_nabla_s_over_B_squared
-        real(dp) :: M_pol
-        real(dp) :: N_tor
-        real(dp) :: nfp
     contains
         generic :: get_theta => get_theta_scalar, get_theta_array
         procedure, private :: get_theta_scalar

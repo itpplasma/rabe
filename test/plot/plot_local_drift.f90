@@ -33,16 +33,12 @@ program plot_anti_sigma
                                                    N_tor_pert, &
                                                    B_pert)
     fieldline%iota = iota
-    fieldline%nfp = nfp
-    fieldline%N_tor = N_tor
-    fieldline%M_pol = M_pol
     fieldline%phi_0 = pi/nfp
     fieldline%theta_0 = 0.0_dp
     fieldline%xi_0 = pi*nfp*M_pol/(M_pol**2 + N_tor**2)
 
     call linspace(1.0_dp/B_max, 1.0_dp/B_min, n_eta, etas)
-    call plot_fieldline_over_local_drift(fieldline, perturbed_field, etas(1), &
-                                         interval=interval)
+    call plot_fieldline_over_local_drift(fieldline, perturbed_field, etas(1), interval)
     call plot_local_drift_over_fieldline(perturbed_field, fieldline, etas, &
                                          interval=interval)
 
