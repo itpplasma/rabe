@@ -1325,7 +1325,8 @@ contains
                 end do
             else
                 k = 1
-                do while (k < nsurf .and. rho_half(k + 1) < rho)
+                do while (k < nsurf)
+                    if (rho_half(k + 1) >= rho) exit
                     k = k + 1
                 end do
                 if (rho_half(k + 1) > rho_half(k)) then
@@ -1360,7 +1361,8 @@ contains
                 vals_out(ir) = vals_h(nsurf)
             else
                 k = 1
-                do while (k < nsurf .and. rho_half(k + 1) < rho)
+                do while (k < nsurf)
+                    if (rho_half(k + 1) >= rho) exit
                     k = k + 1
                 end do
                 if (rho_half(k + 1) > rho_half(k)) then
@@ -1406,7 +1408,8 @@ contains
                                              iota_h(nsurf)*(s - s_half_sq(nsurf)))
             else
                 k = 1
-                do while (k < nsurf .and. s_half_sq(k + 1) < s)
+                do while (k < nsurf)
+                    if (s_half_sq(k + 1) >= s) exit
                     k = k + 1
                 end do
                 if (s_half_sq(k + 1) > s_half_sq(k)) then

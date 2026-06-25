@@ -129,16 +129,7 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        integer :: nrho_arg, ntheta_arg, nzeta_arg
-
-        nrho_arg = 30
-        ntheta_arg = 48
-        nzeta_arg = 96
-        if (present(radial_spline_order)) nrho_arg = radial_spline_order
-        if (present(angular_spline_order)) ntheta_arg = angular_spline_order
-        if (present(grid_refinement)) nzeta_arg = grid_refinement
-
-        call get_boozer_coordinates_from_boozmn(booz_file, nrho_arg, ntheta_arg, nzeta_arg)
+        call get_boozer_coordinates_from_boozmn(booz_file)
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
