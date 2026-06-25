@@ -3,6 +3,7 @@ program test_read_namelist
     use utils, only: not_same
     use read_file, only: read_namelist
     use read_file, only: field_file, &
+                         field_type, &
                          M_pol, &
                          N_tor, &
                          s_tor, &
@@ -181,6 +182,29 @@ program test_read_namelist
 
     call remove_test_file(test_file)
 
+    call write_test_file(test_file, &
+                         test_field_file=test_field_file, &
+                         test_M_pol=test_M_pol, &
+                         test_N_tor=test_N_tor, &
+                         test_s_tor=test_s_tor, &
+                         test_sign_sqrtg=test_sign_sqrtg, &
+                         test_max_n_fieldlines=test_max_n_fieldlines, &
+                         test_should_calc_shaing_callen= &
+                         test_should_calc_shaing_callen, &
+                         test_n_eta=test_n_eta, &
+                         test_field_type='booz_xform')
+    call read_namelist(test_file)
+
+    if (field_type /= 'booz_xform') then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: field_type"
+        print *, "found: ", trim(field_type)
+        print *, "expected: 'booz_xform'"
+        test_failed = .true.
+    end if
+
+    call remove_test_file(test_file)
+
     if (test_failed) error stop
 
 contains
@@ -196,7 +220,8 @@ contains
                                test_sign_sqrtg, &
                                test_max_n_fieldlines, &
                                test_should_calc_shaing_callen, &
-                               test_n_eta)
+                               test_n_eta, &
+                               test_field_type)
 
         character(len=*), intent(in) :: filename
         character(len=*), intent(in), optional :: test_field_file
@@ -210,6 +235,7 @@ contains
         integer, intent(in), optional :: test_max_n_fieldlines
         logical, intent(in), optional :: test_should_calc_shaing_callen
         integer, intent(in), optional :: test_n_eta
+        character(len=*), intent(in), optional :: test_field_type
 
         integer :: unit
 
@@ -217,6 +243,9 @@ contains
         write (unit, "(A)") "&rabe_config"
         if (present(test_field_file)) then
             write (unit, "(A,A,A)") "field_file = '", test_field_file, "',"
+        end if
+        if (present(test_field_type)) then
+            write (unit, "(A,A,A)") "field_type = '", test_field_type, "',"
         end if
         if (present(test_M_pol)) then
             write (unit, "(A,F4.1,A)") "M_pol = ", test_M_pol, ","
