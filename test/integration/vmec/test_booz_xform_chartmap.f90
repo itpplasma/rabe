@@ -4,10 +4,10 @@
 !> The test asserts that:
 !>   1. boozer_field_t initializes without error via field_type='chartmap'
 !>   2. Bmod at three reference points agrees with the Python-computed grid values
-!>      to within 1 % (spline interpolation tolerance for a 20-point rho grid).
+!>      to within 1e-4 (fixture is FP-accurate after the off-by-one fix).
 !>   3. boozer_field_t initializes without error via field_type='booz_xform'
 !>   4. Bmod from the booz_xform path agrees with the chartmap path at the same
-!>      points to within 3 % (both paths reconstruct from the same .bc harmonics).
+!>      points to within 1e-4 (both paths use the fixed converter).
 !>
 !> All reference values were computed by bc_to_booz_xform + booz_xform_to_boozer_chartmap
 !> from circ.bc (a circular cross-section tokamak example).  The chartmap carries
@@ -26,12 +26,12 @@ program test_booz_xform_chartmap
     character(len=*), parameter :: boozmn_file = &
         'input/circ_boozmn.nc'
 
-    ! Reference Bmod values in Tesla at (rho, theta, zeta) grid points ir=9,it=12,iz=12
-    ! and ir=4,it=6,iz=6 and ir=14,it=18,iz=6 of the 20x24x24 grid.
-    ! Source: Python evaluation of the chartmap NetCDF (circ.bc -> boozmn -> chartmap).
-    real(dp), parameter :: Bmod_ref_1 = 2.2356729371e+00_dp  ! T (ir=9,it=12,iz=12)
-    real(dp), parameter :: Bmod_ref_2 = 1.9697513947e+00_dp  ! T (ir=4,it=6,iz=6)
-    real(dp), parameter :: Bmod_ref_3 = 2.0640586202e+00_dp  ! T (ir=14,it=18,iz=6)
+    ! Reference Bmod values in Tesla at (rho, theta, zeta) grid points ir=10,it=13,iz=13
+    ! and ir=5,it=7,iz=7 and ir=15,it=19,iz=7 of the 20x24x24 grid.
+    ! Source: circ.bc -> circ_boozmn.nc -> circ_chartmap.nc via fixed converter.
+    real(dp), parameter :: Bmod_ref_1 = 2.2254159391e+00_dp  ! T (ir=10,it=13,iz=13)
+    real(dp), parameter :: Bmod_ref_2 = 1.9672547079e+00_dp  ! T (ir=5,it=7,iz=7)
+    real(dp), parameter :: Bmod_ref_3 = 2.0602177739e+00_dp  ! T (ir=15,it=19,iz=7)
 
     ! Coordinates: (stor, theta, zeta) where stor = rho^2
     real(dp), parameter :: stor_1 = 0.224876_dp
@@ -46,11 +46,11 @@ program test_booz_xform_chartmap
     real(dp), parameter :: theta_3 = 4.7124_dp
     real(dp), parameter :: zeta_3 = 1.5708_dp
 
-    ! 1 % tolerance for on-grid spline interpolation from 20 rho points
-    real(dp), parameter :: reltol_chart = 1.0e-2_dp
-    ! 3 % tolerance for boozmn vs chartmap (both reconstruct from same bc harmonics,
-    ! different grid resolutions and interpolation paths)
-    real(dp), parameter :: reltol_booz = 3.0e-2_dp
+    ! 1e-4 relative tolerance: on-grid chartmap evaluation from 20-point rho grid
+    real(dp), parameter :: reltol_chart = 1.0e-4_dp
+    ! 1e-4 relative tolerance: boozmn vs chartmap cross-check (both paths use
+    ! the same fixed converter; off-by-one fix brings agreement to ~1e-8)
+    real(dp), parameter :: reltol_booz = 1.0e-4_dp
     real(dp), parameter :: abstol = 1.0e-10_dp
 
     real(dp) :: Bmod_chart_1, Bmod_chart_2, Bmod_chart_3

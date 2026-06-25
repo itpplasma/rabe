@@ -7,11 +7,12 @@ module boozer_sub
                            evaluate_batch_splines_3d_der, &
                            evaluate_batch_splines_3d_der2, &
                            destroy_batch_splines_1d, destroy_batch_splines_3d
-    use math_constants, only: TWOPI
     use, intrinsic :: iso_fortran_env, only: dp => real64
 
     implicit none
     private
+
+    real(dp), parameter :: TWOPI = 2.0_dp*3.14159265358979_dp
 
     ! Public API
     public :: get_boozer_coordinates
