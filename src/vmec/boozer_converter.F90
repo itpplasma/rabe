@@ -1080,7 +1080,7 @@ contains
         integer :: nrho, ntheta, nzeta
         integer :: ncid
         integer :: ns, nmn, nsurf_computed
-        integer :: nfp_int
+        integer :: nfp_int, lasym
         integer, allocatable :: jlist(:), ixm(:), ixn(:)
         real(dp), allocatable :: iota_full(:), buco_full(:), bvco_full(:), phi_full(:)
         ! bmnc_h shape is (nmn, nsurf_computed): Fortran reads NetCDF (comput_surfs,mn_mode)
@@ -1121,6 +1121,11 @@ contains
         allocate (rmnc_h(nmn, nsurf_computed))
 
         call nc_get(ncid, 'nfp_b', nfp_int)
+        call nc_get(ncid, 'lasym__logical__', lasym)
+        if (lasym /= 0) then
+            call nc_close(ncid)
+            error stop "asymmetric (lasym=1) boozmn not yet supported"
+        end if
         call nc_get(ncid, 'jlist', jlist)
         call nc_get(ncid, 'ixm_b', ixm)
         call nc_get(ncid, 'ixn_b', ixn)
