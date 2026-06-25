@@ -2,7 +2,8 @@ module boozer_field
 
     use, intrinsic :: iso_fortran_env, only: dp => real64
     use field_base, only: field_t
-    use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
+    use boozer_sub, only: get_boozer_coordinates, get_boozer_coordinates_from_chartmap, &
+                          get_boozer_coordinates_from_boozmn, splint_boozer_coord
 
     implicit none
     private
@@ -108,18 +109,22 @@ contains
                                     grid_refinement)
         use vector_potentail_mod, only: torflux
         use new_vmec_stuff_mod, only: nper, rmajor
-        use boozer_coordinates_mod, only: use_B_r
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: booz_file
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        use_B_r = .true.
-        call get_boozer_coordinates(booz_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
+        integer :: nrho_arg, ntheta_arg, nzeta_arg
+
+        nrho_arg = 30
+        ntheta_arg = 48
+        nzeta_arg = 96
+        if (present(radial_spline_order)) nrho_arg = radial_spline_order*10
+        if (present(angular_spline_order)) ntheta_arg = angular_spline_order*10
+        if (present(grid_refinement)) nzeta_arg = grid_refinement*16
+
+        call get_boozer_coordinates_from_boozmn(booz_file, nrho_arg, ntheta_arg, nzeta_arg)
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
@@ -132,18 +137,13 @@ contains
                                   grid_refinement)
         use vector_potentail_mod, only: torflux
         use new_vmec_stuff_mod, only: nper, rmajor
-        use boozer_coordinates_mod, only: use_B_r
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: chartmap_file
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        use_B_r = .true.
-        call get_boozer_coordinates(chartmap_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
+        call get_boozer_coordinates_from_chartmap(chartmap_file)
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor

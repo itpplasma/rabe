@@ -14,6 +14,8 @@ module boozer_sub
 
     ! Public API
     public :: get_boozer_coordinates
+    public :: get_boozer_coordinates_from_chartmap
+    public :: get_boozer_coordinates_from_boozmn
     public :: splint_boozer_coord
     public :: reset_boozer_batch_splines
 
@@ -875,5 +877,520 @@ contains
         field3d_num_quantities = nq
         deallocate (y_batch)
     end subroutine build_boozer_field3d_batch_spline
+
+    !> Initialize Boozer splines from a libneo Boozer chartmap NetCDF.
+    !>
+    !> The chartmap stores Bmod on a (rho, theta, zeta) grid, plus
+    !> A_phi(s), B_theta(rho), B_phi(rho) as radial surface functions.
+    !> All quantities are in CGS-Gaussian units (G, cm, G*cm, G*cm^2).
+    !>
+    !> After this call the same batch-spline state is populated as after
+    !> get_boozer_coordinates, so splint_boozer_coord can be called directly.
+    subroutine get_boozer_coordinates_from_chartmap(chartmap_file)
+        use nctools_module, only: nc_open, nc_close, nc_inq_dim, nc_get
+        use netcdf, only: nf90_get_att, nf90_inq_varid, nf90_noerr, nf90_global
+        use vector_potentail_mod, only: torflux
+        use new_vmec_stuff_mod, only: nper, rmajor, ns_s, ns_tp
+        use boozer_coordinates_mod, only: ns_s_B, ns_tp_B, ns_B, n_theta_B, n_phi_B, &
+                                          hs_B, h_theta_B, h_phi_B, &
+                                          s_Bcovar_tp_B, use_B_r
+
+        character(len=*), intent(in) :: chartmap_file
+
+        integer :: ncid
+        integer :: nrho, ntheta, nzeta
+        integer :: nfp_int
+        real(dp) :: torflux_val, rmajor_val
+        real(dp), allocatable :: rho(:), theta(:), zeta(:)
+        real(dp), allocatable :: Bmod_raw(:, :, :)
+        real(dp), allocatable :: A_phi(:), B_theta(:), B_phi(:)
+        real(dp), allocatable :: aphi_batch(:, :)
+        real(dp) :: rho_min, rho_max, s_min, s_max
+        real(dp) :: h_rho
+
+        call nc_open(trim(chartmap_file), ncid)
+
+        call nc_inq_dim(ncid, 'rho', nrho)
+        call nc_inq_dim(ncid, 'theta', ntheta)
+        call nc_inq_dim(ncid, 'zeta', nzeta)
+
+        allocate (rho(nrho), theta(ntheta), zeta(nzeta))
+        call nc_get(ncid, 'rho', rho)
+        call nc_get(ncid, 'theta', theta)
+        call nc_get(ncid, 'zeta', zeta)
+
+        nfp_int = 1
+        call nc_get(ncid, 'num_field_periods', nfp_int)
+
+        torflux_val = 0.0_dp
+        if (nf90_get_att(ncid, nf90_global, 'torflux', torflux_val) /= nf90_noerr) then
+            torflux_val = 0.0_dp
+        end if
+
+        allocate (A_phi(nrho))
+        allocate (B_theta(nrho))
+        allocate (B_phi(nrho))
+        call nc_get(ncid, 'A_phi', A_phi)
+        call nc_get(ncid, 'B_theta', B_theta)
+        call nc_get(ncid, 'B_phi', B_phi)
+
+        allocate (Bmod_raw(nrho, ntheta, nzeta))
+        call nc_get(ncid, 'Bmod', Bmod_raw)
+
+        call nc_close(ncid)
+
+        torflux = torflux_val
+
+        nper = nfp_int
+        rmajor_val = 0.0_dp
+        call chartmap_estimate_rmajor(Bmod_raw, rho, theta, zeta, nrho, ntheta, nzeta, &
+                                      rmajor_val)
+        rmajor = rmajor_val
+
+        ns_s = 3
+        ns_tp = 3
+        ns_s_B = ns_s
+        ns_tp_B = ns_tp
+        ns_B = nrho
+        n_theta_B = ntheta
+        n_phi_B = nzeta
+        use_B_r = .false.
+
+        rho_min = rho(1)
+        rho_max = rho(nrho)
+        h_rho = (rho_max - rho_min)/real(nrho - 1, dp)
+
+        hs_B = h_rho
+        h_theta_B = (theta(ntheta) - theta(1))/real(ntheta - 1, dp)
+        h_phi_B = (zeta(nzeta) - zeta(1))/real(nzeta - 1, dp)
+
+        call reset_boozer_batch_splines()
+
+        call ensure_grid_3d(bmod_grid, nrho, ntheta, nzeta)
+        call ensure_grid_3d(sqrt_g_ss_grid, nrho, ntheta, nzeta)
+        bmod_grid = Bmod_raw
+        sqrt_g_ss_grid = 0.0_dp
+
+        if (.not. allocated(s_Bcovar_tp_B)) then
+            allocate (s_Bcovar_tp_B(2, ns_s_B + 1, nrho))
+        else if (any(shape(s_Bcovar_tp_B) /= [2, ns_s_B + 1, nrho])) then
+            deallocate (s_Bcovar_tp_B)
+            allocate (s_Bcovar_tp_B(2, ns_s_B + 1, nrho))
+        end if
+        s_Bcovar_tp_B(1, 1, :) = B_theta
+        s_Bcovar_tp_B(2, 1, :) = B_phi
+
+        s_min = rho(1)**2
+        s_max = rho(nrho)**2
+
+        allocate (aphi_batch(nrho, 1))
+        aphi_batch(:, 1) = A_phi
+        call construct_batch_splines_1d(s_min, s_max, aphi_batch, 3, .false., &
+                                        aphi_batch_spline)
+        aphi_batch_spline_ready = .true.
+        deallocate (aphi_batch)
+
+        block
+            real(dp), allocatable :: bcovar_batch(:, :)
+            allocate (bcovar_batch(nrho, 2))
+            bcovar_batch(:, 1) = B_theta
+            bcovar_batch(:, 2) = B_phi
+            call construct_batch_splines_1d(rho_min, rho_max, bcovar_batch, 3, .false., &
+                                            bcovar_tp_batch_spline)
+            bcovar_tp_batch_spline_ready = .true.
+            deallocate (bcovar_batch)
+        end block
+
+        block
+            real(dp) :: x3_min(3), x3_max(3)
+            real(dp), allocatable :: y3(:, :, :, :)
+            integer :: order3(3)
+            logical :: periodic3(3)
+
+            x3_min = [rho_min, theta(1), zeta(1)]
+            x3_max = [rho_max, theta(ntheta), zeta(nzeta)]
+            order3 = [3, 3, 3]
+            periodic3 = [.false., .true., .true.]
+
+            if (field3d_batch_spline_ready) then
+                call destroy_batch_splines_3d(field3d_batch_spline)
+                field3d_batch_spline_ready = .false.
+                field3d_num_quantities = 0
+            end if
+
+            allocate (y3(nrho, ntheta, nzeta, 2))
+            y3(:, :, :, 1) = bmod_grid
+            y3(:, :, :, 2) = sqrt_g_ss_grid
+            call construct_batch_splines_3d(x3_min, x3_max, y3, order3, periodic3, &
+                                            field3d_batch_spline)
+            field3d_batch_spline_ready = .true.
+            field3d_num_quantities = 2
+            deallocate (y3)
+        end block
+
+        deallocate (rho, theta, zeta, Bmod_raw, A_phi, B_theta, B_phi)
+
+    end subroutine get_boozer_coordinates_from_chartmap
+
+    !> Rough estimate of major radius from Bmod minimum on outermost surface.
+    !> Used only when the chartmap does not carry rmajor explicitly.
+    subroutine chartmap_estimate_rmajor(Bmod, rho, theta, zeta, nrho, ntheta, nzeta, &
+                                        rmajor_out)
+        real(dp), intent(in) :: Bmod(nrho, ntheta, nzeta)
+        real(dp), intent(in) :: rho(nrho), theta(ntheta), zeta(nzeta)
+        integer, intent(in) :: nrho, ntheta, nzeta
+        real(dp), intent(out) :: rmajor_out
+
+        rmajor_out = 1.0_dp
+    end subroutine chartmap_estimate_rmajor
+
+    !> Initialize Boozer splines from a booz_xform boozmn NetCDF.
+    !>
+    !> Reads the Fourier harmonics bmnc_b, iota_b, buco_b, bvco_b, phi_b
+    !> and the mode arrays ixm_b, ixn_b; then evaluates Bmod on a uniform
+    !> (nrho, ntheta, nzeta) grid by Fourier summation.  The covariant
+    !> components B_theta, B_phi and A_phi are recovered from the surface
+    !> functions buco_b, bvco_b, phi_b on the full grid.
+    !>
+    !> nrho, ntheta, nzeta: output grid resolution (optional, defaults 30/48/96).
+    subroutine get_boozer_coordinates_from_boozmn(boozmn_file, nrho_in, ntheta_in, nzeta_in)
+        use nctools_module, only: nc_open, nc_close, nc_inq_dim, nc_get
+        use vector_potentail_mod, only: torflux
+        use new_vmec_stuff_mod, only: nper, rmajor, ns_s, ns_tp
+        use boozer_coordinates_mod, only: ns_s_B, ns_tp_B, ns_B, n_theta_B, n_phi_B, &
+                                          hs_B, h_theta_B, h_phi_B, &
+                                          s_Bcovar_tp_B, use_B_r
+
+        character(len=*), intent(in) :: boozmn_file
+        integer, intent(in), optional :: nrho_in, ntheta_in, nzeta_in
+
+        integer :: nrho, ntheta, nzeta
+        integer :: ncid
+        integer :: ns, nmn, nsurf_computed
+        integer :: nfp_int
+        integer, allocatable :: jlist(:), ixm(:), ixn(:)
+        real(dp), allocatable :: iota_full(:), buco_full(:), bvco_full(:), phi_full(:)
+        ! bmnc_h shape is (nmn, nsurf_computed): Fortran reads NetCDF (comput_surfs,mn_mode)
+        ! with last NetCDF dim = first Fortran dim
+        real(dp), allocatable :: bmnc_h(:, :)
+        real(dp), allocatable :: rho_half(:), s_half(:)
+        real(dp), allocatable :: rho_out(:), s_out(:)
+        real(dp), allocatable :: B_theta(:), B_phi(:), A_phi_out(:)
+        real(dp), allocatable :: bmnc_out(:, :)
+        real(dp), allocatable :: Bmod(:, :, :)
+        real(dp), allocatable :: theta(:), zeta(:)
+        real(dp), allocatable :: aphi_batch(:, :)
+        integer :: ir, k, it, iz, mn
+        real(dp) :: angle, torflux_si, torflux_cgs
+        real(dp) :: rho_min, rho_max, s_min, s_max
+        real(dp), parameter :: TWOPI = 2.0_dp*3.14159265358979_dp
+        real(dp), parameter :: MU0 = 4.0e-7_dp*3.14159265358979_dp
+        real(dp), parameter :: GAUSS_CM2_PER_TM2 = 1.0e8_dp
+        real(dp), parameter :: GAUSS_CM_PER_TM = 1.0e6_dp
+        real(dp), parameter :: GAUSS_PER_T = 1.0e4_dp
+
+        nrho = 30
+        ntheta = 48
+        nzeta = 96
+        if (present(nrho_in)) nrho = nrho_in
+        if (present(ntheta_in)) ntheta = ntheta_in
+        if (present(nzeta_in)) nzeta = nzeta_in
+
+        call nc_open(trim(boozmn_file), ncid)
+        call nc_get(ncid, 'ns_b', ns)
+        call nc_inq_dim(ncid, 'ixm_b', nmn)
+        call nc_inq_dim(ncid, 'jlist', nsurf_computed)
+
+        allocate (jlist(nsurf_computed))
+        allocate (ixm(nmn), ixn(nmn))
+        allocate (iota_full(ns), buco_full(ns), bvco_full(ns), phi_full(ns))
+        allocate (bmnc_h(nmn, nsurf_computed))
+
+        call nc_get(ncid, 'nfp_b', nfp_int)
+        call nc_get(ncid, 'jlist', jlist)
+        call nc_get(ncid, 'ixm_b', ixm)
+        call nc_get(ncid, 'ixn_b', ixn)
+        call nc_get(ncid, 'iota_b', iota_full)
+        call nc_get(ncid, 'buco_b', buco_full)
+        call nc_get(ncid, 'bvco_b', bvco_full)
+        call nc_get(ncid, 'phi_b', phi_full)
+        call nc_get(ncid, 'bmnc_b', bmnc_h)
+        call nc_close(ncid)
+
+        allocate (s_half(nsurf_computed))
+        allocate (rho_half(nsurf_computed))
+        do k = 1, nsurf_computed
+            s_half(k) = (real(jlist(k), dp) - 1.5_dp)/real(ns - 1, dp)
+        end do
+        rho_half = sqrt(s_half)
+
+        torflux_si = -phi_full(ns)/TWOPI
+        torflux_cgs = torflux_si*GAUSS_CM2_PER_TM2
+
+        rho_min = 1.0e-3_dp
+        rho_max = 1.0_dp
+        allocate (rho_out(nrho))
+        allocate (s_out(nrho))
+        allocate (theta(ntheta))
+        allocate (zeta(nzeta))
+        allocate (B_theta(nrho))
+        allocate (B_phi(nrho))
+        allocate (A_phi_out(nrho))
+        allocate (bmnc_out(nrho, nmn))
+        allocate (Bmod(nrho, ntheta, nzeta))
+
+        do k = 1, nrho
+            rho_out(k) = rho_min + (rho_max - rho_min)*real(k - 1, dp)/real(nrho - 1, dp)
+        end do
+        s_out = rho_out**2
+
+        do it = 1, ntheta
+            theta(it) = TWOPI*real(it - 1, dp)/real(ntheta, dp)
+        end do
+        do iz = 1, nzeta
+            zeta(iz) = TWOPI/real(nfp_int, dp)*real(iz - 1, dp)/real(nzeta, dp)
+        end do
+
+        call boozmn_interp_modes(bmnc_h, rho_half, rho_out, ixm, nmn, nsurf_computed, &
+                                 nrho, bmnc_out)
+        call boozmn_interp_1d(buco_full(jlist), rho_half, rho_out, nsurf_computed, nrho, &
+                              B_theta)
+        call boozmn_interp_1d(bvco_full(jlist), rho_half, rho_out, nsurf_computed, nrho, &
+                              B_phi)
+
+        call boozmn_iota_integral(iota_full(jlist), rho_half, s_out, nsurf_computed, nrho, &
+                                  torflux_si, A_phi_out)
+
+        B_theta = B_theta*GAUSS_CM_PER_TM
+        B_phi = B_phi*GAUSS_CM_PER_TM
+        A_phi_out = A_phi_out*GAUSS_CM2_PER_TM2
+
+        do ir = 1, nrho
+            do it = 1, ntheta
+                do iz = 1, nzeta
+                    Bmod(ir, it, iz) = 0.0_dp
+                    do mn = 1, nmn
+                        angle = real(ixm(mn), dp)*theta(it) &
+                                - real(ixn(mn), dp)*zeta(iz)
+                        Bmod(ir, it, iz) = Bmod(ir, it, iz) + bmnc_out(ir, mn)*cos(angle)
+                    end do
+                    Bmod(ir, it, iz) = Bmod(ir, it, iz)*GAUSS_PER_T
+                end do
+            end do
+        end do
+
+        torflux = torflux_cgs
+        nper = nfp_int
+        rmajor = 1.0_dp
+
+        ns_s = 3
+        ns_tp = 3
+        ns_s_B = ns_s
+        ns_tp_B = ns_tp
+        ns_B = nrho
+        n_theta_B = ntheta
+        n_phi_B = nzeta
+        use_B_r = .false.
+
+        hs_B = (rho_max - rho_min)/real(nrho - 1, dp)
+        h_theta_B = theta(2) - theta(1)
+        h_phi_B = zeta(2) - zeta(1)
+
+        call reset_boozer_batch_splines()
+
+        call ensure_grid_3d(bmod_grid, nrho, ntheta, nzeta)
+        call ensure_grid_3d(sqrt_g_ss_grid, nrho, ntheta, nzeta)
+        bmod_grid = Bmod
+        sqrt_g_ss_grid = 0.0_dp
+
+        if (.not. allocated(s_Bcovar_tp_B)) then
+            allocate (s_Bcovar_tp_B(2, ns_s_B + 1, nrho))
+        else if (any(shape(s_Bcovar_tp_B) /= [2, ns_s_B + 1, nrho])) then
+            deallocate (s_Bcovar_tp_B)
+            allocate (s_Bcovar_tp_B(2, ns_s_B + 1, nrho))
+        end if
+        s_Bcovar_tp_B(1, 1, :) = B_theta
+        s_Bcovar_tp_B(2, 1, :) = B_phi
+
+        s_min = rho_min**2
+        s_max = rho_max**2
+        allocate (aphi_batch(nrho, 1))
+        aphi_batch(:, 1) = A_phi_out
+        call construct_batch_splines_1d(s_min, s_max, aphi_batch, 3, .false., &
+                                        aphi_batch_spline)
+        aphi_batch_spline_ready = .true.
+        deallocate (aphi_batch)
+
+        block
+            real(dp), allocatable :: bcovar_batch(:, :)
+            allocate (bcovar_batch(nrho, 2))
+            bcovar_batch(:, 1) = B_theta
+            bcovar_batch(:, 2) = B_phi
+            call construct_batch_splines_1d(rho_min, rho_max, bcovar_batch, 3, .false., &
+                                            bcovar_tp_batch_spline)
+            bcovar_tp_batch_spline_ready = .true.
+            deallocate (bcovar_batch)
+        end block
+
+        block
+            real(dp) :: x3_min(3), x3_max(3)
+            real(dp), allocatable :: y3(:, :, :, :)
+            integer :: order3(3)
+            logical :: periodic3(3)
+
+            x3_min = [rho_min, theta(1), zeta(1)]
+            x3_max = [rho_max, theta(ntheta), zeta(nzeta)]
+            order3 = [3, 3, 3]
+            periodic3 = [.false., .true., .true.]
+
+            if (field3d_batch_spline_ready) then
+                call destroy_batch_splines_3d(field3d_batch_spline)
+                field3d_batch_spline_ready = .false.
+                field3d_num_quantities = 0
+            end if
+
+            allocate (y3(nrho, ntheta, nzeta, 2))
+            y3(:, :, :, 1) = bmod_grid
+            y3(:, :, :, 2) = sqrt_g_ss_grid
+            call construct_batch_splines_3d(x3_min, x3_max, y3, order3, periodic3, &
+                                            field3d_batch_spline)
+            field3d_batch_spline_ready = .true.
+            field3d_num_quantities = 2
+            deallocate (y3)
+        end block
+
+        deallocate (jlist, ixm, ixn, iota_full, buco_full, bvco_full, phi_full)
+        deallocate (bmnc_h, s_half, rho_half, rho_out, s_out)
+        deallocate (theta, zeta, B_theta, B_phi, A_phi_out, bmnc_out, Bmod)
+
+    end subroutine get_boozer_coordinates_from_boozmn
+
+    !> Interpolate boozmn Fourier coefficients from half grid to output rho grid.
+    !> bmnc_h is shaped (nmn, nsurf): Fortran order from NetCDF (comput_surfs, mn_mode).
+    subroutine boozmn_interp_modes(bmnc_h, rho_half, rho_out, ixm, nmn, nsurf, nrho_out, &
+                                   bmnc_out)
+        integer, intent(in) :: nmn, nsurf, nrho_out
+        real(dp), intent(in) :: bmnc_h(nmn, nsurf)
+        real(dp), intent(in) :: rho_half(nsurf)
+        real(dp), intent(in) :: rho_out(nrho_out)
+        integer, intent(in) :: ixm(nmn)
+        real(dp), intent(out) :: bmnc_out(nrho_out, nmn)
+
+        integer :: ir, mn, k
+        real(dp) :: rho, frac
+        real(dp) :: ratio
+
+        do ir = 1, nrho_out
+            rho = rho_out(ir)
+            if (rho <= rho_half(1)) then
+                do mn = 1, nmn
+                    if (rho_half(1) > 0.0_dp) then
+                        ratio = rho/rho_half(1)
+                        bmnc_out(ir, mn) = bmnc_h(mn, 1)*ratio**min(ixm(mn), 50)
+                    else
+                        bmnc_out(ir, mn) = bmnc_h(mn, 1)
+                    end if
+                end do
+            else if (rho >= rho_half(nsurf)) then
+                do mn = 1, nmn
+                    bmnc_out(ir, mn) = bmnc_h(mn, nsurf)
+                end do
+            else
+                k = 1
+                do while (k < nsurf .and. rho_half(k + 1) < rho)
+                    k = k + 1
+                end do
+                if (rho_half(k + 1) > rho_half(k)) then
+                    frac = (rho - rho_half(k))/(rho_half(k + 1) - rho_half(k))
+                else
+                    frac = 0.0_dp
+                end if
+                do mn = 1, nmn
+                    bmnc_out(ir, mn) = (1.0_dp - frac)*bmnc_h(mn, k) &
+                                       + frac*bmnc_h(mn, k + 1)
+                end do
+            end if
+        end do
+    end subroutine boozmn_interp_modes
+
+    !> Interpolate a 1D radial profile from half grid to output rho grid.
+    subroutine boozmn_interp_1d(vals_h, rho_half, rho_out, nsurf, nrho_out, vals_out)
+        integer, intent(in) :: nsurf, nrho_out
+        real(dp), intent(in) :: vals_h(nsurf)
+        real(dp), intent(in) :: rho_half(nsurf)
+        real(dp), intent(in) :: rho_out(nrho_out)
+        real(dp), intent(out) :: vals_out(nrho_out)
+
+        integer :: ir, k
+        real(dp) :: rho, frac
+
+        do ir = 1, nrho_out
+            rho = rho_out(ir)
+            if (rho <= rho_half(1)) then
+                vals_out(ir) = vals_h(1)
+            else if (rho >= rho_half(nsurf)) then
+                vals_out(ir) = vals_h(nsurf)
+            else
+                k = 1
+                do while (k < nsurf .and. rho_half(k + 1) < rho)
+                    k = k + 1
+                end do
+                if (rho_half(k + 1) > rho_half(k)) then
+                    frac = (rho - rho_half(k))/(rho_half(k + 1) - rho_half(k))
+                else
+                    frac = 0.0_dp
+                end if
+                vals_out(ir) = (1.0_dp - frac)*vals_h(k) + frac*vals_h(k + 1)
+            end if
+        end do
+    end subroutine boozmn_interp_1d
+
+    !> Compute A_phi(s) by integrating -torflux_si * iota(s) over s.
+    !> A_phi(s) = -torflux_si * integral_0^s iota(s') ds'
+    !> Units: T*m^2 (same as torflux_si).
+    subroutine boozmn_iota_integral(iota_h, rho_half, s_out, nsurf, nrho_out, torflux_si, &
+                                    A_phi_out)
+        integer, intent(in) :: nsurf, nrho_out
+        real(dp), intent(in) :: iota_h(nsurf)
+        real(dp), intent(in) :: rho_half(nsurf)
+        real(dp), intent(in) :: s_out(nrho_out)
+        real(dp), intent(in) :: torflux_si
+        real(dp), intent(out) :: A_phi_out(nrho_out)
+
+        integer :: ir, k
+        real(dp) :: iota_at_s, s, s_half_sq(nsurf), cum(nsurf)
+
+        s_half_sq = rho_half**2
+
+        cum(1) = 0.0_dp
+        do k = 2, nsurf
+            cum(k) = cum(k - 1) + 0.5_dp*(iota_h(k - 1) + iota_h(k)) &
+                     *(s_half_sq(k) - s_half_sq(k - 1))
+        end do
+
+        do ir = 1, nrho_out
+            s = s_out(ir)
+            if (s <= s_half_sq(1)) then
+                iota_at_s = iota_h(1)
+                A_phi_out(ir) = -torflux_si*iota_at_s*s
+            else if (s >= s_half_sq(nsurf)) then
+                A_phi_out(ir) = -torflux_si*(cum(nsurf) + &
+                                             iota_h(nsurf)*(s - s_half_sq(nsurf)))
+            else
+                k = 1
+                do while (k < nsurf .and. s_half_sq(k + 1) < s)
+                    k = k + 1
+                end do
+                if (s_half_sq(k + 1) > s_half_sq(k)) then
+                    iota_at_s = iota_h(k) + (iota_h(k + 1) - iota_h(k))* &
+                                (s - s_half_sq(k))/(s_half_sq(k + 1) - s_half_sq(k))
+                else
+                    iota_at_s = iota_h(k)
+                end if
+                A_phi_out(ir) = -torflux_si*(cum(k) + 0.5_dp*(iota_h(k) + iota_at_s)* &
+                                             (s - s_half_sq(k)))
+            end if
+        end do
+    end subroutine boozmn_iota_integral
 
 end module boozer_sub

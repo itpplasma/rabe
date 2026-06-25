@@ -29,3 +29,8 @@ add_executable(test_field_type_loader.x test_field_type_loader.f90)
 target_link_libraries(test_field_type_loader.x vmec_lib utils_lib)
 add_test(TestFieldTypeLoader test_field_type_loader.x)
 set_tests_properties(TestFieldTypeLoader PROPERTIES LABELS "quick")
+
+add_executable(test_booz_xform_chartmap.x test_booz_xform_chartmap.f90)
+target_link_libraries(test_booz_xform_chartmap.x vmec_lib utils_lib)
+add_test(TestBoozXformChartmap test_booz_xform_chartmap.x)
+set_tests_properties(TestBoozXformChartmap PROPERTIES LABELS "quick")
