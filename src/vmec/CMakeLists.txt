@@ -4,5 +4,5 @@ add_library(vmec_lib STATIC
             )
 
 include(libneo)
-target_link_libraries(vmec_lib PRIVATE utils_lib field_lib LIBNEO::neo)
+target_link_libraries(vmec_lib PRIVATE utils_lib field_lib netcdf_lib LIBNEO::neo)
 target_include_directories(vmec_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

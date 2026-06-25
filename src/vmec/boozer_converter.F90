@@ -943,17 +943,18 @@ contains
         ncstat = nf90_inq_varid(ncid, 'x', varid)
         if (ncstat == nf90_noerr) then
             block
+                ! NetCDF x(zeta,theta,rho) in C order -> Fortran x3(rho,theta,zeta)
                 real(dp), allocatable :: x3(:, :, :), y3(:, :, :)
                 integer :: it, iz, idx
-                allocate (x3(nzeta, ntheta, nrho), y3(nzeta, ntheta, nrho))
+                allocate (x3(nrho, ntheta, nzeta), y3(nrho, ntheta, nzeta))
                 call nc_get(ncid, 'x', x3)
                 call nc_get(ncid, 'y', y3)
                 idx = 0
                 do iz = 1, nzeta
                     do it = 1, ntheta
                         idx = idx + 1
-                        xyz_outer(idx, 1) = x3(iz, it, nrho)
-                        xyz_outer(idx, 2) = y3(iz, it, nrho)
+                        xyz_outer(idx, 1) = x3(nrho, it, iz)
+                        xyz_outer(idx, 2) = y3(nrho, it, iz)
                     end do
                 end do
                 deallocate (x3, y3)

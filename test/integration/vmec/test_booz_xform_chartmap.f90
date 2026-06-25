@@ -10,8 +10,8 @@
 !>      points to within 3 % (both paths reconstruct from the same .bc harmonics).
 !>
 !> All reference values were computed by bc_to_booz_xform + booz_xform_to_boozer_chartmap
-!> from /home/ert/code/NEO-RT/examples/circ.bc.  The chartmap carries nrho=20,
-!> ntheta=24, nzeta=24.
+!> from circ.bc (a circular cross-section tokamak example).  The chartmap carries
+!> nrho=20, ntheta=24, nzeta=24.
 program test_booz_xform_chartmap
     use, intrinsic :: iso_fortran_env, only: dp => real64
     use boozer_field, only: boozer_field_t
