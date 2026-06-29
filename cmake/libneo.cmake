@@ -21,9 +21,7 @@ else()
         libneo
         GIT_REPOSITORY https://github.com/itpplasma/libneo.git
         GIT_TAG        ${_libneo_ref}
-        PATCH_COMMAND  ${CMAKE_COMMAND} -E copy
-                       ${CMAKE_CURRENT_LIST_DIR}/libneo_CMakeLists.txt
-                       <SOURCE_DIR>/CMakeLists.txt
+        EXCLUDE_FROM_ALL
     )
     FetchContent_MakeAvailable(libneo)
 endif()
