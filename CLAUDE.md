@@ -42,7 +42,9 @@ rabe_lib (main static library)
 │                       get_covariant_components)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
-│   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion
+│   boozmn_reader.f90 - booz_xform boozmn loader; builds Boozer splines via
+│                       libneo build_boozer_from_chartmap (VMEC-to-Boozer and
+│                       chartmap conversion live in libneo boozer_sub)
 ├── fieldline_lib (src/fieldline/) — see src/fieldline/README.md
 │   fieldline.f90, fieldline_integrals.f90, fieldline_integrands.f90,
 │   fieldline_labels.f90, make_fieldline.f90, surface_average.f90

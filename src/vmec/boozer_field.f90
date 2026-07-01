@@ -2,8 +2,9 @@ module boozer_field
 
     use constants, only: dp
     use field_base, only: field_t
-    use boozer_sub, only: get_boozer_coordinates, get_boozer_coordinates_from_chartmap, &
-                          get_boozer_coordinates_from_boozmn, splint_boozer_coord
+    use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
+    use boozer_chartmap, only: load_boozer_from_chartmap
+    use boozmn_reader, only: load_boozer_from_boozmn
 
     implicit none
     private
@@ -129,7 +130,7 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        call get_boozer_coordinates_from_boozmn(booz_file)
+        call load_boozer_from_boozmn(booz_file)
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
@@ -149,7 +150,7 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
-        call get_boozer_coordinates_from_chartmap(chartmap_file)
+        call load_boozer_from_chartmap(chartmap_file)
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
@@ -197,8 +198,8 @@ contains
                                  B_varphi_B, dB_varphi_B, &
                                  d2B_varphi_B, &
                                  Bmod_B, dBmod_B, d2Bmod_B, &
-                                 sqrt_g_ss_B, &
-                                 B_r, dB_r, d2B_r)
+                                 B_r, dB_r, d2B_r, &
+                                 sqrt_g_ss_B)
 
         aiota = -dA_phi_dr/dA_theta_dr
 
@@ -262,8 +263,8 @@ contains
                                  B_varphi_B, dB_varphi_B, &
                                  d2B_varphi_B, &
                                  Bmod_B, dBmod_B, d2Bmod_B, &
-                                 sqrt_g_ss_B, &
-                                 B_r, dB_r, d2B_r)
+                                 B_r, dB_r, d2B_r, &
+                                 sqrt_g_ss_B)
 
         iota = -dA_phi_dr/dA_theta_dr
     end subroutine get_iota
@@ -300,8 +301,8 @@ contains
                                  B_phi_covariant, dB_varphi_B, &
                                  d2B_varphi_B, &
                                  Bmod_B, dBmod_B, d2Bmod_B, &
-                                 sqrt_g_ss_B, &
-                                 B_r, dB_r, d2B_r)
+                                 B_r, dB_r, d2B_r, &
+                                 sqrt_g_ss_B)
 
         B_phi_covariant = B_phi_covariant*cm2m*gauss2tesla
         B_theta_covariant = B_theta_covariant*cm2m*gauss2tesla
@@ -386,8 +387,8 @@ contains
                                  dummy(7), dummy(8), dummy(9), &
                                  dummy(10), dummy(11), dummy(12), &
                                  dummy(13), dummy(14:16), dummy(17:22), &
-                                 sqrt_g_ss, &
-                                 dummy(23), dummy(24:26), dummy(27:32))
+                                 dummy(23), dummy(24:26), dummy(27:32), &
+                                 sqrt_g_ss)
         nabla_s = sqrt_g_ss/cm2m
 
     end subroutine compute_nabla_s

@@ -185,8 +185,11 @@ program test_against_neo_qh
             test_failed = .true.
         end if
 
+        ! dB_dx has symmetry-zero components (exact 0 in the reference) whose
+        ! computed value is compiler-roundoff, not physics; use the near-zero
+        ! abstol floor while reltol still governs the O(1) components.
         if (not_same(dB_dx_b, dB_dx_ref(case, :), &
-                     reltol_in=reltol, abstol_in=abstol)) then
+                     reltol_in=reltol, abstol_in=abstol_for_zero)) then
             print *, "dB_dx mismatch at case ", case
             print *, "  boozer: ", dB_dx_b
             print *, "  neo:    ", dB_dx_ref(case, :)
