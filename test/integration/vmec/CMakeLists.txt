@@ -34,3 +34,8 @@ add_executable(test_booz_xform_chartmap.x test_booz_xform_chartmap.f90)
 target_link_libraries(test_booz_xform_chartmap.x vmec_lib utils_lib)
 add_test(TestBoozXformChartmap test_booz_xform_chartmap.x)
 set_tests_properties(TestBoozXformChartmap PROPERTIES LABELS "quick")
+
+add_executable(test_booz_xform_signs.x test_booz_xform_signs.f90)
+target_link_libraries(test_booz_xform_signs.x vmec_lib utils_lib netcdf_lib)
+add_test(TestBoozXformSigns test_booz_xform_signs.x)
+set_tests_properties(TestBoozXformSigns PROPERTIES LABELS "quick")

@@ -1,5 +1,5 @@
 program test_read_namelist
-    use constants, only: dp, pi
+    use constants, only: dp
     use utils, only: not_same
     use read_file, only: read_namelist
     use read_file, only: field_file, &

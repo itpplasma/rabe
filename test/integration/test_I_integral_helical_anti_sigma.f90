@@ -1,11 +1,9 @@
 program test_I_integral_helical_anti_sigma
-    use myplot_module, only: myplot
     use constants, only: dp, pi
-    use utils, only: linspace, not_same
+    use utils, only: not_same
     use anti_sigma_field, only: anti_sigma_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use deviation, only: calc_deviation
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_delta_eta
