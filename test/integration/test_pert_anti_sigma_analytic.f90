@@ -2,10 +2,10 @@ program test_pert_anti_sigma_analytic
     use constants, only: dp, pi
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
-    use fieldline_integrals, only: fourier_transform_over_label
-    use fieldline_integrals, only: fieldline_modes_t
+    use fieldline_labels, only: fourier_transform_over_label
+    use fieldline_labels, only: fieldline_modes_t
     use utils, only: linspace
     use utils, only: not_same
 
@@ -26,16 +26,14 @@ program test_pert_anti_sigma_analytic
 
     real(dp), parameter :: reltol_delta_eta = (B_pert/B_max)
     real(dp), parameter :: abstol = 1e-15
-    real(dp), parameter :: phi_tol = 2e-5
 
-    integer, parameter :: n_fieldlines = 50
-    integer, parameter :: n_modes = n_fieldlines/2 + 1
+    integer, parameter :: max_n_fieldlines = 50
 
-    real(dp), dimension(n_fieldlines) :: xi_0
-    real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp), parameter :: iota = 0.00_dp ! analytic formula for small iota
     real(dp), parameter :: nfp = 1.0_dp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    integer :: n_fieldlines
+    integer :: n_modes
+    type(flock_of_fieldlines_t) :: flock
     type(fieldline_modes_t) :: fieldline_modes
 
     integer :: current
@@ -53,18 +51,10 @@ program test_pert_anti_sigma_analytic
                                                    M_pol_pert, &
                                                    N_tor_pert, &
                                                    B_pert)
-    call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
-    xi_0 = temp(1:n_fieldlines)
-
-    call make_flock_of_fieldlines(fieldlines, &
-                                  xi_0, &
-                                  iota, &
-                                  perturbed_field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp, &
-                                  phi_tol)
-    call fourier_transform_over_label(fieldlines, &
+    call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, perturbed_field, M_pol, N_tor, nfp)
+    n_fieldlines = size(flock%fieldlines)
+    n_modes = n_fieldlines/2 + 1
+    call fourier_transform_over_label(flock, &
                                       fieldline_modes)
 
     if (not_same(delta_eta_1, fieldline_modes%delta_eta%cos_coeffs(2), &
@@ -117,9 +107,9 @@ program test_pert_anti_sigma_analytic
     end do
 
     if (should_plot) then
-        call plot_fieldlines_over_field(fieldlines, field)
-        call plot_delta_A(fieldlines)
-        call plot_delta_eta(fieldlines, delta_eta_1)
+        call plot_fieldlines_over_field(flock%fieldlines, field)
+        call plot_delta_A(flock%fieldlines)
+        call plot_delta_eta(flock%fieldlines, flock%iota_p, delta_eta_1)
     end if
 
     if (test_failed) error stop

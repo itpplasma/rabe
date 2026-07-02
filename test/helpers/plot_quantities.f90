@@ -1,12 +1,12 @@
 module plot_quantities
     use constants, only: dp, pi
     use myplot_module, only: myplot
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
     use utils, only: linspace
     use field_base, only: field_t
-    use fieldline_integrals, only: fourier_transform_over_label
-    use fieldline_integrals, only: fieldline_modes_t
-    use fieldline_integrals, only: modes_t
+    use fieldline_labels, only: fourier_transform_over_label
+    use fieldline_labels, only: fieldline_modes_t
+    use fieldline_labels, only: modes_t
 
     implicit none
 
@@ -18,8 +18,9 @@ module plot_quantities
 
 contains
 
-    subroutine plot_maxima_over_label(fieldlines)
-        type(fieldline_t), dimension(:) :: fieldlines
+    subroutine plot_maxima_over_label(fieldlines, iota_p)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: iota_p
 
         type(myplot) :: plt
         real(dp), dimension(size(fieldlines)) :: xi_0_shifted
@@ -28,7 +29,7 @@ contains
                             ylabel="$B$ [T]", &
                             figsize=[7, 7], &
                             legend=.true.)
-        xi_0_shifted = modulo(fieldlines%xi_0 - fieldlines%iota_p, 2.0_dp*pi)
+        xi_0_shifted = modulo(fieldlines%xi_0 - iota_p, 2.0_dp*pi)
         call plt%add_plot(xi_0_shifted/pi, &
                           fieldlines%B_max(1), &
                           label="left $B_{max}$", &
@@ -72,8 +73,8 @@ contains
         deallocate (theta, phi, B)
     end subroutine plot_field_along_chi_line
 
-    subroutine plot_spectra(fieldlines)
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+    subroutine plot_spectra(flock)
+        type(flock_of_fieldlines_t), intent(in) :: flock
 
         type(fieldline_modes_t) :: modes
 
@@ -85,7 +86,7 @@ contains
         type(myplot) :: plt
         character(len=1024) :: label
 
-        call fourier_transform_over_label(fieldlines, modes)
+        call fourier_transform_over_label(flock, modes)
         n_modes = size(modes%delta_eta%cos_coeffs)
 
         call plt%initialize(xlabel="mode", &
@@ -109,9 +110,9 @@ contains
 
     end subroutine plot_spectra
 
-    subroutine plot_deviation_spectrum(fieldlines)
-        use misc, only: S_B
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+    subroutine plot_deviation_spectrum(flock)
+        use fit_functions, only: S_B
+        type(flock_of_fieldlines_t), intent(in) :: flock
 
         type(fieldline_modes_t) :: modes
 
@@ -123,8 +124,8 @@ contains
         type(myplot) :: plt
         character(len=1024) :: label
 
-        call fourier_transform_over_label(fieldlines, modes)
-        iota_p = fieldlines(1)%iota_p
+        call fourier_transform_over_label(flock, modes)
+        iota_p = flock%iota_p
         n_modes = size(modes%delta_eta%cos_coeffs)
 
         allocate (deviation_B(n_modes))
@@ -149,8 +150,8 @@ contains
         deallocate (deviation_B)
     end subroutine plot_deviation_spectrum
 
-    subroutine plot_delta_eta_modes(fieldlines)
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+    subroutine plot_delta_eta_modes(flock)
+        type(flock_of_fieldlines_t), intent(in) :: flock
 
         type(fieldline_modes_t) :: fieldline_modes
 
@@ -162,11 +163,11 @@ contains
         type(myplot) :: plt
         character(len=1024) :: label
 
-        call fourier_transform_over_label(fieldlines, fieldline_modes)
+        call fourier_transform_over_label(flock, fieldline_modes)
 
         allocate (xi_mid(n_points), xi(n_points), delta_eta(n_points))
         call linspace(0.0_dp, 2.0_dp*pi, n_points, xi_mid)
-        xi = xi_mid - fieldlines(1)%iota_p
+        xi = xi_mid - flock%iota_p
 
         call plt%initialize(xlabel="$\xi_{mid}[\pi]$", &
                             ylabel="$\Delta \eta$", &
@@ -181,8 +182,8 @@ contains
                               linestyle="-")
         end do
 
-        call plt%add_plot(fieldlines%xi_0/pi, &
-                          fieldlines%delta_eta, &
+        call plt%add_plot(flock%fieldlines%xi_0/pi, &
+                          flock%fieldlines%delta_eta, &
                           label="original", &
                           linestyle="ko")
 
@@ -216,7 +217,6 @@ contains
         real(dp), dimension(4) :: phi_limits, theta_limits
         integer, parameter :: n_points = 300
         real(dp), dimension(n_points) :: phi, theta
-        real(dp), dimension(n_points, n_points) :: phi_mesh, theta_mesh
         real(dp), dimension(n_points, n_points) :: B_mesh
         integer :: theta_idx, phi_idx
         character(len=100) :: label
@@ -392,15 +392,13 @@ contains
         phi = M_pol*xi/nfp - N_tor*chi/normalization
     end subroutine convert_to_theta_phi
 
-    subroutine plot_phi_max_over_xi_0(fieldlines)
-        type(fieldline_t), dimension(:) :: fieldlines
+    subroutine plot_phi_max_over_xi_0(fieldlines, M_pol, nfp)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: M_pol, nfp
         type(myplot) :: plt
 
         real(dp), dimension(size(fieldlines)) :: xi_0, phi_l, phi_r
-        real(dp) :: M_pol, nfp
 
-        M_pol = fieldlines(1)%M_pol
-        nfp = fieldlines(1)%nfp
         xi_0 = fieldlines%xi_0
         phi_l = fieldlines%phi_max(1)
         phi_r = fieldlines%phi_max(2)
@@ -430,20 +428,18 @@ contains
 
     end subroutine plot_phi_max_over_xi_0
 
-    subroutine plot_chi_max_over_xi_0(fieldlines)
-        type(fieldline_t), dimension(:) :: fieldlines
+    subroutine plot_chi_max_over_xi_0(fieldlines, M_pol, N_tor, iota_p)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: M_pol, N_tor, iota_p
         type(myplot) :: plt
 
         real(dp), dimension(2) :: theta_max
         real(dp), dimension(size(fieldlines)) :: shifted_xi_0
         real(dp), dimension(size(fieldlines)) :: chi_minus, chi_plus
-        real(dp) :: M_pol, N_tor
 
         integer :: this
 
-        M_pol = fieldlines(1)%M_pol
-        N_tor = fieldlines(1)%N_tor
-        shifted_xi_0 = modulo(fieldlines%xi_0 - fieldlines%iota_p, 2.0_dp*pi)
+        shifted_xi_0 = modulo(fieldlines%xi_0 - iota_p, 2.0_dp*pi)
         do this = 1, size(fieldlines)
             theta_max = fieldlines(this)%get_theta(fieldlines(this)%phi_max)
             chi_minus(this) = M_pol*theta_max(2) - N_tor*fieldlines(this)%phi_max(2)
@@ -467,8 +463,151 @@ contains
 
     end subroutine plot_chi_max_over_xi_0
 
-    subroutine plot_delta_eta(fieldlines, delta_eta_1)
+    subroutine plot_fieldline_over_local_drift(fieldline, field, eta, interval)
+        use fieldline_integrands, only: local_radial_drift
+        type(fieldline_t), intent(in) :: fieldline
+        class(field_t), intent(in) :: field
+        real(dp), intent(in) :: eta
+        real(dp), dimension(2), intent(in) :: interval
+
+        type(myplot) :: plt
+        integer, parameter :: n_points = 300
+        real(dp), dimension(2) :: phi_limits, theta_limits
+        real(dp) :: phi_range
+        real(dp), dimension(2) :: phi_ends, theta_ends
+        real(dp), dimension(n_points) :: phi, theta
+        real(dp), dimension(n_points, n_points) :: drift_mesh
+        integer :: theta_idx, phi_idx
+        character(len=100) :: label, title
+        character(len=*), parameter :: cmap = "coolwarm"
+
+        write (title, "(A,F4.2)") "Local radial drift for $\eta=$", eta
+
+        call plt%initialize(xlabel="$\varphi$", ylabel="$\vartheta$", &
+                            title=title, fontsize=20)
+
+        phi_limits = interval
+        theta_limits(1) = -pi
+        theta_limits(2) = pi
+        phi_range = abs(phi_limits(2) - phi_limits(1))
+
+        phi_ends(1) = fieldline%phi_0 - 0.4_dp*phi_range
+        phi_ends(2) = fieldline%phi_0 + 0.4_dp*phi_range
+
+        call linspace(phi_ends(1), phi_ends(2), n_points, phi)
+        theta = fieldline%get_theta(phi)
+        write (label, '(F0.1)') fieldline%xi_0
+        call plt%add_plot(phi, theta, &
+                          label=label, &
+                          linestyle="k.", &
+                          linewidth=1)
+        theta_ends = fieldline%get_theta(phi_ends)
+        call plt%add_plot(phi_ends, theta_ends, &
+                          label=label, &
+                          linestyle="ro", &
+                          markersize=10)
+
+        call linspace(minval(phi_limits), maxval(phi_limits), n_points, phi)
+        call linspace(minval(theta_limits), maxval(theta_limits), n_points, theta)
+        do theta_idx = 1, n_points
+            do phi_idx = 1, n_points
+                drift_mesh(theta_idx, phi_idx) = local_radial_drift(field, &
+                                                                    theta(theta_idx), &
+                                                                    phi(phi_idx), &
+                                                                    eta)
+            end do
+        end do
+        call plt%add_contour(phi, theta, transpose(drift_mesh), &
+                             levels=20, &
+                             colorbar=.true., &
+                             filled=.true., &
+                             cmap=cmap)
+        call plt%show()
+
+    end subroutine plot_fieldline_over_local_drift
+
+    subroutine plot_local_drift_over_fieldline(field, &
+                                               fieldline, &
+                                               etas, &
+                                               interval)
+        use fieldline_integrands, only: local_radial_drift
+        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+        class(field_t), intent(in) :: field
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), dimension(:), intent(in) :: etas
+        real(dp), intent(in), optional :: interval(2)
+
+        integer, parameter :: n_points = 1001
+        character(len=*), parameter :: cmap = "coolwarm"
+        integer :: n_etas
+        real(dp), dimension(:), allocatable :: phi, theta, B, eta_level
+        real(dp), dimension(:, :), allocatable :: drift
+        character(len=1024) :: label
+        character(len=1024) :: title
+        integer :: current, id_eta
+
+        type(myplot) :: plt
+
+        allocate (phi(n_points), theta(n_points), B(n_points))
+        n_etas = size(etas)
+        allocate (eta_level(n_points))
+        allocate (drift(n_points, n_etas))
+
+        if (present(interval)) then
+            call linspace(interval(1), interval(2), n_points, phi)
+        else
+            call linspace(0.0_dp, 2.0_dp*pi, n_points, phi)
+        end if
+
+        theta = fieldline%get_theta(phi)
+
+        write (title, "(A,A,F5.2,A)") "Radial drift velocity ", &
+            " along fieldline $\xi_0=$", fieldline%xi_0/pi, "[$\pi$]"
+        call plt%initialize(xlabel="$\varphi$", &
+                            ylabel="$1/\eta$ [T]", &
+                            legend=.true., &
+                            figsize=[10, 10], &
+                            title=title, &
+                            fontsize=20)
+
+        do current = 1, n_points
+            call field%compute_B_mod(theta(current), phi(current), B(current))
+            do id_eta = 1, n_etas
+                if (B(current)*etas(id_eta) > 1.0_dp) then
+                    ! set to nan with intrinsic
+                    drift(current, id_eta) = ieee_value(1.0_dp, ieee_quiet_nan)
+                else
+                    drift(current, id_eta) = local_radial_drift(field, &
+                                                                theta(current), &
+                                                                phi(current), &
+                                                                etas(id_eta))
+                end if
+            end do
+        end do
+
+        eta_level = etas(1)
+        call plt%add_colored_line(phi, 1.0_dp/eta_level, drift(:, 1), &
+                                  cmap=cmap, &
+                                  clabel="$\mathcal{V}$", linewidth=3)
+        do id_eta = 2, n_etas
+            eta_level = etas(id_eta)
+            call plt%add_colored_line(phi, 1.0_dp/eta_level, drift(:, id_eta), &
+                                      cmap=cmap, &
+                                      linewidth=3)
+        end do
+
+        write (label, "(A,F6.2,A)") "$B$ [T]"
+        call plt%add_plot(phi, B, label=label, linestyle="k-", linewidth=3)
+
+        call plt%show()
+
+        deallocate (phi, theta, drift, B, eta_level)
+
+    end subroutine plot_local_drift_over_fieldline
+
+    subroutine plot_delta_eta(fieldlines, iota_p, delta_eta_1)
         type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: iota_p
         real(dp), intent(in), optional :: delta_eta_1
 
         type(myplot) :: plt
@@ -485,7 +624,7 @@ contains
         if (present(delta_eta_1)) then
             call plt%add_plot(fieldlines%xi_0/pi, &
                               abs(delta_eta_1) + &
-                              delta_eta_1*cos(fieldlines%xi_0 - fieldlines%iota_p), &
+                              delta_eta_1*cos(fieldlines%xi_0 - iota_p), &
                               label="$\Delta \eta$ approx analytic", &
                               linestyle="--")
         end if
@@ -563,7 +702,8 @@ contains
                             ylabel="$I_{normalized}$ [1]", &
                             legend=.true.)
         call plt%add_plot(theta_0, &
-                        fieldlines%integral_lambda_b_over_B_squared/I_factor - 1.0_dp, &
+                          fieldlines%integral_lambda_b_over_B_squared/I_factor &
+                          - 1.0_dp, &
                           label="$I_{numeric}$", &
                           linestyle="b-")
         call plt%add_plot(theta_0, &
@@ -702,51 +842,66 @@ contains
         call plt%show()
     end subroutine plot_deviation
 
-    subroutine plot_distribution_function(fieldlines, field, nu_star, g_external)
-        use surface_average_mod, only: surface_average_t, calc_surface_averages
-        use misc, only: S_A, S_B
-        use neo_field, only: neo_field_t
-        use distribution_function, only: get_g_modes_from_fieldlines
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
-        type(neo_field_t), intent(in) :: field
-        real(dp), intent(in) :: nu_star
-        type(external_data_t), intent(in), optional :: g_external
-
-        type(modes_t) :: g_off_modes
-
-        integer, parameter :: n_points = 300
-        integer :: max_mode
-        real(dp), dimension(:), allocatable :: theta_mid, g_off
+    subroutine plot_asymptotic_model(off_factor_A, off_factor_B, &
+                                     lambda_SC, Lambda_S)
+        real(dp), intent(in) :: off_factor_A, off_factor_B
+        real(dp), intent(in) :: lambda_SC, Lambda_S
 
         type(myplot) :: plt
+        integer, parameter :: n_points = 100
+        real(dp), dimension(:), allocatable :: nu_star
+
         character(len=1024) :: label
-
-        call get_g_modes_from_fieldlines(fieldlines, field, nu_star, g_off_modes)
-        max_mode = size(g_off_modes%cos_coeffs, dim=1)
-
-        allocate (theta_mid(n_points), g_off(n_points))
-        call linspace(0.0_dp, 2.0_dp*pi, n_points, theta_mid)
-
-        g_off = eval_modes(theta_mid, g_off_modes, max_mode)
-
-        call plt%initialize(xlabel="$\vartheta_{mid} [1]$", &
-                            ylabel="$g_\mathrm{off}$ [Tm]", &
-                            legend=.true.)
-        write (label, "(A34,ES10.3E2)") "rabe: $g_\mathrm{off}$ at $\nu_*=$", &
-            nu_star
-        call plt%add_plot(theta_mid, &
-                          g_off, &
+        call plt%initialize(xlabel="$\nu_*$", &
+                            ylabel="$|\lambda_{bB}|$", &
+                            legend=.true., &
+                            figsize=[15, 10])
+        allocate (nu_star(n_points))
+        call linspace(2.0_dp, 8.0_dp, n_points, nu_star)
+        nu_star = 0.1_dp**nu_star
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{lm}=$", off_factor_B
+        call plt%add_plot(nu_star, &
+                          off_factor_B/nu_star, &
                           label=label, &
-                          linestyle="k-")
-        if (present(g_external)) then
-            call plt%add_plot(g_external%x, &
-                              g_external%y, &
-                              label=g_external%label, &
-                              linestyle="r-")
-        end if
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{bl}=$", off_factor_A
+        call plt%add_plot(nu_star, &
+                          off_factor_A/sqrt(nu_star), &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,ES10.3E2)") "$\lambda_\mathrm{SC}=$", lambda_SC
+        call plt%add_plot(nu_star, &
+                          lambda_SC*nu_star/nu_star, &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,ES10.3E2)") "$\Lambda_\mathrm{finite}$=", Lambda_S
+        call plt%add_plot(nu_star, &
+                          Lambda_S*sqrt(nu_star), &
+                          label=label, &
+                          linestyle="None", &
+                          xscale="log", &
+                          yscale="linear")
+        write (label, "(A,A,A,A)") "$\lambda_\mathrm{SC} + ", &
+            "\Lambda_\mathrm{finite} \sqrt{\nu_*} + ", &
+            "\Lambda_\mathrm{bl}/\sqrt{\nu_*} + ", &
+            "\Lambda_\mathrm{lm}/\nu_*$"
+        call plt%add_plot(nu_star, &
+                          lambda_SC + &
+                          Lambda_S*sqrt(nu_star) + &
+                          off_factor_A/sqrt(nu_star) + &
+                          off_factor_B/nu_star, &
+                          label=label, &
+                          linestyle="k-", &
+                          xscale="log", &
+                          yscale="linear")
         call plt%show()
-
-    end subroutine plot_distribution_function
+    end subroutine plot_asymptotic_model
 
     subroutine plot_B_along_fieldline(field, &
                                       fieldline, &

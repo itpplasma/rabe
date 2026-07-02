@@ -9,15 +9,34 @@ module utils
     end interface
 
 contains
-    subroutine linspace(a, b, n, x)
+    subroutine linspace(a, b, n, x, include_endpoint)
         real(dp), intent(in) :: a, b
         integer, intent(in) :: n
         real(dp), dimension(:), intent(out) :: x
+        logical, intent(in), optional :: include_endpoint
 
         real(dp) :: dx
         integer :: i
 
-        dx = (b - a)/(n - 1)
+        if (n < 2) then
+            print *, "Error in linspace: n must be at least 2."
+            error stop
+        end if
+        if (size(x) < n) then
+            print *, "Error in linspace: output array size must be at least n."
+            error stop
+        end if
+
+        if (present(include_endpoint)) then
+            if (include_endpoint) then
+                dx = (b - a)/(n - 1)
+            else
+                dx = (b - a)/n
+            end if
+        else
+            dx = (b - a)/(n - 1)
+        end if
+
         do i = 1, n
             x(i) = a + (i - 1)*dx
         end do
@@ -70,7 +89,8 @@ contains
         if (contains_nan(array_1) .or. contains_nan(array_2)) then
             not_same_array = .true.
         else
-            not_same_array = any(abs(array_1 - array_2) > (reltol*abs(array_1) + abstol))
+            not_same_array = any(abs(array_1 - array_2) > &
+                                 (reltol*abs(array_1) + abstol))
         end if
     end function not_same_array
 

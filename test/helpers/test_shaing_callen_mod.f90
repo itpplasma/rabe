@@ -1,7 +1,7 @@
 module test_shaing_callen_mod
     use constants, only: dp, pi
     use utils, only: not_same
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: flock_of_fieldlines_t
     use field_base, only: field_t
     use shaing_callen_integration, only: get_eta_integration_grid
 
@@ -12,18 +12,16 @@ contains
     subroutine test_trapped_fraction_against_circular_tokamak(test_failed)
         use shaing_callen_mod, only: calc_trapped_fraction
         use mock_field, only: mock_field_t
-        use make_fieldline, only: make_flock_of_fieldlines
+        use make_fieldline, only: make_flock_from_labels
         use utils, only: linspace
 
         logical, intent(inout) :: test_failed
-
-        real(dp), parameter :: phi_tol = 4e-5
 
         integer, parameter :: n_fieldlines = 50
         real(dp), dimension(n_fieldlines + 1) :: temp
         real(dp), dimension(n_fieldlines) :: xi_0
         type(mock_field_t) :: circular_tok_field
-        type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+        type(flock_of_fieldlines_t) :: flock
 
         real(dp), parameter :: B_0 = 1.0_dp, eps = -0.001_dp
         real(dp), parameter :: M_pol = 1.0_dp, N_tor = 0.0_dp, nfp = 1.0_dp
@@ -40,15 +38,14 @@ contains
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
         xi_0 = temp(1:n_fieldlines)
 
-        call make_flock_of_fieldlines(fieldlines, &
-                                      xi_0, &
-                                      iota, &
-                                      circular_tok_field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp, &
-                                      phi_tol)
-        found = calc_trapped_fraction(circular_tok_field, fieldlines, n_eta)
+        call make_flock_from_labels(flock, &
+                                    xi_0, &
+                                    iota, &
+                                    circular_tok_field, &
+                                    M_pol, &
+                                    N_tor, &
+                                    nfp)
+        found = calc_trapped_fraction(flock, circular_tok_field, n_eta)
 
         if (not_same(found, analytical_approx, &
                      reltol_in=reltol, abstol_in=abstol)) then
@@ -63,10 +60,10 @@ contains
         end if
     end subroutine test_trapped_fraction_against_circular_tokamak
 
-    subroutine test_trapped_fraction_against_qs(qs_field, qs_fieldlines, test_failed)
+    subroutine test_trapped_fraction_against_qs(qs_field, qs_flock, test_failed)
         use shaing_callen_mod, only: calc_trapped_fraction
         class(field_t), intent(in) :: qs_field
-        type(fieldline_t), dimension(:), intent(in) :: qs_fieldlines
+        type(flock_of_fieldlines_t), intent(in) :: qs_flock
         logical, intent(inout) :: test_failed
 
         real(dp), parameter :: reltol = 1e-6, abstol = 0.0_dp
@@ -75,8 +72,8 @@ contains
         integer, parameter :: n_eta = 100
         real(dp) :: trapped_fraction, trapped_fraction_qs
 
-        eta_b = qs_fieldlines(1)%eta_b
-        trapped_fraction = calc_trapped_fraction(qs_field, qs_fieldlines, n_eta)
+        eta_b = qs_flock%eta_b
+        trapped_fraction = calc_trapped_fraction(qs_flock, qs_field, n_eta)
         trapped_fraction_qs = calc_quasi_symmetric_trapped_fraction(qs_field, &
                                                                     eta_b, &
                                                                     n_eta)

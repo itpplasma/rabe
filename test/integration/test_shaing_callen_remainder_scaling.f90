@@ -1,8 +1,8 @@
 program test_shaing_callen_remainder_scaling
     use mock_field, only: mock_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
-    use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use fieldline_mod, only: flock_of_fieldlines_t
+    use make_fieldline, only: make_flock_from_labels
     use constants, only: dp, pi
     use utils, only: linspace, not_same
 
@@ -14,12 +14,11 @@ program test_shaing_callen_remainder_scaling
 
     implicit none
 
-    real(dp), parameter :: phi_tol = 7e-6
     integer, parameter :: n_fieldlines = 50
 
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
 
     real(dp), parameter :: nfp = 4.0_dp, iota = 1.24_dp
     real(dp), parameter :: M_pol = -1.0_dp, N_tor = nfp
@@ -55,17 +54,16 @@ program test_shaing_callen_remainder_scaling
     do this = 1, n_eps
         eps_1 = eps(this)*(B_0 + abs(eps_0))
         call field%mock_perturbed_field_init(qs_field, M_pol_pert, N_tor_pert, eps_1)
-        call make_flock_of_fieldlines(fieldlines, &
-                                      xi_0, &
-                                      iota, &
-                                      field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp, &
-                                      phi_tol)
+        call make_flock_from_labels(flock, &
+                                    xi_0, &
+                                    iota, &
+                                    field, &
+                                    M_pol, &
+                                    N_tor, &
+                                    nfp)
 
-        remainder_pitch(this) = get_non_omnigenous_remainder_pitch(field, &
-                                                                   fieldlines, &
+        remainder_pitch(this) = get_non_omnigenous_remainder_pitch(flock, &
+                                                                   field, &
                                                                    n_eta)
         abstol = estimated_scaling_pitch*sqrt(abs(eps(this)))
         if (not_same(remainder_pitch(this), 0.0_dp, &
@@ -79,8 +77,11 @@ program test_shaing_callen_remainder_scaling
             test_failed = .true.
         end if
 
-        remainder(this) = calc_trapped_fraction(field, fieldlines, n_eta) * M_pol/(M_pol*iota - N_tor)
-        remainder(this) = 1.0_dp - calc_trapped_fraction_prime(field, fieldlines, n_eta)/remainder(this)
+        remainder(this) = calc_trapped_fraction(flock, field, n_eta)* &
+                          M_pol/(M_pol*iota - N_tor)
+        remainder(this) = 1.0_dp - &
+                          calc_trapped_fraction_prime(flock, field, n_eta)/ &
+                          remainder(this)
 
         ! We increase tolerance of ~20% as for the analytic estimate only the
         ! contribution of the above pitch boundary term remainder was considered
@@ -88,7 +89,8 @@ program test_shaing_callen_remainder_scaling
         abstol = estimated_scaling*sqrt(abs(eps(this)))*1.2_dp
         if (not_same(remainder(this), 0.0_dp, reltol_in=0.0_dp, abstol_in=abstol)) then
             print *, "-------------------------------------------------------------"
-            print *, "test_get_non_omnigenous_remainder_scaling failed: 1 - (M\iota - N)f_t'/(M f_t)"
+            print *, "test_get_non_omnigenous_remainder_scaling failed: ", &
+                "1 - (M\iota - N)f_t'/(M f_t)"
             print *, "omnigenity violation = ", eps(this)
             print *, "abs remainder = ", abs(remainder(this))
             print *, "expected remainder = ", abstol

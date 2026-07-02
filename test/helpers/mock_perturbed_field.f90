@@ -13,7 +13,9 @@ module mock_perturbed_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_sqrt_g11
+        procedure :: compute_nabla_s
+        procedure :: rel_accuracy_B
+        procedure :: get_covariant_components
     end type mock_perturbed_field_t
 
 contains
@@ -67,13 +69,28 @@ contains
         B_mod = B_mod + B_pert_mod
     end subroutine compute_B_mod
 
-    subroutine compute_sqrt_g11(self, theta, phi, sqrt_g11)
+    subroutine compute_nabla_s(self, theta, phi, nabla_s)
         class(mock_perturbed_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: sqrt_g11
+        real(dp), intent(out) :: nabla_s
 
-        sqrt_g11 = 1.0_dp
+        nabla_s = 1.0_dp
 
-    end subroutine compute_sqrt_g11
+    end subroutine compute_nabla_s
+
+    real(dp) function rel_accuracy_B(self)
+        class(mock_perturbed_field_t), intent(in) :: self
+
+        rel_accuracy_B = self%field%rel_accuracy_B()
+        rel_accuracy_B = rel_accuracy_B + 1e-14_dp
+    end function rel_accuracy_B
+
+    !> Pertubation only effects B not covariant components (no-op for tests).
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(mock_perturbed_field_t), intent(in) :: self
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+
+        call self%field%get_covariant_components(B_theta_covariant, B_phi_covariant)
+    end subroutine get_covariant_components
 
 end module mock_perturbed_field

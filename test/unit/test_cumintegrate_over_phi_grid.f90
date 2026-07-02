@@ -4,7 +4,6 @@ program test_cumintegrate_over_phi_grid
     use shaing_callen_integration, only: get_phi_integration_grid
     use shaing_callen_integration, only: cumintegrate_over_phi_grid
     use fieldline_mod, only: fieldline_t
-    use myplot_module, only: myplot
 
     implicit none
 

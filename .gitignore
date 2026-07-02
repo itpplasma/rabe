@@ -2,7 +2,7 @@
 myenv/
 build/
 bin/
-./external/
+external/
 *.nc
 *.bc
 *.dat
@@ -11,3 +11,7 @@ bin/
 *__pycache__
 **/output/
 .vscode
+.vimrc
+.worktrees/
+*.tar.gz
+*.png

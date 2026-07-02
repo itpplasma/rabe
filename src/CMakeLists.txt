@@ -1,26 +1,33 @@
-file(GLOB SRC_FILES "*.f90")
+add_library(git_version_lib STATIC
+  ${CMAKE_CURRENT_BINARY_DIR}/git_version.f90
+)
 
-add_library(rabe_lib STATIC
-  ${SRC_FILES}
-  ${CMAKE_BINARY_DIR}/src/git_version.f90
-  )
+add_dependencies(git_version_lib git_version_target)
+target_include_directories(git_version_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-add_dependencies(rabe_lib git_version_target)
+add_library(read_file_lib STATIC read_file.f90)
+target_include_directories(read_file_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(read_file_lib PRIVATE utils_lib fieldline_lib)
 
-include(Util)
-
-# Find NetCDF Fortran
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(NetCDF_Fortran REQUIRED IMPORTED_TARGET netcdf-fortran)
-target_include_directories(rabe_lib PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
-target_link_libraries(rabe_lib PRIVATE PkgConfig::NetCDF_Fortran)
-
-find_or_fetch(quadpack)
-target_compile_options(quadpack PRIVATE -w) # No warnings as library is not modified
-target_link_libraries(rabe_lib PRIVATE quadpack)
-
-add_subdirectory(neo)
-target_link_libraries(rabe_lib PRIVATE neo_lib)
-
+add_subdirectory(error_handling)
 add_subdirectory(utils)
-target_link_libraries(rabe_lib PRIVATE utils_lib)
+add_subdirectory(netcdf)
+add_subdirectory(vmec)
+add_subdirectory(field)
+add_subdirectory(fieldline)
+add_subdirectory(offset)
+add_subdirectory(shaing_callen)
+
+add_library(rabe_lib INTERFACE)
+target_link_libraries(rabe_lib INTERFACE
+    git_version_lib
+    read_file_lib
+    utils_lib
+    netcdf_lib
+    error_handling_lib
+    field_lib
+    vmec_lib
+    fieldline_lib
+    shaing_callen_lib
+    offset_lib
+)
