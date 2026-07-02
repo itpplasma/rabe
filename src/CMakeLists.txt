@@ -28,3 +28,5 @@ target_link_libraries(rabe_lib PUBLIC
   fieldline_lib
   shaing_callen_lib
   precession_lib)
+
+target_link_libraries(rabe_lib PRIVATE LIBNEO::odeint)

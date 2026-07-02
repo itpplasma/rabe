@@ -1,38 +1,44 @@
 include(FetchContent)
 
 function(find_or_fetch DEPENDENCY)
+    cmake_parse_arguments(OPTIONAL "" "SUBDIR" "" ${ARGN})
 
     if(DEFINED ENV{CODE} AND EXISTS $ENV{CODE}/${DEPENDENCY})
-        set(SOURCE_DIR $ENV{CODE}/${DEPENDENCY})
-        message(STATUS "Using ${DEPENDENCY} in $ENV{CODE}/${DEPENDENCY}")
+        set(SOURCE_DIR $ENV{CODE}/${DEPENDENCY}/${OPTIONAL_SUBDIR})
+        message(STATUS "Using ${DEPENDENCY}/${OPTIONAL_SUBDIR} in $ENV{CODE}/${DEPENDENCY}")
     else()
-        fetch(${DEPENDENCY} SOURCE_DIR)
+        fetch(${DEPENDENCY} SOURCE_DIR SUBDIR ${OPTIONAL_SUBDIR})
     endif()
 
     add_subdirectory(${SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}
+        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}/${OPTIONAL_SUBDIR}
         EXCLUDE_FROM_ALL
     )
 endfunction()
 
 function(fetch DEPENDENCY SOURCE_DIR)
+    cmake_parse_arguments(OPTIONAL "" "SUBDIR" "" ${ARGN})
+
     set(REPO_URL https://github.com/itpplasma/${DEPENDENCY}.git)
     get_branch_or_main(${REPO_URL} REMOTE_BRANCH)
     message(STATUS "Fetch ${DEPENDENCY} branch ${REMOTE_BRANCH} from ${REPO_URL}")
 
 
-    FetchContent_Declare(
-        ${DEPENDENCY}
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-        GIT_REPOSITORY ${REPO_URL}
-        GIT_TAG ${REMOTE_BRANCH}
-    )
-    FetchContent_Populate(${DEPENDENCY})
-
     string(TOLOWER ${DEPENDENCY} DEPENDENCY_LOWER)
+
+    FetchContent_GetProperties(${DEPENDENCY})
+    if(NOT ${DEPENDENCY_LOWER}_POPULATED)
+        FetchContent_Declare(
+            ${DEPENDENCY}
+            DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+            GIT_REPOSITORY ${REPO_URL}
+            GIT_TAG ${REMOTE_BRANCH}
+        )
+        FetchContent_Populate(${DEPENDENCY})
+    endif()
     message(STATUS "Fetched ${DEPENDENCY} to ${${DEPENDENCY_LOWER}_SOURCE_DIR}")
 
-    set(SOURCE_DIR ${${DEPENDENCY_LOWER}_SOURCE_DIR} PARENT_SCOPE)
+    set(${SOURCE_DIR} ${${DEPENDENCY_LOWER}_SOURCE_DIR}/${OPTIONAL_SUBDIR} PARENT_SCOPE)
 endfunction()
 
 function(get_branch_or_main REPO_URL REMOTE_BRANCH)
