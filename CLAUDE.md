@@ -38,7 +38,8 @@ rabe_lib (main static library)
 │   fourier.f90, integrate.f90
 ├── field_lib (src/field/)
 │   field_base.f90    - Abstract type field_t (deferred: compute_B_mod,
-│                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx)
+│                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx,
+│                       get_covariant_components)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t from VMEC .nc files (type boozer_field_t)
 │   boozer_converter.F90 - VMEC-to-Boozer coordinate conversion
@@ -49,6 +50,10 @@ rabe_lib (main static library)
 │   shaing_callen.f90, shaing_callen_integration.f90, shaing_callen_wrappers.f90
 ├── netcdf_lib (src/netcdf/)
 │   netcdf.f90 - NetCDF output via type netcdf_t
+├── error_handling_lib (src/error_handling/)
+│   error_handling.f90 - Sanity-check helpers: failed_sanity_check(),
+│                        reset_failed_check_counter(), did_fail_any_sanity_check(),
+│                        set_unsafe_mode()
 └── Top-level modules:
     coefficients.f90, deviation.f90, fit_functions.f90, read_file.f90
 ```
@@ -59,7 +64,7 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 
 1. Read namelist configuration from `rabe.in`
 2. Initialize `boozer_field_t` from VMEC `.nc` file
-3. Per flux surface: fix field, compute field lines, deviation factors, surface averages, optionally Shaing-Callen trapped fraction
+3. Per flux surface: fix field, compute field lines, deviation factors, surface averages, optionally Shaing-Callen trapped fraction; if `unsafe_mode = .true.` and a sanity check fails, NaN-fill that surface's outputs instead of halting
 4. Write results to `rabe.nc` (NetCDF)
 
 ### Key derived types

@@ -42,3 +42,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
 enable_testing()
 add_subdirectory(test)
+
+option(BUILD_PYTHON_BINDINGS "Build Python bindings via f90wrap" OFF)
+if(BUILD_PYTHON_BINDINGS)
+    add_subdirectory(python)
+endif()

@@ -1,4 +1,5 @@
 message(STATUS "The Compiler ID is ${CMAKE_Fortran_COMPILER_ID}")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   set(CMAKE_Fortran_FLAGS_RELEASE " -O2 -cpp -ffpe-summary=invalid,zero,overflow")
 elseif (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")

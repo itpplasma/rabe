@@ -1,10 +1,73 @@
 module fieldline_labels
     use constants, only: dp, pi
-    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
+    type :: modes_t
+        real(dp), dimension(:), allocatable :: cos_coeffs, sin_coeffs
+        real(dp), dimension(:), allocatable :: mode_numbers
+    end type modes_t
+
+    type :: fieldline_modes_t
+        type(modes_t) :: radial_drift
+        type(modes_t) :: delta_eta
+        type(modes_t) :: delta_aspect_ratio
+    end type fieldline_modes_t
+
 contains
+
+    subroutine fourier_transform_over_label(flock, fieldline_modes)
+        use fourier, only: real_ft
+        use fieldline_mod, only: flock_of_fieldlines_t
+
+        type(flock_of_fieldlines_t), intent(in) :: flock
+        type(fieldline_modes_t), intent(out) :: fieldline_modes
+
+        integer :: n_modes
+
+        real(dp), dimension(size(flock%fieldlines)) :: shifted_label
+
+        n_modes = size(flock%fieldlines)/2 + 1
+
+        call allocate_modes(fieldline_modes%radial_drift, n_modes)
+        call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
+        call allocate_modes(fieldline_modes%delta_eta, n_modes)
+
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%radial_drift, &
+                     fieldline_modes%radial_drift%cos_coeffs, &
+                     fieldline_modes%radial_drift%sin_coeffs)
+
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%delta_aspect_ratio, &
+                     fieldline_modes%delta_aspect_ratio%cos_coeffs, &
+                     fieldline_modes%delta_aspect_ratio%sin_coeffs)
+
+        shifted_label = flock%fieldlines%xi_0 - flock%iota_p
+        call real_ft(shifted_label, &
+                     flock%fieldlines%delta_eta, &
+                     fieldline_modes%delta_eta%cos_coeffs, &
+                     fieldline_modes%delta_eta%sin_coeffs)
+
+    end subroutine fourier_transform_over_label
+
+    subroutine allocate_modes(modes, n_modes)
+        integer, intent(in) :: n_modes
+        type(modes_t), intent(out) :: modes
+
+        integer :: j
+
+        allocate (modes%cos_coeffs(n_modes))
+        allocate (modes%sin_coeffs(n_modes))
+        allocate (modes%mode_numbers(n_modes))
+
+        modes%cos_coeffs = 0.0_dp
+        modes%sin_coeffs = 0.0_dp
+
+        do j = 0, n_modes - 1
+            modes%mode_numbers(j + 1) = real(j, kind=dp)
+        end do
+    end subroutine allocate_modes
 
     subroutine get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
                           xi_0, approx_iota)
@@ -82,159 +145,6 @@ contains
         end if
 
     end function calc_iota
-
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, tol)
-        use find_extrema, only: find_local_minima
-        use find_extrema, only: find_local_maxima
-        use find_extrema, only: find_global_extrema
-        use field_base, only: field_t
-        use constants, only: eps
-
-        class(field_t), intent(in) :: field
-        real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: tol
-        logical :: suspect_omnigenous_origin_not_minimum
-
-        real(dp), dimension(2) :: interval
-        real(dp), dimension(:), allocatable :: chis, chis_error
-        integer :: n
-        integer :: id_chi
-        real(dp), parameter :: height_tol = 0.3_dp
-        real(dp), parameter :: safety_factor = 3.0_dp
-        real(dp), dimension(2) :: extrema
-        real(dp) :: B_min, B_max, B_range, B_at_origin, height
-        integer :: closest
-        real(dp) :: Bs(2), B_at_closest, dB_dchi_at_origin, error
-        logical :: origin_is_minimum, origin_is_maximum
-
-        suspect_omnigenous_origin_not_minimum = .false.
-        origin_is_maximum = .false.
-        origin_is_minimum = .false.
-
-        interval = [-pi, pi]
-        call find_local_minima(B_mod_along_pi_line, interval, chis, chis_error)
-        n = size(chis)
-        do id_chi = 1, n
-            if (is_multiple_of_2pi(chis(id_chi), chis_error(id_chi)*safety_factor)) then
-                origin_is_minimum = .true.
-                exit
-            end if
-        end do
-
-        if (.not. origin_is_minimum .and. present(tol)) then
-            closest = minloc(abs(chis), dim=1)
-            call B_mod_along_pi_line([0.0_dp, chis(closest)], Bs)
-            B_at_origin = Bs(1)
-            B_at_closest = Bs(2)
-            call dB_dchi_along_pi_line(0.0_dp, dB_dchi_at_origin)
-            error = abs(B_at_closest - B_at_origin)
-            error = error + abs(dB_dchi_at_origin*chis(closest))
-            error = error/B_at_origin
-            call log_val(LOG%DEBUG, "error = ", error)
-            call log_val(LOG%DEBUG, "tol = ", tol)
-            if (error < tol) origin_is_minimum = .true.
-        end if
-
-        if (.not. origin_is_minimum) then
-            call find_local_maxima(B_mod_along_pi_line, interval, chis, chis_error)
-            n = size(chis)
-            do id_chi = 1, n
-                if (is_multiple_of_2pi(chis(id_chi), &
-                                       chis_error(id_chi)*safety_factor)) then
-                    origin_is_maximum = .true.
-                    exit
-                end if
-                call log_val(LOG%DEBUG, "chi = ", chis(id_chi))
-                call log_val(LOG%DEBUG, "chi_error = ", chis_error(id_chi))
-            end do
-        end if
-
-        if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
-            call log_msg(LOG%ERROR, &
-                         "origin is neither local minimum nor maximum!")
-            call log_msg(LOG%ERROR, "Stellarator symmetry is violated!")
-            error stop
-        end if
-
-        extrema = find_global_extrema(B_mod_along_pi_line, interval, abstol=1e-3_dp)
-        B_min = extrema(1)
-        B_max = extrema(2)
-        B_range = B_max - B_min
-        if (B_range <= eps*B_max) then
-            call log_msg(LOG%ERROR, &
-                         "Error: provided field must not be flat (B_max = B_min)!")
-            call log_val(LOG%ERROR, "B_max = ", B_max)
-            call log_val(LOG%ERROR, "B_min = ", B_min)
-            call log_val(LOG%ERROR, "relative B range = ", B_range/B_max)
-            error stop
-        end if
-        call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
-        height = B_at_origin - B_min
-        if (height/B_range > height_tol) then
-            call log_msg(LOG%WARN, "Detected that origin in provided field is")
-            call log_val(LOG%WARN, "a significant local maximum of height > ", &
-                         height_tol*100.0_dp)
-            call log_msg(LOG%WARN, "% of the total B range!")
-            suspect_omnigenous_origin_not_minimum = .true.
-        end if
-
-    contains
-
-        !> we go along the theta = pi*phi line so that
-        !> chi = M_pol*theta - N_tor*phi can be inverted
-        subroutine B_mod_along_pi_line(chi, B_mod)
-            real(dp), dimension(:), intent(in) :: chi
-            real(dp), dimension(:), intent(out) :: B_mod
-
-            real(dp), dimension(size(chi, 1)) :: phi, theta
-            integer :: idx
-
-            !> as M_pol and N_tor are whole numbers that must no both be zero
-            !> M_pol*pi - N_tor should never zero
-            if (abs(M_pol*pi - N_tor) < 1e-8) then
-                call log_msg(LOG%ERROR, &
-                             "Error: (M_pol*pi - N_tor) must not be (close) zero.")
-                call log_val(LOG%ERROR, "abs(M_pol*pi - N_tor) = ", &
-                             abs(M_pol*pi - N_tor))
-                error stop
-            end if
-
-            phi = chi/(M_pol*pi - N_tor)
-            theta = pi*phi
-
-            do idx = 1, size(chi, 1)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
-            end do
-        end subroutine B_mod_along_pi_line
-
-        subroutine dB_dchi_along_pi_line(chi, dB_dchi)
-            real(dp), intent(in) :: chi
-            real(dp), intent(out) :: dB_dchi
-
-            real(dp) :: phi, theta
-            real(dp), dimension(3) :: dB_dx
-            real(dp) :: B_mod
-            integer :: idx
-
-            !> as M_pol and N_tor are whole numbers that must no both be zero
-            !> M_pol*pi - N_tor should never zero
-            if (abs(M_pol*pi - N_tor) < 1e-8) then
-                call log_msg(LOG%ERROR, &
-                             "Error: (M_pol*pi - N_tor) must not be (close) zero.")
-                call log_val(LOG%ERROR, "abs(M_pol*pi - N_tor) = ", &
-                             abs(M_pol*pi - N_tor))
-                error stop
-            end if
-
-            phi = chi/(M_pol*pi - N_tor)
-            theta = pi*phi
-            call field%compute_B_and_dB_dx(theta, phi, B_mod, dB_dx)
-            dB_dchi = dB_dx(2)*pi + dB_dx(3)
-            dB_dchi = dB_dchi/(M_pol*pi - N_tor)
-
-        end subroutine dB_dchi_along_pi_line
-
-    end function suspect_omnigenous_origin_not_minimum
 
     function is_multiple_of_2pi(angle, tol_in)
         real(dp), intent(in) :: angle
