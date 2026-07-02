@@ -1,4 +1,4 @@
-module bc_file
+module bc_writer
     use constants, only: dp, pi
     use boozer_field, only: boozer_field_t
     implicit none
@@ -159,4 +159,4 @@ contains
         end if
     end subroutine delete_bc_file
 
-end module bc_file
+end module bc_writer

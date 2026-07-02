@@ -4,6 +4,7 @@ module bc_field
     use field_base, only: field_t
     use interpolate, only: BatchSplineData1D, construct_batch_splines_1d, &
                            evaluate_batch_splines_1d, evaluate_batch_splines_1d_der
+    use bc_file, only: bc_data_t, read_bc_file
 
     implicit none
     private
@@ -15,7 +16,6 @@ module bc_field
     !! B_theta_covariant = -mu0/(2 pi) * Itor [T*m]
     real(dp), parameter :: mu0_over_two_pi = 2.0e-7_dp
     real(dp), parameter :: two_pi = 2.0_dp*pi
-    integer, parameter :: max_header_lines = 100
 
     type, extends(field_t) :: bc_field_t
         !>
@@ -76,11 +76,13 @@ contains
         character(len=*), intent(in) :: bc_filename
         logical, intent(in), optional :: neo2_nabla_s
 
+        type(bc_data_t) :: d
         integer :: order
 
         if (present(neo2_nabla_s)) self%neo2_nabla_s = neo2_nabla_s
 
-        call read_bc_file(self, bc_filename)
+        call read_bc_file(bc_filename, d)
+        call populate_from_bc_data(self, d)
 
         if (self%nsurf > 1) then
             call check_uniform_grid(self%s, bc_filename)
@@ -288,190 +290,49 @@ contains
         B_phi_covariant = self%B_phi_cov_s
     end subroutine get_covariant_components
 
-    subroutine read_bc_file(self, bc_filename)
+    !> Map the raw libneo bc_data_t to rabe's conventions: currents to
+    !! covariant components via -mu0/(2 pi), file n to n*nper, flux to
+    !! psi_tor_edge = flux/(2 pi).
+    subroutine populate_from_bc_data(self, d)
         class(bc_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: bc_filename
+        type(bc_data_t), intent(in) :: d
 
-        integer :: iunit, ios, isurf, imode, m0b, n0b, nper
-        integer :: m_int, n_int
-        real(dp) :: flux, surf_vals(6), row(4)
-        character(len=512) :: line
+        self%nsurf = d%nsurf
+        self%nmode = d%nmode
+        self%nfp = real(d%nper, dp)
+        self%psi_tor_edge = d%flux/two_pi
+        self%a = d%a
+        self%m = real(d%m, dp)
+        self%n_angle = real(d%n, dp)*self%nfp
+        self%s = d%s
+        allocate (self%flux_funcs(d%nsurf, 3))
+        self%flux_funcs(:, 1) = d%iota
+        self%flux_funcs(:, 2) = -mu0_over_two_pi*d%Itor
+        self%flux_funcs(:, 3) = -mu0_over_two_pi*self%nfp*d%Jpol_over_nper
+        self%bmnc = d%bmnc
+        allocate (self%geom(d%nsurf, 3*d%nmode))
+        self%geom(:, 1:d%nmode) = d%rmnc
+        self%geom(:, d%nmode + 1:2*d%nmode) = d%zmns
+        self%geom(:, 2*d%nmode + 1:3*d%nmode) = d%vmns
+        call set_major_radius(self, d)
+    end subroutine populate_from_bc_data
 
-        open (newunit=iunit, file=trim(bc_filename), status='old', &
-              action='read', iostat=ios)
-        if (ios /= 0) then
-            print *, "bc_field: cannot open file: ", trim(bc_filename)
-            error stop
-        end if
-
-        call next_matching_line(iunit, line, is_global_header, &
-                                "global header (m0b n0b nsurf nper flux a R)")
-        read (line, *) m0b, n0b, self%nsurf, nper, flux, self%a, self%R
-
-        self%nfp = real(nper, dp)
-        self%psi_tor_edge = flux/two_pi
-
-        do isurf = 1, self%nsurf
-            call next_matching_line(iunit, line, is_real_row_6, &
-                                    "surface parameter line")
-            read (line, *) surf_vals
-            if (isurf == 1) call first_surface_pass(self, iunit, line)
-            call store_surface_params(self, isurf, surf_vals)
-            if (isurf == 1) cycle
-            call next_matching_line(iunit, line, is_mode_row, "mode table row")
-            do imode = 1, self%nmode
-                if (imode > 1) then
-                    read (iunit, '(A)', iostat=ios) line
-                    if (ios /= 0) error stop "bc_field: truncated mode table"
-                end if
-                read (line, *, iostat=ios) m_int, n_int, row(1:4)
-                if (ios /= 0) error stop "bc_field: malformed mode table row"
-                if (nint(self%m(imode)) /= m_int .or. &
-                    nint(self%n_angle(imode)/self%nfp) /= n_int) then
-                    error stop "bc_field: mode table differs between surfaces"
-                end if
-                self%geom(isurf, imode) = row(1)
-                self%geom(isurf, self%nmode + imode) = row(2)
-                self%geom(isurf, 2*self%nmode + imode) = row(3)
-                self%bmnc(isurf, imode) = row(4)
-            end do
-        end do
-        close (iunit)
-
-        call set_major_radius(self)
-    end subroutine read_bc_file
-
-    !> Read the first surface block to discover the mode table size, detect
-    !! non-stellarator-symmetric files, and allocate all storage.
-    subroutine first_surface_pass(self, iunit, line)
+    !> R from the (0,0) harmonic of R on the innermost surface;
+    !! the header R is the fallback.
+    subroutine set_major_radius(self, d)
         class(bc_field_t), intent(inout) :: self
-        integer, intent(in) :: iunit
-        character(len=512), intent(inout) :: line
-
-        integer :: ios, m_int, n_int, nmode
-        integer, parameter :: max_modes = 100000
-        real(dp) :: probe(10), row(4)
-        real(dp), allocatable :: m_tmp(:), n_tmp(:), table(:, :)
-
-        allocate (m_tmp(1024), n_tmp(1024), table(1024, 4))
-
-        call next_matching_line(iunit, line, is_mode_row, "first mode table row")
-        read (line, *, iostat=ios) probe
-        if (ios == 0) then
-            error stop "bc_field: non-stellarator-symmetric .bc files "// &
-                "(10 columns) are not supported"
-        end if
-
-        nmode = 0
-        do
-            read (line, *, iostat=ios) m_int, n_int, row
-            if (ios /= 0) exit
-            nmode = nmode + 1
-            if (nmode > max_modes) error stop "bc_field: mode table too large"
-            if (nmode > size(m_tmp)) call grow(m_tmp, n_tmp, table)
-            m_tmp(nmode) = real(m_int, dp)
-            n_tmp(nmode) = real(n_int, dp)
-            table(nmode, :) = row
-            read (iunit, '(A)', iostat=ios) line
-            if (ios /= 0) exit
-        end do
-        if (nmode == 0) error stop "bc_field: empty mode table"
-
-        self%nmode = nmode
-        allocate (self%m(nmode), self%n_angle(nmode))
-        allocate (self%s(self%nsurf), self%flux_funcs(self%nsurf, 3))
-        allocate (self%bmnc(self%nsurf, nmode))
-        allocate (self%geom(self%nsurf, 3*nmode))
-        self%m = m_tmp(1:nmode)
-        self%n_angle = n_tmp(1:nmode)*self%nfp
-        self%geom(1, 1:nmode) = table(1:nmode, 1)
-        self%geom(1, nmode + 1:2*nmode) = table(1:nmode, 2)
-        self%geom(1, 2*nmode + 1:3*nmode) = table(1:nmode, 3)
-        self%bmnc(1, :) = table(1:nmode, 4)
-    end subroutine first_surface_pass
-
-    subroutine store_surface_params(self, isurf, surf_vals)
-        class(bc_field_t), intent(inout) :: self
-        integer, intent(in) :: isurf
-        real(dp), intent(in) :: surf_vals(6)
-
-        self%s(isurf) = surf_vals(1)
-        self%flux_funcs(isurf, 1) = surf_vals(2)
-        ! columns: Jpol/nper [A], Itor [A]
-        self%flux_funcs(isurf, 2) = -mu0_over_two_pi*surf_vals(4)
-        self%flux_funcs(isurf, 3) = -mu0_over_two_pi*self%nfp*surf_vals(3)
-    end subroutine store_surface_params
-
-    subroutine set_major_radius(self)
-        class(bc_field_t), intent(inout) :: self
+        type(bc_data_t), intent(in) :: d
 
         integer :: imode
 
-        do imode = 1, self%nmode
-            if (nint(self%m(imode)) == 0 .and. nint(self%n_angle(imode)) == 0) then
-                ! R from the (0,0) harmonic of R on the innermost surface
-                self%R = self%geom(1, imode)
+        self%R = d%R
+        do imode = 1, d%nmode
+            if (d%m(imode) == 0 .and. d%n(imode) == 0) then
+                self%R = d%rmnc(1, imode)
                 return
             end if
         end do
     end subroutine set_major_radius
-
-    !> Advance to the next line for which matches() is true, skipping headers
-    !! and comments. Aborts with what_expected in the message on EOF.
-    subroutine next_matching_line(iunit, line, matches, what_expected)
-        integer, intent(in) :: iunit
-        character(len=512), intent(out) :: line
-        interface
-            logical function matches(line)
-                character(len=512), intent(in) :: line
-            end function matches
-        end interface
-        character(len=*), intent(in) :: what_expected
-
-        integer :: ios, tries
-
-        do tries = 1, max_header_lines
-            read (iunit, '(A)', iostat=ios) line
-            if (ios /= 0) then
-                print *, "bc_field: unexpected end of file, expected ", &
-                    what_expected
-                error stop
-            end if
-            if (matches(line)) return
-        end do
-        print *, "bc_field: could not find ", what_expected
-        error stop
-    end subroutine next_matching_line
-
-    logical function is_global_header(line)
-        character(len=512), intent(in) :: line
-
-        integer :: ios, ints(4)
-        real(dp) :: reals(3)
-
-        read (line, *, iostat=ios) ints, reals
-        is_global_header = (ios == 0)
-    end function is_global_header
-
-    logical function is_real_row_6(line)
-        character(len=512), intent(in) :: line
-
-        integer :: ios
-        real(dp) :: vals(6)
-
-        read (line, *, iostat=ios) vals
-        is_real_row_6 = (ios == 0)
-    end function is_real_row_6
-
-    logical function is_mode_row(line)
-        character(len=512), intent(in) :: line
-
-        integer :: ios, ints(2)
-        real(dp) :: vals(4)
-
-        read (line, *, iostat=ios) ints, vals
-        is_mode_row = (ios == 0)
-    end function is_mode_row
 
     subroutine check_uniform_grid(s, bc_filename)
         real(dp), intent(in) :: s(:)

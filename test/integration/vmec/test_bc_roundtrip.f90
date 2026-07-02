@@ -7,7 +7,7 @@ program test_bc_roundtrip
     use utils, only: linspace, not_same
     use boozer_field, only: boozer_field_t
     use bc_field, only: bc_field_t
-    use bc_file, only: write_field_B_mod_to_bc, delete_bc_file
+    use bc_writer, only: write_field_B_mod_to_bc, delete_bc_file
 
     implicit none
 
