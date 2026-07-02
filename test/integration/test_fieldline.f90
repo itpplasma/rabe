@@ -1,11 +1,10 @@
 program test_fieldline
     use constants, only: dp, pi
-    use neo_field, only: neo_field_t
+    use mock_field, only: mock_field_t
     use utils, only: not_same
 
     implicit none
 
-    character(len=*), parameter :: bc_filename = "input/single_mode_m_2_n_minus4.bc"
     real(dp), parameter :: M_pol = -2.0_dp, N_tor = 4.0_dp
     real(dp), parameter :: nfp = max(1.0_dp, abs(N_tor))
     !The minimum/maximum chi of a single mode field
@@ -13,9 +12,12 @@ program test_fieldline
     real(dp), parameter :: chi_max = pi
     real(dp), parameter :: chi_min = 0.0_dp
 
-    type(neo_field_t) :: field
+    ! B = B_0 + B_amplitude*cos(theta_mode*theta - phi_mode*phi)
+    ! min at chi=0 (B=0.7), max at chi=pi (B=1.3)
+    type(mock_field_t) :: field
 
-    call field%neo_field_init(bc_filename, 0.0_dp)
+    call field%mock_field_init(theta_mode=M_pol, phi_mode=N_tor, &
+                               B_0=1.0_dp, B_amplitude=-0.3_dp)
     call test_find_maxima_along_fieldline()
     call test_set_fieldline_labels_to_mode_minimum()
 
@@ -28,20 +30,18 @@ contains
 
         real(dp), parameter :: retol = 0.0_dp, abstol = 1e-6
 
-        real(dp) :: stor(4), theta_0(4), phi_0(4), iota(4)
+        real(dp) :: theta_0(4), phi_0(4), iota(4)
         real(dp) :: interval(2)
         type(fieldline_t) :: fieldline
         type(maxima_t) :: maxima
         real(dp) :: found_phi(2), analytic_phi(2)
         integer :: idx
 
-        stor = [0.02_dp, 0.50_dp, 0.75_dp, 0.98_dp]
         theta_0 = [3.0_dp/4.0_dp*pi, pi, -pi, -pi]
         phi_0 = [0.25_dp*pi, 1.0_dp/3.0_dp*pi, 1.25_dp*pi, 1.50_dp*pi]
         iota = [1.00_dp, -3.00_dp, 1.00_dp, -3.00_dp]
 
         do idx = 1, 4
-            call field%neo_change_stor(stor(idx))
             fieldline%theta_0 = theta_0(idx)
             fieldline%phi_0 = phi_0(idx)
             fieldline%iota = iota(idx)
@@ -111,11 +111,10 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+        use field_checks, only: suspect_omnigenous_origin_not_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp
-        real(dp), parameter :: stor = 0.5_dp
         integer, parameter :: n_fieldlines = 10
 
         real(dp), dimension(n_fieldlines) :: xi_0
@@ -130,7 +129,6 @@ contains
         call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines, xi_0)
         fieldlines(:)%xi_0 = xi_0(:)
 
-        call field%neo_change_stor(stor)
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
             print *, "(theta=phi=0) must be a global and local minimum!"

@@ -23,8 +23,8 @@ Core type `fieldline_t` representing a single field line between two B maxima.
 | `B_max(2)` | B values at left/right maxima |
 | `eta_b` | 1/B_max_global (bounce parameter) |
 | `delta_eta` | 1/B_max_local - eta_b (well depth variation) |
-| `integral_lambda_b_over_B_squared` | Boundary layer width integral I_j |
-| `I_ref` | Reference I chosen so average delta_aspect = 0 (same for all fieldlines in a flock) |
+| `integral_lambda_b_over_B_squared` | Boundary layer width integral I_j (up to covariant factor) |
+| `I_ref` | Reference I = (n/Σ1/√(I_j))², chosen so that average delta_aspect = 0 |
 | `delta_aspect_ratio` | sqrt(I_ref/I_j) - 1 |
 | `integral_one_over_B_squared` | Used for surface average normalization |
 | `radial_drift` | Integrated radial drift |
@@ -64,6 +64,12 @@ call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
 **Helper:** `suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)` —
 checks whether the origin is a B minimum (required assumption).
 
+**Fourier analysis:** `fourier_transform_over_label(fieldlines, fieldline_modes)` —
+Fourier analysis of radial drift, delta_eta, and delta_aspect_ratio over the label.
+
+**Types:** `modes_t` (cos/sin coefficients + mode numbers), `fieldline_modes_t`
+(contains modes for radial_drift, delta_eta, delta_aspect_ratio).
+
 ### `fieldline_integrals` (`fieldline_integrals.f90`)
 
 Computes per-fieldline integrals between B maxima:
@@ -71,12 +77,6 @@ Computes per-fieldline integrals between B maxima:
 - `integral_one_over_B_squared` (normalization)
 - `radial_drift`
 - `integral_nabla_s_over_B_squared`
-
-Also provides `fourier_transform_over_label(fieldlines, fieldline_modes)` for
-Fourier analysis of radial drift, delta_eta, and delta_aspect_ratio over the label.
-
-**Types:** `modes_t` (cos/sin coefficients + mode numbers), `fieldline_modes_t`
-(contains modes for radial_drift, delta_eta, delta_aspect_ratio).
 
 ### `fieldline_integrands` (`fieldline_integrands.f90`)
 
@@ -102,7 +102,7 @@ use fieldline_labels, only: get_labels
 use make_fieldline, only: make_flock_of_fieldlines
 use fieldline_mod, only: fieldline_t
 
-call field%fix_to_surface(stor)  ! or neo_field_init / neo_change_stor
+call field%fix_to_surface(stor)
 call get_labels(max_n, iota, M_pol, N_tor, nfp, xi_0, approx_iota)
 allocate(fieldlines(size(xi_0)))
 call make_flock_of_fieldlines(fieldlines, xi_0, approx_iota, field, &
