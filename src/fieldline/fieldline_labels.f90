@@ -85,7 +85,8 @@ contains
     function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_local_maxima
-        use find_extrema, only: find_global_extrema
+        use find_extrema, only: find_global_minimum
+        use find_extrema, only: find_global_maximum
         use field_base, only: field_t
         use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
@@ -101,7 +102,7 @@ contains
         integer :: n
         integer :: id_chi
         real(dp), parameter :: height_tol = 0.3_dp
-        real(dp), dimension(2) :: extrema
+        real(dp), dimension(2) :: extrema, B_extrema
         real(dp) :: B_min, B_max, B_range, B_at_origin, height
         logical :: origin_is_minimum, origin_is_maximum
 
@@ -142,10 +143,13 @@ contains
             error stop
         end if
 
-        extrema = find_global_extrema(B_mod_along_pi_line, interval, tol)
-        B_min = extrema(1)
-        B_max = extrema(2)
+        extrema(1) = find_global_minimum(B_mod_along_pi_line, interval, tol)
+        extrema(2) = find_global_maximum(B_mod_along_pi_line, interval, tol)
+        call B_mod_along_pi_line(extrema, B_extrema)
+        B_min = B_extrema(1)
+        B_max = B_extrema(2)
         B_range = B_max - B_min
+
         call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
         height = B_at_origin - B_min
         if (height/B_range > height_tol) then

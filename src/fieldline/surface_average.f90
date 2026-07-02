@@ -14,7 +14,7 @@ contains
     subroutine calc_surface_averages(fieldlines, surface_average)
         use fieldline_mod, only: fieldline_t
         use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        class(fieldline_t), dimension(:), intent(in) :: fieldlines
         type(surface_average_t), intent(out) :: surface_average
 
         real(dp), dimension(size(fieldlines)) :: well_lengths

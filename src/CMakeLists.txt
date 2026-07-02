@@ -8,6 +8,8 @@ add_library(rabe_lib STATIC
 add_dependencies(rabe_lib git_version_target)
 target_include_directories(rabe_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
+include(Util)
+find_or_fetch(libneo)
 add_subdirectory(neo)
 add_subdirectory(utils)
 add_subdirectory(netcdf)

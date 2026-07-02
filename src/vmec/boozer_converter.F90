@@ -146,6 +146,7 @@ contains
         r_eval = r
         if (r_eval .le. 0.0_dp) then
             rnegflag = .true.
+            print *, "r_eval = ", r_eval
             r_eval = abs(r_eval)
         end if
 

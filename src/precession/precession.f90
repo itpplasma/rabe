@@ -1,57 +1,257 @@
 module precession
-    use constants, only: dp, pi
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+    use constants, only: dp, pi, machine_eps
     use field_base, only: field_t
+    use field_base, only: field_3D_t
     use fieldline_mod, only: fieldline_t
+    use grid_mod, only: integration_grid_t
+    use grid_mod, only: fieldline_for_precession_t
+    use grid_mod, only: set_integration_grids
+    use grid_mod, only: compute_bounce_integrals
+    use grid_mod, only: set_splines
+    use interpolate, only: SplineData1D, construct_splines_1d, evaluate_splines_1d_many
+    use fieldline_integrals, only: modes_t
 
     implicit none
 
-    type :: integration_grid_t
-        real(dp), dimension(:), allocatable :: eta
-        real(dp), dimension(:), allocatable :: t
-        real(dp), dimension(:), allocatable :: t_weight
-        real(dp), dimension(:), allocatable :: I_bounce
-        real(dp), dimension(:), allocatable :: I_pitch
-    end type integration_grid_t
-
-    type, extends(fieldline_t) :: fieldline_with_minimum_t
-        real(dp) :: phi_min
-        real(dp) :: B_min
-    end type fieldline_with_minimum_t
-
-    type :: precession_t
-        type(integration_grid_t) :: lower_grid
-        type(integration_grid_t) :: upper_grid
-        type(fieldline_with_minimum_t) :: fieldline
-    end type precession_t
+    logical, parameter :: ignore_magnetic_drift = .true.
 
 contains
 
- subroutine compute_precession_correction(field, fieldlines, l_c, Omega_hat, correction)
-        class(field_t), intent(in) :: field
-        class(fieldline_t), dimension(:) :: fieldlines
+    subroutine compute_precession_correction(field, fieldlines_in, &
+                                             l_c, Omega_hat, s_tor, &
+                                             correction, flux_modes_out)
+        use field_instance, only: initialize_field_instance
+        use fourier, only: real_ft
+        use surface_average_mod, only: calc_surface_averages
+        use surface_average_mod, only: surface_average_t
+        use splines_instance, only: initialize_splines
+        use splines_instance, only: initialize_prefactor
+        use splines_instance, only: initialize_radial_drift_spline
+        use splines_instance, only: get_flux_mode
+        use splines_instance, only: initialize_startup
+        class(field_3D_t), intent(in) :: field
+        class(fieldline_t), dimension(:) :: fieldlines_in
         real(dp), intent(in) :: l_c
         real(dp), intent(in) :: Omega_hat
+        real(dp), intent(in) :: s_tor
         real(dp), intent(out) :: correction
+        real(dp), dimension(:), allocatable, intent(out), optional :: flux_modes_out
 
-        type(precession_t) :: precession
+        type(fieldline_for_precession_t), dimension(:), allocatable :: fieldlines
         real(dp) :: phi_bottom, B_bottom, lowest_B_max, eta_t, eta_c
+        type(integration_grid_t) :: grid
 
-        precession%fieldline%fieldline_t = get_fieldline_at_global_maximum(fieldlines)
-        call find_magnetic_well_bottom(field, precession%fieldline, &
-                                       phi_bottom, B_bottom)
-        lowest_B_max = minval(precession%fieldline%B_max)
-        eta_t = 1.0_dp/B_bottom
-        eta_c = 1.0_dp/lowest_B_max
-        precession%fieldline%phi_min = phi_bottom
-        precession%fieldline%B_min = B_bottom
-        call set_integration_grids(eta_t, eta_c, precession%lower_grid, &
-                                   precession%upper_grid)
-        call compute_bounce_integrals(field, precession%fieldline, &
-                                      precession%lower_grid)
+        real(dp), dimension(:, :), allocatable :: radial_drift_weighted
+        real(dp), dimension(:, :), allocatable :: radial_drift_cos
+        real(dp), dimension(:, :), allocatable :: radial_drift_sin
+        real(dp), dimension(:), allocatable :: bounce_time_weighted
+        real(dp), dimension(:), allocatable :: I_j
+        real(dp), dimension(:), allocatable :: poloidal_drift_weighted
+        real(dp), dimension(:), allocatable :: electric_drift_weighted
+        real(dp), dimension(:), allocatable :: magnetic_drift_weighted
 
-        correction = B_bottom
+        real(dp), dimension(:), allocatable :: flux_mode
+        real(dp) :: M_pol, N_tor, nfp, iota
+        real(dp) :: mode_factor
+        type(surface_average_t) :: average
+
+        integer :: n_fieldlines
+        integer :: n_modes
+        integer :: idx
+
+        n_fieldlines = size(fieldlines_in)
+        allocate (fieldlines(n_fieldlines))
+        fieldlines%fieldline_t = fieldlines_in
+
+        M_pol = fieldlines(1)%M_pol
+        N_tor = fieldlines(1)%N_tor
+        nfp = fieldlines(1)%nfp
+        iota = fieldlines(1)%iota
+        if (ieee_is_nan(M_pol)) then
+            print *, "M_pol: ", M_pol
+            error stop "Error: M_pol is NaN."
+        end if
+        if (ieee_is_nan(N_tor)) then
+            print *, "N_tor: ", N_tor
+            error stop "Error: N_tor is NaN."
+        end if
+        if (ieee_is_nan(nfp)) then
+            print *, "nfp: ", nfp
+            error stop "Error: nfp is NaN."
+        end if
+        if (ieee_is_nan(iota)) then
+            print *, "iota: ", iota
+            error stop "Error: iota is NaN."
+        end if
+        if (abs(M_pol*iota - N_tor) < machine_eps) then
+            print *, "Error-Resonant: M_pol*iota - N_tor must not be zero."
+            error stop
+        end if
+
+        eta_c = 1.0_dp/get_smallest_maximum(fieldlines)
+        call set_fieldline_minima(field, fieldlines)
+        eta_t = 1.0_dp/get_biggest_minimum(fieldlines)
+        call set_integration_grids(eta_t, eta_c, grid)
+        fieldlines%grid = grid
+
+        call initialize_field_instance(field)
+        allocate (radial_drift_weighted(n_fieldlines, grid%n))
+        allocate (bounce_time_weighted(grid%n))
+        allocate (I_j(grid%n))
+        allocate (magnetic_drift_weighted(grid%n))
+        allocate (electric_drift_weighted(grid%n))
+        bounce_time_weighted = 0.0_dp
+        I_j = 0.0_dp
+        magnetic_drift_weighted = 0.0_dp
+        do idx = 1, n_fieldlines
+            call compute_bounce_integrals(field, &
+                                          fieldlines(idx), &
+                                          s_tor, &
+                                          fieldlines(idx)%grid)
+            radial_drift_weighted(idx, :) = fieldlines(idx)%grid%radial_drift_weighted
+            bounce_time_weighted = bounce_time_weighted + &
+                                   fieldlines(idx)%grid%bounce_time_weighted
+            I_j = I_j + fieldlines(idx)%grid%I_j
+            magnetic_drift_weighted = magnetic_drift_weighted + fieldlines(idx)%grid%poloidal_drift_weighted
+        end do
+        if (ignore_magnetic_drift) then
+            magnetic_drift_weighted = 0.0_dp
+        else
+            magnetic_drift_weighted = magnetic_drift_weighted/n_fieldlines
+        end if
+        bounce_time_weighted = bounce_time_weighted/n_fieldlines
+        I_j = I_j/n_fieldlines
+        electric_drift_weighted = Omega_hat*bounce_time_weighted
+        allocate (poloidal_drift_weighted(grid%n))
+        poloidal_drift_weighted = magnetic_drift_weighted + electric_drift_weighted
+
+        n_modes = n_fieldlines/2 + 1
+        allocate (radial_drift_cos(n_modes, grid%n))
+        allocate (radial_drift_sin(n_modes, grid%n))
+        do idx = 1, grid%n
+            call real_ft(fieldlines%xi_0, &
+                         radial_drift_weighted(:, idx), &
+                         radial_drift_cos(:, idx), &
+                         radial_drift_sin(:, idx))
+        end do
+
+        call initialize_splines(grid%t, &
+                                grid%eta, &
+                                I_j, &
+                                poloidal_drift_weighted)
+
+        allocate (flux_mode(n_modes))
+        flux_mode(1) = 0.0_dp
+        do idx = 2, n_modes
+            mode_factor = 0.5_dp*real(idx - 1, dp)*l_c*nfp/(M_pol*iota - N_tor)
+            call initialize_prefactor(mode_factor)
+            call initialize_startup(grid%t, grid%eta, I_j, mode_factor)
+            call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
+            call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
+        end do
+
+        call calc_surface_averages(fieldlines, average)
+        correction = pi*sum(flux_mode)/average%normalization
+
+        if (present(flux_modes_out)) then
+            flux_modes_out = flux_mode
+        end if
+
+        deallocate (fieldlines)
+        deallocate (radial_drift_weighted)
+        deallocate (bounce_time_weighted)
+        deallocate (I_j)
+        deallocate (poloidal_drift_weighted)
+        deallocate (electric_drift_weighted)
+        deallocate (magnetic_drift_weighted)
+        deallocate (radial_drift_cos)
+        deallocate (radial_drift_sin)
+        deallocate (flux_mode)
 
     end subroutine compute_precession_correction
+
+    function get_smallest_maximum(fieldlines) result(smallest_maximum)
+        class(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: smallest_maximum
+
+        real(dp), dimension(size(fieldlines)) :: smallest_maximum_per_line
+        integer :: idx
+
+        do idx = 1, size(fieldlines)
+            smallest_maximum_per_line(idx) = minval(fieldlines(idx)%B_max)
+        end do
+        smallest_maximum = minval(smallest_maximum_per_line)
+
+        if (smallest_maximum <= 0.0_dp) then
+            error stop "Error: Smallest maximum is not positiv."
+        end if
+        if (ieee_is_nan(smallest_maximum)) then
+            error stop "Error: Smallest maximum is NaN."
+        end if
+
+    end function get_smallest_maximum
+
+    subroutine set_fieldline_minima(field, fieldlines)
+        class(field_t), intent(in) :: field
+        class(fieldline_for_precession_t), dimension(:), intent(inout) :: fieldlines
+
+        integer :: idx
+
+        do idx = 1, size(fieldlines)
+            call find_magnetic_well_bottom(field, &
+                                           fieldlines(idx)%fieldline_t, &
+                                           fieldlines(idx)%phi_min, &
+                                           fieldlines(idx)%B_min)
+        end do
+    end subroutine set_fieldline_minima
+
+    function get_biggest_minimum(fieldlines) result(biggest_minimum)
+        class(fieldline_for_precession_t), dimension(:), intent(in) :: fieldlines
+        real(dp) :: biggest_minimum
+
+        biggest_minimum = maxval(fieldlines%B_min)
+
+        if (biggest_minimum <= 0.0_dp) then
+            error stop "Error: Biggest minimum is not positiv."
+        end if
+        if (ieee_is_nan(biggest_minimum)) then
+            error stop "Error: Biggest minimum is NaN."
+        end if
+    end function get_biggest_minimum
+
+    subroutine integrate_radial_drift(grid, fieldline, integral)
+        use odeint_allroutines_sub, only: odeint_allroutines
+        use grid_instance, only: initialize_grid_instance
+        type(integration_grid_t), intent(in) :: grid
+        type(fieldline_t), intent(in) :: fieldline
+        real(dp), intent(out) :: integral
+
+        integer, parameter :: ndim = 1
+        real(dp) :: t_start, t_end
+        real(dp), parameter :: relerr = 1e-8_dp
+        real(dp), dimension(ndim) :: y
+
+        t_start = grid%t(1)
+        t_end = grid%t(size(grid%t))
+
+        call initialize_grid_instance(grid)
+        y(1) = 0.0_dp
+        call odeint_allroutines(y, ndim, t_start, t_end, relerr, rhs)
+
+        integral = y(1)
+    end subroutine integrate_radial_drift
+
+    subroutine rhs(t, y, dydt)
+        use grid_instance, only: get_radial_drift
+        real(dp), intent(in) :: t
+        real(dp), dimension(:), intent(in) :: y
+        real(dp), dimension(:), intent(out) :: dydt
+
+        real(dp) :: radial_drift
+        call get_radial_drift(t, dydt(1))
+
+    end subroutine rhs
 
     function get_fieldline_at_global_maximum(fieldlines) result(max_fieldline)
         class(fieldline_t), dimension(:), intent(in) :: fieldlines
@@ -127,69 +327,10 @@ contains
 
     end subroutine find_magnetic_well_bottom
 
-    subroutine set_integration_grids(eta_t, eta_c, lower_grid, upper_grid)
-        use utils, only: linspace
-        real(dp), intent(in) :: eta_t, eta_c
-        type(integration_grid_t), intent(out) :: lower_grid, upper_grid
-
-        real(dp) :: eta_mid
-        real(dp) :: t_start, t_end
-        integer, parameter :: n = 100
-        real(dp), dimension(n) :: t
-
-        if (allocated(lower_grid%eta)) deallocate (lower_grid%eta)
-        if (allocated(lower_grid%t)) deallocate (lower_grid%t)
-        if (allocated(lower_grid%t_weight)) deallocate (lower_grid%t_weight)
-
-        allocate (lower_grid%eta(n))
-        allocate (lower_grid%t(n))
-        allocate (lower_grid%t_weight(n))
-        eta_mid = 0.5_dp*(eta_c + eta_t)
-        t_start = 0.0_dp
-        t_end = (eta_t - eta_mid)**0.25_dp
-        call linspace(t_start, t_end, n, t)
-        lower_grid%eta = eta_c - t**4.0_dp
-        lower_grid%t_weight = -4.0_dp*t**3.0_dp
-        lower_grid%t = t
-
-        if (allocated(upper_grid%eta)) deallocate (upper_grid%eta)
-        if (allocated(upper_grid%t)) deallocate (upper_grid%t)
-        if (allocated(upper_grid%t_weight)) deallocate (upper_grid%t_weight)
-
-        allocate (upper_grid%eta(n))
-        allocate (upper_grid%t(n))
-        allocate (upper_grid%t_weight(n))
-        t_start = (eta_mid - eta_c)**0.25_dp
-        t_end = 0.0_dp
-        call linspace(t_start, t_end, n, t)
-        upper_grid%eta = eta_c + t**4.0_dp
-        upper_grid%t_weight = 4.0_dp*t**3.0_dp
-        upper_grid%t = t
-
-    end subroutine set_integration_grids
-
-    subroutine compute_bounce_integrals(field, fieldline, grid)
-        class(field_t), intent(in) :: field
-        type(fieldline_with_minimum_t), intent(in) :: fieldline
-        type(integration_grid_t), intent(inout) :: grid
-
-        integer :: idx
-        real(dp) :: phi_turning(2)
-
-        if (allocated(grid%I_bounce)) deallocate (grid%I_bounce)
-        if (allocated(grid%I_pitch)) deallocate (grid%I_pitch)
-
-        allocate (grid%I_bounce(size(grid%eta)))
-        allocate (grid%I_pitch(size(grid%eta)))
-
-        phi_turning = find_turning_points(field, fieldline, grid%eta(1))
-
-    end subroutine compute_bounce_integrals
-
     function find_turning_points(field, fieldline, eta, reltol_in) result(phi_turning)
         use find_extrema, only: find_global_minimum
         class(field_t), intent(in) :: field
-        type(fieldline_with_minimum_t), intent(in) :: fieldline
+        type(fieldline_for_precession_t), intent(in) :: fieldline
         real(dp), intent(in) :: eta
         real(dp), intent(in), optional :: reltol_in
         real(dp), dimension(2) :: phi_turning, extremum_locations

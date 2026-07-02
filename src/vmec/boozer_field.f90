@@ -1,7 +1,7 @@
 module boozer_field
 
     use, intrinsic :: iso_fortran_env, only: dp => real64
-    use field_base, only: field_t
+    use field_base, only: field_3D_t
     use boozer_sub, only: get_boozer_coordinates, splint_boozer_coord
 
     implicit none
@@ -12,7 +12,7 @@ module boozer_field
 
     public :: boozer_field_t
 
-    type, extends(field_t) :: boozer_field_t
+    type, extends(field_3D_t) :: boozer_field_t
         logical :: initialized = .false.
         logical :: fixed_to_surface = .false.
         real(dp) :: fixed_stor
@@ -35,7 +35,8 @@ contains
     subroutine boozer_field_init(self, vmec_file, &
                                  radial_spline_order, &
                                  angular_spline_order, &
-                                 grid_refinement)
+                                 grid_refinement, &
+                                 use_B_r_covariant)
         use vector_potentail_mod, only: torflux
         use new_vmec_stuff_mod, only: nper, rmajor
         use boozer_coordinates_mod, only: use_B_r
@@ -44,8 +45,13 @@ contains
         integer, intent(in), optional :: radial_spline_order
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
+        logical, intent(in), optional :: use_B_r_covariant
 
-        use_B_r = .true.
+        if (present(use_B_r_covariant)) then
+            use_B_r = use_B_r_covariant
+        else
+            use_B_r = .true.
+        end if
         call get_boozer_coordinates(vmec_file, &
                                     radial_spline_order, &
                                     angular_spline_order, &
