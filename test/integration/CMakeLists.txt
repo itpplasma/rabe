@@ -61,4 +61,10 @@ target_link_libraries(test_shaing_callen_against_quasi_symmetric.x helpers_lib m
 add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 
+add_executable(test_shaing_callen_remainder_scaling.x test_shaing_callen_remainder_scaling.f90)
+target_link_libraries(test_shaing_callen_remainder_scaling.x helpers_lib myplot_lib
+                                                             utils_lib fieldline_lib shaing_callen_lib)
+add_test(TestShaingCallenRemainderScaling test_shaing_callen_remainder_scaling.x)
+set_tests_properties(TestShaingCallenRemainderScaling PROPERTIES LABELS "slow")
+
 add_subdirectory(vmec)

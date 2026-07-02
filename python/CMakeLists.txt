@@ -16,6 +16,7 @@ set(F90WRAP_SOURCES
     ${PROJECT_SOURCE_DIR}/src/offset/coefficients.f90
     ${PROJECT_SOURCE_DIR}/src/error_handling/error_handling.f90
     ${PROJECT_SOURCE_DIR}/src/shaing_callen/shaing_callen.f90
+    ${PROJECT_SOURCE_DIR}/src/shaing_callen/shaing_callen_remainder.f90
 )
 
 foreach(src ${F90WRAP_SOURCES})
@@ -59,6 +60,7 @@ add_custom_command(
                 did_fail_any_sanity_check
                 calc_lambda_lc
                 get_non_omnigenous_remainder
+                calc_total_lambda_sc
     DEPENDS ${F90WRAP_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/kind_map.py
             ${CMAKE_CURRENT_SOURCE_DIR}/joint_modules.py
             ${CMAKE_CURRENT_SOURCE_DIR}/class_names.py

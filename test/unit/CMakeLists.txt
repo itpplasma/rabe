@@ -54,6 +54,11 @@ target_link_libraries(test_integrate_over_phi_grid.x utils_lib shaing_callen_lib
 add_test(TestIntegrateOverPhiGrid test_integrate_over_phi_grid.x)
 set_tests_properties(TestIntegrateOverPhiGrid PROPERTIES LABELS "quick")
 
+add_executable(test_cumintegrate_over_phi_grid.x test_cumintegrate_over_phi_grid.f90)
+target_link_libraries(test_cumintegrate_over_phi_grid.x utils_lib shaing_callen_lib fieldline_lib)
+add_test(TestCumintegrateOverPhiGrid test_cumintegrate_over_phi_grid.x)
+set_tests_properties(TestCumintegrateOverPhiGrid PROPERTIES LABELS "quick")
+
 add_executable(test_calc_periodic_dydx.x test_calc_periodic_dydx.f90)
 target_link_libraries(test_calc_periodic_dydx.x utils_lib shaing_callen_lib)
 add_test(TestCalcPeriodicDerivative test_calc_periodic_dydx.x)

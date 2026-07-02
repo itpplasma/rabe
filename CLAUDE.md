@@ -47,7 +47,8 @@ rabe_lib (main static library)
 │   fieldline.f90, fieldline_integrals.f90, fieldline_integrands.f90,
 │   fieldline_labels.f90, make_fieldline.f90, surface_average.f90
 ├── shaing_callen_lib (src/shaing_callen/)
-│   shaing_callen.f90, shaing_callen_integration.f90, shaing_callen_wrappers.f90
+│   shaing_callen.f90, shaing_callen_integration.f90, shaing_callen_remainder.f90,
+│   shaing_callen_wrappers.f90
 ├── netcdf_lib (src/netcdf/)
 │   netcdf.f90 - NetCDF output via type netcdf_t
 ├── error_handling_lib (src/error_handling/)

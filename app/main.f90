@@ -19,7 +19,9 @@ program main
                             calc_finite_boundary_layer_correction, &
                             calc_gradient_scaling_factor_r_eff, &
                             calc_offset_coefficients
-    use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
+    use shaing_callen_mod, only: calc_lambda_LC
+    use shaing_callen_remainder, only: get_non_omnigenous_remainder
+    use shaing_callen_remainder, only: calc_total_lambda_SC
     use error_handling, only: set_unsafe_mode
     use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
     use git_version, only: git_hash
@@ -49,8 +51,7 @@ program main
     integer, dimension(:), allocatable :: split_maxima
     real(dp) :: helical_factor
 
-    real(dp) :: trapped_fraction
-    real(dp), dimension(:), allocatable :: lambda_LC, remainder
+    real(dp), dimension(:), allocatable :: lambda_LC, remainder, total_lambda_SC
 
     real(dp) :: nan_value
 
@@ -71,6 +72,7 @@ program main
     if (should_calc_shaing_callen) then
         allocate (lambda_LC(n_stor))
         allocate (remainder(n_stor))
+        allocate (total_lambda_SC(n_stor))
     end if
 
     call field%boozer_field_init(field_file, grid_refinement=6)
@@ -99,8 +101,11 @@ program main
             lambda_LC(this) = calc_lambda_LC(flock, field, n_eta, dr_dAtheta)
             remainder(this) = get_non_omnigenous_remainder(flock, field, &
                                                            n_eta, dr_dAtheta)
+            total_lambda_SC(this) = calc_total_lambda_SC(flock, field, &
+                                                         n_eta, dr_dAtheta)
             print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
             print *, "non-omnigneous remainder: ", remainder(this)
+            print *, "total lambda^SC_bB: ", total_lambda_SC(this)
         end if
         print *, "1/sqrt(nu_star) factor: ", Lambda_A(this)
         print *, "1/nu_star factor: ", Lambda_B(this)
@@ -116,6 +121,7 @@ program main
             if (should_calc_shaing_callen) then
                 lambda_LC(this) = nan_value
                 remainder(this) = nan_value
+                total_lambda_SC(this) = nan_value
             end if
         end if
 
@@ -173,9 +179,14 @@ program main
         call nc_output%add_attr("remainder", "long_name", &
                                 "non-omnigenous remainder of Shaing-Callen coefficient")
         call nc_output%add_attr("remainder", "unit", "[1]")
+        call nc_output%add_real_1d("total_lambda_SC_bB", dim_name)
+        call nc_output%add_attr("total_lambda_SC_bB", "long_name", &
+                                "Shaing-Callen coefficient (truncated formula)")
+        call nc_output%add_attr("total_lambda_SC_bB", "unit", "[1]")
 
         call nc_output%write_real_1d("lambda_LC_bB", lambda_LC)
         call nc_output%write_real_1d("remainder", remainder)
+        call nc_output%write_real_1d("total_lambda_SC_bB", total_lambda_SC)
     end if
     call nc_output%write_real_1d("Lambda_A", Lambda_A)
     call nc_output%write_real_1d("Lambda_B", Lambda_B)
@@ -190,7 +201,8 @@ program main
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
                               nu_star_crit, Lambda_S, split_maxima, &
-                              lambda_LC=lambda_LC, remainder=remainder)
+                              lambda_LC=lambda_LC, remainder=remainder, &
+                              total_lambda_SC=total_lambda_SC)
     else
         call write_dat_output(dat_file, git_hash, field%R, n_stor, &
                               s_tor, Lambda_A, Lambda_B, &
@@ -203,13 +215,14 @@ program main
     if (allocated(Lambda_S)) deallocate (Lambda_S)
     if (allocated(lambda_LC)) deallocate (lambda_LC)
     if (allocated(remainder)) deallocate (remainder)
+    if (allocated(total_lambda_SC)) deallocate (total_lambda_SC)
 
 contains
 
     subroutine write_dat_output(filename, git_hash, R, n, s_tor, &
                                 Lambda_A, Lambda_B, nu_star_crit, &
                                 Lambda_S, split_maxima, &
-                                lambda_LC, remainder)
+                                lambda_LC, remainder, total_lambda_SC)
         use constants, only: dp
         character(len=*), intent(in) :: filename
         character(len=*), intent(in) :: git_hash
@@ -219,6 +232,7 @@ contains
         real(dp), intent(in) :: nu_star_crit(n), Lambda_S(n)
         integer, intent(in) :: split_maxima(n)
         real(dp), optional, intent(in) :: lambda_LC(n), remainder(n)
+        real(dp), optional, intent(in) :: total_lambda_SC(n)
 
         integer :: u, i
         logical :: with_sc
@@ -234,7 +248,8 @@ contains
         if (with_sc) then
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
-                //"  Lambda_S  split_maxima  lambda_LC_bB  remainder"
+                //"  Lambda_S  split_maxima  lambda_LC_bB  remainder" &
+                //"  total_lambda_SC_bB"
         else
             write (u, "(A)") &
                 "# s_tor  Lambda_A  Lambda_B  nu_star_crit" &
@@ -242,10 +257,10 @@ contains
         end if
         do i = 1, n
             if (with_sc) then
-                write (u, "(ES23.15,4(1X,ES23.15),1X,I2,2(1X,ES23.15))") &
+                write (u, "(ES23.15,4(1X,ES23.15),1X,I2,3(1X,ES23.15))") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &
                     nu_star_crit(i), Lambda_S(i), split_maxima(i), &
-                    lambda_LC(i), remainder(i)
+                    lambda_LC(i), remainder(i), total_lambda_SC(i)
             else
                 write (u, "(ES23.15,4(1X,ES23.15),1X,I2)") &
                     s_tor(i), Lambda_A(i), Lambda_B(i), &

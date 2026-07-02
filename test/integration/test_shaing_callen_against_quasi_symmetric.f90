@@ -6,10 +6,15 @@ program test_shaing_callen_against_quasi_symmetric
     use utils, only: linspace, not_same
 
     use test_shaing_callen_mod, only: test_trapped_fraction_against_qs
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_B_squared_dphimax_dxi0
-    use test_shaing_callen_mod, only: test_calc_avg_normalized_lambda_dphimax_dxi0
-    use test_shaing_callen_mod, only: test_get_non_omnigenous_remainder
     use test_shaing_callen_mod, only: test_trapped_fraction_against_circular_tokamak
+
+    use test_shaing_callen_remainder, only: test_avg_B_sq_antider_dBdtheta_over_B_cubed
+    use test_shaing_callen_remainder, only: test_trapped_fraction_prime_against_qs
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_B_sq_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_calc_avg_normalized_lambda_dphimax_dxi0
+    use test_shaing_callen_remainder, only: test_get_non_omnigenous_remainder
+    use test_shaing_callen_remainder, only: test_limit_cancelation
+    use test_shaing_callen_remainder, only: test_get_non_omnigenous_remainders
 
     use plot_quantities, only: plot_fieldlines_over_field
     use plot_quantities, only: plot_phi_max_over_xi_0
@@ -28,9 +33,6 @@ program test_shaing_callen_against_quasi_symmetric
     type(mock_field_t) :: field
 
     logical, parameter :: should_plot = .false.
-    integer :: this
-    integer, parameter :: n_eta = 10
-    real(dp), dimension(n_eta) :: eta_grid
 
     logical :: test_failed
 
@@ -56,9 +58,15 @@ program test_shaing_callen_against_quasi_symmetric
 
     call test_trapped_fraction_against_circular_tokamak(test_failed)
     call test_trapped_fraction_against_qs(field, flock, test_failed)
-    call test_calc_avg_normalized_B_squared_dphimax_dxi0(flock, test_failed)
+    call test_avg_B_sq_antider_dBdtheta_over_B_cubed(field, &
+                                                     flock, &
+                                                     test_failed)
+    call test_trapped_fraction_prime_against_qs(field, flock, test_failed)
+    call test_calc_avg_normalized_B_sq_dphimax_dxi0(flock, test_failed)
     call test_calc_avg_normalized_lambda_dphimax_dxi0(field, flock, test_failed)
     call test_get_non_omnigenous_remainder(field, flock, test_failed)
+    call test_limit_cancelation(flock, test_failed)
+    call test_get_non_omnigenous_remainders(field, flock, test_failed)
 
     if (test_failed) error stop
 

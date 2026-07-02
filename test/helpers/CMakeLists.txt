@@ -6,6 +6,7 @@ add_library(helpers_lib STATIC
   plot_quantities.f90
   readers.f90
   test_shaing_callen_mod.f90
+  test_shaing_callen_remainder.f90
   bc_file.f90
 )
 target_link_libraries(helpers_lib PRIVATE offset_lib

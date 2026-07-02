@@ -38,6 +38,7 @@ flock_methods = [
     "calc_offset_coefficients",
     "calc_lambda_lc",
     "get_non_omnigenous_remainder",
+    "calc_total_lambda_sc",
 ]
 for m in flock_methods:
     assert hasattr(

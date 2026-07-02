@@ -403,23 +403,23 @@ contains
         phi_l = fieldlines%phi_max(1)
         phi_r = fieldlines%phi_max(2)
 
-        call plt%initialize(xlabel="$\xi_0$", &
-                            ylabel="$\varphi_\mathrm{max}$", &
+        call plt%initialize(xlabel="$\xi_0$ [$\pi$]", &
+                            ylabel="$\varphi_\mathrm{max}$ [$\pi$]", &
                             legend=.true.)
 
-        call plt%add_plot(xi_0, phi_l, &
+        call plt%add_plot(xi_0/pi, phi_l/pi, &
                           label="$\varphi_l$", &
                           linestyle="bo-", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_r, &
+        call plt%add_plot(xi_0/pi, phi_r/pi, &
                           label="$\varphi_r$", &
                           linestyle="ro-", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_l - M_pol/nfp*xi_0, &
+        call plt%add_plot(xi_0/pi, (phi_l - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_l - M/N_p \xi_0$", &
                           linestyle="b--", &
                           linewidth=1)
-        call plt%add_plot(xi_0, phi_r - M_pol/nfp*xi_0, &
+        call plt%add_plot(xi_0/pi, (phi_r - M_pol/nfp*xi_0)/pi, &
                           label="$\varphi_r - M/N_p \xi_0$", &
                           linestyle="r--", &
                           linewidth=1)
@@ -427,6 +427,41 @@ contains
         call plt%show()
 
     end subroutine plot_phi_max_over_xi_0
+
+    subroutine plot_chi_max_over_xi_0(fieldlines, M_pol, N_tor, iota_p)
+        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        real(dp), intent(in) :: M_pol, N_tor, iota_p
+        type(myplot) :: plt
+
+        real(dp), dimension(2) :: theta_max
+        real(dp), dimension(size(fieldlines)) :: shifted_xi_0
+        real(dp), dimension(size(fieldlines)) :: chi_minus, chi_plus
+
+        integer :: this
+
+        shifted_xi_0 = modulo(fieldlines%xi_0 - iota_p, 2.0_dp*pi)
+        do this = 1, size(fieldlines)
+            theta_max = fieldlines(this)%get_theta(fieldlines(this)%phi_max)
+            chi_minus(this) = M_pol*theta_max(2) - N_tor*fieldlines(this)%phi_max(2)
+            chi_plus(this) = M_pol*theta_max(1) - N_tor*fieldlines(this)%phi_max(1)
+        end do
+
+        call plt%initialize(xlabel="$\xi_0 - \iota_p$ [$\pi$]", &
+                            ylabel="$\chi_\mathrm{max}$ [$\pi$]", &
+                            legend=.true.)
+
+        call plt%add_plot(shifted_xi_0/pi, chi_minus/pi, &
+                          label="$\chi_-$", &
+                          linestyle="bo-", &
+                          linewidth=1)
+        call plt%add_plot(shifted_xi_0/pi, chi_plus/pi, &
+                          label="$\chi_+$", &
+                          linestyle="ro-", &
+                          linewidth=1)
+
+        call plt%show()
+
+    end subroutine plot_chi_max_over_xi_0
 
     subroutine plot_fieldline_over_local_drift(fieldline, field, eta, interval)
         use fieldline_integrands, only: local_radial_drift
@@ -959,5 +994,63 @@ contains
         call plt_sin%show()
 
     end subroutine compare_modes
+
+    subroutine plot_non_omnigenous_remainder(omnigenity_violation, remainder, kind, &
+                                             estimate)
+        real(dp), dimension(:), intent(in) :: omnigenity_violation, remainder
+        character(len=*), intent(in) :: kind
+        real(dp), intent(in), optional :: estimate
+
+        type(myplot) :: plt
+        integer :: temp(1), min_idx
+        real(dp) :: fitted_scaling_factor
+
+        character(len=1024) :: label
+
+        if (any(omnigenity_violation <= 0.0_dp)) then
+            print *, "Error in plot_non_omnigenous_remainder:"
+            print *, "omnigenity_violation must be positive!"
+            error stop
+        end if
+
+        temp = minloc(abs(remainder))
+        min_idx = temp(1)
+        fitted_scaling_factor = abs(remainder(min_idx))/ &
+                                sqrt(abs(omnigenity_violation(min_idx)))
+
+        call plt%initialize(xlabel="violation of omnigenity [1]", &
+                            ylabel="remainder [1]", &
+                            legend=.true., &
+                            figsize=[15, 10])
+
+        call plt%add_plot(omnigenity_violation, &
+                          remainder, &
+                          label=kind, &
+                          linestyle="k-o", &
+                          xscale="log", &
+                          yscale="log")
+
+        write (label, "(A4,ES10.2E2,A25)") "fit:", fitted_scaling_factor, &
+            "$\sqrt{\text{violation}}$"
+        call plt%add_plot(omnigenity_violation, &
+                          fitted_scaling_factor*sqrt(omnigenity_violation), &
+                          label=label, &
+                          linestyle="b-", &
+                          xscale="log", &
+                          yscale="log")
+
+        if (present(estimate)) then
+            write (label, "(A18,ES10.2E2,A25)") "analytic estimate:", estimate, &
+                "$\sqrt{\text{violation}}$"
+            call plt%add_plot(omnigenity_violation, &
+                              estimate*sqrt(omnigenity_violation), &
+                              label=label, &
+                              linestyle="r--", &
+                              xscale="log", &
+                              yscale="log")
+        end if
+
+        call plt%show()
+    end subroutine plot_non_omnigenous_remainder
 
 end module plot_quantities
