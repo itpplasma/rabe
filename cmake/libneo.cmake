@@ -6,6 +6,10 @@ set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fet
 # -DLIBNEO_REF=<branch|tag|sha>: fetch this libneo revision instead of the pin.
 set(LIBNEO_REF  "" CACHE STRING "libneo git ref (branch, tag, or sha) to fetch")
 
+# rabe links only libneo's light targets (boozer, vmec_support, interpolate);
+# skip its numerics-heavy core so BLAS/LAPACK and fortnum are not required here.
+set(LIBNEO_BUILD_NUMERICS OFF CACHE BOOL "rabe needs only light libneo targets" FORCE)
+
 if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
     message(STATUS "Using libneo in ${LIBNEO_PATH}")
     add_subdirectory("${LIBNEO_PATH}"
@@ -13,7 +17,7 @@ if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
                      EXCLUDE_FROM_ALL)
 else()
     if(LIBNEO_REF STREQUAL "")
-        set(_libneo_ref "34b1b33f0705da84fef2d42482e4f96eb2a364d6")
+        set(_libneo_ref "e4c2c7ff14c4566dc0d885045de07700bad136c8")
     else()
         set(_libneo_ref "${LIBNEO_REF}")
     endif()
@@ -21,9 +25,7 @@ else()
         libneo
         GIT_REPOSITORY https://github.com/itpplasma/libneo.git
         GIT_TAG        ${_libneo_ref}
-        PATCH_COMMAND  ${CMAKE_COMMAND} -E copy
-                       ${CMAKE_CURRENT_LIST_DIR}/libneo_CMakeLists.txt
-                       <SOURCE_DIR>/CMakeLists.txt
+        EXCLUDE_FROM_ALL
     )
     FetchContent_MakeAvailable(libneo)
 endif()
