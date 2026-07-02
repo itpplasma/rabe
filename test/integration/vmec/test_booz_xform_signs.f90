@@ -1,6 +1,6 @@
 program test_booz_xform_signs
     use, intrinsic :: iso_fortran_env, only: dp => real64
-    use boozer_field, only: boozer_field_t
+    use boozer_field, only: boozxform_field_t
     use netcdf
     use utils, only: not_same
 
@@ -18,11 +18,11 @@ program test_booz_xform_signs
     real(dp), parameter :: reltol = 1.0e-6_dp
     real(dp), parameter :: abstol = 1.0e-10_dp
 
-    type(boozer_field_t) :: field
+    type(boozxform_field_t) :: field
     real(dp) :: bmod, expected
 
     call write_boozmn_fixture(boozmn_file)
-    call field%boozer_field_init(boozmn_file, field_type='booz_xform')
+    call field%boozer_field_init(boozmn_file)
     if (.not. field%initialized) error stop 'booz_xform field not initialized'
 
     call field%fix_to_surface(stor)

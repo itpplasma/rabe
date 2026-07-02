@@ -13,7 +13,7 @@ program main
                          should_calc_shaing_callen, &
                          n_eta, &
                          unsafe_mode
-    use boozer_field, only: boozer_field_t
+    use boozer_field, only: boozer_field_t, boozxform_field_t, chartmap_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
     use coefficients, only: calc_nu_star_crit, &
@@ -31,7 +31,7 @@ program main
     character(len=*), parameter :: output_file = "rabe.nc"
     character(len=*), parameter :: dat_file = "rabe.dat"
 
-    type(boozer_field_t) :: field
+    class(boozer_field_t), allocatable :: field
 
     integer :: n_stor
     integer :: this
@@ -74,7 +74,19 @@ program main
         allocate (remainder(n_stor))
     end if
 
-    call field%boozer_field_init(field_file, grid_refinement=6, field_type=field_type)
+    select case (trim(field_type))
+    case ('vmec_nc')
+        allocate (boozer_field_t :: field)
+        call field%boozer_field_init(field_file, grid_refinement=6)
+    case ('booz_xform')
+        allocate (boozxform_field_t :: field)
+        call field%boozer_field_init(field_file)
+    case ('chartmap')
+        allocate (chartmap_field_t :: field)
+        call field%boozer_field_init(field_file)
+    case default
+        error stop "main: unknown field_type"
+    end select
     do this = 1, n_stor
         call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))

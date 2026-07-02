@@ -2,10 +2,10 @@
 !>
 !> Both paths read a field generated from circ.bc via libneo Python converters.
 !> The test asserts that:
-!>   1. boozer_field_t initializes without error via field_type='chartmap'
+!>   1. chartmap_field_t initializes without error
 !>   2. Bmod at three reference points agrees with the Python-computed grid values
 !>      to within 1e-4 (fixture is FP-accurate after the off-by-one fix).
-!>   3. boozer_field_t initializes without error via field_type='booz_xform'
+!>   3. boozxform_field_t initializes without error
 !>   4. Bmod from the booz_xform path agrees with the chartmap path at the same
 !>      points to within 1e-4 (both paths use the fixed converter).
 !>
@@ -14,12 +14,13 @@
 !> nrho=20, ntheta=24, nzeta=24.
 program test_booz_xform_chartmap
     use, intrinsic :: iso_fortran_env, only: dp => real64
-    use boozer_field, only: boozer_field_t
+    use boozer_field, only: boozxform_field_t, chartmap_field_t
     use utils, only: not_same
 
     implicit none
 
-    type(boozer_field_t) :: field_chart, field_booz
+    type(chartmap_field_t) :: field_chart
+    type(boozxform_field_t) :: field_booz
 
     character(len=*), parameter :: chartmap_file = &
         'input/circ_chartmap.nc'
@@ -62,7 +63,7 @@ program test_booz_xform_chartmap
     ! ----------------------------------------------------------------
     ! Load chartmap field
     ! ----------------------------------------------------------------
-    call field_chart%boozer_field_init(chartmap_file, field_type='chartmap')
+    call field_chart%boozer_field_init(chartmap_file)
 
     if (.not. field_chart%initialized) then
         print *, "FAIL: chartmap field not initialized"
@@ -112,7 +113,7 @@ program test_booz_xform_chartmap
     ! ----------------------------------------------------------------
     ! Load booz_xform field
     ! ----------------------------------------------------------------
-    call field_booz%boozer_field_init(boozmn_file, field_type='booz_xform')
+    call field_booz%boozer_field_init(boozmn_file)
 
     if (.not. field_booz%initialized) then
         print *, "FAIL: booz_xform field not initialized"

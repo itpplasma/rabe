@@ -1,3 +1,8 @@
+!> Re-initialization consistency check for boozer_field_t.
+!>
+!> The Boozer splines live in module-global state (singleton). This test loads
+!> the same VMEC wout file into two boozer_field_t instances and asserts that
+!> the second init reproduces the metadata (nfp, psi_tor_edge, R) of the first.
 program test_field_type_loader
     use constants, only: dp
     use boozer_field, only: boozer_field_t
@@ -16,18 +21,17 @@ program test_field_type_loader
 
     test_failed = .false.
 
-    call field_vmec%boozer_field_init(vmec_nc_file, grid_refinement=6, &
-                                      field_type='vmec_nc')
+    call field_vmec%boozer_field_init(vmec_nc_file, grid_refinement=6)
     if (.not. field_vmec%initialized) then
         print *, "-------------------------------------------------------------"
-        print *, "test_field_type_loader failed: vmec_nc field not initialized"
+        print *, "test_field_type_loader failed: first field not initialized"
         test_failed = .true.
     end if
 
     call field_vmec_ref%boozer_field_init(vmec_nc_file, grid_refinement=6)
     if (.not. field_vmec_ref%initialized) then
         print *, "-------------------------------------------------------------"
-        print *, "test_field_type_loader failed: vmec_nc ref field not initialized"
+        print *, "test_field_type_loader failed: second field not initialized"
         test_failed = .true.
     end if
 
@@ -35,8 +39,8 @@ program test_field_type_loader
                  reltol_in=reltol, abstol_in=abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_field_type_loader failed: nfp mismatch"
-        print *, "with field_type: ", field_vmec%nfp
-        print *, "default (no field_type): ", field_vmec_ref%nfp
+        print *, "first init: ", field_vmec%nfp
+        print *, "second init: ", field_vmec_ref%nfp
         test_failed = .true.
     end if
 
@@ -44,8 +48,8 @@ program test_field_type_loader
                  reltol_in=reltol, abstol_in=abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_field_type_loader failed: psi_tor_edge mismatch"
-        print *, "with field_type: ", field_vmec%psi_tor_edge
-        print *, "default (no field_type): ", field_vmec_ref%psi_tor_edge
+        print *, "first init: ", field_vmec%psi_tor_edge
+        print *, "second init: ", field_vmec_ref%psi_tor_edge
         test_failed = .true.
     end if
 
@@ -53,8 +57,8 @@ program test_field_type_loader
                  reltol_in=reltol, abstol_in=abstol)) then
         print *, "-------------------------------------------------------------"
         print *, "test_field_type_loader failed: R mismatch"
-        print *, "with field_type: ", field_vmec%R
-        print *, "default (no field_type): ", field_vmec_ref%R
+        print *, "first init: ", field_vmec%R
+        print *, "second init: ", field_vmec_ref%R
         test_failed = .true.
     end if
 
