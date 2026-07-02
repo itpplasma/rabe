@@ -56,7 +56,7 @@ contains
         integer :: var_ns, var_nfp, var_mnboz, var_lasym
         integer :: var_jlist, var_ixm, var_ixn
         integer :: var_iota, var_buco, var_bvco, var_phi
-        integer :: var_bmnc, var_rmnc
+        integer :: var_bmnc, var_rmnc, var_zmns, var_pmns
         integer, dimension(nsurf) :: jlist
         real(dp), dimension(ns_full) :: iota, buco, bvco, phi
         real(dp), dimension(nmode, nsurf) :: coeff
@@ -95,6 +95,10 @@ contains
                       [dim_mode, dim_surf], var_bmnc), 'define bmnc_b')
         call check_nc(nf90_def_var(ncid, 'rmnc_b', nf90_double, &
                       [dim_mode, dim_surf], var_rmnc), 'define rmnc_b')
+        call check_nc(nf90_def_var(ncid, 'zmns_b', nf90_double, &
+                      [dim_mode, dim_surf], var_zmns), 'define zmns_b')
+        call check_nc(nf90_def_var(ncid, 'pmns_b', nf90_double, &
+                      [dim_mode, dim_surf], var_pmns), 'define pmns_b')
         call check_nc(nf90_enddef(ncid), 'end definitions')
 
         jlist = [2, 3, 4]
@@ -120,6 +124,9 @@ contains
         coeff = 0.0_dp
         coeff(1, :) = [1.8_dp, 1.9_dp, 2.0_dp]
         call check_nc(nf90_put_var(ncid, var_rmnc, coeff), 'write rmnc_b')
+        coeff = 0.0_dp
+        call check_nc(nf90_put_var(ncid, var_zmns, coeff), 'write zmns_b')
+        call check_nc(nf90_put_var(ncid, var_pmns, coeff), 'write pmns_b')
         call check_nc(nf90_close(ncid), 'close boozmn')
     end subroutine write_boozmn_fixture
 

@@ -1,10 +1,9 @@
 add_library(vmec_lib STATIC
-            boozmn_reader.f90
             boozer_field.f90
             )
 
 include(libneo)
-target_link_libraries(vmec_lib PRIVATE utils_lib field_lib netcdf_lib
+target_link_libraries(vmec_lib PRIVATE utils_lib field_lib
                       LIBNEO::boozer
                       LIBNEO::vmec_support
                       LIBNEO::interpolate)

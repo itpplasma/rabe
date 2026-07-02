@@ -73,90 +73,26 @@ contains
 
         select case (trim(ftype))
         case ('vmec_nc')
-            call init_from_vmec_nc(self, vmec_file, &
-                                   radial_spline_order, &
-                                   angular_spline_order, &
-                                   grid_refinement)
+            use_B_r = .true.
+            call get_boozer_coordinates(vmec_file, &
+                                        radial_spline_order, &
+                                        angular_spline_order, &
+                                        grid_refinement)
         case ('booz_xform')
-            call init_from_booz_xform(self, vmec_file, &
-                                      radial_spline_order, &
-                                      angular_spline_order, &
-                                      grid_refinement)
+            call load_boozer_from_boozmn(vmec_file)
         case ('chartmap')
-            call init_from_chartmap(self, vmec_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
+            call load_boozer_from_chartmap(vmec_file)
         case default
             error stop "boozer_field_init: unknown field_type"
         end select
 
+        self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
+        self%nfp = real(nper, dp)
+        self%R = rmajor
+        initialized = .true.
+        self%initialized = .true.
+
     end subroutine boozer_field_init
-
-    subroutine init_from_vmec_nc(self, vmec_file, &
-                                 radial_spline_order, &
-                                 angular_spline_order, &
-                                 grid_refinement)
-        use vector_potentail_mod, only: torflux
-        use new_vmec_stuff_mod, only: nper, rmajor
-        use boozer_coordinates_mod, only: use_B_r
-        class(boozer_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: vmec_file
-        integer, intent(in), optional :: radial_spline_order
-        integer, intent(in), optional :: angular_spline_order
-        integer, intent(in), optional :: grid_refinement
-
-        use_B_r = .true.
-        call get_boozer_coordinates(vmec_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
-        self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
-        self%nfp = real(nper, dp)
-        self%R = rmajor
-        initialized = .true.
-        self%initialized = .true.
-    end subroutine init_from_vmec_nc
-
-    subroutine init_from_booz_xform(self, booz_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
-        use vector_potentail_mod, only: torflux
-        use new_vmec_stuff_mod, only: nper, rmajor
-        class(boozer_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: booz_file
-        integer, intent(in), optional :: radial_spline_order
-        integer, intent(in), optional :: angular_spline_order
-        integer, intent(in), optional :: grid_refinement
-
-        call load_boozer_from_boozmn(booz_file)
-        self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
-        self%nfp = real(nper, dp)
-        self%R = rmajor
-        initialized = .true.
-        self%initialized = .true.
-    end subroutine init_from_booz_xform
-
-    subroutine init_from_chartmap(self, chartmap_file, &
-                                  radial_spline_order, &
-                                  angular_spline_order, &
-                                  grid_refinement)
-        use vector_potentail_mod, only: torflux
-        use new_vmec_stuff_mod, only: nper, rmajor
-        class(boozer_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: chartmap_file
-        integer, intent(in), optional :: radial_spline_order
-        integer, intent(in), optional :: angular_spline_order
-        integer, intent(in), optional :: grid_refinement
-
-        call load_boozer_from_chartmap(chartmap_file)
-        self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
-        self%nfp = real(nper, dp)
-        self%R = rmajor
-        initialized = .true.
-        self%initialized = .true.
-    end subroutine init_from_chartmap
 
     subroutine evaluate(self, x, bmod, sqrtg, bder, &
                         hcovar, hctrvr, hcurl)
