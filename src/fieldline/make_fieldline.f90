@@ -191,6 +191,10 @@ contains
 
         flock%fieldlines%delta_eta = 1.0_dp/flock%fieldlines(:)%B_max(1) &
                                      - flock%eta_b
+        print *, "max relative phi_max_error: ", &
+            maxval(max(flock%fieldlines%phi_max_error(1), &
+                       flock%fieldlines%phi_max_error(2)) &
+                   /abs(flock%fieldlines%phi_max(2) - flock%fieldlines%phi_max(1)))
 
         call field%get_covariant_components(B_theta_cov, B_phi_cov)
         if (B_phi_cov + flock%iota*B_theta_cov <= machine_eps) then
@@ -213,6 +217,18 @@ contains
         flock%I_ref = (n_fieldlines/sum(1.0_dp/sqrt(I_j)))**2.0_dp
         flock%fieldlines%delta_aspect_ratio = sqrt(flock%I_ref/I_j) - 1.0_dp
         deallocate (I_j)
+        print *, "max relative phi_max boundary contribution to delta_aspect_ratio: ", &
+            maxval(sqrt(flock%fieldlines%delta_eta*flock%fieldlines%B_max(1)) &
+                   *max(flock%fieldlines%phi_max_error(1), &
+                        flock%fieldlines%phi_max_error(2)) &
+                   /flock%fieldlines%B_max(1)**2/flock%I_ref &
+                   /abs(flock%fieldlines%delta_aspect_ratio))
+        print *, "avg relative phi_max boundary contribution to delta_aspect_ratio: ", &
+            sum(sqrt(flock%fieldlines%delta_eta*flock%fieldlines%B_max(1)) &
+                *max(flock%fieldlines%phi_max_error(1), &
+                     flock%fieldlines%phi_max_error(2)) &
+                /flock%fieldlines%B_max(1)**2/flock%I_ref &
+                /abs(flock%fieldlines%delta_aspect_ratio))/n_fieldlines
 
     end subroutine make_flock_from_labels
 
