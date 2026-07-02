@@ -206,10 +206,11 @@ contains
 
         call field%get_covariant_components(B_theta_cov, B_phi_cov)
         if (B_phi_cov + flock%iota*B_theta_cov <= machine_eps) then
-            print *, "error: covariant factor B_phi + iota*B_theta must be positive."
-            print *, "B_phi_covariant = ", B_phi_cov
-            print *, "B_theta_covariant = ", B_theta_cov
-            print *, "iota = ", flock%iota
+            call log_msg(LOG%ERROR, "error: covariant factor " &
+                         //"B_phi + iota*B_theta must be positive.")
+            call log_val(LOG%ERROR, "B_phi_covariant = ", B_phi_cov)
+            call log_val(LOG%ERROR, "B_theta_covariant = ", B_theta_cov)
+            call log_val(LOG%ERROR, "iota = ", flock%iota)
             error stop
         end if
         allocate (I_j(n_fieldlines))
