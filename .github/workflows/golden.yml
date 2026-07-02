@@ -1,0 +1,48 @@
+name: Golden Record
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      libneo_ref:
+        description: libneo branch, tag or commit to build against
+        default: ''
+
+jobs:
+  golden:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: cachix/install-nix-action@v31.10.6
+      with:
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+
+    - name: Show pinned toolchain
+      run: |
+        nix develop .#default --command bash -c '
+          set -e
+          uname -m
+          gfortran --version | head -1
+          ldd --version | head -1
+          cmake --version | head -1
+          make --version | head -1
+          pkg-config --modversion netcdf
+          pkg-config --modversion netcdf-fortran
+          python --version
+        '
+
+    - name: Build project
+      run: |
+        if [ -n "${{ inputs.libneo_ref }}" ]; then
+          nix develop .#default --command make LIBNEO_REF=${{ inputs.libneo_ref }}
+        else
+          nix develop .#default --command make
+        fi
+
+    - name: Run golden record test
+      run: nix develop .#default --command make golden

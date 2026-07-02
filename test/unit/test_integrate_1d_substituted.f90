@@ -1,6 +1,7 @@
 program test_integrate_1d_substituted
     use constants, only: dp, pi
-    use integrate, only: integrate_1d_substituted, integrate_1d
+    use integrate, only: integrate_1d
+    use integrate_substituted, only: integrate_1d_substituted
     use utils, only: not_same
 
     implicit none
