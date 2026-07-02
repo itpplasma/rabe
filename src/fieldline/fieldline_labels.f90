@@ -3,7 +3,71 @@ module fieldline_labels
 
     implicit none
 
+    type :: modes_t
+        real(dp), dimension(:), allocatable :: cos_coeffs, sin_coeffs
+        real(dp), dimension(:), allocatable :: mode_numbers
+    end type modes_t
+
+    type :: fieldline_modes_t
+        type(modes_t) :: radial_drift
+        type(modes_t) :: delta_eta
+        type(modes_t) :: delta_aspect_ratio
+    end type fieldline_modes_t
+
 contains
+
+    subroutine fourier_transform_over_label(flock, fieldline_modes)
+        use fourier, only: real_ft
+        use fieldline_mod, only: flock_of_fieldlines_t
+
+        type(flock_of_fieldlines_t), intent(in) :: flock
+        type(fieldline_modes_t), intent(out) :: fieldline_modes
+
+        integer :: n_modes
+
+        real(dp), dimension(size(flock%fieldlines)) :: shifted_label
+
+        n_modes = size(flock%fieldlines)/2 + 1
+
+        call allocate_modes(fieldline_modes%radial_drift, n_modes)
+        call allocate_modes(fieldline_modes%delta_aspect_ratio, n_modes)
+        call allocate_modes(fieldline_modes%delta_eta, n_modes)
+
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%radial_drift, &
+                     fieldline_modes%radial_drift%cos_coeffs, &
+                     fieldline_modes%radial_drift%sin_coeffs)
+
+        call real_ft(flock%fieldlines%xi_0, &
+                     flock%fieldlines%delta_aspect_ratio, &
+                     fieldline_modes%delta_aspect_ratio%cos_coeffs, &
+                     fieldline_modes%delta_aspect_ratio%sin_coeffs)
+
+        shifted_label = flock%fieldlines%xi_0 - flock%iota_p
+        call real_ft(shifted_label, &
+                     flock%fieldlines%delta_eta, &
+                     fieldline_modes%delta_eta%cos_coeffs, &
+                     fieldline_modes%delta_eta%sin_coeffs)
+
+    end subroutine fourier_transform_over_label
+
+    subroutine allocate_modes(modes, n_modes)
+        integer, intent(in) :: n_modes
+        type(modes_t), intent(out) :: modes
+
+        integer :: j
+
+        allocate (modes%cos_coeffs(n_modes))
+        allocate (modes%sin_coeffs(n_modes))
+        allocate (modes%mode_numbers(n_modes))
+
+        modes%cos_coeffs = 0.0_dp
+        modes%sin_coeffs = 0.0_dp
+
+        do j = 0, n_modes - 1
+            modes%mode_numbers(j + 1) = real(j, kind=dp)
+        end do
+    end subroutine allocate_modes
 
     subroutine get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
                           xi_0, approx_iota)
@@ -81,112 +145,6 @@ contains
         end if
 
     end function calc_iota
-
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, phi_tol)
-        use find_extrema, only: find_local_minima
-        use find_extrema, only: find_local_maxima
-        use find_extrema, only: find_global_minimum
-        use find_extrema, only: find_global_maximum
-        use field_base, only: field_t
-        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
-
-        class(field_t), intent(in) :: field
-        real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: phi_tol
-        logical :: suspect_omnigenous_origin_not_minimum
-
-        real(dp), dimension(2) :: interval
-        real(dp) :: tol
-        integer, parameter :: n_min = 10
-        real(dp) :: chis(n_min)
-        integer :: n
-        integer :: id_chi
-        real(dp), parameter :: height_tol = 0.3_dp
-        real(dp), dimension(2) :: extrema, B_extrema
-        real(dp) :: B_min, B_max, B_range, B_at_origin, height
-        logical :: origin_is_minimum, origin_is_maximum
-
-        if (present(phi_tol)) then
-            tol = phi_tol*abs(M_pol*pi - N_tor)
-        else
-            tol = 3.0_dp*1e-2
-        end if
-
-        suspect_omnigenous_origin_not_minimum = .false.
-        origin_is_maximum = .false.
-        origin_is_minimum = .false.
-
-        interval = [-pi, pi]
-        call find_local_minima(B_mod_along_pi_line, interval, chis, tol)
-        n = count(.not. ieee_is_nan(chis))
-        do id_chi = 1, n
-            if (is_multiple_of_2pi(chis(id_chi), tol)) then
-                origin_is_minimum = .true.
-                exit
-            end if
-        end do
-
-        if (.not. origin_is_minimum) then
-            call find_local_maxima(B_mod_along_pi_line, interval, chis, tol)
-            n = count(.not. ieee_is_nan(chis))
-            do id_chi = 1, n
-                if (is_multiple_of_2pi(chis(id_chi), tol)) then
-                    origin_is_maximum = .true.
-                    exit
-                end if
-            end do
-        end if
-
-        if (.not. origin_is_minimum .and. .not. origin_is_maximum) then
-            print *, "warning: origin is neither local minimum nor maximum!"
-            print *, "Stellarator symmetry is violated!"
-            error stop
-        end if
-
-        extrema(1) = find_global_minimum(B_mod_along_pi_line, interval, tol)
-        extrema(2) = find_global_maximum(B_mod_along_pi_line, interval, tol)
-        call B_mod_along_pi_line(extrema, B_extrema)
-        B_min = B_extrema(1)
-        B_max = B_extrema(2)
-        B_range = B_max - B_min
-
-        call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
-        height = B_at_origin - B_min
-        if (height/B_range > height_tol) then
-            print *, "Detected that origin in provided field is"
-            print *, "a significant local maximum of height > "
-            print *, height_tol*100.0_dp, "% of the total B range!"
-            suspect_omnigenous_origin_not_minimum = .true.
-        end if
-
-    contains
-
-        !> we go along the theta = pi*phi line so that
-        !> chi = M_pol*theta - N_tor*phi can be inverted
-        subroutine B_mod_along_pi_line(chi, B_mod)
-            real(dp), dimension(:), intent(in) :: chi
-            real(dp), dimension(:), intent(out) :: B_mod
-
-            real(dp), dimension(size(chi, 1)) :: phi, theta
-            integer :: idx
-
-            !> as M_pol and N_tor are whole numbers that must no both be zero
-            !> M_pol*pi - N_tor should never zero
-            if (abs(M_pol*pi - N_tor) < 1e-8) then
-                print *, "Error: (M_pol*pi - N_tor) must not be (close) zero."
-                print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*pi - N_tor)
-                error stop
-            end if
-
-            phi = chi/(M_pol*pi - N_tor)
-            theta = pi*phi
-
-            do idx = 1, size(chi, 1)
-                call field%compute_B_mod(theta(idx), phi(idx), B_mod(idx))
-            end do
-        end subroutine B_mod_along_pi_line
-
-    end function suspect_omnigenous_origin_not_minimum
 
     function is_multiple_of_2pi(angle, tol_in)
         real(dp), intent(in) :: angle

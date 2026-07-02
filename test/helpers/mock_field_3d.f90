@@ -14,6 +14,8 @@ module mock_field_3d
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
+        procedure :: rel_accuracy_B
+        procedure :: get_covariant_components
         procedure :: evaluate
         procedure :: get_iota
     end type mock_field_3d_t
@@ -63,6 +65,20 @@ contains
         call self%field_2D%compute_nabla_s(theta, phi, nabla_s)
 
     end subroutine compute_nabla_s
+
+    real(dp) function rel_accuracy_B(self)
+        class(mock_field_3d_t), intent(in) :: self
+
+        rel_accuracy_B = self%field_2D%rel_accuracy_B()
+    end function rel_accuracy_B
+
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(mock_field_3d_t), intent(in) :: self
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+
+        call self%field_2D%get_covariant_components(B_theta_covariant, &
+                                                    B_phi_covariant)
+    end subroutine get_covariant_components
 
     subroutine evaluate(self, x, bmod, sqrtg, bder, &
                         hcovar, hctrvr, hcurl)

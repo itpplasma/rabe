@@ -24,6 +24,9 @@ module grid_mod
     end type integration_grid_t
 
     type, extends(fieldline_t) :: fieldline_for_precession_t
+        real(dp) :: M_pol
+        real(dp) :: N_tor
+        real(dp) :: nfp
         real(dp) :: phi_min
         real(dp) :: B_min
         type(integration_grid_t) :: grid

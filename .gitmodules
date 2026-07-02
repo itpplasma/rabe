@@ -1,0 +1,3 @@
+[submodule "test/internal"]
+	path = test/internal
+    url = git@gitlab.tugraz.at:plasma/codes/rabe_internal.git

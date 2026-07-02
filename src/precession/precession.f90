@@ -3,14 +3,13 @@ module precession
     use constants, only: dp, pi, machine_eps
     use field_base, only: field_t
     use field_base, only: field_3D_t
-    use fieldline_mod, only: fieldline_t
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
     use grid_mod, only: integration_grid_t
     use grid_mod, only: fieldline_for_precession_t
     use grid_mod, only: set_integration_grids
     use grid_mod, only: compute_bounce_integrals
     use grid_mod, only: set_splines
     use interpolate, only: SplineData1D, construct_splines_1d, evaluate_splines_1d_many
-    use fieldline_integrals, only: modes_t
 
     implicit none
 
@@ -18,7 +17,7 @@ module precession
 
 contains
 
-    subroutine compute_precession_correction(field, fieldlines_in, &
+    subroutine compute_precession_correction(field, flock, &
                                              l_c, Omega_hat, s_tor, &
                                              correction, flux_modes_out)
         use field_instance, only: initialize_field_instance
@@ -31,7 +30,7 @@ contains
         use splines_instance, only: get_flux_mode
         use splines_instance, only: initialize_startup
         class(field_3D_t), intent(in) :: field
-        class(fieldline_t), dimension(:) :: fieldlines_in
+        type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: l_c
         real(dp), intent(in) :: Omega_hat
         real(dp), intent(in) :: s_tor
@@ -60,14 +59,17 @@ contains
         integer :: n_modes
         integer :: idx
 
-        n_fieldlines = size(fieldlines_in)
+        n_fieldlines = size(flock%fieldlines)
         allocate (fieldlines(n_fieldlines))
-        fieldlines%fieldline_t = fieldlines_in
+        fieldlines%fieldline_t = flock%fieldlines
 
-        M_pol = fieldlines(1)%M_pol
-        N_tor = fieldlines(1)%N_tor
-        nfp = fieldlines(1)%nfp
-        iota = fieldlines(1)%iota
+        M_pol = flock%M_pol
+        N_tor = flock%N_tor
+        nfp = flock%nfp
+        iota = flock%iota
+        fieldlines%M_pol = M_pol
+        fieldlines%N_tor = N_tor
+        fieldlines%nfp = nfp
         if (ieee_is_nan(M_pol)) then
             print *, "M_pol: ", M_pol
             error stop "Error: M_pol is NaN."
@@ -151,7 +153,7 @@ contains
             call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
         end do
 
-        call calc_surface_averages(fieldlines, average)
+        call calc_surface_averages(flock, average)
         correction = pi*sum(flux_mode)/average%normalization
 
         if (present(flux_modes_out)) then
@@ -265,18 +267,17 @@ contains
 
     subroutine find_magnetic_well_bottom(field, fieldline, phi_bottom, B_bottom)
         use find_extrema, only: find_local_minima
-        use, intrinsic :: ieee_arithmetic
         class(field_t), intent(in) :: field
         class(fieldline_t), intent(in) :: fieldline
         real(dp), intent(out) :: phi_bottom, B_bottom
 
-        integer, parameter :: n_max = 10
         integer :: found_minima, of_smallest_B
-        real(dp), dimension(n_max) :: phi_min, B_min
+        real(dp), dimension(:), allocatable :: phi_min, B_min
 
         call find_local_minima(B_along_fieldline, fieldline%phi_max, phi_min)
 
-        found_minima = count(.not. ieee_is_nan(phi_min))
+        found_minima = size(phi_min)
+        allocate (B_min(found_minima))
         if (found_minima < 1) then
             print *, "---------------------------------------------------------"
             print *, "---------------------------------------------------------"

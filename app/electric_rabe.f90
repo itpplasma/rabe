@@ -2,8 +2,7 @@ program electric_rabe
     use constants, only: dp, pi
     use utils, only: linspace
     use boozer_field, only: boozer_field_t
-    use fieldline_mod, only: fieldline_t
-    use fieldline_labels, only: get_labels
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
 
     use precession, only: get_smallest_maximum, get_biggest_minimum
@@ -18,13 +17,13 @@ program electric_rabe
     use splines_instance, only: initialize_radial_drift_spline
     use splines_instance, only: get_flux_mode
     use fourier, only: real_ft
-    use fieldline_integrals, only: modes_t
+    use fieldline_labels, only: modes_t
 
     use surface_average_mod, only: surface_average_t, calc_surface_averages
     use coefficients, only: calc_nu_star_crit
     use coefficients, only: calc_finite_boundary_layer_correction
     use netcdf_mod, only: netcdf_t
-    use fieldline_integrals, only: fieldline_modes_t, fourier_transform_over_label
+    use fieldline_labels, only: fieldline_modes_t, fourier_transform_over_label
     use git_version, only: git_hash
 
     use read_file, only: read_namelist
@@ -33,7 +32,6 @@ program electric_rabe
                          N_tor, &
                          s_tor, &
                          sign_sqrtg, &
-                         phi_tol, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
                          n_eta
@@ -54,13 +52,12 @@ program electric_rabe
     real(dp) :: R ![m]
     type(surface_average_t) :: average
     real(dp) :: dr_dAtheta ![rad/Tm/]
-    real(dp) :: iota, approx_iota
+    real(dp) :: iota
     real(dp) :: B_theta_covariant, B_phi_covariant
     real(dp) :: nfp
 
-    real(dp), dimension(:), allocatable :: xi_0
-
     integer :: n_fieldlines
+    type(flock_of_fieldlines_t) :: flock
     type(fieldline_t), dimension(:), allocatable :: fieldlines
     logical :: too_strong_violation
 
@@ -123,36 +120,29 @@ program electric_rabe
     call field%boozer_field_init(field_file, grid_refinement=6)
     do this = 1, n_stor
         call field%fix_to_surface(s_tor(this))
-        call field%get_iota_and_covariant_components(s_tor(this), &
-                                                     iota, &
-                                                     B_theta_covariant, &
-                                                     B_phi_covariant)
+        call field%get_iota(s_tor(this), iota)
+        call field%get_covariant_components(B_theta_covariant, &
+                                            B_phi_covariant)
         nfp = field%nfp
 
-        call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
-                        xi_0, approx_iota)
-        n_fieldlines = size(xi_0)
-        allocate (fieldlines(n_fieldlines))
-        iota = approx_iota
-
-        call make_flock_of_fieldlines(fieldlines, &
-                                      xi_0, &
-                                      iota, &
-                                      field, &
-                                      M_pol, &
-                                      N_tor, &
-                                      nfp, &
-                                      phi_tol, &
+        call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
+                                      field, M_pol, N_tor, nfp, &
                                       err_flag(this))
+        iota = flock%iota
+        n_fieldlines = size(flock%fieldlines)
+        fieldlines = flock%fieldlines
 
         covariant_factor = (B_phi_covariant + B_theta_covariant*iota)
-        call calc_surface_averages(fieldlines, average)
+        call calc_surface_averages(flock, average)
         dr_dAtheta = sign_sqrtg/(average%nabla_s*field%psi_tor_edge)
         R = field%R
 
 ! --------------------------------------------------------------------------
         allocate (fieldlines_precession(n_fieldlines))
         fieldlines_precession%fieldline_t = fieldlines
+        fieldlines_precession%M_pol = M_pol
+        fieldlines_precession%N_tor = N_tor
+        fieldlines_precession%nfp = nfp
         eta_c = 1.0_dp/get_smallest_maximum(fieldlines_precession)
         call set_fieldline_minima(field, fieldlines_precession)
         eta_t = 1.0_dp/get_biggest_minimum(fieldlines_precession)
@@ -260,7 +250,7 @@ program electric_rabe
                    call initialize_radial_drift_spline(grid%t, radial_drift_sin(idx, :))
                     call get_flux_mode(grid%t(1), grid%t(grid%n), flux_mode(idx))
                 end do
-        call get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
+        call get_g_modes_from_fieldlines(flock, l_c, g_off_modes, covariant_factor)
         lambda_off_modes(:, id_nu, idx_Omega) = pi*g_off_modes%sin_coeffs*flux_mode/average%normalization
                lambda_off(id_nu, idx_Omega) = sum(lambda_off_modes(:, id_nu, idx_Omega))
 
@@ -282,15 +272,11 @@ program electric_rabe
 
 ! --------------------------------------------------------------------------
 
-        nu_star_crit(this) = calc_nu_star_crit(fieldlines, &
-                                               R, &
-                                               B_theta_covariant, &
-                                               B_phi_covariant)
+        nu_star_crit(this) = calc_nu_star_crit(flock, R)
 
         print *, "s_tor: ", s_tor(this)
 
         if (allocated(fieldlines)) deallocate (fieldlines)
-        if (allocated(xi_0)) deallocate (xi_0)
 
     end do
 
@@ -363,11 +349,10 @@ program electric_rabe
 
 contains
 
-  subroutine get_g_modes_from_fieldlines(fieldlines, l_c, g_off_modes, covariant_factor)
+  subroutine get_g_modes_from_fieldlines(flock, l_c, g_off_modes, covariant_factor)
         use fit_functions, only: S_A, S_B
-        use fieldline_integrals, only: modes_t
-        use fieldline_integrals, only: allocate_modes
-        type(fieldline_t), dimension(:), intent(in) :: fieldlines
+        use fieldline_labels, only: allocate_modes
+        type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: l_c
         real(dp), intent(in) :: covariant_factor
         type(modes_t), intent(out) :: g_off_modes
@@ -382,21 +367,21 @@ contains
 
         character(len=1024) :: label
 
-        call fourier_transform_over_label(fieldlines, modes)
-        call calc_surface_averages(fieldlines, averages)
+        call fourier_transform_over_label(flock, modes)
+        call calc_surface_averages(flock, averages)
 
         max_mode = size(modes%delta_eta%cos_coeffs, dim=1)
         if (.not. allocated(g_off_modes%sin_coeffs)) then
             call allocate_modes(g_off_modes, max_mode)
         end if
 
-        prefactor_A = 2.0_dp*sqrt(covariant_factor*fieldlines(1)%eta_b* &
-                                  fieldlines(1)%I_ref/l_c)
+        prefactor_A = 2.0_dp*sqrt(covariant_factor*flock%eta_b* &
+                                  flock%I_ref/l_c)
         g_off_modes%sin_coeffs = prefactor_A*modes%delta_aspect_ratio%cos_coeffs* &
-                         S_A(fieldlines(1)%iota_p*modes%delta_aspect_ratio%mode_numbers)
+                                 S_A(flock%iota_p*modes%delta_aspect_ratio%mode_numbers)
         g_off_modes%sin_coeffs = g_off_modes%sin_coeffs + &
                                  modes%delta_eta%cos_coeffs* &
-                                 S_B(fieldlines(1)%iota_p*modes%delta_eta%mode_numbers)
+                                 S_B(flock%iota_p*modes%delta_eta%mode_numbers)
         g_off_modes%sin_coeffs = g_off_modes%sin_coeffs* &
                                  averages%B_squared/averages%lambda_b* &
                                  l_c*0.5_dp

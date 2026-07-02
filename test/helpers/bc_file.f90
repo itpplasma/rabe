@@ -72,10 +72,9 @@ contains
         do is = 1, n_surf
             print *, "Writing surface ", is, " of ", n_surf
             s_tor = s_tors(is)
-            call field%get_iota_and_covariant_components(s_tor, &
-                                                         iota, &
-                                                         B_theta_covariant, &
-                                                         B_phi_covariant)
+            call field%get_iota(s_tor, iota)
+            call field%fix_to_surface(s_tor)
+            call field%get_covariant_components(B_theta_covariant, B_phi_covariant)
             Jpol_over_nper = B_phi_covariant/field%nfp*magnetic_to_current
             Itor = B_theta_covariant*magnetic_to_current
 
@@ -92,7 +91,6 @@ contains
             write (iunit, '(A)') '    m    n      rmnc [m]'// &
                 '         zmns [m]         vmns [ ]         bmnc [T]'
 
-            call field%fix_to_surface(s_tor)
             call compute_2D_fourier(field, m, n, nu=nu, nv=nv, bmnc=bmnc, &
                                     nfp=field%nfp)
             do idx = 1, size(m)

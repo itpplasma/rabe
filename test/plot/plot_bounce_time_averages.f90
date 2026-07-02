@@ -4,8 +4,8 @@ program plot_bounce_time_averages
     use mock_perturbed_field, only: mock_perturbed_field_t
     use mock_field_3d, only: mock_field_3d_t
     use boozer_field, only: boozer_field_t
-    use fieldline_mod, only: fieldline_t
-    use make_fieldline, only: make_flock_of_fieldlines
+    use fieldline_mod, only: flock_of_fieldlines_t
+    use make_fieldline, only: make_flock_from_labels
     use grid_mod, only: integration_grid_t
     use grid_mod, only: fieldline_for_precession_t
     use precession, only: get_fieldline_at_global_maximum
@@ -30,12 +30,11 @@ program plot_bounce_time_averages
     type(mock_field_3d_t) :: field_mock
 
     integer, parameter :: n_fieldlines = 50
-    real(dp), parameter :: phi_tol = 8e-6_dp
     real(dp), dimension(n_fieldlines) :: xi_0
     real(dp), dimension(n_fieldlines + 1) :: temp
     real(dp) :: iota
     real(dp), parameter :: nfp = N_tor
-    type(fieldline_t), dimension(n_fieldlines) :: fieldlines
+    type(flock_of_fieldlines_t) :: flock
     type(fieldline_for_precession_t) :: precession_fieldline
     type(integration_grid_t) :: grid
 
@@ -73,21 +72,23 @@ program plot_bounce_time_averages
 
     call field%boozer_field_init(nc_file, grid_refinement=5)
     call field%fix_to_surface(s_tor)
-    call field%get_iota_and_covariant_components(s_tor, iota, dummy(1), dummy(1))
+    call field%get_iota(s_tor, iota)
 
     call linspace(0.0_dp, 2.0_dp*pi, n_fieldlines + 1, temp)
     xi_0 = temp(1:n_fieldlines)
 
-    call make_flock_of_fieldlines(fieldlines, &
-                                  xi_0, &
-                                  iota, &
-                                  field, &
-                                  M_pol, &
-                                  N_tor, &
-                                  nfp, &
-                                  phi_tol)
+    call make_flock_from_labels(flock, &
+                                xi_0, &
+                                iota, &
+                                field, &
+                                M_pol, &
+                                N_tor, &
+                                nfp)
 
-    precession_fieldline%fieldline_t = get_fieldline_at_global_maximum(fieldlines)
+    precession_fieldline%fieldline_t = get_fieldline_at_global_maximum(flock%fieldlines)
+    precession_fieldline%M_pol = M_pol
+    precession_fieldline%N_tor = N_tor
+    precession_fieldline%nfp = nfp
 
     call find_magnetic_well_bottom(field, precession_fieldline, phi_bottom, B_min)
     lowest_B_max = minval(precession_fieldline%B_max)
