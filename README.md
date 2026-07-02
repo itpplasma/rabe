@@ -3,7 +3,7 @@
 
 # rabe
 
-An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap **e**xpressions of Ref. [1].
+An implementation of the nea**r**-omnigenous, **a**symptotic **b**ootstrap **e**xpressions of Ref. [1,2].
 
 ## Summary
 
@@ -33,7 +33,7 @@ $$
 
 where $\Lambda_\mathrm{A}$ and $\Lambda_\mathrm{B}$ are the geometrical factors
 due to the variation of the trapped-passing boundary layer width and the misalignment
-of local maxima, respectively (see Ref. [1]).
+of local maxima, respectively (see Ref. [1,2]).
 
 Given a VMEC equilibrium file, `rabe` outputs those geometric coefficients
 needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
@@ -47,9 +47,9 @@ $$
 where the Shaing-Callen asymptotic $\lambda_{bB}^\mathrm{SC}$ is
 approximated by the perfect omnigenous asymptotic
 $\lambda_{bB}^\mathrm{SC} \rightarrow \lambda_{bB}^\mathrm{LC}$
-obtained by Landreman and Catto [2] and
+obtained by Landreman and Catto [3] and
 $\lambda_{bB}^\mathrm{HGM}$ is the contribution due to the finite
-boundary correction derived by Helander, Geiger and Maasberg [3].
+boundary correction derived by Helander, Geiger and Maasberg [4].
 
 ## Prerequisites
 
@@ -76,7 +76,7 @@ Make sure that `FC` and `PKG_CONFIG_PATH` point to your installed gfortran compi
 ## Example
 
 This example walks through a complete run using the QH stellarator equilibrium
-from Ref. [4], which ships with the repository as a test input.
+from Ref. [5], which ships with the repository as a test input.
 Commands are given for `bash` shell. While in `rabe`
 run
 
@@ -251,6 +251,14 @@ The `remainder` is a proxy of how much $\lambda_{bB}^\mathrm{LC}$ differs
 from the actual $\lambda_{bB}^\mathrm{SC}$, but it does not include the
 effect of bootstrap resonances and is not yet fully validated.
 
+## Adjoint Gradients
+
+**Status: under active development.**
+
+Adjoint-based gradients of the off-set coefficients with respect
+to e.g. Boozer modes $B_{mn}$ and $\iota$ are being implemented internally currently.
+A usage guide will be added here once the feature lands.
+
 ## Build and Tests
 
 We use CMake for build configuration. If it is available on your machine, we
@@ -312,15 +320,23 @@ Fetched automatically during build:
 - [`quadpack`](https://github.com/jacobwilliams/quadpack) for numerical integration (BSD-3-Clause)
 - [`pyplot-fortran`](https://github.com/jacobwilliams/pyplot-fortran) optional for visualization; source and license under `plot_lib` (BSD-3-Clause)
 
+## Citing
+
+If you use this code in any of your studies, please cite Refs [1,2].
+
+See also [`CITATION.cff`](CITATION.cff) for machine-readable citation metadata.
+
 ## References
 
-[1] C.G Albert et al., *On the convergence of bootstrap current to the Shaing–Callen limit in stellarators*, Journal of Plasma Physics, 91(3), p. E77. [doi:10.1017/S0022377825000200](https://doi.org/10.1017/S0022377825000200) (2025)
+[1] G. S. Grassler, C. G. Albert, S. V. Kasilov, and W. Kernbichler, *Asymptotic modeling of the bootstrap and Ware pinch effect in near omnigenous stellarators*, Physics of Plasmas, 33(7). [doi:10.1063/5.0332431](https://doi.org/10.1063/5.0332431) (2026)
 
-[2] M. Landreman and P. J. Catto, *Omnigenity as generalized quasisymmetry*, Phys. Plasmas 19, 056103 [doi.org/10.1063/1.3693187](https://doi.org/10.1063/1.3693187) (2012)
+[2] C.G Albert et al., *On the convergence of bootstrap current to the Shaing–Callen limit in stellarators*, Journal of Plasma Physics, 91(3), p. E77. [doi:10.1017/S0022377825000200](https://doi.org/10.1017/S0022377825000200) (2025)
 
-[3] P. Helander, J. Geiger, and H. Maassberg, “On the bootstrap current in
+[3] M. Landreman and P. J. Catto, *Omnigenity as generalized quasisymmetry*, Phys. Plasmas 19, 056103 [doi.org/10.1063/1.3693187](https://doi.org/10.1063/1.3693187) (2012)
+
+[4] P. Helander, J. Geiger, and H. Maassberg, “On the bootstrap current in
 stellarators and tokamaks”, Phys. Plasmas 18, 092505 [doi.org/10.1063/1.3633940](https://doi.org/10.1063/1.3633940) (2011)
 
-[4] M. Landreman et al., *Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement*, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
+[5] M. Landreman et al., *Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement*, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
 
-[5] John R. Cary & Svetlana G. Shasharina, *Omnigenity and quasihelicity in helical plasma confinement systems, Phys. Plasmas 4*, 3323–3333, [doi:10.1063/1.872473](https://doi.org/10.1063/1.872473) (1997)
+[6] John R. Cary & Svetlana G. Shasharina, *Omnigenity and quasihelicity in helical plasma confinement systems, Phys. Plasmas 4*, 3323–3333, [doi:10.1063/1.872473](https://doi.org/10.1063/1.872473) (1997)
