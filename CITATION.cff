@@ -1,5 +1,5 @@
 cff-version: 0.1.0
-message: "If you use this software, please cite it as below."
+message: "If you use this software, please cite the 'preferred-citation' below, as well as the papers listed under 'references'."
 title: "rabe"
 authors:
   - family-names: "Grassler"
@@ -14,13 +14,33 @@ authors:
       - "Fusion@ÖAW, Institute for Theoretical and Computational Physics, Graz University of Technology"
       - "Institute of Plasma Physics, National Science Center \"Kharkov Institute of Physics and Technology\""
 version: "v10.10.2025"
-doi: "10.1017/S0022377825000200"
+doi: "10.5281/zenodo.20125384"
 date-released: "2025-10-10"
 url: "https://github.com/itpplasma/rabe"
+preferred-citation:
+  type: article
+  title: "Asymptotic modeling of the bootstrap and Ware pinch effect in near omnigenous stellarators"
+  authors:
+    - family-names: "Grassler"
+      given-names: "Georg S."
+    - family-names: "Albert"
+      given-names: "Christopher G."
+    - family-names: "Kasilov"
+      given-names: "Sergei V."
+    - family-names: "Kernbichler"
+      given-names: "Winfried"
+  journal: "Physics of Plasmas"
+  volume: 33
+  issue: 7
+  year: 2026
+  doi: "10.1063/5.0332431"
 references:
-  - type: software
-    title: "Claude"
+  - type: article
+    title: "On the convergence of bootstrap current to the Shaing-Callen limit in stellarators"
     authors:
-      - name: "Anthropic"
-    version: "Sonnet 4/ Opus 4"
-    url: "https://www.anthropic.com/"
+      - name: "C. G. Albert et al."
+    journal: "Journal of Plasma Physics"
+    volume: 91
+    issue: 3
+    year: 2025
+    doi: "10.1017/S0022377825000200"
