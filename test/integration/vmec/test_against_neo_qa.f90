@@ -128,8 +128,8 @@ program test_against_neo_qa
     do case = 1, n_cases
         call bfield%fix_to_surface(stor(case))
 
-        call bfield%get_iota_and_covariant_components( &
-            stor(case), iota_b, B_theta_b, B_phi_b)
+        call bfield%get_iota(stor(case), iota_b)
+        call bfield%get_covariant_components(B_theta_b, B_phi_b)
 
         if (not_same(iota_b, iota_ref(case), &
                      reltol_in=reltol, abstol_in=abstol)) then

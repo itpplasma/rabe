@@ -3,12 +3,18 @@ module field_base
     implicit none
 
     type, abstract :: field_t
+        !>
+        !! \brief Abstract base type for magnetic fields in Boozer coordinates.
+        !!
+        !! \details Concrete implementations supply B_mod, sqrt(g), gradients, and covariant components.
+        !<
     contains
         procedure(compute_B_sqrtg_dB_dx), deferred :: compute_B_sqrtg_dB_dx
         procedure(compute_B_and_dB_dx), deferred :: compute_B_and_dB_dx
         procedure(compute_B_mod), deferred :: compute_B_mod
         procedure(compute_nabla_s), deferred :: compute_nabla_s
         procedure(rel_accuracy_B), deferred :: rel_accuracy_B
+        procedure(get_covariant_components), deferred :: get_covariant_components
         !> Highest-accuracy |B| the representation can offer; defaults to
         !> compute_B_mod. Used where between-node interpolation error
         !> matters (field-line maxima heights), not in bulk quadratures.
@@ -52,11 +58,24 @@ module field_base
     end interface
 
     interface
-        !> Relative accuracy of B_mod evaluations for this field representation.
+        !>
+        !! \brief Relative accuracy of B_mod evaluations for this field representation.
+        !<
         real(dp) function rel_accuracy_B(self)
             import :: field_t, dp
             class(field_t), intent(in) :: self
         end function
+    end interface
+
+    interface
+        !>
+        !! \brief Covariant components of B (flux-surface constants in Boozer coordinates).
+        !<
+        subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+            import :: field_t, dp
+            class(field_t), intent(in) :: self
+            real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+        end subroutine
     end interface
 
 contains

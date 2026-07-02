@@ -111,7 +111,7 @@ contains
 
     subroutine test_set_fieldline_labels_to_mode_minimum()
         use fieldline_mod, only: fieldline_t
-        use fieldline_labels, only: suspect_omnigenous_origin_not_minimum
+        use field_checks, only: suspect_omnigenous_origin_not_minimum
         use utils, only: linspace
 
         real(dp), parameter :: retol = (1e-2*N_tor)**2, abstol = 0.0_dp

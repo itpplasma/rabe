@@ -116,7 +116,8 @@ call assert_phi_max_error("tied_by_error_pick_closest", phi_max_error, [0.2_dp, 
                                        phi_max, phi_max_error)
 
         call assert_phi_max("tied_by_sym_tol_pick_closest", phi_max, [-1.0_dp, 1.0_dp])
-        call assert_phi_max_error("tied_by_sym_tol_pick_closest", phi_max_error, [0.2_dp, 0.3_dp])
+        call assert_phi_max_error("tied_by_sym_tol_pick_closest", &
+                                  phi_max_error, [0.2_dp, 0.3_dp])
     end subroutine test_tied_by_sym_tol_pick_closest
 
     !> B difference just exceeds combined tolerance: no tie, higher B wins

@@ -15,6 +15,7 @@ module anti_sigma_field
         procedure :: compute_B_mod
         procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
+        procedure :: get_covariant_components
     end type anti_sigma_field_t
 
 contains
@@ -100,5 +101,15 @@ contains
 
         rel_accuracy_B = 1e-14_dp
     end function rel_accuracy_B
+
+    !> rabe works internally with modulus of B only
+    !> choose covariants so that B^\varphi = B^2 (no-op for tests).
+    subroutine get_covariant_components(self, B_theta_covariant, B_phi_covariant)
+        class(anti_sigma_field_t), intent(in) :: self
+        real(dp), intent(out) :: B_theta_covariant, B_phi_covariant
+
+        B_theta_covariant = 0.0_dp
+        B_phi_covariant = 1.0_dp
+    end subroutine get_covariant_components
 
 end module anti_sigma_field

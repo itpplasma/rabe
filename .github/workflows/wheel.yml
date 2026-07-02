@@ -1,0 +1,105 @@
+name: Build and publish wheels
+
+on:
+  push:
+    tags:
+      - 'pypi-*'
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: macos-14
+            macos_target: "14.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Fortran
+        if: runner.os == 'macOS'
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: gcc
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        env:
+          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+          CIBW_SKIP: "*-musllinux_* *-win_*"
+
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_BEFORE_ALL_LINUX: |
+            dnf install -y epel-release
+            dnf install -y netcdf-fortran-devel gcc-gfortran cmake
+
+          CIBW_ARCHS_MACOS: auto
+          CIBW_BEFORE_ALL_MACOS: brew install netcdf-fortran pkg-config
+          CIBW_ENVIRONMENT_MACOS: >-
+            FC=$FC
+            PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
+            MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_target }}
+
+          CIBW_TEST_COMMAND: "python {project}/python/check_symbols.py"
+
+          CIBW_BUILD_VERBOSITY: 3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  smoke_test:
+    name: Smoke test (latest Python)
+    needs: build_wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-14]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-${{ matrix.os }}
+          merge-multiple: true
+          path: wheelhouse
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install wheel and example deps
+        run: pip install wheelhouse/*cp313*.whl numpy matplotlib
+
+      - name: Run Fourier example
+        env:
+          MPLBACKEND: Agg
+        run: python python/example_fourier.py
+
+  publish:
+    name: Publish
+    needs: [build_wheels, smoke_test]
+    runs-on: ubuntu-22.04
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: wheelhouse
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ vars.PYPI_URL }}
+          packages-dir: wheelhouse/

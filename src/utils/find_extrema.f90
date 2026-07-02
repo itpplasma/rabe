@@ -10,6 +10,8 @@ module find_extrema
         end subroutine func1d
     end interface
 
+    procedure(func1d), private, pointer, save :: func_ptr => null()
+
 contains
 
     subroutine find_local_minima(func, interval, location, achieved_error)
@@ -18,18 +20,19 @@ contains
         real(dp), dimension(:), allocatable, intent(out) :: location
         real(dp), dimension(:), allocatable, intent(out), optional :: achieved_error
 
+        func_ptr => func
         call find_local_maxima(negative_func, interval, location, achieved_error)
-
-    contains
-        subroutine negative_func(x, value)
-            use constants, only: dp
-            real(dp), dimension(:), intent(in) :: x
-            real(dp), dimension(:), intent(out) :: value
-            call func(x, value)
-            value = -value
-        end subroutine negative_func
+        func_ptr => null()
 
     end subroutine find_local_minima
+
+    subroutine negative_func(x, value)
+        use constants, only: dp
+        real(dp), dimension(:), intent(in) :: x
+        real(dp), dimension(:), intent(out) :: value
+        call func_ptr(x, value)
+        value = -value
+    end subroutine negative_func
 
     subroutine find_local_maxima(func, interval, location, achieved_error)
         use utils, only: linspace, not_same
@@ -165,6 +168,7 @@ contains
         real(dp) :: extrema(2)
 
         integer :: n_steps
+        integer :: idx
         real(dp), dimension(:), allocatable :: x, value
 
         if (present(abstol)) then
@@ -176,8 +180,10 @@ contains
         allocate (x(n_steps), value(n_steps))
         call linspace(interval(1), interval(2), n_steps, x)
         call func(x, value)
-        extrema(1) = minval(value)
-        extrema(2) = maxval(value)
+        idx = maxloc(value, dim=1)
+        extrema(1) = x(idx)
+        idx = minloc(value, dim=1)
+        extrema(2) = x(idx)
     end function find_global_extrema
 
 end module find_extrema

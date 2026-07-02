@@ -8,7 +8,5 @@ add_library(utils_lib STATIC
   )
 
 include(quadpack)
-# PUBLIC: integrate.mod references quadpack_double; flang resolves module
-# interfaces transitively, so dependents need quadpack's module directory.
-target_link_libraries(utils_lib PUBLIC quadpack)
+target_link_libraries(utils_lib PRIVATE quadpack)
 target_include_directories(utils_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
