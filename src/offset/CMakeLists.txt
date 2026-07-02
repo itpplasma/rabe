@@ -6,7 +6,7 @@ add_library(offset_lib STATIC
 
 target_include_directories(offset_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(offset_lib PRIVATE
+target_link_libraries(offset_lib PUBLIC
   utils_lib
   error_handling_lib
   field_lib
