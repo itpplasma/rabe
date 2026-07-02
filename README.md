@@ -188,8 +188,16 @@ nu_star_crit       = flock.calc_nu_star_crit(R)
     sign_sqrtg = -1.0,                   ! sign of the Jacobian sqrt(g)
     max_n_fieldlines = 200,              ! maximum field lines per surface
     should_calc_shaing_callen = .true.,  ! compute $\lambda_{bB}^\mathrm{LC}$
-    n_eta = 100,                         ! level resolution for trapped
+    n_eta = 100                          ! level resolution for trapped
                                          ! particle fraction computation
+/
+
+&log_config
+    log_file = "rabe.log",               ! log destination; empty for stdout
+    log_level = "INFO"                   ! DEBUG, INFO, WARN, or ERROR
+/
+
+&error_handling
     unsafe_mode = .false.                ! if .true., NaN-fill outputs for
                                          ! surfaces that fail a sanity check
                                          ! instead of aborting execution

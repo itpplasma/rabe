@@ -7,9 +7,11 @@ target_include_directories(git_version_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(read_file_lib STATIC read_file.f90)
 target_include_directories(read_file_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(read_file_lib PRIVATE utils_lib fieldline_lib)
+target_link_libraries(read_file_lib PRIVATE utils_lib fieldline_lib logger_lib)
 
+add_subdirectory(constants)
 add_subdirectory(error_handling)
+add_subdirectory(logger)
 add_subdirectory(utils)
 add_subdirectory(netcdf)
 add_subdirectory(vmec)
@@ -22,6 +24,8 @@ add_library(rabe_lib INTERFACE)
 target_link_libraries(rabe_lib INTERFACE
     git_version_lib
     read_file_lib
+    constants_lib
+    logger_lib
     utils_lib
     netcdf_lib
     error_handling_lib

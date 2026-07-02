@@ -1,13 +1,37 @@
 module error_handling
     implicit none
 
+    private
+    public :: unsafe_mode, read_error_handling_config
     public :: failed_sanity_check, set_unsafe_mode
-    public :: did_fail_any_sanity_check
+    public :: reset_failed_check_counter, did_fail_any_sanity_check
 
-    logical, private :: unsafe_mode = .false.
+    logical, protected :: unsafe_mode = .false.
     integer, private :: failed_check_counter = 0
 
 contains
+
+    subroutine read_error_handling_config(config_file)
+        character(len=*), intent(in) :: config_file
+        namelist /error_handling/ unsafe_mode
+        integer :: ios, unit
+
+        unsafe_mode = .false.
+        open (newunit=unit, file=config_file, status="old", action="read", iostat=ios)
+        if (ios /= 0) then
+            print *, "read_error_handling_config: ", &
+                "failed to open error handling config file: ", trim(config_file)
+            error stop
+        end if
+
+        read (unit, nml=error_handling, iostat=ios)
+        if (ios > 0) then
+            print *, "read_error_handling_config: error reading namelist, iostat: ", ios
+            error stop
+        end if
+        close (unit)
+
+    end subroutine read_error_handling_config
 
     !>
     !! \brief Toggle unsafe mode for sanity checks.

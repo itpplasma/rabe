@@ -2,6 +2,7 @@ module deviation
     use constants, only: dp, pi
     use field_base, only: field_t
     use fieldline_mod, only: flock_of_fieldlines_t
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -33,15 +34,20 @@ contains
 
         any_has_sin_part = .false.
         if (has_sin_modes(modes%delta_aspect_ratio)) then
-            print *, "error: non-vanishing sin part of delta aspect ratio: "
-            print *, "sin part: ", sum(abs(modes%delta_aspect_ratio%sin_coeffs))
-            print *, "cos part: ", sum(abs(modes%delta_aspect_ratio%cos_coeffs))
+            call log_msg(LOG%ERROR, &
+                         "error: non-vanishing sin part of delta aspect ratio:")
+            call log_val(LOG%ERROR, "sin part: ", &
+                         sum(abs(modes%delta_aspect_ratio%sin_coeffs)))
+            call log_val(LOG%ERROR, "cos part: ", &
+                         sum(abs(modes%delta_aspect_ratio%cos_coeffs)))
             any_has_sin_part = .true.
         end if
         if (has_sin_modes(modes%delta_eta)) then
-            print *, "error: non-vanishing sin part of delta eta: "
-            print *, "sin part: ", sum(abs(modes%delta_eta%sin_coeffs))
-            print *, "cos part: ", sum(abs(modes%delta_eta%cos_coeffs))
+            call log_msg(LOG%ERROR, "error: non-vanishing sin part of delta eta:")
+            call log_val(LOG%ERROR, "sin part: ", &
+                         sum(abs(modes%delta_eta%sin_coeffs)))
+            call log_val(LOG%ERROR, "cos part: ", &
+                         sum(abs(modes%delta_eta%cos_coeffs)))
             any_has_sin_part = .true.
         end if
         if (any_has_sin_part) call failed_sanity_check()
@@ -60,10 +66,11 @@ contains
                                      S_A(iota_p*modes%delta_aspect_ratio%mode_numbers))
 
         if (abs(symmetric_remainder/deviation_A) > tol) then
-            print *, "warning: non-vanishing symmetric part of deviation A: "
-            print *, "symmetric: ", symmetric_remainder
-            print *, "antisymmetric: ", deviation_A
-            print *, "ratio: ", symmetric_remainder/deviation_A
+            call log_msg(LOG%WARN, &
+                         "warning: non-vanishing symmetric part of deviation A:")
+            call log_val(LOG%WARN, "symmetric: ", symmetric_remainder)
+            call log_val(LOG%WARN, "antisymmetric: ", deviation_A)
+            call log_val(LOG%WARN, "ratio: ", symmetric_remainder/deviation_A)
         end if
 
         deviation_A = deviation_A*average%B_squared/average%lambda_b* &
@@ -78,10 +85,11 @@ contains
                                      S_B(iota_p*modes%delta_eta%mode_numbers))
 
         if (abs(symmetric_remainder/deviation_B) > tol) then
-            print *, "warning: non-vanishing symmetric part of deviation B: "
-            print *, "symmetric: ", symmetric_remainder
-            print *, "antisymmetric: ", deviation_B
-            print *, "ratio: ", symmetric_remainder/deviation_B
+            call log_msg(LOG%WARN, &
+                         "warning: non-vanishing symmetric part of deviation B:")
+            call log_val(LOG%WARN, "symmetric: ", symmetric_remainder)
+            call log_val(LOG%WARN, "antisymmetric: ", deviation_B)
+            call log_val(LOG%WARN, "ratio: ", symmetric_remainder/deviation_B)
         end if
 
         deviation_B = deviation_B*average%B_squared/average%lambda_b*0.5_dp/ &

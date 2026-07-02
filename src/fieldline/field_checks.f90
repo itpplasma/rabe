@@ -1,6 +1,7 @@
 module field_checks
     use constants, only: dp, pi
     use field_base, only: field_t
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
     private
@@ -39,8 +40,10 @@ contains
         !> as M_pol and N_tor are whole numbers that must no both be zero
         !> M_pol*pi - N_tor should never zero
         if (abs(M_pol*pi - N_tor) < 1e-8) then
-            print *, "Error: (M_pol*pi - N_tor) must not be (close) zero."
-            print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*pi - N_tor)
+            call log_msg(LOG%ERROR, &
+                         "Error: (M_pol*pi - N_tor) must not be (close) zero.")
+            call log_val(LOG%ERROR, "abs(M_pol*iota - N_tor) = ", &
+                         abs(M_pol*pi - N_tor))
             error stop
         end if
 
@@ -59,8 +62,9 @@ contains
         call find_local_minima(B_mod_along_fieldline, phi_interval, phi, phi_error)
         n_min = size(phi)
         if (n_min == 0) then
-            print *, "Warning in suspect_omnigenous_origin_not_minimum: ", &
-                "No local dB_dphifound in well around origin! "
+            call log_msg(LOG%WARN, &
+                         "Warning in suspect_omnigenous_origin_not_minimum: " &
+                         //"No local dB_dphifound in well around origin! ")
             suspect_omnigenous_origin_not_minimum = .true.
             call unset_field_and_fieldline()
             return
@@ -98,14 +102,16 @@ contains
         height_error = B_min_error
         if (present(retol)) height_error = height_error + retol*B_at_origin
         if ((height - height_error) > height_retol*(B_range + B_range_error)) then
-            print *, "Detected that B at origin of provided field is"
-            print *, "significantly above the minimum B i.e. difference > "
-            print *, height_retol*100.0_dp, "% of the total B range!"
-            print *, "(B_at_origin - B_min) = ", height
-            print *, "with estimated error = ", height_error
-            print *, "B_max = ", B_max, " B_min = ", B_min
-            print *, "(B_max-B_min) = ", B_range
-            print *, "with estimated error = ", B_range_error
+            call log_msg(LOG%WARN, "Detected that B at origin of provided field is")
+            call log_msg(LOG%WARN, "significantly above the minimum B i.e. difference")
+            call log_val(LOG%WARN, "> in % of the total B range: ", &
+                         height_retol*100.0_dp)
+            call log_val(LOG%WARN, "(B_at_origin - B_min) = ", height)
+            call log_val(LOG%WARN, "with estimated error = ", height_error)
+            call log_val(LOG%WARN, "B_max = ", B_max)
+            call log_val(LOG%WARN, "B_min = ", B_min)
+            call log_val(LOG%WARN, "(B_max-B_min) = ", B_range)
+            call log_val(LOG%WARN, "with estimated error = ", B_range_error)
             suspect_omnigenous_origin_not_minimum = .true.
         end if
 

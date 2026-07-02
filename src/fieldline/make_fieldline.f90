@@ -2,6 +2,7 @@ module make_fieldline
     use constants, only: dp, pi
     use field_base, only: field_t
     use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -101,17 +102,22 @@ contains
 
         symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
         if (symmetry_violation > field%rel_accuracy_B()) then
-            print *, "error: provided field violates stellarator symmetry too strongly!"
-            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
-                symmetry_violation
+            call log_msg(LOG%ERROR, &
+                    "error: provided field violates stellarator symmetry too strongly!")
+            call log_val(LOG%ERROR, &
+                      "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
+                         symmetry_violation)
             call failed_sanity_check()
         end if
 
         if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, &
                                                   symmetry_violation)) then
-            print *, "error: The origin of the IDEAL omnigenous configuration"
-            print *, "(theta=phi=0) must be a global and local minimum!"
-            print *, "Origin of provided field suggests that this is not the case!"
+            call log_msg(LOG%ERROR, &
+                         "error: The origin of the IDEAL omnigenous configuration")
+            call log_msg(LOG%ERROR, &
+                         "(theta=phi=0) must be a global and local minimum!")
+            call log_msg(LOG%ERROR, &
+                         "Origin of provided field suggests that this is not the case!")
             call failed_sanity_check()
         end if
         !> if the origin of the ideal omnigenous field is a minimum (above)
@@ -128,18 +134,20 @@ contains
             call find_maxima_along_fieldline(field, flock%fieldlines(current), &
                                              interval, maxima)
             if (maxima%n < 2) then
-                print *, "---------------------------------------------------------"
-                print *, "---------------------------------------------------------"
-                print *, "---------------------------------------------------------"
-                print *, "Found less than two maxima in provided interval!"
-                print *, "theta_0: ", flock%fieldlines(current)%theta_0
-                print *, "phi_0: ", flock%fieldlines(current)%phi_0
-                print *, "interval: ", interval
-                print *, "phi_max: ", maxima%phi
-                print *, "B_max: ", maxima%B
-                print *, "---------------------------------------------------------"
-                print *, "---------------------------------------------------------"
-                print *, "---------------------------------------------------------"
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, &
+                             "Found less than two maxima in provided interval!")
+                call log_val(LOG%ERROR, "theta_0: ", &
+                             flock%fieldlines(current)%theta_0)
+                call log_val(LOG%ERROR, "phi_0: ", flock%fieldlines(current)%phi_0)
+                call log_val(LOG%ERROR, "interval: ", interval)
+                call log_val(LOG%ERROR, "phi_max: ", maxima%phi)
+                call log_val(LOG%ERROR, "B_max: ", maxima%B)
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
+                call log_msg(LOG%ERROR, repeat("-", 57))
                 error stop
             elseif (maxima%n > 2) then
                 call pick_maximum_on_each_side(maxima, &
@@ -159,18 +167,22 @@ contains
         end do
 
         if (more_than_two_maxima) then
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "warning in make_flock_from_labels: "
-            print *, "The provided field violates omnigeneity too strongly!"
-            print *, "-> Found more than two local maxima per period", &
-                " for at least one fieldline!"
-            print *, "Calculation done with biggest maximum in each half period!"
-            print *, "Final result for bootstrap deviation can not be trusted!"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
-            print *, "---------------------------------------------------------"
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, "warning in make_flock_from_labels:")
+            call log_msg(LOG%WARN, &
+                         "The provided field violates omnigeneity too strongly!")
+            call log_msg(LOG%WARN, &
+                         "-> Found more than two local maxima per period" &
+                         //" for at least one fieldline!")
+            call log_msg(LOG%WARN, &
+                         "Calculation done with biggest maximum in each half period!")
+            call log_msg(LOG%WARN, &
+                         "Final result for bootstrap deviation can not be trusted!")
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
+            call log_msg(LOG%WARN, repeat("-", 57))
             if (present(split_maxima)) then
                 split_maxima = 1
             end if
@@ -194,10 +206,11 @@ contains
 
         call field%get_covariant_components(B_theta_cov, B_phi_cov)
         if (B_phi_cov + flock%iota*B_theta_cov <= machine_eps) then
-            print *, "error: covariant factor B_phi + iota*B_theta must be positive."
-            print *, "B_phi_covariant = ", B_phi_cov
-            print *, "B_theta_covariant = ", B_theta_cov
-            print *, "iota = ", flock%iota
+            call log_msg(LOG%ERROR, "error: covariant factor " &
+                         //"B_phi + iota*B_theta must be positive.")
+            call log_val(LOG%ERROR, "B_phi_covariant = ", B_phi_cov)
+            call log_val(LOG%ERROR, "B_theta_covariant = ", B_theta_cov)
+            call log_val(LOG%ERROR, "iota = ", flock%iota)
             error stop
         end if
         allocate (I_j(n_fieldlines))
@@ -226,45 +239,47 @@ contains
         is_valid = .true.
 
         if (is_not_integer(M_pol, tol)) then
-            print *, "M_pol must be integer"
+            call log_msg(LOG%ERROR, "M_pol must be integer")
             is_valid = .false.
         end if
         if (is_not_integer(N_tor, tol)) then
-            print *, "N_tor must be integer"
+            call log_msg(LOG%ERROR, "N_tor must be integer")
             is_valid = .false.
         end if
         if (is_not_integer(nfp, tol)) then
-            print *, "nfp must be integer"
+            call log_msg(LOG%ERROR, "nfp must be integer")
             is_valid = .false.
         end if
         if (nint(nfp) <= 0) then
-            print *, "nfp must be positiv"
+            call log_msg(LOG%ERROR, "nfp must be positiv")
             is_valid = .false.
         end if
         if (nint(N_tor) /= 0) then
             if (not_same(N_tor, nfp, reltol_in=tol, abstol_in=0.0_dp)) then
-                print *, "nonzero N_tor must be equal nfp"
+                call log_msg(LOG%ERROR, "nonzero N_tor must be equal nfp")
                 is_valid = .false.
             end if
         else
             if (nint(M_pol) /= 1) then
                 is_valid = .false.
-                print *, "M_pol must be 1 if N_tor=0"
+                call log_msg(LOG%ERROR, "M_pol must be 1 if N_tor=0")
             end if
         end if
 
         if (abs(M_pol*iota - N_tor) < tol) then
-            print *, "Error: (M_pol*iota - N_tor) must not be (close) zero."
-            print *, "abs(M_pol*iota - N_tor) = ", abs(M_pol*iota - N_tor)
+            call log_msg(LOG%ERROR, &
+                         "Error: (M_pol*iota - N_tor) must not be (close) zero.")
+            call log_val(LOG%ERROR, "abs(M_pol*iota - N_tor) = ", &
+                         abs(M_pol*iota - N_tor))
             is_valid = .false.
         end if
 
         if (.not. is_valid) then
-            print *, "Error: not valid input:"
-            print *, "M_pol: ", M_pol
-            print *, "N_tor: ", N_tor
-            print *, "nfp: ", nfp
-            print *, "iota: ", iota
+            call log_msg(LOG%ERROR, "Error: not valid input:")
+            call log_val(LOG%ERROR, "M_pol: ", M_pol)
+            call log_val(LOG%ERROR, "N_tor: ", N_tor)
+            call log_val(LOG%ERROR, "nfp: ", nfp)
+            call log_val(LOG%ERROR, "iota: ", iota)
             error stop
         end if
 

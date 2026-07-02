@@ -10,4 +10,5 @@ target_link_libraries(offset_lib PRIVATE
   utils_lib
   error_handling_lib
   field_lib
-  fieldline_lib)
+  fieldline_lib
+  logger_lib)

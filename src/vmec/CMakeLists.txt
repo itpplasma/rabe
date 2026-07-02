@@ -3,7 +3,7 @@ add_library(vmec_lib STATIC
             )
 
 include(libneo)
-target_link_libraries(vmec_lib PRIVATE utils_lib field_lib
+target_link_libraries(vmec_lib PRIVATE constants_lib utils_lib field_lib
                       LIBNEO::boozer
                       LIBNEO::vmec_support)
 target_include_directories(vmec_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

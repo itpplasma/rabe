@@ -2,6 +2,7 @@ module read_file
     use constants, only: dp
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+    use logger, only: log_msg, log_val, LOG
 
     implicit none
 
@@ -14,7 +15,6 @@ module read_file
     integer, public, protected :: max_n_fieldlines
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
-    logical, public, protected :: unsafe_mode
 
     real(dp), public, protected :: s_tor_min
     real(dp), public, protected :: s_tor_max
@@ -31,8 +31,7 @@ module read_file
         sign_sqrtg, &
         max_n_fieldlines, &
         should_calc_shaing_callen, &
-        n_eta, &
-        unsafe_mode
+        n_eta
 
 contains
 
@@ -51,20 +50,21 @@ contains
 
         inquire (file=filename, exist=file_exists)
         if (.not. file_exists) then
-            print *, "Error in read_namelist: file not found: ", filename
+            call log_msg(LOG%ERROR, &
+                         "Error in read_namelist: file not found: "//trim(filename))
             error stop
         end if
 
         open (newunit=unit, file=filename, status="old", action="read", iostat=ios)
         if (ios /= 0) then
-            print *, "Error in read_namelist: cannot open file: ", filename
+            call log_msg(LOG%ERROR, "Error in read_namelist: cannot open file: " &
+                         //trim(filename))
             error stop
         end if
 
         nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
         ! Default values
-        unsafe_mode = .false.
         should_calc_shaing_callen = .false.
         n_eta = 100
         s_tor_min = nan_value
@@ -76,8 +76,7 @@ contains
 
         read (unit, nml=rabe_config, iostat=ios)
         if (ios /= 0) then
-            print *, "Error in read_namelist:"
-            print *, "iostat = ", ios
+            call log_val(LOG%ERROR, "Error in read_namelist: iostat = ", ios)
             error stop
         end if
         close (unit)
@@ -89,14 +88,16 @@ contains
                     (n_s_tor > 0)
 
         if (has_list .and. has_range) then
-            print *, "Error in read_namelist: both s_tor list and s_tor range " &
-                //"(s_tor_min, s_tor_max, n_s_tor) are specified. Use one or the other."
+            call log_msg(LOG%ERROR, "Error in read_namelist: " &
+                         //"both s_tor list and s_tor range " &
+               //"(s_tor_min, s_tor_max, n_s_tor) are specified. Use one or the other.")
             error stop
         end if
 
         if (.not. has_list .and. .not. has_range) then
-            print *, "Error in read_namelist: no s_tor values provided. " &
-                //"Set either s_tor or (s_tor_min, s_tor_max, n_s_tor)."
+            call log_msg(LOG%ERROR, "Error in read_namelist: " &
+                         //"no s_tor values provided. " &
+                         //"Set either s_tor or (s_tor_min, s_tor_max, n_s_tor).")
             error stop
         end if
 
@@ -106,8 +107,9 @@ contains
             call linspace(s_tor_min, s_tor_max, n_s_tor, s_tor)
         else
             if (n_list >= n_stor_max) then
-                print *, "Error in read_namelist: too many s_tor values ", &
-                    "provided in namelist"
+                call log_msg(LOG%ERROR, "Error in read_namelist: " &
+                             //"too many s_tor values " &
+                             //"provided in namelist")
                 error stop
             end if
             if (allocated(s_tor_temp)) deallocate (s_tor_temp)
@@ -133,58 +135,60 @@ contains
         is_valid = .true.
 
         if (len(trim(field_file)) == 0) then
-            print *, "field_file is empty!"
+            call log_msg(LOG%ERROR, "field_file is empty!")
+            is_valid = .false.
         end if
         if (ieee_is_nan(M_pol)) then
-            print *, "M_pol is NaN!"
+            call log_msg(LOG%ERROR, "M_pol is NaN!")
             is_valid = .false.
         end if
         if (ieee_is_nan(N_tor)) then
-            print *, "N_tor is NaN!"
+            call log_msg(LOG%ERROR, "N_tor is NaN!")
             is_valid = .false.
         end if
         if (any(ieee_is_nan(s_tor))) then
-            print *, "s_tor is NaN!"
+            call log_msg(LOG%ERROR, "s_tor is NaN!")
             is_valid = .false.
         end if
         if (ieee_is_nan(sign_sqrtg)) then
-            print *, "sign_sqrtg is NaN!"
+            call log_msg(LOG%ERROR, "sign_sqrtg is NaN!")
             is_valid = .false.
         end if
 
         if (is_not_integer(M_pol, tol)) then
-            print *, "M_pol must be integer"
+            call log_msg(LOG%ERROR, "M_pol must be integer")
             is_valid = .false.
         end if
         if (is_not_integer(N_tor, tol)) then
-            print *, "N_tor must be integer"
+            call log_msg(LOG%ERROR, "N_tor must be integer")
             is_valid = .false.
         end if
         if (not_same(sign_sqrtg, 1.0_dp, reltol_in=0.0_dp, abstol_in=tol) .and. &
             not_same(sign_sqrtg, -1.0_dp, reltol_in=0.0_dp, abstol_in=tol)) then
-            print *, "sign_sqrtg must be +-1"
+            call log_msg(LOG%ERROR, "sign_sqrtg must be +-1")
             is_valid = .false.
         end if
         if (any(s_tor <= 0.0_dp) .or. any(s_tor >= 1.0_dp)) then
-            print *, "s_tor must be in ]0.0, 1.0["
+            call log_msg(LOG%ERROR, "s_tor must be in ]0.0, 1.0[")
             is_valid = .false.
         end if
         if (n_s_tor > 0) then
             if (s_tor_min >= s_tor_max) then
-                print *, "s_tor_min must be less than s_tor_max"
+                call log_msg(LOG%ERROR, "s_tor_min must be less than s_tor_max")
                 is_valid = .false.
             end if
             if (n_s_tor < 2) then
-                print *, "n_s_tor must be at least 2"
+                call log_msg(LOG%ERROR, "n_s_tor must be at least 2")
                 is_valid = .false.
             end if
         end if
         if (max_n_fieldlines <= 1) then
-            print *, "max_n_fieldlines must be bigger than 1"
+            call log_msg(LOG%ERROR, "max_n_fieldlines must be bigger than 1")
             is_valid = .false.
         end if
         if (should_calc_shaing_callen .and. n_eta <= 3) then
-            print *, "n_eta must be bigger than 3"
+            call log_msg(LOG%ERROR, "n_eta must be bigger than 3")
+            is_valid = .false.
         end if
 
         if (.not. is_valid) error stop

@@ -2,6 +2,8 @@ program main
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
     use constants, only: dp, pi
     use netcdf_mod, only: netcdf_t
+    use logger, only: log_init, LOG, log_msg, log_val, log_finalize
+    use logger_config, only: read_logger_config, log_file, log_level
     use read_file, only: read_namelist, &
                          field_file, &
                          M_pol, &
@@ -10,8 +12,7 @@ program main
                          sign_sqrtg, &
                          max_n_fieldlines, &
                          should_calc_shaing_callen, &
-                         n_eta, &
-                         unsafe_mode
+                         n_eta
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -20,7 +21,7 @@ program main
                             calc_gradient_scaling_factor_r_eff, &
                             calc_offset_coefficients
     use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
-    use error_handling, only: set_unsafe_mode
+    use error_handling, only: read_error_handling_config, unsafe_mode
     use error_handling, only: reset_failed_check_counter, did_fail_any_sanity_check
     use git_version, only: git_hash
 
@@ -58,8 +59,11 @@ program main
     character(len=*), parameter :: dim_name = "surface"
     character(len=1024) :: description
 
+    call read_error_handling_config(input_file)
+    call read_logger_config(input_file)
+    call log_init(log_file, log_level, unsafe_mode)
+
     call read_namelist(input_file)
-    call set_unsafe_mode(unsafe_mode)
     nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
     n_stor = size(s_tor)
@@ -94,17 +98,19 @@ program main
                                                                R, &
                                                                dr_dAtheta)
 
-        print *, "s_tor: ", s_tor(this)
+        call log_val(LOG%INFO, "s_tor: ", s_tor(this))
         if (should_calc_shaing_callen) then
             lambda_LC(this) = calc_lambda_LC(flock, field, n_eta, dr_dAtheta)
             remainder(this) = get_non_omnigenous_remainder(flock, field, &
                                                            n_eta, dr_dAtheta)
-            print *, "omnigenous lambda_LC_bB: ", lambda_LC(this)
-            print *, "non-omnigneous remainder: ", remainder(this)
+            call log_val(LOG%INFO, "omnigenous lambda_LC_bB: ", lambda_LC(this))
+            call log_val(LOG%INFO, "non-omnigneous remainder: ", remainder(this))
         end if
-        print *, "1/sqrt(nu_star) factor: ", Lambda_A(this)
-        print *, "1/nu_star factor: ", Lambda_B(this)
-        print *, "Lambda_S: ", Lambda_S(this)
+        call log_val(LOG%INFO, "1/sqrt(nu_star) factor Lambda_A: ", Lambda_A(this))
+        call log_val(LOG%INFO, "1/nu_star factor Lambda_B: ", Lambda_B(this))
+        call log_val(LOG%INFO, "nu_star_crit: ", nu_star_crit(this))
+        call log_val(LOG%INFO, "split_maxima: ", split_maxima(this))
+        call log_val(LOG%INFO, "Lambda_S: ", Lambda_S(this))
 
         if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
 
@@ -203,6 +209,8 @@ program main
     if (allocated(Lambda_S)) deallocate (Lambda_S)
     if (allocated(lambda_LC)) deallocate (lambda_LC)
     if (allocated(remainder)) deallocate (remainder)
+
+    call log_finalize()
 
 contains
 
