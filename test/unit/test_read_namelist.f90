@@ -24,6 +24,7 @@ program test_read_namelist
     logical :: test_failed
 
     character(len=*), parameter :: test_field_file = "test.nc"
+    character(len=*), parameter :: test_field_type = "booz_xform"
     real(dp), parameter :: test_M_pol = -1.0_dp
     real(dp), parameter :: test_N_tor = 2.0_dp
     real(dp), dimension(:), allocatable :: test_s_tor
@@ -38,6 +39,7 @@ program test_read_namelist
     allocate (test_s_tor, source=[0.25_dp, 0.5_dp])
     call write_test_file(test_file, &
                          test_field_file=test_field_file, &
+                         test_field_type=test_field_type, &
                          test_M_pol=test_M_pol, &
                          test_N_tor=test_N_tor, &
                          test_s_tor=test_s_tor, &
@@ -53,6 +55,13 @@ program test_read_namelist
         print *, "test_read_namelist failed: bc_filename"
         print *, "found: ", field_file
         print *, "expected: ", test_field_file
+        test_failed = .true.
+    end if
+    if (field_type /= test_field_type) then
+        print *, "-------------------------------------------------------------"
+        print *, "test_read_namelist failed: field_type"
+        print *, "found: ", trim(field_type)
+        print *, "expected: ", test_field_type
         test_failed = .true.
     end if
     if (not_same(M_pol, &
@@ -177,29 +186,6 @@ program test_read_namelist
         print *, "test_read_namelist failed: s_tor values from range"
         print *, "found: ", s_tor
         print *, "expected: ", test_s_tor
-        test_failed = .true.
-    end if
-
-    call remove_test_file(test_file)
-
-    call write_test_file(test_file, &
-                         test_field_file=test_field_file, &
-                         test_M_pol=test_M_pol, &
-                         test_N_tor=test_N_tor, &
-                         test_s_tor=test_s_tor, &
-                         test_sign_sqrtg=test_sign_sqrtg, &
-                         test_max_n_fieldlines=test_max_n_fieldlines, &
-                         test_should_calc_shaing_callen= &
-                         test_should_calc_shaing_callen, &
-                         test_n_eta=test_n_eta, &
-                         test_field_type='booz_xform')
-    call read_namelist(test_file)
-
-    if (field_type /= 'booz_xform') then
-        print *, "-------------------------------------------------------------"
-        print *, "test_read_namelist failed: field_type"
-        print *, "found: ", trim(field_type)
-        print *, "expected: 'booz_xform'"
         test_failed = .true.
     end if
 

@@ -20,9 +20,9 @@ module boozer_field
     !! \brief Field in Boozer coordinates, loadable from several file formats.
     !!
     !! \details Call one init_from_* loader, then fix_to_surface before any
-    !! evaluation. Only one Boozer field can be active at a time: the splines
-    !! live in module-global state, and a later init replaces the active field
-    !! for all instances.
+    !! evaluation. Only one Boozer field can be active at a time (singleton —
+    !! the splines live in module-global state). Calling a loader a second
+    !! time aborts.
     !<
     type, extends(field_t) :: boozer_field_t
         logical :: initialized = .false.
@@ -67,6 +67,7 @@ contains
         integer, intent(in), optional :: angular_spline_order
         integer, intent(in), optional :: grid_refinement
 
+        call assert_no_active_field("init_from_vmec")
         use_B_r = .true.
         call get_boozer_coordinates(vmec_file, &
                                     radial_spline_order, &
@@ -85,6 +86,7 @@ contains
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: boozmn_file
 
+        call assert_no_active_field("init_from_boozmn")
         call load_boozer_from_boozmn(boozmn_file)
         call finish_init(self)
 
@@ -99,10 +101,19 @@ contains
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: chartmap_file
 
+        call assert_no_active_field("init_from_chartmap")
         call load_boozer_from_chartmap(chartmap_file)
         call finish_init(self)
 
     end subroutine init_from_chartmap
+
+    subroutine assert_no_active_field(caller)
+        character(len=*), intent(in) :: caller
+
+        if (initialized) error stop caller// &
+            ": a Boozer field is already loaded; "// &
+            "only one can be active at a time (singleton)."
+    end subroutine assert_no_active_field
 
     subroutine finish_init(self)
         use vector_potentail_mod, only: torflux

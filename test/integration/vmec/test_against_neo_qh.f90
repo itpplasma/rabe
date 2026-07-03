@@ -11,6 +11,9 @@ program test_against_neo_qh
 
     real(dp), parameter :: reltol = 1.2e-2, abstol = 1e-10
     real(dp), parameter :: abstol_for_zero = 1e-3
+    ! Symmetry-zero dB_dx components (exact 0 in the NEO reference) come out
+    ! as spline roundoff, measured <= 1.6e-10 with libneo's optimized build.
+    real(dp), parameter :: abstol_roundoff = 1e-9
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
 
@@ -185,11 +188,8 @@ program test_against_neo_qh
             test_failed = .true.
         end if
 
-        ! dB_dx has symmetry-zero components (exact 0 in the reference) whose
-        ! computed value is compiler-roundoff, not physics; use the near-zero
-        ! abstol floor while reltol still governs the O(1) components.
         if (not_same(dB_dx_b, dB_dx_ref(case, :), &
-                     reltol_in=reltol, abstol_in=abstol_for_zero)) then
+                     reltol_in=reltol, abstol_in=abstol_roundoff)) then
             print *, "dB_dx mismatch at case ", case
             print *, "  boozer: ", dB_dx_b
             print *, "  neo:    ", dB_dx_ref(case, :)
