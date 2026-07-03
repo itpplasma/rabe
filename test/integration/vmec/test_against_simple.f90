@@ -29,7 +29,7 @@ program test_against_simple
 
     logical :: test_failed
 
-    call field%boozer_field_init(nc_filename, &
+    call field%init_from_vmec(nc_filename, &
                                  radial_spline_order=5, &
                                  angular_spline_order=5, &
                                  grid_refinement=3)

@@ -21,14 +21,14 @@ program test_field_type_loader
 
     test_failed = .false.
 
-    call field_vmec%boozer_field_init(vmec_nc_file, grid_refinement=6)
+    call field_vmec%init_from_vmec(vmec_nc_file, grid_refinement=6)
     if (.not. field_vmec%initialized) then
         print *, "-------------------------------------------------------------"
         print *, "test_field_type_loader failed: first field not initialized"
         test_failed = .true.
     end if
 
-    call field_vmec_ref%boozer_field_init(vmec_nc_file, grid_refinement=6)
+    call field_vmec_ref%init_from_vmec(vmec_nc_file, grid_refinement=6)
     if (.not. field_vmec_ref%initialized) then
         print *, "-------------------------------------------------------------"
         print *, "test_field_type_loader failed: second field not initialized"

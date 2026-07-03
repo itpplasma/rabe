@@ -14,8 +14,16 @@ module boozer_field
 
     logical, save :: initialized = .false.
 
-    public :: boozer_field_t, boozxform_field_t, chartmap_field_t
+    public :: boozer_field_t
 
+    !>
+    !! \brief Field in Boozer coordinates, loadable from several file formats.
+    !!
+    !! \details Call one init_from_* loader, then fix_to_surface before any
+    !! evaluation. Only one Boozer field can be active at a time: the splines
+    !! live in module-global state, and a later init replaces the active field
+    !! for all instances.
+    !<
     type, extends(field_t) :: boozer_field_t
         logical :: initialized = .false.
         logical :: fixed_to_surface = .false.
@@ -24,7 +32,9 @@ module boozer_field
         real(dp) :: psi_tor_edge
         real(dp) :: R
     contains
-        procedure :: boozer_field_init
+        procedure :: init_from_vmec
+        procedure :: init_from_boozmn
+        procedure :: init_from_chartmap
         procedure :: evaluate
         procedure :: get_iota
         procedure :: get_covariant_components
@@ -36,32 +46,20 @@ module boozer_field
         procedure :: rel_accuracy_B
     end type boozer_field_t
 
-    type, extends(boozer_field_t) :: boozxform_field_t
-    contains
-        procedure :: boozer_field_init => boozxform_field_init
-    end type boozxform_field_t
-
-    type, extends(boozer_field_t) :: chartmap_field_t
-    contains
-        procedure :: boozer_field_init => chartmap_field_init
-    end type chartmap_field_t
-
 contains
 
     !>
     !! \brief Load Boozer-coordinate splines from a VMEC wout netCDF file.
     !!
-    !! \details Call boozer_field_init to load, then fix_to_surface before any evaluation.
-    !! Only one Boozer field can be active at a time (singleton — the splines are
-    !! stored in module-global state). Calling boozer_field_init a second time aborts.
-    !! Reasonable defaults: radial_spline_order=5, angular_spline_order=5, grid_refinement=6.
+    !! \details Reasonable defaults: radial_spline_order=5,
+    !! angular_spline_order=5, grid_refinement=6.
     !!
     !! \param[in] vmec_file path to VMEC .nc file
     !<
-    subroutine boozer_field_init(self, vmec_file, &
-                                 radial_spline_order, &
-                                 angular_spline_order, &
-                                 grid_refinement)
+    subroutine init_from_vmec(self, vmec_file, &
+                              radial_spline_order, &
+                              angular_spline_order, &
+                              grid_refinement)
         use boozer_coordinates_mod, only: use_B_r
         class(boozer_field_t), intent(inout) :: self
         character(len=*), intent(in) :: vmec_file
@@ -76,49 +74,35 @@ contains
                                     grid_refinement)
         call finish_init(self)
 
-    end subroutine boozer_field_init
+    end subroutine init_from_vmec
 
     !>
     !! \brief Load Boozer-coordinate splines from a booz_xform boozmn netCDF file.
     !!
-    !! \details The spline-order arguments are inherited from the base signature
-    !! and unused; the boozmn reader fixes its own grid.
+    !! \details The boozmn file fixes its own grid and spline orders.
     !<
-    subroutine boozxform_field_init(self, vmec_file, &
-                                    radial_spline_order, &
-                                    angular_spline_order, &
-                                    grid_refinement)
-        class(boozxform_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: vmec_file
-        integer, intent(in), optional :: radial_spline_order
-        integer, intent(in), optional :: angular_spline_order
-        integer, intent(in), optional :: grid_refinement
+    subroutine init_from_boozmn(self, boozmn_file)
+        class(boozer_field_t), intent(inout) :: self
+        character(len=*), intent(in) :: boozmn_file
 
-        call load_boozer_from_boozmn(vmec_file)
+        call load_boozer_from_boozmn(boozmn_file)
         call finish_init(self)
 
-    end subroutine boozxform_field_init
+    end subroutine init_from_boozmn
 
     !>
     !! \brief Load Boozer-coordinate splines from an extended chartmap netCDF file.
     !!
-    !! \details The spline-order arguments are inherited from the base signature
-    !! and unused; the chartmap carries its own grid.
+    !! \details The chartmap carries its own grid and spline orders.
     !<
-    subroutine chartmap_field_init(self, vmec_file, &
-                                   radial_spline_order, &
-                                   angular_spline_order, &
-                                   grid_refinement)
-        class(chartmap_field_t), intent(inout) :: self
-        character(len=*), intent(in) :: vmec_file
-        integer, intent(in), optional :: radial_spline_order
-        integer, intent(in), optional :: angular_spline_order
-        integer, intent(in), optional :: grid_refinement
+    subroutine init_from_chartmap(self, chartmap_file)
+        class(boozer_field_t), intent(inout) :: self
+        character(len=*), intent(in) :: chartmap_file
 
-        call load_boozer_from_chartmap(vmec_file)
+        call load_boozer_from_chartmap(chartmap_file)
         call finish_init(self)
 
-    end subroutine chartmap_field_init
+    end subroutine init_from_chartmap
 
     subroutine finish_init(self)
         use vector_potentail_mod, only: torflux
@@ -155,7 +139,7 @@ contains
 
         if (.not. initialized) then
             error stop "boozer_field_evaluate: field not initialized. "// &
-                "Call boozer_field_init first!"
+                "Call an init_from_* loader first!"
         end if
 
         r = x(1)
