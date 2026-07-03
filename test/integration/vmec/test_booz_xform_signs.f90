@@ -27,10 +27,34 @@ program test_booz_xform_signs
     real(dp), parameter :: reltol = 1.0e-6_dp
     real(dp), parameter :: abstol = 1.0e-10_dp
 
+    type(boozmn_data_t) :: d
     type(boozer_field_t) :: field
     real(dp) :: bmod, expected
 
-    call write_boozmn_fixture(boozmn_file_name)
+    d%ns = ns_full
+    d%nfp = 1
+    d%nmodes = nmode
+    d%nsurf = nsurf
+    d%asym = .false.
+    allocate (d%jlist(nsurf), d%ixm(nmode), d%ixn(nmode))
+    allocate (d%iota(ns_full), d%buco(ns_full), d%bvco(ns_full), d%phi(ns_full))
+    allocate (d%bmnc(nmode, nsurf), d%rmnc(nmode, nsurf), &
+              d%zmns(nmode, nsurf), d%pmns(nmode, nsurf))
+
+    d%jlist = [2, 3, 4]
+    d%ixm = ixm
+    d%ixn = ixn
+    d%iota = [0.5_dp, 0.55_dp, 0.6_dp, 0.65_dp, 0.7_dp]
+    d%buco = [0.01_dp, 0.02_dp, 0.03_dp, 0.04_dp, 0.05_dp]
+    d%bvco = [0.2_dp, 0.21_dp, 0.22_dp, 0.23_dp, 0.24_dp]
+    d%phi = [0.0_dp, 0.2_dp, 0.5_dp, 0.9_dp, 1.3_dp]
+    d%bmnc = spread(bmn, dim=2, ncopies=nsurf)
+    d%rmnc = 0.0_dp
+    d%rmnc(1, :) = [1.8_dp, 1.9_dp, 2.0_dp]
+    d%zmns = 0.0_dp
+    d%pmns = 0.0_dp
+
+    call write_boozmn(boozmn_file_name, d)
     call field%init_from_boozmn(boozmn_file_name)
     if (.not. field%initialized) error stop 'booz_xform field not initialized'
 
@@ -56,37 +80,5 @@ contains
                                            - real(ixn(imode), dp)*zeta_in)
         end do
     end function expected_bmod
-
-    subroutine write_boozmn_fixture(path)
-        character(len=*), intent(in) :: path
-
-        type(boozmn_data_t) :: d
-
-        d%ns = ns_full
-        d%nfp = 1
-        d%nmodes = nmode
-        d%nsurf = nsurf
-        d%asym = .false.
-        allocate (d%jlist(nsurf), d%ixm(nmode), d%ixn(nmode))
-        allocate (d%iota(ns_full), d%buco(ns_full), d%bvco(ns_full), &
-                  d%phi(ns_full))
-        allocate (d%bmnc(nmode, nsurf), d%rmnc(nmode, nsurf), &
-                  d%zmns(nmode, nsurf), d%pmns(nmode, nsurf))
-
-        d%jlist = [2, 3, 4]
-        d%ixm = ixm
-        d%ixn = ixn
-        d%iota = [0.5_dp, 0.55_dp, 0.6_dp, 0.65_dp, 0.7_dp]
-        d%buco = [0.01_dp, 0.02_dp, 0.03_dp, 0.04_dp, 0.05_dp]
-        d%bvco = [0.2_dp, 0.21_dp, 0.22_dp, 0.23_dp, 0.24_dp]
-        d%phi = [0.0_dp, 0.2_dp, 0.5_dp, 0.9_dp, 1.3_dp]
-        d%bmnc = spread(bmn, dim=2, ncopies=nsurf)
-        d%rmnc = 0.0_dp
-        d%rmnc(1, :) = [1.8_dp, 1.9_dp, 2.0_dp]
-        d%zmns = 0.0_dp
-        d%pmns = 0.0_dp
-
-        call write_boozmn(path, d)
-    end subroutine write_boozmn_fixture
 
 end program test_booz_xform_signs
