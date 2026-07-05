@@ -2,7 +2,7 @@
 !>
 !> Builds a synthetic boozmn dataset with positive and negative ixn modes,
 !> writes it via libneo write_boozmn, loads it through init_from_boozmn, and
-!> checks Bmod against the analytic Fourier sum with booz_xform's standardized
+!> checks Bmod against the analytic Fourier sum with the booz_xform standard
 !> cos(m*theta - n*zeta) phase.
 program test_booz_xform_signs
     use, intrinsic :: iso_fortran_env, only: dp => real64

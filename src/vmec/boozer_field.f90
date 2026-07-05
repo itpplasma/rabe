@@ -303,7 +303,9 @@ contains
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_B_sqrtg_dB_dx: call fix_stor first"
-        x = [self%fixed_stor, theta, phi]
+        x(1) = self%fixed_stor
+        x(2) = theta
+        x(3) = phi
         call self%evaluate(x, B_mod, sqrtg, dlnB_dx, hcovar, &
                            hctrvr, hcurl)
         dB_dx = dlnB_dx*B_mod
@@ -319,7 +321,9 @@ contains
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_B_and_dB_dx: call fix_stor first"
-        x = [self%fixed_stor, theta, phi]
+        x(1) = self%fixed_stor
+        x(2) = theta
+        x(3) = phi
         call self%evaluate(x, B_mod, dummy_sqrtg, dlnB_dx, hcovar, &
                            hctrvr, hcurl)
         dB_dx = dlnB_dx*B_mod
@@ -335,7 +339,9 @@ contains
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_B_mod: call fix_stor first"
-        x = [self%fixed_stor, theta, phi]
+        x(1) = self%fixed_stor
+        x(2) = theta
+        x(3) = phi
         call self%evaluate(x, B_mod, dummy_sqrtg, dummy_dB_dx, &
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod

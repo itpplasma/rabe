@@ -1,6 +1,6 @@
 program main
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
-    use constants, only: dp, pi
+    use constants, only: dp
     use netcdf_mod, only: netcdf_t
     use read_file, only: read_namelist, &
                          field_file, &
