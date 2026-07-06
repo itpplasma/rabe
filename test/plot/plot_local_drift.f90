@@ -18,8 +18,6 @@ program plot_anti_sigma
     real(dp), parameter :: B_max = B_0*(1.0_dp + abs(eps_0) + abs(eps_1)) + abs(B_pert)
     real(dp), parameter :: B_min = B_0*(1.0_dp - abs(eps_0) - abs(eps_1)) - abs(B_pert)
 
-    real(dp), parameter :: phi_tol = 8e-5
-
     real(dp), parameter :: iota = 1.0_dp
     integer, parameter :: n_eta = 100
     real(dp), dimension(n_eta) :: etas

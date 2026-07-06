@@ -12,7 +12,7 @@ program test_against_neo_qh
     real(dp), parameter :: reltol = 1.2e-2, abstol = 1e-10
     real(dp), parameter :: abstol_for_zero = 1e-3
     ! Symmetry-zero dB_dx components (exact 0 in the NEO reference) come out
-    ! as spline roundoff, measured <= 1.6e-10 with libneo's optimized build.
+    ! as spline roundoff, measured <= 1.6e-10 with an optimized libneo build.
     real(dp), parameter :: abstol_roundoff = 1e-9
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
@@ -40,9 +40,9 @@ program test_against_neo_qh
     logical :: test_failed
 
     call bfield%init_from_vmec(nc_filename, &
-                                  radial_spline_order=5, &
-                                  angular_spline_order=5, &
-                                  grid_refinement=3)
+                               radial_spline_order=5, &
+                               angular_spline_order=5, &
+                               grid_refinement=3)
 
     test_failed = .false.
     stor = [0.1_dp, 0.3_dp, 0.5_dp, 0.7_dp, 0.9_dp]
