@@ -2,6 +2,19 @@ if(NOT SKBUILD_PROJECT_NAME)
     set(SKBUILD_PROJECT_NAME "rabe")
 endif()
 
+# ON: additionally drive an out-of-tree flang sub-build of the AD backend (see
+# cmake/ad_backend.cmake, which sets RABE_AD_BUILD=ON on that sub-build) and
+# install its _rabe_ad.so + rabe.ad Python source into the
+# ${SKBUILD_PROJECT_NAME}/ad package directory alongside this gfortran
+# extension. Default OFF - a plain `pip install .` is unaffected. Lives here
+# (not top-level CMakeLists.txt) because `import rabe.ad` requires `rabe` to
+# already be an importable package - i.e. this only ever makes sense together
+# with the rest of this file, which is what actually generates rabe/__init__.py.
+option(RABE_WITH_AD_BACKEND "Build and package the flang/Enzyme rabe.ad AD backend" OFF)
+if(RABE_WITH_AD_BACKEND)
+    include(ad_backend)
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
 find_program(F90WRAP_EXECUTABLE f90wrap REQUIRED)
 
@@ -79,6 +92,7 @@ target_link_libraries(_rabe PRIVATE
     offset_lib
     vmec_lib
     field_lib
+    fourier_field_lib
     fieldline_lib
     utils_lib
     error_handling_lib

@@ -7,6 +7,15 @@ enable_language(Fortran)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(compiler)
 
+# OFF (default): normal build - netcdf_lib/vmec_lib and app/main.f90 (rabe.x) as usual.
+# ON: NetCDF-free AD build - only the Fourier pipeline (utils/field/fieldline/
+# offset/shaing_callen/error_handling + libneo's interpolate module, see
+# cmake/libneo.cmake), no VMEC/NetCDF/rabe.x/tests, plus python/ad -> _rabe_ad.
+# Intended for a flang toolchain (no prebuilt netcdf-fortran, AD path never
+# needs VMEC). Not meant to be set directly by users of the normal build - see
+# RABE_WITH_AD_BACKEND, whose sub-build sets this automatically.
+option(RABE_AD_BUILD "NetCDF-free AD build: only the Fourier pipeline + _rabe_ad" OFF)
+
 # required for fetching dependencies
 find_package(Git REQUIRED)
 
@@ -36,14 +45,20 @@ add_custom_target(git_version_target
 
 add_subdirectory(src) # for rabe_lib
 
-add_executable(${PROJECT_NAME} app/main.f90)
-target_link_libraries(${PROJECT_NAME} rabe_lib)
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
+if(NOT RABE_AD_BUILD)
+    add_executable(${PROJECT_NAME} app/main.f90)
+    target_link_libraries(${PROJECT_NAME} rabe_lib)
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
-enable_testing()
-add_subdirectory(test)
+    enable_testing()
+    add_subdirectory(test)
+endif()
 
 option(BUILD_PYTHON_BINDINGS "Build Python bindings via f90wrap" OFF)
 if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(python)
+endif()
+
+if(RABE_AD_BUILD)
+    add_subdirectory(python/ad)
 endif()

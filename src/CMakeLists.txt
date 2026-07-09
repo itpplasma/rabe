@@ -11,8 +11,15 @@ target_link_libraries(read_file_lib PRIVATE utils_lib fieldline_lib)
 
 add_subdirectory(error_handling)
 add_subdirectory(utils)
-add_subdirectory(netcdf)
-add_subdirectory(vmec)
+if(RABE_AD_BUILD)
+    # AD build (flang backend): NetCDF-free subset only. Provide `interpolate`
+    # (needed by fourier_field_lib/fourier_field.f90) without pulling in
+    # netcdf-fortran or VMEC. See cmake/libneo.cmake's RABE_AD_BUILD branch.
+    include(libneo)
+else()
+    add_subdirectory(netcdf)
+    add_subdirectory(vmec) # also provides the `interpolate` target via include(libneo)
+endif()
 add_subdirectory(field)
 add_subdirectory(fieldline)
 add_subdirectory(offset)
@@ -23,11 +30,13 @@ target_link_libraries(rabe_lib INTERFACE
     git_version_lib
     read_file_lib
     utils_lib
-    netcdf_lib
     error_handling_lib
     field_lib
-    vmec_lib
+    fourier_field_lib
     fieldline_lib
     shaing_callen_lib
     offset_lib
 )
+if(NOT RABE_AD_BUILD)
+    target_link_libraries(rabe_lib INTERFACE netcdf_lib vmec_lib)
+endif()
