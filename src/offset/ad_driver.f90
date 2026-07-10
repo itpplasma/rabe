@@ -1,15 +1,17 @@
 !> \file ad_driver.f90
-!! \brief Flat, NetCDF-free `bind(C)` entry point into the FourierField bootstrap
-!! pipeline, for the flang/Enzyme AD backend (`rabe.ad`).
+!! \brief Single entry point wrapping the FourierField bootstrap pipeline, from a
+!! flat list of Boozer Fourier modes to the asymptotic offset coefficients.
 !!
-!! \details This mirrors the per-surface workflow of `app/main.f90` /
-!! `python/example_fourier.py`, but exposes it as a single C-callable procedure over
-!! plain arrays and scalars — no Fortran derived types cross the boundary. That keeps
-!! the flang extension free of f90wrap/opaque handles (so it cannot be confused with
-!! the gfortran extension objects) and matches the shape Enzyme differentiates: the
-!! eventual adjoint is just another `bind(C)` symbol over the same buffers.
+!! \details Mirrors the per-surface workflow of `app/main.f90` /
+!! `python/example_fourier.py` (`fourier_field_init` -> `make_flock_of_fieldlines` ->
+!! `calc_offset_coefficients`/`calc_nu_star_crit`), collapsed into one procedure so
+!! there is a single, well-defined target for the eventual Enzyme adjoint. Wrapped
+!! for Python via f90wrap alongside the rest of `rabe_lib` (see
+!! `python/CMakeLists.txt`) - no special calling convention needed; Enzyme
+!! differentiates the compiled procedure directly regardless of how it is exposed
+!! to Python.
 module ad_driver
-    use iso_c_binding, only: c_int, c_double
+
     use constants, only: dp
     use fourier_field, only: fourier_field_t, fourier_field_init
     use fieldline_mod, only: flock_of_fieldlines_t
@@ -24,17 +26,11 @@ contains
     !! \brief Compute the asymptotic bootstrap offset coefficients for a magnetic
     !! field given as a flat list of Boozer Fourier modes.
     !!
-    !! \details Builds a `fourier_field_t` from the modes, constructs the flock of
-    !! field lines, and evaluates the offset coefficients and critical collisionality
-    !! — the same numbers `python/example_fourier.py` obtains via
-    !! `FlockOfFieldlines.calc_offset_coefficients` / `calc_nu_star_crit`.
-    !!
-    !! \param[in]  mn_max            number of Fourier modes
-    !! \param[in]  m                 poloidal mode numbers (length mn_max)
+    !! \param[in]  m                 poloidal mode numbers (flat array, length mn_max)
     !! \param[in]  n                 toroidal mode numbers, normalised to nfp (length mn_max)
     !! \param[in]  B_mn              Fourier coefficients of B in Tesla (length mn_max)
-    !! \param[in]  B_theta_cov       covariant poloidal component of B in T*m
-    !! \param[in]  B_phi_cov         covariant toroidal component of B in T*m
+    !! \param[in]  B_theta_covariant covariant poloidal component of B in T*m
+    !! \param[in]  B_phi_covariant   covariant toroidal component of B in T*m
     !! \param[in]  nfp               number of field periods
     !! \param[in]  n_grid            spline grid points per angle direction
     !! \param[in]  iota              rotational transform of the surface
@@ -48,22 +44,24 @@ contains
     !! \param[out] nu_star_crit      lower collisionality validity limit
     !<
     subroutine rabe_fourier_offset_coefficients( &
-        mn_max, m, n, B_mn, B_theta_cov, B_phi_cov, nfp, n_grid, &
+        m, n, B_mn, B_theta_covariant, B_phi_covariant, nfp, n_grid, &
         iota, M_pol, N_tor, max_n_fieldlines, R, dr_dAtheta, &
-        lambda_a, lambda_b, nu_star_crit) &
-        bind(C, name="rabe_fourier_offset_coefficients")
-        integer(c_int), value :: mn_max
-        integer(c_int), intent(in) :: m(mn_max), n(mn_max)
-        real(c_double), intent(in) :: B_mn(mn_max)
-        real(c_double), value :: B_theta_cov, B_phi_cov
-        integer(c_int), value :: nfp, n_grid, max_n_fieldlines
-        real(c_double), value :: iota, M_pol, N_tor, R, dr_dAtheta
-        real(c_double), intent(out) :: lambda_a, lambda_b, nu_star_crit
+        lambda_a, lambda_b, nu_star_crit)
+        integer, intent(in) :: m(:), n(:)
+        real(dp), intent(in) :: B_mn(:)
+        real(dp), intent(in) :: B_theta_covariant, B_phi_covariant
+        integer, intent(in) :: nfp
+        integer, intent(in) :: n_grid
+        real(dp), intent(in) :: iota
+        real(dp), intent(in) :: M_pol, N_tor
+        integer, intent(in) :: max_n_fieldlines
+        real(dp), intent(in) :: R, dr_dAtheta
+        real(dp), intent(out) :: lambda_a, lambda_b, nu_star_crit
 
         type(fourier_field_t) :: field
         type(flock_of_fieldlines_t) :: flock
 
-        call fourier_field_init(field, m, n, B_mn, B_theta_cov, B_phi_cov, &
+        call fourier_field_init(field, m, n, B_mn, B_theta_covariant, B_phi_covariant, &
                                 nfp, n_grid)
         call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, field, &
                                       M_pol, N_tor, real(nfp, dp))

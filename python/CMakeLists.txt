@@ -2,19 +2,6 @@ if(NOT SKBUILD_PROJECT_NAME)
     set(SKBUILD_PROJECT_NAME "rabe")
 endif()
 
-# ON: additionally drive an out-of-tree flang sub-build of the AD backend (see
-# cmake/ad_backend.cmake, which sets RABE_AD_BUILD=ON on that sub-build) and
-# install its _rabe_ad.so + rabe.ad Python source into the
-# ${SKBUILD_PROJECT_NAME}/ad package directory alongside this gfortran
-# extension. Default OFF - a plain `pip install .` is unaffected. Lives here
-# (not top-level CMakeLists.txt) because `import rabe.ad` requires `rabe` to
-# already be an importable package - i.e. this only ever makes sense together
-# with the rest of this file, which is what actually generates rabe/__init__.py.
-option(RABE_WITH_AD_BACKEND "Build and package the flang/Enzyme rabe.ad AD backend" OFF)
-if(RABE_WITH_AD_BACKEND)
-    include(ad_backend)
-endif()
-
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
 find_program(F90WRAP_EXECUTABLE f90wrap REQUIRED)
 
@@ -27,6 +14,7 @@ set(F90WRAP_SOURCES
     ${PROJECT_SOURCE_DIR}/src/fieldline/make_fieldline.f90
     ${PROJECT_SOURCE_DIR}/src/offset/deviation.f90
     ${PROJECT_SOURCE_DIR}/src/offset/coefficients.f90
+    ${PROJECT_SOURCE_DIR}/src/offset/ad_driver.f90
     ${PROJECT_SOURCE_DIR}/src/error_handling/error_handling.f90
     ${PROJECT_SOURCE_DIR}/src/shaing_callen/shaing_callen.f90
 )
@@ -72,6 +60,7 @@ add_custom_command(
                 did_fail_any_sanity_check
                 calc_lambda_lc
                 get_non_omnigenous_remainder
+                rabe_fourier_offset_coefficients
     DEPENDS ${F90WRAP_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/kind_map.py
             ${CMAKE_CURRENT_SOURCE_DIR}/joint_modules.py
             ${CMAKE_CURRENT_SOURCE_DIR}/class_names.py

@@ -55,7 +55,7 @@ dist:
 	git archive --format=tar.gz --prefix=rabe/ HEAD -o rabe.tar.gz
 
 python:
-	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_BINDINGS=ON -DRABE_WITH_AD_BACKEND=ON
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_BINDINGS=ON
 	cmake --build build
 
 # Private test data and external comparisons (not available in public repo)

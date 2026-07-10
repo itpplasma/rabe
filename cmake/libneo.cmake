@@ -25,22 +25,7 @@ function(rabe_add_libneo)
         set(_libneo_ref "${LIBNEO_REF}")
     endif()
 
-    if(RABE_AD_BUILD)
-        # AD build (flang backend): only fourier_field_lib/fourier_field.f90
-        # needs libneo, via its self-contained `interpolate` (spline) module.
-        if(NOT CMAKE_Fortran_MODULE_DIRECTORY)
-            set(CMAKE_Fortran_MODULE_DIRECTORY
-                "${CMAKE_CURRENT_BINARY_DIR}/libneo/include")
-        endif()
-        FetchContent_Declare(
-            libneo
-            GIT_REPOSITORY https://github.com/itpplasma/libneo.git
-            GIT_TAG        ${_libneo_ref}
-            SOURCE_SUBDIR  src/interpolate
-            EXCLUDE_FROM_ALL
-        )
-        FetchContent_MakeAvailable(libneo)
-    elseif(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
+    if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
         message(STATUS "Using libneo in ${LIBNEO_PATH}")
         add_subdirectory("${LIBNEO_PATH}"
                          "${CMAKE_CURRENT_BINARY_DIR}/libneo"
