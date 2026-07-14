@@ -4,6 +4,11 @@ include(FindPkgConfig)
 set(RABE_NETCDF_PROVIDER "auto" CACHE STRING "NetCDF provider: auto, system, or fetch")
 set_property(CACHE RABE_NETCDF_PROVIDER PROPERTY STRINGS auto system fetch)
 
+# cache for self-built, compiler-keyed NetCDF-Fortran libs
+# that are persistent beyond a `make clean` to avoid expensive
+# from-source rebuild every time.
+set(RABE_NETCDF_CACHE_ROOT "${PROJECT_SOURCE_DIR}/.cache")
+
 function(rabe_check_netcdf_fortran result_var)
     find_program(RABE_NF_CONFIG nf-config)
     if(NOT RABE_NF_CONFIG)
@@ -40,9 +45,11 @@ function(rabe_check_netcdf_fortran result_var)
 endfunction()
 
 function(rabe_add_fetched_netcdf)
-    set(deps_prefix "${CMAKE_BINARY_DIR}/deps")
-    set(deps_source_dir "${CMAKE_BINARY_DIR}/deps-src")
-    set(deps_build_dir "${CMAKE_BINARY_DIR}/deps-build")
+    # Installed to the persistent cache
+    set(deps_prefix
+        "${RABE_NETCDF_CACHE_ROOT}/netcdf-${CMAKE_Fortran_COMPILER_ID}-${CMAKE_Fortran_COMPILER_VERSION}")
+    set(deps_source_dir "${deps_prefix}-src")
+    set(deps_build_dir "${deps_prefix}-build")
     set(netcdf_fortran_flags "${CMAKE_Fortran_FLAGS}")
 
     if(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
@@ -184,6 +191,13 @@ function(rabe_add_fetched_netcdf)
 endfunction()
 
 function(rabe_configure_netcdf)
+    # check also the persistent cache for a fitting compiler-keyed NetCDF-Fortran build
+    # find_program() and pkg_check_modules() both search <prefix>/bin and <prefix>/lib/pkgconfig
+    # for every entry of CMAKE_PREFIX_PATH
+    set(rabe_netcdf_cache_prefix
+        "${RABE_NETCDF_CACHE_ROOT}/netcdf-${CMAKE_Fortran_COMPILER_ID}-${CMAKE_Fortran_COMPILER_VERSION}")
+    list(APPEND CMAKE_PREFIX_PATH "${rabe_netcdf_cache_prefix}")
+
     if(RABE_NETCDF_PROVIDER STREQUAL "fetch")
         set(use_system FALSE)
     elseif(RABE_NETCDF_PROVIDER STREQUAL "system")
@@ -199,6 +213,23 @@ function(rabe_configure_netcdf)
         if(NOT TARGET netcdf::netcdff)
             add_library(netcdf::netcdff INTERFACE IMPORTED GLOBAL)
             target_link_libraries(netcdf::netcdff INTERFACE PkgConfig::NetCDF_Fortran)
+            # PkgConfig::NetCDF_Fortran only carries the public "Libs:" line
+            # (-lnetcdff), not the private transitive chain (-lnetcdf, hdf5,
+            # z/dl/m) needed to link our self-built STATIC cache
+            # (BUILD_SHARED_LIBS=OFF). Rather than trust pkg-config's own
+            # --static output blindly - a real system netcdf-fortran's .pc can
+            # report bogus tokens there (observed: a Debian package emitting a
+            # literal "-lHDF5::HDF5" CMake target name) - only add these
+            # explicit, known-good libs when we've actually detected our own
+            # cache (same list rabe_add_fetched_netcdf() links unconditionally
+            # for a fresh build); a real system package is left untouched.
+            if(NetCDF_Fortran_PREFIX STREQUAL rabe_netcdf_cache_prefix)
+                target_link_libraries(netcdf::netcdff INTERFACE
+                    "${rabe_netcdf_cache_prefix}/lib/libnetcdf.a"
+                    "${rabe_netcdf_cache_prefix}/lib/libhdf5_hl.a"
+                    "${rabe_netcdf_cache_prefix}/lib/libhdf5.a"
+                    z dl m)
+            endif()
         endif()
         if(NOT RABE_NETCDF_INCLUDE_DIR)
             find_program(RABE_NF_CONFIG nf-config)
