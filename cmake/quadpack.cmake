@@ -9,4 +9,8 @@ FetchContent_Declare(
                    <SOURCE_DIR>/CMakeLists.txt
 )
 FetchContent_MakeAvailable(quadpack)
-target_compile_options(quadpack PRIVATE -w)
+include(CheckFortranCompilerFlag)
+check_fortran_compiler_flag("-w" RABE_FORTRAN_SUPPORTS_LOWERCASE_W)
+if(RABE_FORTRAN_SUPPORTS_LOWERCASE_W)
+    target_compile_options(quadpack PRIVATE -w)
+endif()

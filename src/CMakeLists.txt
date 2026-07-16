@@ -7,7 +7,7 @@ target_include_directories(git_version_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(read_file_lib STATIC read_file.f90)
 target_include_directories(read_file_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(read_file_lib PRIVATE utils_lib fieldline_lib)
+target_link_libraries(read_file_lib PUBLIC utils_lib fieldline_lib)
 
 add_subdirectory(error_handling)
 add_subdirectory(utils)
