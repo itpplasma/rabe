@@ -34,3 +34,8 @@ add_executable(test_booz_xform_signs.x test_booz_xform_signs.f90)
 target_link_libraries(test_booz_xform_signs.x vmec_lib utils_lib LIBNEO::boozer)
 add_test(TestBoozXformSigns test_booz_xform_signs.x)
 set_tests_properties(TestBoozXformSigns PROPERTIES LABELS "quick")
+
+# Diagnostic-only emitter consumed by plasma-sign-conventions.  It is not a
+# standalone pass/fail test: the independent Cartesian verifier owns the gate.
+add_executable(rabe_cartesian_sign_probe.x rabe_cartesian_sign_probe.f90)
+target_link_libraries(rabe_cartesian_sign_probe.x vmec_lib field_lib fieldline_lib utils_lib)
