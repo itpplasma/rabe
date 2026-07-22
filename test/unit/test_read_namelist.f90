@@ -191,6 +191,21 @@ program test_read_namelist
 
     call remove_test_file(test_file)
 
+    ! Omitting sign_sqrtg selects the field-derived automatic mode.
+    call write_test_file(test_file, &
+                         test_field_file=test_field_file, &
+                         test_M_pol=test_M_pol, &
+                         test_N_tor=test_N_tor, &
+                         test_s_tor=[0.5_dp], &
+                         test_max_n_fieldlines=test_max_n_fieldlines)
+    call read_namelist(test_file)
+    if (sign_sqrtg /= 0.0_dp) then
+        print *, "test_read_namelist failed: automatic sign_sqrtg"
+        print *, "found: ", sign_sqrtg
+        test_failed = .true.
+    end if
+    call remove_test_file(test_file)
+
     if (test_failed) error stop
 
 contains

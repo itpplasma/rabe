@@ -31,6 +31,7 @@ module boozer_field
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
         real(dp) :: R
+        integer :: signgs = 0
     contains
         procedure :: init_from_vmec
         procedure :: init_from_boozmn
@@ -117,12 +118,13 @@ contains
 
     subroutine finish_init(self)
         use vector_potentail_mod, only: torflux
-        use new_vmec_stuff_mod, only: nper, rmajor
+        use new_vmec_stuff_mod, only: nper, rmajor, signgs
         class(boozer_field_t), intent(inout) :: self
 
         self%psi_tor_edge = -torflux*cm2m**2.0_dp*gauss2tesla
         self%nfp = real(nper, dp)
         self%R = rmajor
+        self%signgs = signgs
         initialized = .true.
         self%initialized = .true.
     end subroutine finish_init

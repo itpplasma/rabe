@@ -70,6 +70,7 @@ contains
         unsafe_mode = .false.
         should_calc_shaing_callen = .false.
         n_eta = 100
+        sign_sqrtg = 0.0_dp
         s_tor_min = nan_value
         s_tor_max = nan_value
         n_s_tor = 0
@@ -171,9 +172,10 @@ contains
             print *, "N_tor must be integer"
             is_valid = .false.
         end if
-        if (not_same(sign_sqrtg, 1.0_dp, reltol_in=0.0_dp, abstol_in=tol) .and. &
+        if (not_same(sign_sqrtg, 0.0_dp, reltol_in=0.0_dp, abstol_in=tol) .and. &
+            not_same(sign_sqrtg, 1.0_dp, reltol_in=0.0_dp, abstol_in=tol) .and. &
             not_same(sign_sqrtg, -1.0_dp, reltol_in=0.0_dp, abstol_in=tol)) then
-            print *, "sign_sqrtg must be +-1"
+            print *, "sign_sqrtg must be 0 (automatic), +1, or -1"
             is_valid = .false.
         end if
         if (any(s_tor <= 0.0_dp) .or. any(s_tor >= 1.0_dp)) then

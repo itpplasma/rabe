@@ -185,7 +185,7 @@ nu_star_crit       = flock.calc_nu_star_crit(R)
 !   s_tor_min = 0.1,                     ! \
 !   s_tor_max = 0.9,                     !  } n_s_tor equi-spaced surfaces
 !   n_s_tor   = 9,                       ! /
-    sign_sqrtg = -1.0,                   ! sign of the Jacobian sqrt(g)
+    sign_sqrtg = 0.0,                    ! 0: derive and validate Jacobian sign
     max_n_fieldlines = 200,              ! maximum field lines per surface
     should_calc_shaing_callen = .true.,  ! compute $\lambda_{bB}^\mathrm{LC}$
     n_eta = 100,                         ! level resolution for trapped
@@ -212,9 +212,12 @@ $$
  B(\vartheta, \varphi) = \sum_{m,n} B_{m,n} \cos{(m\vartheta - n\varphi)}. \tag{4}
 $$
 
-The list of surfaces on which to compute can either be given explicitly in `s_tor` OR via a uniform range. `sign_sqrtg` is globally applied
-to all output coefficients to account for different coordinate conventions.
-It should be set to the same value as `signgs` in the `VMEC` output `wout_*.nc` and is usually `sign_sqrtg=-1.0`.
+The list of surfaces on which to compute can either be given explicitly in
+`s_tor` OR via a uniform range. `sign_sqrtg=0` (the default) derives the signed
+Boozer Jacobian from the loaded VMEC, boozmn, or extended-chartmap field tuple.
+An explicit `+1` or `-1` is accepted only when it matches that derived sign;
+RABE aborts on a mismatch before computing coefficients. This prevents a
+coordinate-sign typo from silently flipping every signed output coefficient.
 
 By default (`unsafe_mode = .false.`), any failed sanity check halts the run
 immediately with an error. This is the recommended behaviour as those checks point out not suited inputs e.g. violation of stellarator symmetry.

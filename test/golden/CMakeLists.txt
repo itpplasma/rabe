@@ -20,6 +20,16 @@ if(Python3_FOUND)
         LABELS "golden"
         FIXTURES_REQUIRED GoldenOutput
         SKIP_RETURN_CODE 77)
+
+    add_test(NAME VmecThetaRelabelCoefficients
+             COMMAND ${Python3_EXECUTABLE}
+                     ${CMAKE_CURRENT_SOURCE_DIR}/verify_vmec_theta_relabel.py
+                     --rabe ${CMAKE_BINARY_DIR}/rabe.x
+                     --wout ${CMAKE_CURRENT_BINARY_DIR}/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc
+                     --output-dir ${CMAKE_CURRENT_BINARY_DIR}/vmec_theta_relabel)
+    set_tests_properties(VmecThetaRelabelCoefficients PROPERTIES
+        LABELS "golden;vmec;sign"
+        SKIP_RETURN_CODE 77)
 else()
     message(STATUS "Python3 not found - golden record comparison test disabled")
 endif()

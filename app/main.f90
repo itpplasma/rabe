@@ -40,6 +40,7 @@ program main
     real(dp) :: dr_dAtheta ![rad/Tm/]
     real(dp) :: iota
     real(dp) :: nfp
+    integer :: resolved_sign_sqrtg
 
     type(flock_of_fieldlines_t) :: flock
     logical :: too_strong_violation
@@ -84,6 +85,18 @@ program main
     case default
         error stop "main: unknown field_type"
     end select
+    if (nint(sign_sqrtg) == 0) then
+        resolved_sign_sqrtg = field%signgs
+    else
+        resolved_sign_sqrtg = nint(sign_sqrtg)
+        if (resolved_sign_sqrtg /= field%signgs) then
+            print *, "input sign_sqrtg disagrees with the loaded field"
+            print *, "input sign_sqrtg = ", resolved_sign_sqrtg
+            print *, "field signgs = ", field%signgs
+            error stop "inconsistent Boozer Jacobian sign"
+        end if
+    end if
+    print *, "resolved sign_sqrtg = ", resolved_sign_sqrtg
     do this = 1, n_stor
         call reset_failed_check_counter()
         call field%fix_to_surface(s_tor(this))
@@ -95,7 +108,7 @@ program main
                                       split_maxima(this))
 
         dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
-                                                        nint(sign_sqrtg))
+                                                        resolved_sign_sqrtg)
         R = field%R
         call calc_offset_coefficients(flock, R, dr_dAtheta, &
                                       Lambda_A(this), Lambda_B(this))
