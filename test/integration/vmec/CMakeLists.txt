@@ -39,3 +39,14 @@ set_tests_properties(TestBoozXformSigns PROPERTIES LABELS "quick")
 # standalone pass/fail test: the independent Cartesian verifier owns the gate.
 add_executable(rabe_cartesian_sign_probe.x rabe_cartesian_sign_probe.f90)
 target_link_libraries(rabe_cartesian_sign_probe.x vmec_lib field_lib fieldline_lib utils_lib)
+
+# Diagnostic-only serializer emitter consumed by plasma-sign-conventions. The
+# independent Python verifier decodes both files and owns the pass/fail gate.
+add_executable(rabe_serializer_sign_probe.x rabe_serializer_sign_probe.f90)
+target_link_libraries(
+    rabe_serializer_sign_probe.x
+    vmec_lib
+    utils_lib
+    netcdf_lib
+    LIBNEO::boozer
+)

@@ -15,13 +15,13 @@ program rabe_cartesian_sign_probe
     implicit none
 
     character(len=*), parameter :: chartmap_file = 'input/circ_chartmap.nc'
-    integer, parameter :: n_points = 4
+    integer, parameter :: n_points = 8
     real(dp), parameter :: twopi = 8.0_dp*atan(1.0_dp)
-    integer, parameter :: rho_index(n_points) = [5, 9, 13, 17]
+    integer, parameter :: rho_index(n_points) = [5, 5, 9, 9, 13, 13, 17, 17]
     real(dp), parameter :: rho(n_points) = &
         0.001_dp + real(rho_index, dp)*(1.0_dp - 0.001_dp)/19.0_dp
-    integer, parameter :: theta_index(n_points) = [3, 8, 14, 19]
-    integer, parameter :: zeta_index(n_points) = [4, 10, 16, 21]
+    integer, parameter :: theta_index(n_points) = [3, 3, 8, 8, 14, 14, 19, 19]
+    integer, parameter :: zeta_index(n_points) = [4, 10, 4, 10, 4, 10, 4, 10]
 
     type(boozer_field_t) :: field
     type(fourier_field_t) :: fourier
