@@ -38,7 +38,6 @@ function(rabe_check_netcdf_fortran result_var)
 
     if(check_result EQUAL 0)
         set(${result_var} TRUE PARENT_SCOPE)
-        set(RABE_NETCDF_INCLUDE_DIR "${RABE_NETCDF_INCLUDE_DIR}" PARENT_SCOPE)
     else()
         set(${result_var} FALSE PARENT_SCOPE)
     endif()
@@ -186,8 +185,6 @@ function(rabe_add_fetched_netcdf)
         INTERFACE_LINK_LIBRARIES netcdf::netcdf
     )
     add_dependencies(netcdf::netcdff rabe_netcdf_fortran_external)
-
-    set(RABE_NETCDF_INCLUDE_DIR "${deps_prefix}/include" CACHE PATH "" FORCE)
 endfunction()
 
 function(rabe_configure_netcdf)
@@ -223,21 +220,17 @@ function(rabe_configure_netcdf)
             # explicit, known-good libs when we've actually detected our own
             # cache (same list rabe_add_fetched_netcdf() links unconditionally
             # for a fresh build); a real system package is left untouched.
-            if(NetCDF_Fortran_PREFIX STREQUAL rabe_netcdf_cache_prefix)
-                target_link_libraries(netcdf::netcdff INTERFACE
-                    "${rabe_netcdf_cache_prefix}/lib/libnetcdf.a"
-                    "${rabe_netcdf_cache_prefix}/lib/libhdf5_hl.a"
-                    "${rabe_netcdf_cache_prefix}/lib/libhdf5.a"
-                    z dl m)
+            if(EXISTS "${rabe_netcdf_cache_prefix}")
+                file(REAL_PATH "${NetCDF_Fortran_PREFIX}" _rabe_ncf_prefix_real)
+                file(REAL_PATH "${rabe_netcdf_cache_prefix}" _rabe_cache_prefix_real)
+                if(_rabe_ncf_prefix_real STREQUAL _rabe_cache_prefix_real)
+                    target_link_libraries(netcdf::netcdff INTERFACE
+                        "${rabe_netcdf_cache_prefix}/lib/libnetcdf.a"
+                        "${rabe_netcdf_cache_prefix}/lib/libhdf5_hl.a"
+                        "${rabe_netcdf_cache_prefix}/lib/libhdf5.a"
+                        z dl m)
+                endif()
             endif()
-        endif()
-        if(NOT RABE_NETCDF_INCLUDE_DIR)
-            find_program(RABE_NF_CONFIG nf-config)
-            execute_process(
-                COMMAND ${RABE_NF_CONFIG} --includedir
-                OUTPUT_VARIABLE RABE_NETCDF_INCLUDE_DIR
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
         endif()
         message(STATUS "Using system NetCDF-Fortran")
     else()
