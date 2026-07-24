@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core", "f90wrap>=0.3.0", "numpy"]
+requires = ["scikit-build-core", "f90wrap @ git+https://github.com/krystophny/f90wrap.git@fix-issue-378-flang-handle-size", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]

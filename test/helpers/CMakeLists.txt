@@ -11,7 +11,6 @@ add_library(helpers_lib STATIC
 target_link_libraries(helpers_lib PRIVATE offset_lib
                                           utils_lib
                                           field_lib
-                                          fourier_field_lib
                                           vmec_lib
                                           fieldline_lib
                                           shaing_callen_lib
