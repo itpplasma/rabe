@@ -19,18 +19,17 @@ function(rabe_add_libneo)
     string(APPEND CMAKE_Fortran_FLAGS_DEBUG   " -w")
     string(APPEND CMAKE_Fortran_FLAGS_RELEASE " -w")
 
-    if(LIBNEO_REF STREQUAL "")
-        set(_libneo_ref "54e372f2ef15cf6cf0f36d734500c64d10cd5ada")
-    else()
-        set(_libneo_ref "${LIBNEO_REF}")
-    endif()
-
     if(LIBNEO_PATH AND EXISTS "${LIBNEO_PATH}")
         message(STATUS "Using libneo in ${LIBNEO_PATH}")
         add_subdirectory("${LIBNEO_PATH}"
                          "${CMAKE_CURRENT_BINARY_DIR}/libneo"
                          EXCLUDE_FROM_ALL)
     else()
+        if(LIBNEO_REF STREQUAL "")
+            set(_libneo_ref "54e372f2ef15cf6cf0f36d734500c64d10cd5ada")
+        else()
+            set(_libneo_ref "${LIBNEO_REF}")
+        endif()
         FetchContent_Declare(
             libneo
             GIT_REPOSITORY https://github.com/itpplasma/libneo.git
