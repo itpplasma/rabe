@@ -23,6 +23,14 @@ endif()
 add_subdirectory(plot_lib)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/plot_lib)
 
+# Under flang, CMake/Ninja's dyndep dependency
+# scanning always writes a preprocessed copy to disk before compiling when
+# preprocessing is enabled, and flang's preprocessor output corrupts
+# backslash escapes in string literals (e.g. LaTeX labels like "$\pi$"
+# become "$\\pi$"), breaking matplotlib label parsing at runtime. Since
+# nothing here needs preprocessing anyway, skip it outright to avoid the bug.
+set(CMAKE_Fortran_PREPROCESS OFF)
+
 add_subdirectory(helpers)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/helpers)
 
@@ -38,7 +46,7 @@ else()
 endif()
 add_subdirectory(golden)
 
- # Private test data and comparisons (not available in public repo)
+# Private test data and comparisons (not available in public repo)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/internal/CMakeLists.txt)
     add_subdirectory(internal)
 endif()
