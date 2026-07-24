@@ -9,7 +9,7 @@ ifeq ($(origin LIBNEO_PATH),command line)
   _LIBNEO_PATH_ARG := -DLIBNEO_PATH=$(LIBNEO_PATH)
 endif
 
-.PHONY: all build test test_failed install clean plot golden golden_run dist internal python
+.PHONY: all build test test_failed install clean clean_incl_netcdf_cache plot golden golden_run dist internal python
 all: build
 
 build/CMakeCache.txt:
@@ -50,6 +50,10 @@ golden_update: build/test/golden/rabe.nc
 
 clean:
 	rm -rf build
+
+# wipe also the persistent, compiler-keyed NetCDF cache (see cmake/netcdf.cmake)
+clean_incl_netcdf_cache: clean
+	rm -rf .cache
 
 dist:
 	git archive --format=tar.gz --prefix=rabe/ HEAD -o rabe.tar.gz

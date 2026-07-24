@@ -1,14 +1,22 @@
+include(CheckLinkerFlag)
+
+# A few test programs pass internal procedures as callback arguments (e.g. to
+# quadpack via integrate_1d), which requires an executable-stack trampoline.
+# this is not a safety issue for test executables, and infrastructures that
+# do not allow trampolines a priori will fail the build with an error anyway.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    # A few test programs pass internal procedures as callback arguments,
-    # which gfortran implements via stack trampolines.
-    # We silence respective warnings in test/ only as for the executables
-    # this is not a safety issue and infrastructures that do not allow
-    # trampolins a priori will fail the build with an error anyway.
-    # --no-warn-execstack is a fairly recent GNU ld addition, so probe first
-    include(CheckLinkerFlag)
+    # gfortran already marks the stack executable (GNU_STACK RWE) for this
+    # pattern; we only need to silence the resulting linker warning.
     check_linker_flag(Fortran "-Wl,--no-warn-execstack" SUPPORTS_NO_WARN_EXECSTACK)
     if(SUPPORTS_NO_WARN_EXECSTACK)
         add_link_options(-Wl,--no-warn-execstack)
+    endif()
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "LLVMFlang")
+    # Unlike gfortran, flang does NOT mark the stack executable for this same
+    # trampoline pattern (GNU_STACK comes out RW), so request it explicitly.
+    check_linker_flag(Fortran "-Wl,-z,execstack" SUPPORTS_EXECSTACK)
+    if(SUPPORTS_EXECSTACK)
+        add_link_options(-Wl,-z,execstack)
     endif()
 endif()
 
