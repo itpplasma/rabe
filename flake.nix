@@ -17,6 +17,7 @@
         pkgs.gnumake
         pkgs.pkg-config
         pkgs.git
+        pkgs.zlib.dev
         pkgs.netcdf
         pkgs.netcdffortran
       ];
