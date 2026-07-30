@@ -8,6 +8,10 @@ elseif (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 elseif (CMAKE_Fortran_COMPILER_ID MATCHES "LLVMFlang")
   message(STATUS "Setting LLVM flang flags.")
   set(CMAKE_Fortran_FLAGS_RELEASE " -O2 -cpp")
+  if(APPLE)
+    # overwrite the flang incompatible MacOS default flag -dynamiclib
+    set(CMAKE_SHARED_MODULE_CREATE_Fortran_FLAGS "-shared")
+  endif()
 endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   set(MY_DEBUG_FLAG_LIST
