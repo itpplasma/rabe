@@ -4,22 +4,25 @@
   # nixos-22.11 pins gfortran 11 + glibc 2.35, the toolchain the committed
   # golden record was produced on; newer compilers/libm drift past rtol=1e-10.
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+  inputs.fortio = {
+    url = "github:lazy-fortran/fortio/b6a0c57e7a7577612637ed1619c3bc50d26c2556";
+    flake = false;
+  };
+  inputs.libneo = {
+    url = "github:itpplasma/libneo/afa0e4243e5e3f3e41110960f19cd0f340834988";
+    flake = false;
+  };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, fortio, libneo }:
     let
       systems = [ "x86_64-linux" ];
       forAll = f: nixpkgs.lib.genAttrs systems (s: f nixpkgs.legacyPackages.${s});
-      # Default stdenv on this pin is gcc 11, so netcdf-fortran's .mod files
-      # match the gfortran the project is built with.
       toolchain = pkgs: [
         pkgs.gfortran
         pkgs.cmake
         pkgs.gnumake
         pkgs.pkg-config
         pkgs.git
-        pkgs.zlib.dev
-        pkgs.netcdf
-        pkgs.netcdffortran
       ];
       # Python for the golden-record compare; only needed where the test runs.
       pyenv = pkgs: pkgs.python3.withPackages (ps: [ ps.xarray ps.numpy ps.netcdf4 ]);
@@ -27,6 +30,7 @@
         pkgs.mkShell {
           packages = packages;
           FC = "${pkgs.gfortran}/bin/gfortran";
+          CMAKE_ARGS = "-DFETCHCONTENT_SOURCE_DIR_FORTIO=${fortio} -DFETCHCONTENT_SOURCE_DIR_LIBNEO=${libneo}";
         };
     in {
       devShells = forAll (pkgs: {
