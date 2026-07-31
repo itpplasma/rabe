@@ -5,7 +5,7 @@
   # golden record was produced on; newer compilers/libm drift past rtol=1e-10.
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
   inputs.fortio = {
-    url = "github:lazy-fortran/fortio/b6a0c57e7a7577612637ed1619c3bc50d26c2556";
+    url = "github:lazy-fortran/fortio/ce5c7257563648dc5afbdfbe5b5a91181bf06912";
     flake = false;
   };
   inputs.libneo = {
