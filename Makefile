@@ -13,7 +13,7 @@ endif
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(CMAKE_ARGS) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
 
 build: build/CMakeCache.txt
 	cmake --build build

@@ -4,16 +4,8 @@
   # nixos-22.11 pins gfortran 11 + glibc 2.35, the toolchain the committed
   # golden record was produced on; newer compilers/libm drift past rtol=1e-10.
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
-  inputs.fortio = {
-    url = "github:lazy-fortran/fortio/ce5c7257563648dc5afbdfbe5b5a91181bf06912";
-    flake = false;
-  };
-  inputs.libneo = {
-    url = "github:itpplasma/libneo/afa0e4243e5e3f3e41110960f19cd0f340834988";
-    flake = false;
-  };
 
-  outputs = { self, nixpkgs, fortio, libneo }:
+  outputs = { self, nixpkgs }:
     let
       systems = [ "x86_64-linux" ];
       forAll = f: nixpkgs.lib.genAttrs systems (s: f nixpkgs.legacyPackages.${s});
@@ -30,7 +22,6 @@
         pkgs.mkShell {
           packages = packages;
           FC = "${pkgs.gfortran}/bin/gfortran";
-          CMAKE_ARGS = "-DFETCHCONTENT_SOURCE_DIR_FORTIO=${fortio} -DFETCHCONTENT_SOURCE_DIR_LIBNEO=${libneo}";
         };
     in {
       devShells = forAll (pkgs: {

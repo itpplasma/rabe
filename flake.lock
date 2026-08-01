@@ -1,39 +1,5 @@
 {
   "nodes": {
-    "fortio": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785517339,
-        "narHash": "sha256-ate1VFMAlVi+jhDMkbiSUK0AwOefk8oV6o+xiln0uFI=",
-        "owner": "lazy-fortran",
-        "repo": "fortio",
-        "rev": "ce5c7257563648dc5afbdfbe5b5a91181bf06912",
-        "type": "github"
-      },
-      "original": {
-        "owner": "lazy-fortran",
-        "repo": "fortio",
-        "rev": "ce5c7257563648dc5afbdfbe5b5a91181bf06912",
-        "type": "github"
-      }
-    },
-    "libneo": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785449743,
-        "narHash": "sha256-MTt9MkthN5WMbVlyrF2GTZyXLTykgJu2c5K3km/tkJc=",
-        "owner": "itpplasma",
-        "repo": "libneo",
-        "rev": "afa0e4243e5e3f3e41110960f19cd0f340834988",
-        "type": "github"
-      },
-      "original": {
-        "owner": "itpplasma",
-        "repo": "libneo",
-        "rev": "afa0e4243e5e3f3e41110960f19cd0f340834988",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1688392541,
@@ -52,8 +18,6 @@
     },
     "root": {
       "inputs": {
-        "fortio": "fortio",
-        "libneo": "libneo",
         "nixpkgs": "nixpkgs"
       }
     }
