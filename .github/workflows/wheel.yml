@@ -45,7 +45,9 @@ jobs:
             PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
             MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_target }}
 
-          CIBW_TEST_COMMAND: "python {project}/python/check_symbols.py"
+          CIBW_TEST_COMMAND: >-
+            python {project}/python/test/check_symbols.py &&
+            python {project}/python/test/test_docs.py
 
           CIBW_BUILD_VERBOSITY: 3
 
