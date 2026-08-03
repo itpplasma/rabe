@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'pypi-*'
+  schedule:
+    - cron: '23 1 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -20,12 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Fortran
-        if: runner.os == 'macOS'
-        uses: fortran-lang/setup-fortran@v1
-        with:
-          compiler: gcc
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22
         env:
@@ -39,9 +35,9 @@ jobs:
             dnf install -y netcdf-fortran-devel gcc-gfortran cmake
 
           CIBW_ARCHS_MACOS: auto
-          CIBW_BEFORE_ALL_MACOS: brew install netcdf-fortran pkg-config
+          CIBW_BEFORE_ALL_MACOS: brew install gcc netcdf-fortran pkg-config
           CIBW_ENVIRONMENT_MACOS: >-
-            FC=$FC
+            FC=$(brew --prefix)/bin/gfortran
             PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix netcdf-fortran)/lib/pkgconfig
             MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_target }}
 
