@@ -328,7 +328,7 @@ See also [`CITATION.cff`](CITATION.cff) for machine-readable citation metadata.
 
 ## References
 
-[1] G. S. Grassler, C. G. Albert, S. V. Kasilov, and W. Kernbichler, *Asymptotic modeling of the bootstrap and Ware pinch effect in near omnigenous stellarators*, Physics of Plasmas, 33(7). [doi:10.1063/5.0332431](https://doi.org/10.1063/5.0332431) (2026)
+[1] Georg S. Grassler, Christopher G. Albert, Sergei V. Kasilov, Winfried Kernbichler, *Asymptotic modeling of the bootstrap and Ware pinch effect in near omnigenous stellarators*, Phys. Plasmas; 33 (7): 070703. [doi:10.1063/5.0332431](https://doi.org/10.1063/5.0332431) (2026)
 
 [2] C.G Albert et al., *On the convergence of bootstrap current to the Shaing–Callen limit in stellarators*, Journal of Plasma Physics, 91(3), p. E77. [doi:10.1017/S0022377825000200](https://doi.org/10.1017/S0022377825000200) (2025)
 

@@ -1,1 +1,1 @@
-{"real": {"dp": "double"}}
+{"real": {"dp": "double", "8": "double"}}

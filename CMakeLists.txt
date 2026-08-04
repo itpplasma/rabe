@@ -11,6 +11,7 @@ rabe_configure_netcdf()
 
 # required for fetching dependencies
 find_package(Git REQUIRED)
+include(fortio)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/HEAD)
     set(GIT_HEAD_DEPS
