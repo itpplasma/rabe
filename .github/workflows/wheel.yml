@@ -34,7 +34,7 @@ jobs:
             dnf install -y gcc-gfortran cmake
 
           CIBW_ARCHS_MACOS: auto
-          CIBW_BEFORE_ALL_MACOS: brew install gcc gfortran
+          CIBW_BEFORE_ALL_MACOS: brew install gcc
           CIBW_ENVIRONMENT_MACOS: >-
             FC=$(brew --prefix)/bin/gfortran
             MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_target }}
