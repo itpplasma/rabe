@@ -6,11 +6,10 @@ enable_language(Fortran)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(compiler)
-include(netcdf)
-rabe_configure_netcdf()
 
 # required for fetching dependencies
 find_package(Git REQUIRED)
+
 include(fortio)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/HEAD)

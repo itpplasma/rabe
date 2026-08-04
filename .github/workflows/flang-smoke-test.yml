@@ -1,8 +1,6 @@
 name: flang smoke test
 
-# Runs nightly rather than on every push: building netcdf-fortran from source
-# with flang (no prebuilt package exists) adds significant time,
-# so this is kept off the normal per-push feedback loop.
+# Runs nightly rather than on every push: LLVM/flang is still only secondary
 on:
   schedule:
     - cron: '0 3 * * *'

@@ -15,5 +15,4 @@ external/
 .worktrees/
 *.tar.gz
 *.png
-.cache
 FLANG_MACOS.md
