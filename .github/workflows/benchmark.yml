@@ -25,12 +25,15 @@ jobs:
       with:
         python-version: '3.12'
 
+    # rabe itself no longer needs system NetCDF (fortio replaced it),
+    # but baseline build here does - remove once baseline is updated on main
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           gfortran cmake make \
-          libblas-dev liblapack-dev libsuitesparse-dev pkg-config
+          libblas-dev liblapack-dev libsuitesparse-dev pkg-config \
+          libnetcdf-dev libnetcdff-dev
         pip install numpy
 
     - name: Determine baseline ref
