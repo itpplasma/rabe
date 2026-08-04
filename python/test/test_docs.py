@@ -1,3 +1,4 @@
+import inspect
 import re
 
 from rabe.fieldline_mod import FlockOfFieldlines
@@ -27,8 +28,12 @@ flock : Flock_Of_Fieldlines_T
 
 
 def split_sections(doc):
-    """Return (summary, parameter block) of a numpydoc-style docstring."""
-    summary, _, rest = doc.partition("Parameters")
+    """Return (summary, parameter block) of a numpydoc-style docstring.
+
+    f90wrap indents the docstring to the level of the generated `def`, so
+    strip that common indentation before matching line starts.
+    """
+    summary, _, rest = inspect.cleandoc(doc).partition("Parameters")
     return summary, rest.partition("Returns")[0]
 
 
@@ -79,6 +84,12 @@ def test_every_parameter_is_described(doc, n_params=7, min_words=3):
 
 if __name__ == "__main__":
     doc = DOC
+    print("--------------------------------------")
+    print("Sample testing generated docstring ...")
     has_no_prose = test_summary_has_prose(doc)
     has_no_parameter = test_every_parameter_is_described(doc)
-    assert not (has_no_prose or has_no_parameter)
+    assert not (
+        has_no_prose or has_no_parameter
+    ), "Docstring test failed - see output above"
+    print("Docstring test passed!")
+    print("--------------------------------------")
