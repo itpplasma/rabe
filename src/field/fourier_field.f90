@@ -63,7 +63,13 @@ contains
         integer, parameter :: n_grid_default = 200
 
         integer :: n_theta, n_phi, i_theta, i_phi
+        integer :: number_of_modes, i_mode
+        complex(dp) :: imag
+        complex(dp), dimension(:), allocatable :: exp_dtheta, exp_dphi
+        complex(dp), dimension(:), allocatable :: exp_phi, exp_phase
+        real(dp) :: dtheta, dphi, acc
         real(dp), allocatable :: theta(:), phi(:), grid_B(:, :)
+        real(dp), allocatable :: m_real(:), n_real(:)
 
         field%B_theta_covariant = B_theta_covariant
         field%B_phi_covariant = B_phi_covariant
@@ -96,11 +102,32 @@ contains
         call linspace(0.0_dp, 2.0_dp*pi, n_theta, theta)
         call linspace(0.0_dp, 2.0_dp*pi/field%nfp, n_phi, phi)
 
+        number_of_modes = size(m)
+        allocate (m_real(number_of_modes), n_real(number_of_modes))
+        m_real = real(m, dp)
+        n_real = real(n, dp)*field%nfp
+
+        allocate (exp_dtheta(number_of_modes), exp_dphi(number_of_modes))
+        imag = (0.0_dp, 1.0_dp)
+        dtheta = theta(2) - theta(1)
+        exp_dtheta = exp(imag*m_real*dtheta)
+        dphi = phi(2) - phi(1)
+        exp_dphi = exp(-imag*n_real*dphi)
+
+        allocate (exp_phi(number_of_modes), exp_phase(number_of_modes))
+        exp_phi = (1.0_dp, 0.0_dp)
+
         do i_phi = 1, n_phi
+            exp_phase = exp_phi
             do i_theta = 1, n_theta
-                grid_B(i_theta, i_phi) = sum(B_mn*cos(real(m, dp)*theta(i_theta) &
-                                                    - real(n, dp)*field%nfp*phi(i_phi)))
+                acc = 0.0_dp
+                do i_mode = 1, number_of_modes
+                    acc = acc + B_mn(i_mode)*real(exp_phase(i_mode), dp)
+                end do
+                grid_B(i_theta, i_phi) = acc
+                exp_phase = exp_phase*exp_dtheta
             end do
+            exp_phi = exp_phi*exp_dphi
         end do
 
         call construct_splines_2d( &
