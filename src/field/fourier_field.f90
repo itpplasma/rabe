@@ -42,7 +42,7 @@ contains
     !! the number of field periods `nfp`.
     subroutine fourier_field_init(field, m, n, B_mn, &
                                   B_theta_covariant, B_phi_covariant, &
-                                  nfp, n_grid)
+                                  nfp, n_grid_in)
         use utils, only: linspace
         type(fourier_field_t), intent(inout) :: field
         integer, intent(in) :: m(:)
@@ -57,19 +57,12 @@ contains
             !! covariant toroidal component of B in T*m
         integer, intent(in), optional :: nfp
             !! number of field periods
-        integer, intent(in), optional :: n_grid
+        integer, intent(in), optional :: n_grid_in
             !! spline grid points per angle direction
 
-        integer, parameter :: n_grid_default = 200
-
-        integer :: n_theta, n_phi, i_theta, i_phi
-        integer :: number_of_modes, i_mode
-        complex(dp) :: imag
-        complex(dp), dimension(:), allocatable :: exp_dtheta, exp_dphi
-        complex(dp), dimension(:), allocatable :: exp_phi, exp_phase
-        real(dp) :: dtheta, dphi, acc
-        real(dp), allocatable :: theta(:), phi(:), grid_B(:, :)
-        real(dp), allocatable :: m_real(:), n_real(:)
+        integer, parameter :: fft_default = 256, n_grid_max = 1025
+        integer :: n_grid, n_fft
+        real(dp), allocatable :: theta(:), phi(:), grid_B(:, :), fft_B(:, :)
 
         field%B_theta_covariant = B_theta_covariant
         field%B_phi_covariant = B_phi_covariant
@@ -83,52 +76,39 @@ contains
             error stop
         end if
 
-        if (.not. present(n_grid)) then
-            n_theta = n_grid_default
-            n_phi = n_grid_default
-        elseif (n_grid >= 2) then
-            n_theta = n_grid
-            n_phi = n_grid
+        field%mn_max = max(maxval(abs(m)), maxval(abs(n)))
+        if (.not. present(n_grid_in)) then
+            n_fft = next_power_of_two(max(fft_default, 2*field%mn_max + 1))
+            n_grid = n_fft + 1 ! closed grid for periodic spline
+            if (n_grid > n_grid_max) then
+                print *, "Error: Too high Fourier mode to be resolved ", &
+                    "by maximum grid size!"
+                print *, "m_max = ", maxval(abs(m))
+                print *, "n_max = ", maxval(abs(n))
+                print *, "needed n_grid = ", n_grid, " > n_grid_max = ", n_grid_max
+                error stop
+            end if
+        elseif (n_grid_in >= 2 .and. n_grid_in <= n_grid_max) then
+            n_fft = next_power_of_two(n_grid_in - 1)
+            n_grid = n_fft + 1 ! closed grid for periodic spline
         else
-            print *, "Error: n_grid must be at least 2!"
+            print *, "Error: n_grid must be between 2 and n_grid_max = ", n_grid_max
+            print *, "n_grid_in = ", n_grid_in
             error stop
         end if
-        field%n_grid = n_theta
-        field%mn_max = max(maxval(abs(m)), maxval(abs(n)))
+        field%n_grid = n_grid
 
-        allocate (theta(n_theta), phi(n_phi))
-        allocate (grid_B(n_theta, n_phi))
+        allocate (theta(n_grid), phi(n_grid))
+        allocate (grid_B(n_grid, n_grid))
 
-        call linspace(0.0_dp, 2.0_dp*pi, n_theta, theta)
-        call linspace(0.0_dp, 2.0_dp*pi/field%nfp, n_phi, phi)
+        call linspace(0.0_dp, 2.0_dp*pi, n_grid, theta)
+        call linspace(0.0_dp, 2.0_dp*pi/field%nfp, n_grid, phi)
 
-        number_of_modes = size(m)
-        allocate (m_real(number_of_modes), n_real(number_of_modes))
-        m_real = real(m, dp)
-        n_real = real(n, dp)*field%nfp
-
-        allocate (exp_dtheta(number_of_modes), exp_dphi(number_of_modes))
-        imag = (0.0_dp, 1.0_dp)
-        dtheta = theta(2) - theta(1)
-        exp_dtheta = exp(imag*m_real*dtheta)
-        dphi = phi(2) - phi(1)
-        exp_dphi = exp(-imag*n_real*dphi)
-
-        allocate (exp_phi(number_of_modes), exp_phase(number_of_modes))
-        exp_phi = (1.0_dp, 0.0_dp)
-
-        do i_phi = 1, n_phi
-            exp_phase = exp_phi
-            do i_theta = 1, n_theta
-                acc = 0.0_dp
-                do i_mode = 1, number_of_modes
-                    acc = acc + B_mn(i_mode)*real(exp_phase(i_mode), dp)
-                end do
-                grid_B(i_theta, i_phi) = acc
-                exp_phase = exp_phase*exp_dtheta
-            end do
-            exp_phi = exp_phi*exp_dphi
-        end do
+        allocate (fft_B(n_fft, n_fft))
+        call ifft_modes_to_B(m, n, B_mn, n_fft, fft_B)
+        grid_B(1:n_fft, 1:n_fft) = fft_B
+        grid_B(n_grid, 1:n_fft) = grid_B(1, 1:n_fft)
+        grid_B(:, n_grid) = grid_B(:, 1)
 
         call construct_splines_2d( &
             x_min=[0.0_dp, 0.0_dp], &
@@ -141,6 +121,125 @@ contains
         field%initialized = .true.
 
     end subroutine fourier_field_init
+
+    function next_power_of_two(n) result(p)
+        integer, intent(in) :: n
+        integer :: p
+
+        if (n < 1) then
+            print *, "Error: next_power_of_two: n must be positive!"
+            error stop
+        end if
+
+        p = 1
+        do while (p < n)
+            p = 2*p
+        end do
+    end function next_power_of_two
+
+    !> In-place radix-2 FFT with a positive phase kernel and no normalisation,
+    !! i.e. `z_out(p) = sum_j z_in(j) * exp(2*pi*i*(j-1)*(p-1)/n)`.
+    !!
+    !! `size(z)` must be a power of two. Decimation in time: the input is first
+    !! put into bit-reversed order, then combined by butterflies over
+    !! `log2(n)` stages, each stage reusing the partial results of the previous
+    !! one.
+    subroutine fft_1d(z)
+        complex(dp), intent(inout) :: z(:)
+
+        integer :: n_points, i, j, k, stage, step
+        complex(dp) :: twiddle, twiddle_step, butterfly
+
+        n_points = size(z)
+
+        ! Bit-reversal permutation.
+        j = 1
+        do i = 1, n_points - 1
+            if (i < j) then
+                butterfly = z(j)
+                z(j) = z(i)
+                z(i) = butterfly
+            end if
+            k = n_points/2
+            do
+                if (k < 1) exit
+                if (j <= k) exit
+                j = j - k
+                k = k/2
+            end do
+            j = j + k
+        end do
+
+        ! Butterfly stages.
+        stage = 1
+        do while (stage < n_points)
+            step = 2*stage
+            twiddle_step = cmplx(cos(pi/real(stage, dp)), &
+                                 sin(pi/real(stage, dp)), dp)
+            twiddle = (1.0_dp, 0.0_dp)
+            do k = 1, stage
+                do i = k, n_points, step
+                    butterfly = twiddle*z(i + stage)
+                    z(i + stage) = z(i) - butterfly
+                    z(i) = z(i) + butterfly
+                end do
+                twiddle = twiddle*twiddle_step
+            end do
+            stage = step
+        end do
+
+    end subroutine fft_1d
+
+    !> Evaluate `B(theta, phi) = sum_k B_mn(k)*cos(m(k)*theta - nfp*n(k)*phi)`
+    !! on the equidistant angle grid by a single 2D inverse FFT.
+    !!
+    !! On the grid `theta_j = 2*pi*(j-1)/n_fft`, `phi_l = 2*pi/nfp*(l-1)/n_fft`
+    !! the phase becomes `2*pi*(m*(j-1)/n_fft - n*(l-1)/n_fft)` — `nfp` cancels
+    !! and every phase is a root of unity. Writing the cosine as
+    !! `(exp(i*phase) + exp(-i*phase))/2` and scattering `B_mn/2` onto both
+    !! `(m, -n)` and `(-m, n)` therefore turns the mode sum into an unnormalised
+    !! 2D inverse DFT of a Hermitian spectrum, whose transform is real.
+    subroutine ifft_modes_to_B(m, n, B_mn, n_fft, fft_B)
+        integer, intent(in) :: m(:)
+            !! poloidal mode numbers (flat array)
+        integer, intent(in) :: n(:)
+            !! toroidal mode numbers normalised to nfp (flat array)
+        real(dp), intent(in) :: B_mn(:)
+            !! Fourier coefficients of B in Tesla (flat array)
+        integer, intent(in) :: n_fft
+            !! transform length per direction, a power of two above 2*mn_max
+        real(dp), intent(out) :: fft_B(:, :)
+            !! field strength on the open (periodic point excluded) fft angle grid
+
+        complex(dp), allocatable :: spectrum(:, :), work(:)
+        integer :: i_mode, i_row, i_col
+
+        allocate (spectrum(n_fft, n_fft), work(n_fft))
+        spectrum = (0.0_dp, 0.0_dp)
+
+        do i_mode = 1, size(m)
+            i_row = modulo(m(i_mode), n_fft) + 1
+            i_col = modulo(-n(i_mode), n_fft) + 1
+            spectrum(i_row, i_col) = spectrum(i_row, i_col) &
+                                     + 0.5_dp*B_mn(i_mode)
+            i_row = modulo(-m(i_mode), n_fft) + 1
+            i_col = modulo(n(i_mode), n_fft) + 1
+            spectrum(i_row, i_col) = spectrum(i_row, i_col) &
+                                     + 0.5_dp*B_mn(i_mode)
+        end do
+
+        do i_col = 1, n_fft
+            call fft_1d(spectrum(:, i_col))
+        end do
+        do i_row = 1, n_fft
+            work = spectrum(i_row, :)
+            call fft_1d(work)
+            spectrum(i_row, :) = work
+        end do
+
+        fft_B = real(spectrum, dp)
+
+    end subroutine ifft_modes_to_B
 
     subroutine compute_B_sqrtg_dB_dx(self, theta, phi, B_mod, sqrtg, dB_dx)
         class(fourier_field_t), intent(in) :: self

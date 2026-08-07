@@ -13,7 +13,7 @@ program plot_fourier_field_accuracy
 
     real(dp), parameter :: B_vartheta_covariant = 0.0_dp
     real(dp), parameter :: B_varphi_covariant = 1.0_dp
-    integer, parameter :: n_sweep = 13
+    integer, parameter :: n_sweep = 8
     integer :: n_grids(n_sweep)
     real(dp) :: n_grids_dp(n_sweep)
 
@@ -34,7 +34,7 @@ program plot_fourier_field_accuracy
 
     type(myplot) :: plt
 
-    n_grids = [15, 20, 30, 40, 50, 75, 100, 150, 200, 300, 500, 750, 1000]
+    n_grids = [8, 16, 32, 64, 128, 256, 512, 1024] + 1
 
     k_mode = 0
     do m_idx = 1, n_m
@@ -67,7 +67,7 @@ program plot_fourier_field_accuracy
 
         call fourier_field_init(sfield, m, n, B_modes, &
                                 B_vartheta_covariant, B_varphi_covariant, &
-                                nfp=nfp, n_grid=n_grids(k))
+                                nfp=nfp, n_grid_in=n_grids(k))
 
         max_rel_err_B(k) = 0.0_dp
         max_rel_err_dB(k) = 0.0_dp
