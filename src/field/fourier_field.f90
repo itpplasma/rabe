@@ -37,9 +37,11 @@ contains
     !! `B(theta, phi) = sum_k B_mn(k) * cos(m(k)*theta - nfp*n(k)*phi)`
     !! where `theta` and `phi` are Boozer angles and `nfp` the number of field
     !! periods. During initialisation the series is evaluated on a
-    !! `n_grid` x `n_grid` equidistant grid of the angles, then fits a 2D
+    !! `n_fft` x `n_fft` equidistant grid of the angles via fft, where
+    !! `n_fft` = 2^k >= n_grid_in - 1 for smallest k. It then fits a 2D
     !! periodic quintic spline. Note again that `n` is considered normalized to
-    !! the number of field periods `nfp`.
+    !! the number of field periods `nfp`. If the user does not specificy
+    !! `n_grid_in` explicitly, grid is chosen so Nynquist criterion is satisfied.
     subroutine fourier_field_init(field, m, n, B_mn, &
                                   B_theta_covariant, B_phi_covariant, &
                                   nfp, n_grid_in)
@@ -58,7 +60,7 @@ contains
         integer, intent(in), optional :: nfp
             !! number of field periods
         integer, intent(in), optional :: n_grid_in
-            !! spline grid points per angle direction
+            !! spline grid points per angle (rounded up to 2^k + 1 for fft init)
 
         integer, parameter :: fft_default = 256, n_grid_max = 1025
         integer :: n_grid, n_fft
