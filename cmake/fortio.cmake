@@ -1,10 +1,13 @@
 include(FetchContent)
 
+set(FORTIO_REF "471256b7382afb8f641f37d833cc9172605da018" CACHE STRING
+    "fortio git ref (branch, tag, or SHA) to fetch")
+
 if(NOT TARGET fortio)
     FetchContent_Declare(
         fortio
         GIT_REPOSITORY https://github.com/lazy-fortran/fortio.git
-        GIT_TAG ce5c7257563648dc5afbdfbe5b5a91181bf06912
+        GIT_TAG ${FORTIO_REF}
     )
     FetchContent_MakeAvailable(fortio)
 endif()
