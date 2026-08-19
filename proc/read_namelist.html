@@ -1,0 +1,716 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Asymptotic bootstrap current expressions for near-omnigenous stellarators">
+    <meta name="author" content="Georg Grassler" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>read_namelist &ndash; rabe</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">rabe </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>read_namelist
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 3.6% of total for procedures.">69 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/read_file.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/read_file.f90.html'>read_file.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/read_file.html'>read_file</a></li>
+            <li class="breadcrumb-item active" aria-current="page">read_namelist</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  subroutine read_namelist(filename)  
+</h2>
+        <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='../module/utils.html'>utils</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~read_namelist~~UsesGraph Pages: 1 -->
+<svg id="procread_namelistUsesGraph" width="286pt" height="32pt"
+ viewBox="0.00 0.00 286.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~read_namelist~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~read_namelist~~UsesGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 282,-28 282,4 -4,4"/>
+<!-- proc~read_namelist -->
+<g id="proc~~read_namelist~~UsesGraph_node1" class="node">
+<title>proc~read_namelist</title>
+<polygon fill="none" stroke="black" points="278,-24 190,-24 190,0 278,0 278,-24"/>
+<text text-anchor="middle" x="234" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">read_namelist</text>
+</g>
+<!-- module~utils -->
+<g id="proc~~read_namelist~~UsesGraph_node2" class="node">
+<title>module~utils</title>
+<g id="a_proc~~read_namelist~~UsesGraph_node2"><a xlink:href="../module/utils.html" xlink:title="utils">
+<polygon fill="#337ab7" stroke="#337ab7" points="154,-24 100,-24 100,0 154,0 154,-24"/>
+<text text-anchor="middle" x="127" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">utils</text>
+</a>
+</g>
+</g>
+<!-- proc~read_namelist&#45;&gt;module~utils -->
+<g id="proc~~read_namelist~~UsesGraph_edge1" class="edge">
+<title>proc~read_namelist&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M189.99,-12C181.47,-12 172.6,-12 164.33,-12"/>
+<polygon fill="#000000" stroke="#000000" points="164.24,-8.5 154.24,-12 164.24,-15.5 164.24,-8.5"/>
+</g>
+<!-- module~constants -->
+<g id="proc~~read_namelist~~UsesGraph_node3" class="node">
+<title>module~constants</title>
+<g id="a_proc~~read_namelist~~UsesGraph_node3"><a xlink:href="../module/constants.html" xlink:title="constants">
+<polygon fill="#337ab7" stroke="#337ab7" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">constants</text>
+</a>
+</g>
+</g>
+<!-- module~utils&#45;&gt;module~constants -->
+<g id="proc~~read_namelist~~UsesGraph_edge2" class="edge">
+<title>module~utils&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M99.6,-12C91.73,-12 82.92,-12 74.34,-12"/>
+<polygon fill="#000000" stroke="#000000" points="74.08,-8.5 64.08,-12 74.08,-15.5 74.08,-8.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="518pt" height="32pt"
+ viewBox="0.00 0.00 517.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 513.5,-28 513.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="145.5,-24 72.5,-24 72.5,0 145.5,0 145.5,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-24 164,-24 164,0 234,0 234,-24"/>
+<text text-anchor="middle" x="199" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="310,-24 252,-24 252,0 310,0 310,-24"/>
+<text text-anchor="middle" x="281" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="386,-24 328,-24 328,0 386,0 386,-24"/>
+<text text-anchor="middle" x="357" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="509.5,-24 404.5,-24 404.5,0 509.5,0 509.5,-24"/>
+<text text-anchor="middle" x="457" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-filename~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>filename</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~read_namelist~~CallsGraph Pages: 1 -->
+<svg id="procread_namelistCallsGraph" width="641pt" height="94pt"
+ viewBox="0.00 0.00 641.00 93.78" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~read_namelist~~CallsGraph" class="graph" transform="scale(0.82 0.82) rotate(0) translate(4 111)">
+<title>proc~~read_namelist~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-111 782,-111 782,4 -4,4"/>
+<!-- proc~read_namelist -->
+<g id="proc~~read_namelist~~CallsGraph_node1" class="node">
+<title>proc~read_namelist</title>
+<polygon fill="none" stroke="black" points="88,-45 0,-45 0,-21 88,-21 88,-45"/>
+<text text-anchor="middle" x="44" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50">read_namelist</text>
+</g>
+<!-- proc~check_if_valid_namelist -->
+<g id="proc~~read_namelist~~CallsGraph_node2" class="node">
+<title>proc~check_if_valid_namelist</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node2"><a xlink:href="../proc/check_if_valid_namelist.html" xlink:title="check_if_valid_namelist">
+<polygon fill="#d9534f" stroke="#d9534f" points="262,-66 124,-66 124,-42 262,-42 262,-66"/>
+<text text-anchor="middle" x="193" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_if_valid_namelist</text>
+</a>
+</g>
+</g>
+<!-- proc~read_namelist&#45;&gt;proc~check_if_valid_namelist -->
+<g id="proc~~read_namelist~~CallsGraph_edge1" class="edge">
+<title>proc~read_namelist&#45;&gt;proc~check_if_valid_namelist</title>
+<path fill="none" stroke="#000000" d="M88.31,-39.19C96.43,-40.35 105.15,-41.59 113.95,-42.85"/>
+<polygon fill="#000000" stroke="#000000" points="113.51,-46.32 123.91,-44.27 114.5,-39.39 113.51,-46.32"/>
+</g>
+<!-- proc~linspace -->
+<g id="proc~~read_namelist~~CallsGraph_node3" class="node">
+<title>proc~linspace</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node3"><a xlink:href="../proc/linspace.html" xlink:title="linspace">
+<polygon fill="#d9534f" stroke="#d9534f" points="221.5,-24 164.5,-24 164.5,0 221.5,0 221.5,-24"/>
+<text text-anchor="middle" x="193" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">linspace</text>
+</a>
+</g>
+</g>
+<!-- proc~read_namelist&#45;&gt;proc~linspace -->
+<g id="proc~~read_namelist~~CallsGraph_edge2" class="edge">
+<title>proc~read_namelist&#45;&gt;proc~linspace</title>
+<path fill="none" stroke="#000000" d="M88.31,-26.81C109.22,-23.83 134.09,-20.27 154.22,-17.4"/>
+<polygon fill="#000000" stroke="#000000" points="154.87,-20.84 164.27,-15.96 153.88,-13.91 154.87,-20.84"/>
+</g>
+<!-- interface~not_same -->
+<g id="proc~~read_namelist~~CallsGraph_node4" class="node">
+<title>interface~not_same</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node4"><a xlink:href="../interface/not_same.html" xlink:title="not_same">
+<polygon fill="#a7506f" stroke="#a7506f" points="373.5,-87 309.5,-87 309.5,-63 373.5,-63 373.5,-87"/>
+<text text-anchor="middle" x="341.5" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">not_same</text>
+</a>
+</g>
+</g>
+<!-- proc~check_if_valid_namelist&#45;&gt;interface~not_same -->
+<g id="proc~~read_namelist~~CallsGraph_edge3" class="edge">
+<title>proc~check_if_valid_namelist&#45;&gt;interface~not_same</title>
+<path fill="none" stroke="#000000" d="M262.1,-63.76C274.69,-65.57 287.48,-67.4 298.98,-69.05"/>
+<polygon fill="#000000" stroke="#000000" points="298.73,-72.55 309.13,-70.5 299.73,-65.62 298.73,-72.55"/>
+</g>
+<!-- proc~is_not_integer -->
+<g id="proc~~read_namelist~~CallsGraph_node5" class="node">
+<title>proc~is_not_integer</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node5"><a xlink:href="../proc/is_not_integer.html" xlink:title="is_not_integer">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="385,-45 298,-45 298,-21 385,-21 385,-45"/>
+<text text-anchor="middle" x="341.5" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">is_not_integer</text>
+</a>
+</g>
+</g>
+<!-- proc~check_if_valid_namelist&#45;&gt;proc~is_not_integer -->
+<g id="proc~~read_namelist~~CallsGraph_edge4" class="edge">
+<title>proc~check_if_valid_namelist&#45;&gt;proc~is_not_integer</title>
+<path fill="none" stroke="#000000" d="M262.1,-44.24C270.71,-43 279.41,-41.76 287.73,-40.56"/>
+<polygon fill="#000000" stroke="#000000" points="288.25,-44.03 297.65,-39.14 287.26,-37.1 288.25,-44.03"/>
+</g>
+<!-- proc~not_same_array -->
+<g id="proc~~read_namelist~~CallsGraph_node6" class="node">
+<title>proc~not_same_array</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node6"><a xlink:href="../proc/not_same_array.html" xlink:title="not_same_array">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="659,-107 561,-107 561,-83 659,-83 659,-107"/>
+<text text-anchor="middle" x="610" y="-92.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">not_same_array</text>
+</a>
+</g>
+</g>
+<!-- interface~not_same&#45;&gt;proc~not_same_array -->
+<g id="proc~~read_namelist~~CallsGraph_edge5" class="edge">
+<title>interface~not_same&#45;&gt;proc~not_same_array</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.82,-85.39C388.05,-89.59 405.19,-93.92 421,-96 464.19,-101.68 513.44,-101.16 550.69,-99.37"/>
+<polygon fill="#000000" stroke="#000000" points="551.07,-102.86 560.87,-98.84 550.7,-95.87 551.07,-102.86"/>
+</g>
+<!-- proc~not_same_matrix -->
+<g id="proc~~read_namelist~~CallsGraph_node7" class="node">
+<title>proc~not_same_matrix</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node7"><a xlink:href="../proc/not_same_matrix.html" xlink:title="not_same_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="525,-87 421,-87 421,-63 525,-63 525,-87"/>
+<text text-anchor="middle" x="473" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">not_same_matrix</text>
+</a>
+</g>
+</g>
+<!-- interface~not_same&#45;&gt;proc~not_same_matrix -->
+<g id="proc~~read_namelist~~CallsGraph_edge6" class="edge">
+<title>interface~not_same&#45;&gt;proc~not_same_matrix</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.52,-75C384.68,-75 397.69,-75 410.53,-75"/>
+<polygon fill="#000000" stroke="#000000" points="410.76,-78.5 420.75,-75 410.75,-71.5 410.76,-78.5"/>
+</g>
+<!-- proc~not_same_scalar -->
+<g id="proc~~read_namelist~~CallsGraph_node8" class="node">
+<title>proc~not_same_scalar</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node8"><a xlink:href="../proc/not_same_scalar.html" xlink:title="not_same_scalar">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="524,-45 422,-45 422,-21 524,-21 524,-45"/>
+<text text-anchor="middle" x="473" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">not_same_scalar</text>
+</a>
+</g>
+</g>
+<!-- interface~not_same&#45;&gt;proc~not_same_scalar -->
+<g id="proc~~read_namelist~~CallsGraph_edge7" class="edge">
+<title>interface~not_same&#45;&gt;proc~not_same_scalar</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.52,-64.94C388.91,-59.95 407.82,-53.82 424.94,-48.26"/>
+<polygon fill="#000000" stroke="#000000" points="426.35,-51.49 434.78,-45.07 424.19,-44.83 426.35,-51.49"/>
+</g>
+<!-- proc~contains_nan -->
+<g id="proc~~read_namelist~~CallsGraph_node9" class="node">
+<title>proc~contains_nan</title>
+<g id="a_proc~~read_namelist~~CallsGraph_node9"><a xlink:href="../proc/contains_nan.html" xlink:title="contains_nan">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="778,-107 695,-107 695,-83 778,-83 778,-107"/>
+<text text-anchor="middle" x="736.5" y="-92.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">contains_nan</text>
+</a>
+</g>
+</g>
+<!-- proc~not_same_array&#45;&gt;proc~contains_nan -->
+<g id="proc~~read_namelist~~CallsGraph_edge8" class="edge">
+<title>proc~not_same_array&#45;&gt;proc~contains_nan</title>
+<path fill="none" stroke="#000000" d="M659.13,-95C667.5,-95 676.23,-95 684.67,-95"/>
+<polygon fill="#000000" stroke="#000000" points="684.77,-98.5 694.77,-95 684.77,-91.5 684.77,-98.5"/>
+</g>
+<!-- proc~not_same_matrix&#45;&gt;proc~not_same_array -->
+<g id="proc~~read_namelist~~CallsGraph_edge9" class="edge">
+<title>proc~not_same_matrix&#45;&gt;proc~not_same_array</title>
+<path fill="none" stroke="#000000" d="M525.04,-82.56C533.32,-83.79 541.95,-85.07 550.4,-86.32"/>
+<polygon fill="#000000" stroke="#000000" points="550.16,-89.82 560.57,-87.82 551.19,-82.9 550.16,-89.82"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocread_namelistCallsGraph = svgPanZoom('#procread_namelistCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~read_namelist~~CalledByGraph Pages: 1 -->
+<svg id="procread_namelistCalledByGraph" width="186pt" height="32pt"
+ viewBox="0.00 0.00 186.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~read_namelist~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~read_namelist~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 182,-28 182,4 -4,4"/>
+<!-- proc~read_namelist -->
+<g id="proc~~read_namelist~~CalledByGraph_node1" class="node">
+<title>proc~read_namelist</title>
+<polygon fill="none" stroke="black" points="178,-24 90,-24 90,0 178,0 178,-24"/>
+<text text-anchor="middle" x="134" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">read_namelist</text>
+</g>
+<!-- program~main -->
+<g id="proc~~read_namelist~~CalledByGraph_node2" class="node">
+<title>program~main</title>
+<g id="a_proc~~read_namelist~~CalledByGraph_node2"><a xlink:href="../program/main.html" xlink:title="main">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">main</text>
+</a>
+</g>
+</g>
+<!-- program~main&#45;&gt;proc~read_namelist -->
+<g id="proc~~read_namelist~~CalledByGraph_edge1" class="edge">
+<title>program~main&#45;&gt;proc~read_namelist</title>
+<path fill="none" stroke="#000000" d="M54.23,-12C62.08,-12 70.99,-12 79.93,-12"/>
+<polygon fill="#000000" stroke="#000000" points="79.97,-15.5 89.97,-12 79.97,-8.5 79.97,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              rabe
+ was developed by Georg Grassler<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-08-19T19:14:45.270555+0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1068 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Asymptotic bootstrap current expressions for near-omnigenous stellarators">
+    <meta name="author" content="Georg Grassler" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>All Files &ndash; rabe
+</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">rabe </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="row" id='text'>
+        <div class="col-lg-12">
+			 <h1>Source Files</h1>
+			 <table class="table table-striped">
+			 <thead><tr><th>File</th><th>Description</th></tr></thead>
+			 <tbody>
+			   <tr>
+                 <td><a href='../sourcefile/boozer_field.f90.html'>boozer_field.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/coefficients.f90.html'>coefficients.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/constants.f90.html'>constants.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/deviation.f90.html'>deviation.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/diophantine.f90.html'>diophantine.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/error_handling.f90.html'>error_handling.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/field_along_fieldline.f90.html'>field_along_fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/field_base.f90.html'>field_base.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/field_checks.f90.html'>field_checks.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fieldline.f90.html'>fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fieldline_integrals.f90.html'>fieldline_integrals.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fieldline_integrands.f90.html'>fieldline_integrands.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fieldline_labels.f90.html'>fieldline_labels.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/find_extrema.f90.html'>find_extrema.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fit_functions.f90.html'>fit_functions.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fourier.f90.html'>fourier.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/fourier_field.f90.html'>fourier_field.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/integrate.f90.html'>integrate.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/main.f90.html'>main.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/make_fieldline.f90.html'>make_fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/netcdf.f90.html'>netcdf.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/read_file.f90.html'>read_file.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/shaing_callen.f90.html'>shaing_callen.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/shaing_callen_integration.f90.html'>shaing_callen_integration.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/shaing_callen_wrappers.f90.html'>shaing_callen_wrappers.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/surface_average.f90.html'>surface_average.f90</a></td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../sourcefile/utils.f90.html'>utils.f90</a></td>
+                 <td></td>
+               </tr>
+			 </tbody></table>
+			 <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: file~~graph~~FileGraph Pages: 1 -->
+<svg id="filegraphFileGraph" width="641pt" height="741pt"
+ viewBox="0.00 0.00 641.00 741.22" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="file~~graph~~FileGraph" class="graph" transform="scale(0.65 0.65) rotate(0) translate(4 1133.85)">
+<title>file~~graph~~FileGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-1133.85 980,-1133.85 980,4 -4,4"/>
+<!-- sourcefile~boozer_field.f90 -->
+<g id="file~~graph~~FileGraph_node1" class="node">
+<title>sourcefile~boozer_field.f90</title>
+<g id="a_file~~graph~~FileGraph_node1"><a xlink:href="../sourcefile/boozer_field.f90.html" xlink:title="boozer_field.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="687.5,-695 589.5,-695 589.5,-671 687.5,-671 687.5,-695"/>
+<text text-anchor="middle" x="638.5" y="-680.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">boozer_field.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_node19" class="node">
+<title>sourcefile~main.f90</title>
+<g id="a_file~~graph~~FileGraph_node19"><a xlink:href="../sourcefile/main.f90.html" xlink:title="main.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-66 0,-66 0,-42 60,-42 60,-66"/>
+<text text-anchor="middle" x="30" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">main.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~boozer_field.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge46" class="edge">
+<title>sourcefile~boozer_field.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M589.18,-695.07C577.37,-698.82 564.98,-703.46 554,-709 413.04,-780.1 421.95,-886.31 267.5,-919"/>
+<path fill="none" stroke="#000000" d="M265.5,-919C208.9,-928.16 191.65,-934.66 136.5,-919"/>
+</g>
+<!-- sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_node2" class="node">
+<title>sourcefile~coefficients.f90</title>
+<g id="a_file~~graph~~FileGraph_node2"><a xlink:href="../sourcefile/coefficients.f90.html" xlink:title="coefficients.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="313.5,-971 219.5,-971 219.5,-947 313.5,-947 313.5,-971"/>
+<text text-anchor="middle" x="266.5" y="-956.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">coefficients.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~coefficients.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge47" class="edge">
+<title>sourcefile~coefficients.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M228.38,-946.97C202.68,-938.77 167.63,-927.84 136.5,-919"/>
+</g>
+<!-- sourcefile~constants.f90 -->
+<g id="file~~graph~~FileGraph_node3" class="node">
+<title>sourcefile~constants.f90</title>
+<g id="a_file~~graph~~FileGraph_node3"><a xlink:href="../sourcefile/constants.f90.html" xlink:title="constants.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="976,-695 892,-695 892,-671 976,-671 976,-695"/>
+<text text-anchor="middle" x="934" y="-680.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">constants.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~boozer_field.f90 -->
+<g id="file~~graph~~FileGraph_edge1" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~boozer_field.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-683C770.47,-680.77 729.97,-680.71 697.89,-681.24"/>
+<polygon fill="#000000" stroke="#000000" points="697.71,-677.74 687.78,-681.42 697.85,-684.74 697.71,-677.74"/>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_edge3" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~coefficients.f90</title>
+<path fill="none" stroke="#000000" d="M932.17,-695.1C928.01,-752.45 907.46,-996.19 856,-1048 725.12,-1179.77 618.41,-1123.02 439,-1075"/>
+<path fill="none" stroke="#000000" d="M437,-1075C400.5,-1064.86 389.96,-1063.33 358,-1043 329.48,-1024.86 301.76,-997.2 284.68,-978.63"/>
+<polygon fill="#000000" stroke="#000000" points="287.12,-976.12 277.82,-971.04 281.93,-980.81 287.12,-976.12"/>
+</g>
+<!-- sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_node4" class="node">
+<title>sourcefile~deviation.f90</title>
+<g id="a_file~~graph~~FileGraph_node4"><a xlink:href="../sourcefile/deviation.f90.html" xlink:title="deviation.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="479,-1009 397,-1009 397,-985 479,-985 479,-1009"/>
+<text text-anchor="middle" x="438" y="-994.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">deviation.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge8" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-938C706.98,-999.72 564.19,-1003.62 489.27,-1000.64"/>
+<polygon fill="#000000" stroke="#000000" points="489.31,-997.14 479.16,-1000.18 488.99,-1004.13 489.31,-997.14"/>
+</g>
+<!-- sourcefile~diophantine.f90 -->
+<g id="file~~graph~~FileGraph_node5" class="node">
+<title>sourcefile~diophantine.f90</title>
+<g id="a_file~~graph~~FileGraph_node5"><a xlink:href="../sourcefile/diophantine.f90.html" xlink:title="diophantine.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="856,-835 759,-835 759,-811 856,-811 856,-835"/>
+<text text-anchor="middle" x="807.5" y="-820.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">diophantine.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~diophantine.f90 -->
+<g id="file~~graph~~FileGraph_edge15" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~diophantine.f90</title>
+<path fill="none" stroke="#000000" d="M925.4,-695.24C912.55,-715.41 885.07,-756.35 856,-786 849.58,-792.55 841.99,-798.95 834.78,-804.54"/>
+<polygon fill="#000000" stroke="#000000" points="832.48,-801.89 826.58,-810.69 836.68,-807.49 832.48,-801.89"/>
+</g>
+<!-- sourcefile~field_along_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_node7" class="node">
+<title>sourcefile~field_along_fieldline.f90</title>
+<g id="a_file~~graph~~FileGraph_node7"><a xlink:href="../sourcefile/field_along_fieldline.f90.html" xlink:title="field_along_fieldline.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="708,-341 569,-341 569,-317 708,-317 708,-341"/>
+<text text-anchor="middle" x="638.5" y="-326.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_along_fieldline.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~field_along_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge16" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~field_along_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-329C773.83,-299.93 721.69,-305.11 684.36,-314.28"/>
+<polygon fill="#000000" stroke="#000000" points="683.03,-311.01 674.26,-316.94 684.82,-317.78 683.03,-311.01"/>
+</g>
+<!-- sourcefile~field_base.f90 -->
+<g id="file~~graph~~FileGraph_node8" class="node">
+<title>sourcefile~field_base.f90</title>
+<g id="a_file~~graph~~FileGraph_node8"><a xlink:href="../sourcefile/field_base.f90.html" xlink:title="field_base.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="851,-459 764,-459 764,-435 851,-435 851,-459"/>
+<text text-anchor="middle" x="807.5" y="-444.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_base.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~field_base.f90 -->
+<g id="file~~graph~~FileGraph_edge19" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~field_base.f90</title>
+<path fill="none" stroke="#000000" d="M928.67,-670.79C918.16,-641.85 889.71,-567.22 856,-510 847.16,-494.99 835.38,-479.35 825.77,-467.41"/>
+<polygon fill="#000000" stroke="#000000" points="828.27,-464.94 819.22,-459.43 822.86,-469.38 828.27,-464.94"/>
+</g>
+<!-- sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_node9" class="node">
+<title>sourcefile~field_checks.f90</title>
+<g id="a_file~~graph~~FileGraph_node9"><a xlink:href="../sourcefile/field_checks.f90.html" xlink:title="field_checks.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="487,-301 389,-301 389,-277 487,-277 487,-301"/>
+<text text-anchor="middle" x="438" y="-286.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_checks.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_edge20" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~field_checks.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-329C773.48,-299.62 765.39,-287.51 723,-275 650.96,-253.74 628.97,-270.45 554,-275 535.45,-276.12 515.32,-278.26 497.15,-280.53"/>
+<polygon fill="#000000" stroke="#000000" points="496.47,-277.09 487,-281.84 497.37,-284.03 496.47,-277.09"/>
+</g>
+<!-- sourcefile~fieldline.f90 -->
+<g id="file~~graph~~FileGraph_node10" class="node">
+<title>sourcefile~fieldline.f90</title>
+<g id="a_file~~graph~~FileGraph_node10"><a xlink:href="../sourcefile/fieldline.f90.html" xlink:title="fieldline.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="845.5,-735 769.5,-735 769.5,-711 845.5,-711 845.5,-735"/>
+<text text-anchor="middle" x="807.5" y="-720.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge25" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M895.65,-695C883.09,-699.04 868.91,-703.59 855.7,-707.83"/>
+<polygon fill="#000000" stroke="#000000" points="854.28,-704.62 845.83,-711.01 856.42,-711.28 854.28,-704.62"/>
+</g>
+<!-- sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_node11" class="node">
+<title>sourcefile~fieldline_integrals.f90</title>
+<g id="a_file~~graph~~FileGraph_node11"><a xlink:href="../sourcefile/fieldline_integrals.f90.html" xlink:title="fieldline_integrals.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="501.5,-537 374.5,-537 374.5,-513 501.5,-513 501.5,-537"/>
+<text text-anchor="middle" x="438" y="-522.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_integrals.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_edge26" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_integrals.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-113C785.48,-92.55 572.79,-167.48 554,-190 465.42,-296.16 605.41,-391.88 518,-499 515.4,-502.18 512.41,-504.98 509.14,-507.43"/>
+<polygon fill="#000000" stroke="#000000" points="507.1,-504.58 500.5,-512.86 510.83,-510.5 507.1,-504.58"/>
+</g>
+<!-- sourcefile~fieldline_integrands.f90 -->
+<g id="file~~graph~~FileGraph_node12" class="node">
+<title>sourcefile~fieldline_integrands.f90</title>
+<g id="a_file~~graph~~FileGraph_node12"><a xlink:href="../sourcefile/fieldline_integrands.f90.html" xlink:title="fieldline_integrands.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="707.5,-459 569.5,-459 569.5,-435 707.5,-435 707.5,-459"/>
+<text text-anchor="middle" x="638.5" y="-444.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_integrands.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_integrands.f90 -->
+<g id="file~~graph~~FileGraph_edge31" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_integrands.f90</title>
+<path fill="none" stroke="#000000" d="M923.24,-671C909.27,-654.17 882.33,-623.04 856,-600 793.25,-545.07 710.86,-491.24 668.07,-464.48"/>
+<polygon fill="#000000" stroke="#000000" points="669.66,-461.35 659.32,-459.04 665.96,-467.29 669.66,-461.35"/>
+</g>
+<!-- sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_node13" class="node">
+<title>sourcefile~fieldline_labels.f90</title>
+<g id="a_file~~graph~~FileGraph_node13"><a xlink:href="../sourcefile/fieldline_labels.f90.html" xlink:title="fieldline_labels.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="694.5,-851 582.5,-851 582.5,-827 694.5,-827 694.5,-851"/>
+<text text-anchor="middle" x="638.5" y="-836.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_labels.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_edge33" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fieldline_labels.f90</title>
+<path fill="none" stroke="#000000" d="M931.54,-695.03C925.64,-737.61 899.35,-881.65 808.5,-938"/>
+<path fill="none" stroke="#000000" d="M806.5,-938C764.61,-963.98 766.02,-889.07 723,-865 715.84,-860.99 707.98,-857.52 700.04,-854.53"/>
+<polygon fill="#000000" stroke="#000000" points="700.95,-851.14 690.36,-851.13 698.63,-857.75 700.95,-851.14"/>
+</g>
+<!-- sourcefile~find_extrema.f90 -->
+<g id="file~~graph~~FileGraph_node14" class="node">
+<title>sourcefile~find_extrema.f90</title>
+<g id="a_file~~graph~~FileGraph_node14"><a xlink:href="../sourcefile/find_extrema.f90.html" xlink:title="find_extrema.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="689.5,-105 587.5,-105 587.5,-81 689.5,-81 689.5,-105"/>
+<text text-anchor="middle" x="638.5" y="-90.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_extrema.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~find_extrema.f90 -->
+<g id="file~~graph~~FileGraph_edge38" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~find_extrema.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-113C778.97,-86.22 735.65,-81.68 700.03,-83.59"/>
+<polygon fill="#000000" stroke="#000000" points="699.46,-80.12 689.73,-84.33 699.96,-87.11 699.46,-80.12"/>
+</g>
+<!-- sourcefile~fit_functions.f90 -->
+<g id="file~~graph~~FileGraph_node15" class="node">
+<title>sourcefile~fit_functions.f90</title>
+<g id="a_file~~graph~~FileGraph_node15"><a xlink:href="../sourcefile/fit_functions.f90.html" xlink:title="fit_functions.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="856,-1039 759,-1039 759,-1015 856,-1015 856,-1039"/>
+<text text-anchor="middle" x="807.5" y="-1024.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fit_functions.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fit_functions.f90 -->
+<g id="file~~graph~~FileGraph_edge40" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fit_functions.f90</title>
+<path fill="none" stroke="#000000" d="M930.8,-695.23C923.53,-734.06 898.35,-857.59 856,-952 847.22,-971.56 833.96,-992.01 823.67,-1006.61"/>
+<polygon fill="#000000" stroke="#000000" points="820.72,-1004.72 817.72,-1014.88 826.4,-1008.81 820.72,-1004.72"/>
+</g>
+<!-- sourcefile~fourier.f90 -->
+<g id="file~~graph~~FileGraph_node16" class="node">
+<title>sourcefile~fourier.f90</title>
+<g id="a_file~~graph~~FileGraph_node16"><a xlink:href="../sourcefile/fourier.f90.html" xlink:title="fourier.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="841,-777 774,-777 774,-753 841,-753 841,-777"/>
+<text text-anchor="middle" x="807.5" y="-762.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fourier.f90 -->
+<g id="file~~graph~~FileGraph_edge41" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fourier.f90</title>
+<path fill="none" stroke="#000000" d="M919.86,-695.13C905.11,-708.32 880.09,-729.46 856,-744 853.5,-745.51 850.88,-746.97 848.2,-748.37"/>
+<polygon fill="#000000" stroke="#000000" points="846.41,-745.35 838.98,-752.9 849.5,-751.63 846.41,-745.35"/>
+</g>
+<!-- sourcefile~fourier_field.f90 -->
+<g id="file~~graph~~FileGraph_node17" class="node">
+<title>sourcefile~fourier_field.f90</title>
+<g id="a_file~~graph~~FileGraph_node17"><a xlink:href="../sourcefile/fourier_field.f90.html" xlink:title="fourier_field.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="687,-223 590,-223 590,-199 687,-199 687,-223"/>
+<text text-anchor="middle" x="638.5" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier_field.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~fourier_field.f90 -->
+<g id="file~~graph~~FileGraph_edge42" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~fourier_field.f90</title>
+<path fill="none" stroke="#000000" d="M932.7,-670.67C930.76,-619.87 916.3,-424.93 808.5,-329"/>
+<path fill="none" stroke="#000000" d="M806.5,-329C765.25,-292.29 769.55,-266.7 723,-237 715.02,-231.91 705.97,-227.76 696.86,-224.39"/>
+<polygon fill="#000000" stroke="#000000" points="697.96,-221.07 687.37,-221.15 695.7,-227.69 697.96,-221.07"/>
+</g>
+<!-- sourcefile~integrate.f90 -->
+<g id="file~~graph~~FileGraph_node18" class="node">
+<title>sourcefile~integrate.f90</title>
+<g id="a_file~~graph~~FileGraph_node18"><a xlink:href="../sourcefile/integrate.f90.html" xlink:title="integrate.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="848.5,-633 766.5,-633 766.5,-609 848.5,-609 848.5,-633"/>
+<text text-anchor="middle" x="807.5" y="-618.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~integrate.f90 -->
+<g id="file~~graph~~FileGraph_edge45" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~integrate.f90</title>
+<path fill="none" stroke="#000000" d="M908.7,-670.9C889.68,-661.42 863.01,-648.14 841.96,-637.66"/>
+<polygon fill="#000000" stroke="#000000" points="843.25,-634.4 832.74,-633.07 840.13,-640.66 843.25,-634.4"/>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge48" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M437,-1075C398.64,-1064.34 229.46,-991.2 211,-980 174.42,-957.8 177.67,-930.69 136.5,-919"/>
+</g>
+<!-- sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_node20" class="node">
+<title>sourcefile~make_fieldline.f90</title>
+<g id="a_file~~graph~~FileGraph_node20"><a xlink:href="../sourcefile/make_fieldline.f90.html" xlink:title="make_fieldline.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="322,-144 211,-144 211,-120 322,-120 322,-144"/>
+<text text-anchor="middle" x="266.5" y="-129.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_fieldline.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge55" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M437,-54C383.92,-65.2 327.75,-95.12 295.25,-114.48"/>
+<polygon fill="#000000" stroke="#000000" points="293.08,-111.7 286.34,-119.88 296.71,-117.69 293.08,-111.7"/>
+</g>
+<!-- sourcefile~netcdf.f90 -->
+<g id="file~~graph~~FileGraph_node21" class="node">
+<title>sourcefile~netcdf.f90</title>
+<g id="a_file~~graph~~FileGraph_node21"><a xlink:href="../sourcefile/netcdf.f90.html" xlink:title="netcdf.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="168.5,-24 102.5,-24 102.5,0 168.5,0 168.5,-24"/>
+<text text-anchor="middle" x="135.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">netcdf.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~netcdf.f90 -->
+<g id="file~~graph~~FileGraph_edge65" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~netcdf.f90</title>
+<path fill="none" stroke="#000000" d="M932.85,-670.73C931.8,-614.04 923.39,-372.43 856,-190 842.07,-152.28 837.93,-140.4 808.5,-113"/>
+<path fill="none" stroke="#000000" d="M806.5,-113C685.42,-0.28 600.86,-19.86 439,-54"/>
+<path fill="none" stroke="#000000" d="M437,-54C362.53,-65.38 342.6,-59.98 267.5,-54"/>
+<path fill="none" stroke="#000000" d="M265.5,-54C232.19,-51.35 196.18,-38.73 170.69,-28.02"/>
+<polygon fill="#000000" stroke="#000000" points="172.04,-24.78 161.47,-24.03 169.26,-31.21 172.04,-24.78"/>
+</g>
+<!-- sourcefile~read_file.f90 -->
+<g id="file~~graph~~FileGraph_node22" class="node">
+<title>sourcefile~read_file.f90</title>
+<g id="a_file~~graph~~FileGraph_node22"><a xlink:href="../sourcefile/read_file.f90.html" xlink:title="read_file.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="175,-66 96,-66 96,-42 175,-42 175,-66"/>
+<text text-anchor="middle" x="135.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">read_file.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~read_file.f90 -->
+<g id="file~~graph~~FileGraph_edge66" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~read_file.f90</title>
+<path fill="none" stroke="#000000" d="M265.5,-54C239.03,-51.89 209.41,-51.74 185.23,-52.18"/>
+<polygon fill="#000000" stroke="#000000" points="185.15,-48.68 175.23,-52.4 185.31,-55.68 185.15,-48.68"/>
+</g>
+<!-- sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_node23" class="node">
+<title>sourcefile~shaing_callen.f90</title>
+<g id="a_file~~graph~~FileGraph_node23"><a xlink:href="../sourcefile/shaing_callen.f90.html" xlink:title="shaing_callen.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="319.5,-703 213.5,-703 213.5,-679 319.5,-679 319.5,-703"/>
+<text text-anchor="middle" x="266.5" y="-688.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge69" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-329C806.33,-328.85 554.22,-392.93 554,-393 464.81,-421.91 424.68,-405.09 358,-471 300.85,-527.49 278.3,-625.19 270.76,-668.83"/>
+<polygon fill="#000000" stroke="#000000" points="267.27,-668.5 269.12,-678.93 274.18,-669.62 267.27,-668.5"/>
+</g>
+<!-- sourcefile~shaing_callen_integration.f90 -->
+<g id="file~~graph~~FileGraph_node24" class="node">
+<title>sourcefile~shaing_callen_integration.f90</title>
+<g id="a_file~~graph~~FileGraph_node24"><a xlink:href="../sourcefile/shaing_callen_integration.f90.html" xlink:title="shaing_callen_integration.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="723,-653 554,-653 554,-629 723,-629 723,-653"/>
+<text text-anchor="middle" x="638.5" y="-638.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_integration.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen_integration.f90 -->
+<g id="file~~graph~~FileGraph_edge78" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen_integration.f90</title>
+<path fill="none" stroke="#000000" d="M891.74,-684.28C867.48,-684.71 836.22,-684.72 808.5,-683"/>
+<path fill="none" stroke="#000000" d="M806.5,-683C806.5,-683 745.41,-667.64 697.13,-655.49"/>
+<polygon fill="#000000" stroke="#000000" points="697.91,-652.08 687.36,-653.04 696.2,-658.87 697.91,-652.08"/>
+</g>
+<!-- sourcefile~shaing_callen_wrappers.f90 -->
+<g id="file~~graph~~FileGraph_node25" class="node">
+<title>sourcefile~shaing_callen_wrappers.f90</title>
+<g id="a_file~~graph~~FileGraph_node25"><a xlink:href="../sourcefile/shaing_callen_wrappers.f90.html" xlink:title="shaing_callen_wrappers.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="518,-625 358,-625 358,-601 518,-601 518,-625"/>
+<text text-anchor="middle" x="438" y="-610.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_wrappers.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90 -->
+<g id="file~~graph~~FileGraph_edge82" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-938C771.53,-959.69 761.88,-911.49 723,-898 650.27,-872.77 613.95,-908.3 554,-860 480.52,-800.81 451.73,-683.91 442.6,-635.16"/>
+<polygon fill="#000000" stroke="#000000" points="446,-634.3 440.81,-625.07 439.11,-635.53 446,-634.3"/>
+</g>
+<!-- sourcefile~surface_average.f90 -->
+<g id="file~~graph~~FileGraph_node26" class="node">
+<title>sourcefile~surface_average.f90</title>
+<g id="a_file~~graph~~FileGraph_node26"><a xlink:href="../sourcefile/surface_average.f90.html" xlink:title="surface_average.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="699.5,-1049 577.5,-1049 577.5,-1025 699.5,-1025 699.5,-1049"/>
+<text text-anchor="middle" x="638.5" y="-1034.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">surface_average.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~surface_average.f90 -->
+<g id="file~~graph~~FileGraph_edge86" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~surface_average.f90</title>
+<path fill="none" stroke="#000000" d="M806.5,-938C764.61,-963.98 766.02,-986.93 723,-1011 715.84,-1015.01 707.98,-1018.48 700.04,-1021.47"/>
+<polygon fill="#000000" stroke="#000000" points="698.63,-1018.25 690.36,-1024.87 700.95,-1024.86 698.63,-1018.25"/>
+</g>
+<!-- sourcefile~utils.f90 -->
+<g id="file~~graph~~FileGraph_node27" class="node">
+<title>sourcefile~utils.f90</title>
+<g id="a_file~~graph~~FileGraph_node27"><a xlink:href="../sourcefile/utils.f90.html" xlink:title="utils.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="835,-223 780,-223 780,-199 835,-199 835,-223"/>
+<text text-anchor="middle" x="807.5" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">utils.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~constants.f90&#45;&gt;sourcefile~utils.f90 -->
+<g id="file~~graph~~FileGraph_edge88" class="edge">
+<title>sourcefile~constants.f90&#45;&gt;sourcefile~utils.f90</title>
+<path fill="none" stroke="#000000" d="M931.48,-670.99C925.36,-624.36 900.71,-451.12 856,-315 846.26,-285.34 830.56,-252.87 819.9,-232.24"/>
+<polygon fill="#000000" stroke="#000000" points="822.86,-230.36 815.12,-223.13 816.66,-233.61 822.86,-230.36"/>
+</g>
+<!-- sourcefile~deviation.f90&#45;&gt;sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_edge4" class="edge">
+<title>sourcefile~deviation.f90&#45;&gt;sourcefile~coefficients.f90</title>
+<path fill="none" stroke="#000000" d="M396.83,-987.99C374.99,-983.1 347.62,-976.96 323.69,-971.6"/>
+<polygon fill="#000000" stroke="#000000" points="324.2,-968.12 313.67,-969.35 322.67,-974.95 324.2,-968.12"/>
+</g>
+<!-- sourcefile~diophantine.f90&#45;&gt;sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_edge34" class="edge">
+<title>sourcefile~diophantine.f90&#45;&gt;sourcefile~fieldline_labels.f90</title>
+<path fill="none" stroke="#000000" d="M758.64,-827.58C741.89,-829.19 722.78,-831.02 704.84,-832.74"/>
+<polygon fill="#000000" stroke="#000000" points="704.35,-829.27 694.73,-833.71 705.02,-836.24 704.35,-829.27"/>
+</g>
+<!-- sourcefile~error_handling.f90 -->
+<g id="file~~graph~~FileGraph_node6" class="node">
+<title>sourcefile~error_handling.f90</title>
+<g id="a_file~~graph~~FileGraph_node6"><a xlink:href="../sourcefile/error_handling.f90.html" xlink:title="error_handling.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="694,-931 583,-931 583,-907 694,-907 694,-931"/>
+<text text-anchor="middle" x="638.5" y="-916.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">error_handling.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~error_handling.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge9" class="edge">
+<title>sourcefile~error_handling.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M595.11,-931.1C581.83,-935.18 567.2,-939.98 554,-945 526.04,-955.63 495.2,-969.71 472.51,-980.53"/>
+<polygon fill="#000000" stroke="#000000" points="470.8,-977.47 463.31,-984.96 473.84,-983.78 470.8,-977.47"/>
+</g>
+<!-- sourcefile~error_handling.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge49" class="edge">
+<title>sourcefile~error_handling.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M582.85,-914.76C542.81,-912.68 487.25,-911.94 439,-919"/>
+</g>
+<!-- sourcefile~error_handling.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge56" class="edge">
+<title>sourcefile~error_handling.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M582.98,-909.94C539.28,-900.14 478.88,-880.59 439,-843"/>
+</g>
+<!-- sourcefile~field_along_fieldline.f90&#45;&gt;sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_edge21" class="edge">
+<title>sourcefile~field_along_fieldline.f90&#45;&gt;sourcefile~field_checks.f90</title>
+<path fill="none" stroke="#000000" d="M577.94,-317C552.34,-311.84 522.51,-305.83 497.07,-300.7"/>
+<polygon fill="#000000" stroke="#000000" points="497.68,-297.26 487.19,-298.71 496.3,-304.12 497.68,-297.26"/>
+</g>
+<!-- sourcefile~field_along_fieldline.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge57" class="edge">
+<title>sourcefile~field_along_fieldline.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M577.02,-341.01C516.45,-349.59 423.12,-353.05 358,-310 303.02,-273.65 279.79,-193.11 271.47,-154.07"/>
+<polygon fill="#000000" stroke="#000000" points="274.9,-153.35 269.51,-144.23 268.03,-154.72 274.9,-153.35"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~boozer_field.f90 -->
+<g id="file~~graph~~FileGraph_edge2" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~boozer_field.f90</title>
+<path fill="none" stroke="#000000" d="M803.4,-459.01C792.57,-499.99 755.42,-633.37 723,-662 715.77,-668.39 706.87,-672.89 697.61,-676.05"/>
+<polygon fill="#000000" stroke="#000000" points="696.5,-672.73 687.88,-678.88 698.46,-679.45 696.5,-672.73"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_edge5" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~coefficients.f90</title>
+<path fill="none" stroke="#000000" d="M437,-485C410.27,-509.28 381.52,-476.6 358,-504 295.69,-576.6 376.39,-854.3 322,-933 319.94,-935.98 317.45,-938.63 314.67,-940.98"/>
+<polygon fill="#000000" stroke="#000000" points="312.43,-938.27 306.23,-946.86 316.43,-944.02 312.43,-938.27"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge10" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M795.08,-459.14C779.66,-475.14 750.87,-503.65 723,-524 653.24,-574.95 601.65,-547.95 554,-620 476.75,-736.79 585.4,-810.26 518,-933 507.22,-952.63 487.72,-968.52 470.79,-979.56"/>
+<polygon fill="#000000" stroke="#000000" points="468.87,-976.63 462.23,-984.89 472.57,-982.58 468.87,-976.63"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~field_along_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge17" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~field_along_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M789.26,-434.82C759.88,-414.06 699.97,-371.73 665.49,-347.37"/>
+<polygon fill="#000000" stroke="#000000" points="667.09,-344.21 656.9,-341.29 663.05,-349.92 667.09,-344.21"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_edge22" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~field_checks.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-289C594.1,-264.21 536.16,-267.51 494.09,-275.03"/>
+<polygon fill="#000000" stroke="#000000" points="493.18,-271.64 484.02,-276.96 494.5,-278.51 493.18,-271.64"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_edge27" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~fieldline_integrals.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-407C599.67,-411.22 583.87,-402.42 554,-426 525.6,-448.41 545.31,-475.27 518,-499 513.78,-502.67 509.02,-505.82 503.99,-508.53"/>
+<polygon fill="#000000" stroke="#000000" points="502.23,-505.5 494.7,-512.95 505.23,-511.82 502.23,-505.5"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~fieldline_integrands.f90 -->
+<g id="file~~graph~~FileGraph_edge32" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~fieldline_integrands.f90</title>
+<path fill="none" stroke="#000000" d="M763.93,-447C749.9,-447 733.82,-447 717.98,-447"/>
+<polygon fill="#000000" stroke="#000000" points="717.63,-443.5 707.63,-447 717.63,-450.5 717.63,-443.5"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~fourier_field.f90 -->
+<g id="file~~graph~~FileGraph_edge43" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~fourier_field.f90</title>
+<path fill="none" stroke="#000000" d="M801.05,-434.97C784.32,-398.16 734.15,-288.66 723,-275 707.86,-256.44 686.32,-240.1 668.91,-228.58"/>
+<polygon fill="#000000" stroke="#000000" points="670.54,-225.47 660.24,-223 666.76,-231.36 670.54,-225.47"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge58" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M802.81,-434.7C793.91,-407.29 768.6,-341.02 723,-308 692.17,-285.68 672.55,-307.88 639.5,-289"/>
+<path fill="none" stroke="#000000" d="M637.5,-289C592.94,-263.55 489.7,-178.96 439,-171"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge70" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M780.54,-434.95C747.99,-421.21 690.31,-401.33 639.5,-407"/>
+<path fill="none" stroke="#000000" d="M637.5,-407C543.3,-417.51 509.17,-421.27 439,-485"/>
+<path fill="none" stroke="#000000" d="M437,-485C410.27,-509.28 386.12,-481.35 358,-504 304.6,-547.01 280.6,-629.28 271.78,-668.77"/>
+<polygon fill="#000000" stroke="#000000" points="268.33,-668.2 269.69,-678.71 275.18,-669.64 268.33,-668.2"/>
+</g>
+<!-- sourcefile~field_base.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90 -->
+<g id="file~~graph~~FileGraph_edge83" class="edge">
+<title>sourcefile~field_base.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90</title>
+<path fill="none" stroke="#000000" d="M763.57,-458.21C711.03,-473.26 620.81,-503.47 554,-549 534.77,-562.1 537.65,-574.54 518,-587 511.8,-590.93 504.94,-594.33 497.93,-597.25"/>
+<polygon fill="#000000" stroke="#000000" points="496.41,-594.08 488.33,-600.94 498.92,-600.62 496.41,-594.08"/>
+</g>
+<!-- sourcefile~field_checks.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge59" class="edge">
+<title>sourcefile~field_checks.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M423.98,-276.94C394.72,-249.84 323.56,-183.92 288.18,-151.15"/>
+<polygon fill="#000000" stroke="#000000" points="290.51,-148.54 280.8,-144.32 285.76,-153.68 290.51,-148.54"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_edge6" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~coefficients.f90</title>
+<path fill="none" stroke="#000000" d="M769.15,-735.03C765.31,-737.5 761.79,-740.46 759,-744 704.13,-813.53 784.3,-876.07 723,-940 696.66,-967.47 672.54,-940.11 639.5,-959"/>
+<path fill="none" stroke="#000000" d="M637.5,-959C611.07,-974.11 420.85,-966.84 323.94,-962.05"/>
+<polygon fill="#000000" stroke="#000000" points="323.89,-958.54 313.73,-961.54 323.54,-965.54 323.89,-958.54"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge11" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-959C612.78,-973.14 539.61,-984.62 489.36,-991.14"/>
+<polygon fill="#000000" stroke="#000000" points="488.81,-987.68 479.33,-992.41 489.69,-994.62 488.81,-987.68"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~field_along_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge18" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~field_along_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M774.03,-710.71C768.2,-707.12 762.79,-702.61 759,-697 682.86,-584.24 790.29,-511.25 723,-393 711.61,-372.99 691.2,-357.17 673.41,-346.27"/>
+<polygon fill="#000000" stroke="#000000" points="674.81,-343.03 664.41,-341.02 671.28,-349.08 674.81,-343.03"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_edge23" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~field_checks.f90</title>
+<path fill="none" stroke="#000000" d="M769.49,-730.7C734.62,-736.21 681.57,-739.99 639.5,-723"/>
+<path fill="none" stroke="#000000" d="M637.5,-723C602.21,-708.75 579.95,-731.84 554,-704 482.56,-627.34 547.1,-571.66 518,-471 500.58,-410.72 467.95,-344.08 450.58,-310.65"/>
+<polygon fill="#000000" stroke="#000000" points="453.46,-308.61 445.71,-301.38 447.26,-311.86 453.46,-308.61"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_edge28" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~fieldline_integrals.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-723C602.21,-708.75 581.18,-730.65 554,-704 506.59,-657.51 560.97,-609.62 518,-559 511.83,-551.73 503.83,-545.98 495.29,-541.43"/>
+<polygon fill="#000000" stroke="#000000" points="496.78,-538.26 486.25,-537.12 493.77,-544.58 496.78,-538.26"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_edge35" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~fieldline_labels.f90</title>
+<path fill="none" stroke="#000000" d="M771.57,-735.1C767.03,-737.6 762.68,-740.55 759,-744 733.76,-767.66 749.55,-790.83 723,-813 717.39,-817.68 710.94,-821.53 704.16,-824.68"/>
+<polygon fill="#000000" stroke="#000000" points="702.67,-821.51 694.77,-828.56 705.35,-827.98 702.67,-821.51"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge50" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-799C601.54,-811.46 586.94,-798.94 554,-818 533.58,-829.81 535.33,-841 518,-857 485.2,-887.27 483.16,-912.53 439,-919"/>
+<path fill="none" stroke="#000000" d="M437,-919C362.46,-929.91 341.87,-906.97 267.5,-919"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge60" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-723C602.21,-708.75 590.54,-714.64 554,-704 465.19,-678.14 417.81,-704.56 358,-634 294.92,-559.57 273.38,-241.37 268.61,-154.17"/>
+<polygon fill="#000000" stroke="#000000" points="272.1,-153.88 268.07,-144.08 265.11,-154.25 272.1,-153.88"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge71" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M779.09,-735.03C772.5,-737.95 765.49,-741.07 759,-744 705.71,-768.04 694.15,-778.21 639.5,-799"/>
+<path fill="none" stroke="#000000" d="M637.5,-799C510.49,-847.32 352.16,-751.02 292.12,-709.13"/>
+<polygon fill="#000000" stroke="#000000" points="293.85,-706.07 283.67,-703.14 289.8,-711.78 293.85,-706.07"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen_integration.f90 -->
+<g id="file~~graph~~FileGraph_edge79" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen_integration.f90</title>
+<path fill="none" stroke="#000000" d="M781.56,-710.99C774.05,-706.94 765.96,-702.14 759,-697 741.05,-683.74 742.49,-672.87 723,-662 719.57,-660.09 715.97,-658.35 712.27,-656.76"/>
+<polygon fill="#000000" stroke="#000000" points="713.47,-653.48 702.88,-653.14 710.95,-660.01 713.47,-653.48"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90 -->
+<g id="file~~graph~~FileGraph_edge84" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90</title>
+<path fill="none" stroke="#000000" d="M637.5,-723C602.21,-708.75 588.33,-720.44 554,-704 548.84,-701.53 494.13,-657.58 462.06,-631.68"/>
+<polygon fill="#000000" stroke="#000000" points="464.04,-628.77 454.06,-625.21 459.64,-634.22 464.04,-628.77"/>
+</g>
+<!-- sourcefile~fieldline.f90&#45;&gt;sourcefile~surface_average.f90 -->
+<g id="file~~graph~~FileGraph_edge87" class="edge">
+<title>sourcefile~fieldline.f90&#45;&gt;sourcefile~surface_average.f90</title>
+<path fill="none" stroke="#000000" d="M769.06,-734.97C765.23,-737.45 761.75,-740.43 759,-744 696.22,-825.69 775.65,-884.44 723,-973 711.24,-992.79 690.82,-1008.6 673.12,-1019.56"/>
+<polygon fill="#000000" stroke="#000000" points="671,-1016.75 664.17,-1024.85 674.56,-1022.77 671,-1016.75"/>
+</g>
+<!-- sourcefile~fieldline_integrals.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge61" class="edge">
+<title>sourcefile~fieldline_integrals.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M377.35,-512.86C370.12,-509.35 363.4,-504.83 358,-499 310.26,-447.48 279.09,-225.54 270.15,-154.19"/>
+<polygon fill="#000000" stroke="#000000" points="273.6,-153.57 268.91,-144.08 266.65,-154.43 273.6,-153.57"/>
+</g>
+<!-- sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_edge29" class="edge">
+<title>sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~fieldline_integrals.f90</title>
+<path fill="none" stroke="#000000" d="M589.21,-459.13C577.4,-462.88 565,-467.5 554,-473 536.35,-481.83 535.58,-490.03 518,-499 510.24,-502.96 501.76,-506.49 493.32,-509.59"/>
+<polygon fill="#000000" stroke="#000000" points="492.14,-506.29 483.85,-512.89 494.44,-512.9 492.14,-506.29"/>
+</g>
+<!-- sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge72" class="edge">
+<title>sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M569.31,-458.47C563.8,-461.05 558.6,-464.18 554,-468 524.61,-492.37 546.35,-520.43 518,-546 490.45,-570.85 472.86,-557.83 439,-573"/>
+<path fill="none" stroke="#000000" d="M437,-573C404.04,-587.76 389.1,-573.65 358,-592 324.69,-611.66 296.5,-647.49 280.82,-670.23"/>
+<polygon fill="#000000" stroke="#000000" points="277.73,-668.55 275.06,-678.8 283.54,-672.45 277.73,-668.55"/>
+</g>
+<!-- sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90 -->
+<g id="file~~graph~~FileGraph_edge85" class="edge">
+<title>sourcefile~fieldline_integrands.f90&#45;&gt;sourcefile~shaing_callen_wrappers.f90</title>
+<path fill="none" stroke="#000000" d="M574.85,-459.02C567.15,-462.55 559.92,-467.11 554,-473 516.35,-510.5 555.34,-549.2 518,-587 514.57,-590.48 510.66,-593.49 506.46,-596.1"/>
+<polygon fill="#000000" stroke="#000000" points="504.66,-593.09 497.51,-600.91 507.97,-599.26 504.66,-593.09"/>
+</g>
+<!-- sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge12" class="edge">
+<title>sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M618.65,-851.09C601.31,-862.5 575.16,-880.42 554,-898 536.84,-912.26 534.69,-918.18 518,-933 500.07,-948.92 478.92,-965.97 463.02,-978.46"/>
+<polygon fill="#000000" stroke="#000000" points="460.51,-975.98 454.78,-984.9 464.82,-981.5 460.51,-975.98"/>
+</g>
+<!-- sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge62" class="edge">
+<title>sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M582.19,-848.38C530.68,-855.7 458.94,-861.8 439,-843"/>
+<path fill="none" stroke="#000000" d="M437,-843C385.57,-794.52 381.45,-771.67 358,-705 285.69,-499.45 270.96,-232.06 268.14,-154.18"/>
+<polygon fill="#000000" stroke="#000000" points="271.63,-153.97 267.8,-144.09 264.64,-154.2 271.63,-153.97"/>
+</g>
+<!-- sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge73" class="edge">
+<title>sourcefile~fieldline_labels.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M608.04,-851.06C554.14,-871.06 437.86,-904.42 358,-857 304.83,-825.43 280.9,-750.42 271.98,-713.01"/>
+<polygon fill="#000000" stroke="#000000" points="275.36,-712.1 269.76,-703.1 268.53,-713.63 275.36,-712.1"/>
+</g>
+<!-- sourcefile~find_extrema.f90&#45;&gt;sourcefile~field_checks.f90 -->
+<g id="file~~graph~~FileGraph_edge24" class="edge">
+<title>sourcefile~find_extrema.f90&#45;&gt;sourcefile~field_checks.f90</title>
+<path fill="none" stroke="#000000" d="M587.12,-101.91C575.36,-105.74 563.51,-111.2 554,-119 528.16,-140.18 536.16,-156.95 518,-185 498.27,-215.48 472.31,-248.52 455.64,-268.99"/>
+<polygon fill="#000000" stroke="#000000" points="452.75,-267 449.11,-276.95 458.16,-271.44 452.75,-267"/>
+</g>
+<!-- sourcefile~find_extrema.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge63" class="edge">
+<title>sourcefile~find_extrema.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M595.11,-105.1C581.83,-109.18 567.2,-113.98 554,-119 501.57,-138.93 494.5,-179.11 439,-171"/>
+<path fill="none" stroke="#000000" d="M437,-171C397.74,-165.27 354.12,-155.14 320.97,-146.65"/>
+<polygon fill="#000000" stroke="#000000" points="321.59,-143.19 311.03,-144.07 319.83,-149.97 321.59,-143.19"/>
+</g>
+<!-- sourcefile~fit_functions.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge13" class="edge">
+<title>sourcefile~fit_functions.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M781.21,-1039.07C764.99,-1046.14 743.24,-1054.36 723,-1058 649.07,-1071.28 626.89,-1076.13 554,-1058 520.65,-1049.7 486.35,-1029.74 463.99,-1014.9"/>
+<polygon fill="#000000" stroke="#000000" points="465.7,-1011.83 455.46,-1009.1 461.76,-1017.62 465.7,-1011.83"/>
+</g>
+<!-- sourcefile~fourier.f90&#45;&gt;sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_edge36" class="edge">
+<title>sourcefile~fourier.f90&#45;&gt;sourcefile~fieldline_labels.f90</title>
+<path fill="none" stroke="#000000" d="M788.21,-777.09C771.69,-787.61 746.44,-802.76 723,-813 713.92,-816.97 704.05,-820.6 694.37,-823.81"/>
+<polygon fill="#000000" stroke="#000000" points="693.25,-820.49 684.8,-826.88 695.39,-827.16 693.25,-820.49"/>
+</g>
+<!-- sourcefile~fourier.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge74" class="edge">
+<title>sourcefile~fourier.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M773.75,-761.88C725.54,-757.18 632.67,-747.67 554,-737 476.53,-726.49 387.71,-711.82 329.76,-701.89"/>
+<polygon fill="#000000" stroke="#000000" points="330.11,-698.4 319.67,-700.16 328.93,-705.3 330.11,-698.4"/>
+</g>
+<!-- sourcefile~integrate.f90&#45;&gt;sourcefile~fieldline_integrals.f90 -->
+<g id="file~~graph~~FileGraph_edge30" class="edge">
+<title>sourcefile~integrate.f90&#45;&gt;sourcefile~fieldline_integrals.f90</title>
+<path fill="none" stroke="#000000" d="M780.22,-608.94C763.99,-601.84 742.58,-593.08 723,-587 652.41,-565.1 569.63,-547.97 511.72,-537.31"/>
+<polygon fill="#000000" stroke="#000000" points="512.03,-533.81 501.57,-535.46 510.78,-540.7 512.03,-533.81"/>
+</g>
+<!-- sourcefile~integrate.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge75" class="edge">
+<title>sourcefile~integrate.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M766.32,-614.61C674.07,-600.08 453.83,-566.36 439,-573"/>
+</g>
+<!-- sourcefile~integrate.f90&#45;&gt;sourcefile~shaing_callen_integration.f90 -->
+<g id="file~~graph~~FileGraph_edge80" class="edge">
+<title>sourcefile~integrate.f90&#45;&gt;sourcefile~shaing_callen_integration.f90</title>
+<path fill="none" stroke="#000000" d="M766.5,-625.79C756.35,-627.01 745.01,-628.36 733.4,-629.75"/>
+<polygon fill="#000000" stroke="#000000" points="732.66,-626.32 723.15,-630.98 733.49,-633.27 732.66,-626.32"/>
+</g>
+<!-- sourcefile~make_fieldline.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge51" class="edge">
+<title>sourcefile~make_fieldline.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M264.16,-144.23C253.08,-244.7 176,-930.21 136.5,-919"/>
+<path fill="none" stroke="#000000" d="M134.5,-919C50.47,-895.14 33.81,-209.94 31.36,-76.42"/>
+<polygon fill="#000000" stroke="#000000" points="34.86,-76.12 31.18,-66.19 27.86,-76.25 34.86,-76.12"/>
+</g>
+<!-- sourcefile~make_fieldline.f90&#45;&gt;sourcefile~read_file.f90 -->
+<g id="file~~graph~~FileGraph_edge67" class="edge">
+<title>sourcefile~make_fieldline.f90&#45;&gt;sourcefile~read_file.f90</title>
+<path fill="none" stroke="#000000" d="M237.88,-119.9C229.13,-115.78 219.52,-110.96 211,-106 193.5,-95.81 174.82,-82.77 160.54,-72.29"/>
+<polygon fill="#000000" stroke="#000000" points="162.39,-69.3 152.27,-66.15 158.21,-74.92 162.39,-69.3"/>
+</g>
+<!-- sourcefile~netcdf.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge52" class="edge">
+<title>sourcefile~netcdf.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M104.84,-24.04C93.92,-28.47 81.38,-33.55 69.78,-38.26"/>
+<polygon fill="#000000" stroke="#000000" points="68.26,-35.1 60.31,-42.11 70.89,-41.59 68.26,-35.1"/>
+</g>
+<!-- sourcefile~read_file.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge53" class="edge">
+<title>sourcefile~read_file.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M95.96,-54C87.64,-54 78.82,-54 70.46,-54"/>
+<polygon fill="#000000" stroke="#000000" points="70.19,-50.5 60.19,-54 70.19,-57.5 70.19,-50.5"/>
+</g>
+<!-- sourcefile~shaing_callen.f90&#45;&gt;sourcefile~main.f90 -->
+<g id="file~~graph~~FileGraph_edge54" class="edge">
+<title>sourcefile~shaing_callen.f90&#45;&gt;sourcefile~main.f90</title>
+<path fill="none" stroke="#000000" d="M264.45,-703.11C259.42,-754 233.85,-946.64 136.5,-919"/>
+</g>
+<!-- sourcefile~shaing_callen_integration.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge76" class="edge">
+<title>sourcefile~shaing_callen_integration.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M553.54,-652.35C485.48,-661.54 391.09,-674.3 329.67,-682.6"/>
+<polygon fill="#000000" stroke="#000000" points="329.17,-679.13 319.72,-683.94 330.1,-686.07 329.17,-679.13"/>
+</g>
+<!-- sourcefile~shaing_callen_wrappers.f90&#45;&gt;sourcefile~shaing_callen.f90 -->
+<g id="file~~graph~~FileGraph_edge77" class="edge">
+<title>sourcefile~shaing_callen_wrappers.f90&#45;&gt;sourcefile~shaing_callen.f90</title>
+<path fill="none" stroke="#000000" d="M394.99,-625.07C382.86,-629.02 369.74,-633.76 358,-639 335.88,-648.87 312.18,-662.62 294.58,-673.49"/>
+<polygon fill="#000000" stroke="#000000" points="292.59,-670.61 285.98,-678.89 296.31,-676.54 292.59,-670.61"/>
+</g>
+<!-- sourcefile~surface_average.f90&#45;&gt;sourcefile~coefficients.f90 -->
+<g id="file~~graph~~FileGraph_edge7" class="edge">
+<title>sourcefile~surface_average.f90&#45;&gt;sourcefile~coefficients.f90</title>
+<path fill="none" stroke="#000000" d="M577.47,-1041.52C519.7,-1043.89 430.65,-1042.3 358,-1018 332.01,-1009.31 306.21,-991.32 288.85,-977.48"/>
+<polygon fill="#000000" stroke="#000000" points="290.99,-974.71 281.04,-971.08 286.55,-980.12 290.99,-974.71"/>
+</g>
+<!-- sourcefile~surface_average.f90&#45;&gt;sourcefile~deviation.f90 -->
+<g id="file~~graph~~FileGraph_edge14" class="edge">
+<title>sourcefile~surface_average.f90&#45;&gt;sourcefile~deviation.f90</title>
+<path fill="none" stroke="#000000" d="M577.94,-1025C549.59,-1019.29 516.06,-1012.53 489.05,-1007.08"/>
+<polygon fill="#000000" stroke="#000000" points="489.53,-1003.61 479.04,-1005.07 488.15,-1010.47 489.53,-1003.61"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~fieldline_labels.f90 -->
+<g id="file~~graph~~FileGraph_edge37" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~fieldline_labels.f90</title>
+<path fill="none" stroke="#000000" d="M799.13,-223.27C788.18,-242.2 767.95,-280 759,-315 731.52,-422.5 791.95,-726.07 723,-813 717.96,-819.36 711.38,-824.19 704.13,-827.87"/>
+<polygon fill="#000000" stroke="#000000" points="702.47,-824.77 694.66,-831.92 705.23,-831.2 702.47,-824.77"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~find_extrema.f90 -->
+<g id="file~~graph~~FileGraph_edge39" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~find_extrema.f90</title>
+<path fill="none" stroke="#000000" d="M789.26,-198.82C759.88,-178.06 699.97,-135.73 665.49,-111.37"/>
+<polygon fill="#000000" stroke="#000000" points="667.09,-108.21 656.9,-105.29 663.05,-113.92 667.09,-108.21"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~fourier_field.f90 -->
+<g id="file~~graph~~FileGraph_edge44" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~fourier_field.f90</title>
+<path fill="none" stroke="#000000" d="M779.67,-211C757.5,-211 725.23,-211 697.25,-211"/>
+<polygon fill="#000000" stroke="#000000" points="697.16,-207.5 687.16,-211 697.16,-214.5 697.16,-207.5"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~make_fieldline.f90 -->
+<g id="file~~graph~~FileGraph_edge64" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~make_fieldline.f90</title>
+<path fill="none" stroke="#000000" d="M779.68,-202.95C763.43,-198.4 742.19,-193.03 723,-190 598.04,-170.27 564.18,-189.28 439,-171"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~read_file.f90 -->
+<g id="file~~graph~~FileGraph_edge68" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~read_file.f90</title>
+<path fill="none" stroke="#000000" d="M799.46,-198.56C780.51,-165.12 729.36,-75.63 723,-72 716.82,-68.47 218.08,-68.69 211,-68 202.62,-67.19 193.78,-65.91 185.23,-64.44"/>
+<polygon fill="#000000" stroke="#000000" points="185.83,-60.99 175.36,-62.66 184.58,-67.88 185.83,-60.99"/>
+</g>
+<!-- sourcefile~utils.f90&#45;&gt;sourcefile~shaing_callen_integration.f90 -->
+<g id="file~~graph~~FileGraph_edge81" class="edge">
+<title>sourcefile~utils.f90&#45;&gt;sourcefile~shaing_callen_integration.f90</title>
+<path fill="none" stroke="#000000" d="M799.98,-223.16C789.98,-242.26 770.76,-280.63 759,-315 736.38,-381.09 746.32,-402.15 723,-468 702.82,-524.98 669.36,-588 651.54,-619.94"/>
+<polygon fill="#000000" stroke="#000000" points="648.4,-618.38 646.54,-628.81 654.5,-621.82 648.4,-618.38"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panfilegraphFileGraph = svgPanZoom('#filegraphFileGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#FileGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="FileGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="202pt" height="32pt"
+ viewBox="0.00 0.00 201.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 197.5,-28 197.5,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="193.5,-24 88.5,-24 88.5,0 193.5,0 193.5,-24"/>
+<text text-anchor="middle" x="141" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a file to a file which it depends on. A file
+is dependent upon another if the latter must be compiled before the former
+can be.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              rabe
+ was developed by Georg Grassler<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-08-19T19:14:45.270555+0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

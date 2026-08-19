@@ -1,0 +1,1650 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Asymptotic bootstrap current expressions for near-omnigenous stellarators">
+    <meta name="author" content="Georg Grassler" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>All Modules &ndash; rabe
+</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">rabe </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12" id='text'>
+			 <h1>Modules</h1>
+			 <table class="table">
+			 <thead><tr><th>Module</th><th>Source File</th><th>Description</th></tr></thead>
+			 <tbody>
+			   <tr class="active">
+                 <td><a href='../module/boozer_field.html'>boozer_field</a></td>
+                 <td><a href='../sourcefile/boozer_field.f90.html'>boozer_field.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/coefficients.html'>coefficients</a></td>
+                 <td><a href='../sourcefile/coefficients.f90.html'>coefficients.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/constants.html'>constants</a></td>
+                 <td><a href='../sourcefile/constants.f90.html'>constants.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/deviation.html'>deviation</a></td>
+                 <td><a href='../sourcefile/deviation.f90.html'>deviation.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/diophantine.html'>diophantine</a></td>
+                 <td><a href='../sourcefile/diophantine.f90.html'>diophantine.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/error_handling.html'>error_handling</a></td>
+                 <td><a href='../sourcefile/error_handling.f90.html'>error_handling.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/field_along_fieldline.html'>field_along_fieldline</a></td>
+                 <td><a href='../sourcefile/field_along_fieldline.f90.html'>field_along_fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/field_base.html'>field_base</a></td>
+                 <td><a href='../sourcefile/field_base.f90.html'>field_base.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/field_checks.html'>field_checks</a></td>
+                 <td><a href='../sourcefile/field_checks.f90.html'>field_checks.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/fieldline_integrals.html'>fieldline_integrals</a></td>
+                 <td><a href='../sourcefile/fieldline_integrals.f90.html'>fieldline_integrals.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/fieldline_integrands.html'>fieldline_integrands</a></td>
+                 <td><a href='../sourcefile/fieldline_integrands.f90.html'>fieldline_integrands.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/fieldline_labels.html'>fieldline_labels</a></td>
+                 <td><a href='../sourcefile/fieldline_labels.f90.html'>fieldline_labels.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/fieldline_mod.html'>fieldline_mod</a></td>
+                 <td><a href='../sourcefile/fieldline.f90.html'>fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/find_extrema.html'>find_extrema</a></td>
+                 <td><a href='../sourcefile/find_extrema.f90.html'>find_extrema.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/fit_functions.html'>fit_functions</a></td>
+                 <td><a href='../sourcefile/fit_functions.f90.html'>fit_functions.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/fourier.html'>fourier</a></td>
+                 <td><a href='../sourcefile/fourier.f90.html'>fourier.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/fourier_field.html'>fourier_field</a></td>
+                 <td><a href='../sourcefile/fourier_field.f90.html'>fourier_field.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/integrate.html'>integrate</a></td>
+                 <td><a href='../sourcefile/integrate.f90.html'>integrate.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/integrate_substituted.html'>integrate_substituted</a></td>
+                 <td><a href='../sourcefile/integrate.f90.html'>integrate.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/make_fieldline.html'>make_fieldline</a></td>
+                 <td><a href='../sourcefile/make_fieldline.f90.html'>make_fieldline.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/netcdf_mod.html'>netcdf_mod</a></td>
+                 <td><a href='../sourcefile/netcdf.f90.html'>netcdf.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/read_file.html'>read_file</a></td>
+                 <td><a href='../sourcefile/read_file.f90.html'>read_file.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/shaing_callen_integration.html'>shaing_callen_integration</a></td>
+                 <td><a href='../sourcefile/shaing_callen_integration.f90.html'>shaing_callen_integration.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/shaing_callen_mod.html'>shaing_callen_mod</a></td>
+                 <td><a href='../sourcefile/shaing_callen.f90.html'>shaing_callen.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/shaing_callen_wrappers.html'>shaing_callen_wrappers</a></td>
+                 <td><a href='../sourcefile/shaing_callen_wrappers.f90.html'>shaing_callen_wrappers.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			   <tr class="">
+                 <td><a href='../module/surface_average_mod.html'>surface_average_mod</a></td>
+                 <td><a href='../sourcefile/surface_average.f90.html'>surface_average.f90</a></td>
+                 <td></td>
+               </tr>
+<!---->			   <tr class="active">
+                 <td><a href='../module/utils.html'>utils</a></td>
+                 <td><a href='../sourcefile/utils.f90.html'>utils.f90</a></td>
+                 <td></td>
+               </tr>
+<!--active-->			 </tbody></table>
+             <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: module~~graph~~ModuleGraph Pages: 1 -->
+<svg id="modulegraphModuleGraph" width="855pt" height="1675pt"
+ viewBox="0.00 0.00 855.00 1674.89" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~graph~~ModuleGraph" class="graph" transform="scale(0.88 0.88) rotate(0) translate(4 1904)">
+<title>module~~graph~~ModuleGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-1904 970,-1904 970,4 -4,4"/>
+<!-- module~boozer_field -->
+<g id="module~~graph~~ModuleGraph_node1" class="node">
+<title>module~boozer_field</title>
+<g id="a_module~~graph~~ModuleGraph_node1"><a xlink:href="../module/boozer_field.html" xlink:title="boozer_field">
+<polygon fill="#337ab7" stroke="#337ab7" points="764,-1614 686,-1614 686,-1590 764,-1590 764,-1614"/>
+<text text-anchor="middle" x="725" y="-1599.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">boozer_field</text>
+</a>
+</g>
+</g>
+<!-- module~constants -->
+<g id="module~~graph~~ModuleGraph_node3" class="node">
+<title>module~constants</title>
+<g id="a_module~~graph~~ModuleGraph_node3"><a xlink:href="../module/constants.html" xlink:title="constants">
+<polygon fill="#337ab7" stroke="#337ab7" points="80,-844 16,-844 16,-820 80,-820 80,-844"/>
+<text text-anchor="middle" x="48" y="-829.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">constants</text>
+</a>
+</g>
+</g>
+<!-- module~boozer_field&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge1" class="edge">
+<title>module~boozer_field&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M717.67,-1614.11C699.23,-1648.05 641.86,-1744.4 564,-1787 512.19,-1815.34 491.3,-1800.57 432.5,-1806"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-1806C327.83,-1815.48 279.54,-1869.76 198.5,-1806"/>
+</g>
+<!-- module~field_base -->
+<g id="module~~graph~~ModuleGraph_node8" class="node">
+<title>module~field_base</title>
+<g id="a_module~~graph~~ModuleGraph_node8"><a xlink:href="../module/field_base.html" xlink:title="field_base">
+<polygon fill="#337ab7" stroke="#337ab7" points="231,-1450 164,-1450 164,-1426 231,-1426 231,-1450"/>
+<text text-anchor="middle" x="197.5" y="-1435.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_base</text>
+</a>
+</g>
+</g>
+<!-- module~boozer_field&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge2" class="edge">
+<title>module~boozer_field&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M685.86,-1607.95C629.34,-1615.39 520.53,-1624.41 432.5,-1600"/>
+</g>
+<!-- module~coefficients -->
+<g id="module~~graph~~ModuleGraph_node2" class="node">
+<title>module~coefficients</title>
+<g id="a_module~~graph~~ModuleGraph_node2"><a xlink:href="../module/coefficients.html" xlink:title="coefficients">
+<polygon fill="#337ab7" stroke="#337ab7" points="468.5,-188 394.5,-188 394.5,-164 468.5,-164 468.5,-188"/>
+<text text-anchor="middle" x="431.5" y="-173.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">coefficients</text>
+</a>
+</g>
+</g>
+<!-- module~coefficients&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge4" class="edge">
+<title>module~coefficients&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.28,-171.63C364.86,-170.21 324.26,-173.41 299,-197 246.99,-245.56 311.9,-301.31 263,-353 221.34,-397.04 172.75,-346.12 132,-391 74.98,-453.8 54.91,-728.85 50.19,-809.62"/>
+<polygon fill="#000000" stroke="#000000" points="46.69,-809.51 49.62,-819.69 53.68,-809.9 46.69,-809.51"/>
+</g>
+<!-- module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_node13" class="node">
+<title>module~fieldline_mod</title>
+<g id="a_module~~graph~~ModuleGraph_node13"><a xlink:href="../module/fieldline_mod.html" xlink:title="fieldline_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="240,-783 155,-783 155,-759 240,-759 240,-783"/>
+<text text-anchor="middle" x="197.5" y="-768.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_mod</text>
+</a>
+</g>
+</g>
+<!-- module~coefficients&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge5" class="edge">
+<title>module~coefficients&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.46,-170.71C364.34,-168.53 322.62,-171.14 299,-197 219.53,-284 321.01,-623.44 263,-726 256.53,-737.44 245.8,-746.64 234.94,-753.67"/>
+<polygon fill="#000000" stroke="#000000" points="233.07,-750.71 226.27,-758.84 236.66,-756.72 233.07,-750.71"/>
+</g>
+<!-- ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_node64" class="node">
+<title>ieee_arithmetic</title>
+<g id="a_module~~graph~~ModuleGraph_node64"><a xlink:href="http://fortranwiki.org/fortran/show/ieee_arithmetic" xlink:title="ieee_arithmetic">
+<polygon fill="#337ab7" stroke="#337ab7" points="96,-184 0,-184 0,-160 96,-160 96,-184"/>
+<text text-anchor="middle" x="48" y="-169.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ieee_arithmetic</text>
+</a>
+</g>
+</g>
+<!-- module~coefficients&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge3" class="edge">
+<title>module~coefficients&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.39,-170.89C367.9,-166.99 331.11,-161.23 299,-155 254.02,-146.27 243.96,-126.22 198.5,-132"/>
+</g>
+<!-- module~deviation -->
+<g id="module~~graph~~ModuleGraph_node4" class="node">
+<title>module~deviation</title>
+<g id="a_module~~graph~~ModuleGraph_node4"><a xlink:href="../module/deviation.html" xlink:title="deviation">
+<polygon fill="#337ab7" stroke="#337ab7" points="462.5,-1572 400.5,-1572 400.5,-1548 462.5,-1548 462.5,-1572"/>
+<text text-anchor="middle" x="431.5" y="-1557.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">deviation</text>
+</a>
+</g>
+</g>
+<!-- module~deviation&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge6" class="edge">
+<title>module~deviation&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M400.27,-1566.92C351.9,-1576.1 256.62,-1586.12 198.5,-1539"/>
+</g>
+<!-- module~deviation&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge7" class="edge">
+<title>module~deviation&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M400.41,-1560.41C372.64,-1559.61 331,-1555.38 299,-1539 261.71,-1519.91 229.77,-1481.87 212.43,-1458.31"/>
+<polygon fill="#000000" stroke="#000000" points="215.18,-1456.15 206.51,-1450.06 209.49,-1460.23 215.18,-1456.15"/>
+</g>
+<!-- module~deviation&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge8" class="edge">
+<title>module~deviation&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M400.46,-1564.85C370.05,-1567.86 324.04,-1566.85 299,-1539 247.82,-1482.08 290.35,-922.5 263,-851 253.93,-827.3 235.04,-805.25 220.03,-790.32"/>
+<polygon fill="#000000" stroke="#000000" points="222.24,-787.6 212.61,-783.19 217.4,-792.65 222.24,-787.6"/>
+</g>
+<!-- module~diophantine -->
+<g id="module~~graph~~ModuleGraph_node5" class="node">
+<title>module~diophantine</title>
+<g id="a_module~~graph~~ModuleGraph_node5"><a xlink:href="../module/diophantine.html" xlink:title="diophantine">
+<polygon fill="#337ab7" stroke="#337ab7" points="235.5,-424 159.5,-424 159.5,-400 235.5,-400 235.5,-424"/>
+<text text-anchor="middle" x="197.5" y="-409.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">diophantine</text>
+</a>
+</g>
+</g>
+<!-- module~diophantine&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge9" class="edge">
+<title>module~diophantine&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159.23,-417.08C149.14,-420.17 139.07,-425.11 132,-433 81.14,-489.77 57.1,-733.57 50.76,-809.4"/>
+<polygon fill="#000000" stroke="#000000" points="47.24,-809.45 49.92,-819.7 54.22,-810.02 47.24,-809.45"/>
+</g>
+<!-- module~error_handling -->
+<g id="module~~graph~~ModuleGraph_node6" class="node">
+<title>module~error_handling</title>
+<g id="a_module~~graph~~ModuleGraph_node6"><a xlink:href="../module/error_handling.html" xlink:title="error_handling">
+<polygon fill="#337ab7" stroke="#337ab7" points="243,-1290 152,-1290 152,-1266 243,-1266 243,-1290"/>
+<text text-anchor="middle" x="197.5" y="-1275.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">error_handling</text>
+</a>
+</g>
+</g>
+<!-- module~field_along_fieldline -->
+<g id="module~~graph~~ModuleGraph_node7" class="node">
+<title>module~field_along_fieldline</title>
+<g id="a_module~~graph~~ModuleGraph_node7"><a xlink:href="../module/field_along_fieldline.html" xlink:title="field_along_fieldline">
+<polygon fill="#337ab7" stroke="#337ab7" points="491,-1530 372,-1530 372,-1506 491,-1506 491,-1530"/>
+<text text-anchor="middle" x="431.5" y="-1515.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_along_fieldline</text>
+</a>
+</g>
+</g>
+<!-- module~field_along_fieldline&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge10" class="edge">
+<title>module~field_along_fieldline&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.78,-1527.53C307.49,-1537.31 211.69,-1549.7 198.5,-1539"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-1539C161.02,-1510.24 150,-1500.98 132,-1459 83.67,-1346.28 56.48,-952.84 50.34,-854.44"/>
+<polygon fill="#000000" stroke="#000000" points="53.83,-854.18 49.73,-844.41 46.85,-854.61 53.83,-854.18"/>
+</g>
+<!-- module~field_along_fieldline&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge11" class="edge">
+<title>module~field_along_fieldline&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.88,-1510.25C348.76,-1506.21 322.22,-1500.32 299,-1492 272.92,-1482.65 245.34,-1467.4 225.69,-1455.49"/>
+<polygon fill="#000000" stroke="#000000" points="227.33,-1452.39 216.98,-1450.12 223.65,-1458.35 227.33,-1452.39"/>
+</g>
+<!-- module~field_along_fieldline&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge12" class="edge">
+<title>module~field_along_fieldline&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.68,-1506.23C345.02,-1497.73 315.77,-1483.3 299,-1459 222.12,-1347.61 311.8,-977.25 263,-851 253.85,-827.33 234.96,-805.27 219.98,-790.34"/>
+<polygon fill="#000000" stroke="#000000" points="222.2,-787.62 212.57,-783.21 217.35,-792.66 222.2,-787.62"/>
+</g>
+<!-- module~field_base&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge13" class="edge">
+<title>module~field_base&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M163.77,-1430.9C152.03,-1426.73 139.78,-1420.19 132,-1410 63.59,-1320.37 51.4,-950.06 49.38,-854.55"/>
+<polygon fill="#000000" stroke="#000000" points="52.87,-854.24 49.18,-844.31 45.87,-854.37 52.87,-854.24"/>
+</g>
+<!-- module~field_checks -->
+<g id="module~~graph~~ModuleGraph_node9" class="node">
+<title>module~field_checks</title>
+<g id="a_module~~graph~~ModuleGraph_node9"><a xlink:href="../module/field_checks.html" xlink:title="field_checks">
+<polygon fill="#337ab7" stroke="#337ab7" points="470.5,-1450 392.5,-1450 392.5,-1426 470.5,-1426 470.5,-1450"/>
+<text text-anchor="middle" x="431.5" y="-1435.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_checks</text>
+</a>
+</g>
+</g>
+<!-- module~field_checks&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge14" class="edge">
+<title>module~field_checks&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M392.4,-1432.94C330.63,-1424.48 213.98,-1407.26 198.5,-1396"/>
+</g>
+<!-- module~field_checks&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge15" class="edge">
+<title>module~field_checks&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M392.45,-1438C351,-1438 284.85,-1438 241.54,-1438"/>
+<polygon fill="#000000" stroke="#000000" points="241.31,-1434.5 231.31,-1438 241.31,-1441.5 241.31,-1434.5"/>
+</g>
+<!-- module~fieldline_integrals -->
+<g id="module~~graph~~ModuleGraph_node10" class="node">
+<title>module~fieldline_integrals</title>
+<g id="a_module~~graph~~ModuleGraph_node10"><a xlink:href="../module/fieldline_integrals.html" xlink:title="fieldline_integrals">
+<polygon fill="#337ab7" stroke="#337ab7" points="485,-1168 378,-1168 378,-1144 485,-1144 485,-1168"/>
+<text text-anchor="middle" x="431.5" y="-1153.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_integrals</text>
+</a>
+</g>
+</g>
+<!-- module~fieldline_integrals&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge16" class="edge">
+<title>module~fieldline_integrals&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.82,-1165.96C310.55,-1178.56 202.34,-1198.34 198.5,-1196"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-1196C73.53,-1120.96 53.07,-921.85 49.67,-854.57"/>
+<polygon fill="#000000" stroke="#000000" points="53.16,-854.12 49.24,-844.27 46.16,-854.41 53.16,-854.12"/>
+</g>
+<!-- module~fieldline_integrals&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge17" class="edge">
+<title>module~fieldline_integrals&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.95,-1167.11C350.38,-1175.64 318.4,-1190.3 299,-1215 244.56,-1284.31 317.86,-1341.02 263,-1410 257.14,-1417.37 248.96,-1422.84 240.39,-1426.88"/>
+<polygon fill="#000000" stroke="#000000" points="238.94,-1423.69 231.02,-1430.74 241.6,-1430.17 238.94,-1423.69"/>
+</g>
+<!-- module~fieldline_integrals&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge18" class="edge">
+<title>module~fieldline_integrals&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.92,-1145.27C350.16,-1136.84 318.01,-1122.15 299,-1097 232.38,-1008.85 307.24,-952.25 263,-851 252.78,-827.61 233.84,-805.38 219.12,-790.32"/>
+<polygon fill="#000000" stroke="#000000" points="221.43,-787.68 211.87,-783.12 216.5,-792.65 221.43,-787.68"/>
+</g>
+<!-- module~fieldline_integrands -->
+<g id="module~~graph~~ModuleGraph_node11" class="node">
+<title>module~fieldline_integrands</title>
+<g id="a_module~~graph~~ModuleGraph_node11"><a xlink:href="../module/fieldline_integrands.html" xlink:title="fieldline_integrands">
+<polygon fill="#337ab7" stroke="#337ab7" points="490.5,-1408 372.5,-1408 372.5,-1384 490.5,-1384 490.5,-1408"/>
+<text text-anchor="middle" x="431.5" y="-1393.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_integrands</text>
+</a>
+</g>
+</g>
+<!-- module~fieldline_integrands&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge19" class="edge">
+<title>module~fieldline_integrands&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.5,-1403.53C312.91,-1409.96 225.21,-1415.43 198.5,-1396"/>
+</g>
+<!-- module~fieldline_integrands&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge20" class="edge">
+<title>module~fieldline_integrands&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.46,-1404.66C349.54,-1408.24 322.99,-1412.58 299,-1417 279.86,-1420.53 258.77,-1424.86 240.87,-1428.68"/>
+<polygon fill="#000000" stroke="#000000" points="240.05,-1425.27 231.01,-1430.8 241.52,-1432.12 240.05,-1425.27"/>
+</g>
+<!-- module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_node12" class="node">
+<title>module~fieldline_labels</title>
+<g id="a_module~~graph~~ModuleGraph_node12"><a xlink:href="../module/fieldline_labels.html" xlink:title="fieldline_labels">
+<polygon fill="#337ab7" stroke="#337ab7" points="243.5,-1046 151.5,-1046 151.5,-1022 243.5,-1022 243.5,-1046"/>
+<text text-anchor="middle" x="197.5" y="-1031.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_labels</text>
+</a>
+</g>
+</g>
+<!-- module~fieldline_labels&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge21" class="edge">
+<title>module~fieldline_labels&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M187.71,-1021.97C163.33,-988.58 94.6,-894.45 64.01,-852.56"/>
+<polygon fill="#000000" stroke="#000000" points="66.65,-850.24 57.93,-844.22 61,-854.36 66.65,-850.24"/>
+</g>
+<!-- module~fieldline_mod&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge22" class="edge">
+<title>module~fieldline_mod&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M167.36,-783.05C144.53,-792.49 112.57,-805.71 87.61,-816.03"/>
+<polygon fill="#000000" stroke="#000000" points="85.98,-812.92 78.08,-819.97 88.66,-819.39 85.98,-812.92"/>
+</g>
+<!-- module~find_extrema -->
+<g id="module~~graph~~ModuleGraph_node14" class="node">
+<title>module~find_extrema</title>
+<g id="a_module~~graph~~ModuleGraph_node14"><a xlink:href="../module/find_extrema.html" xlink:title="find_extrema">
+<polygon fill="#337ab7" stroke="#337ab7" points="472.5,-1778 390.5,-1778 390.5,-1754 472.5,-1754 472.5,-1778"/>
+<text text-anchor="middle" x="431.5" y="-1763.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_extrema</text>
+</a>
+</g>
+</g>
+<!-- module~find_extrema&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge23" class="edge">
+<title>module~find_extrema&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M390.37,-1773.7C324.97,-1786.13 202.26,-1808.96 198.5,-1806"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-1806C153.75,-1772.37 149.37,-1753.54 132,-1702 76.66,-1537.82 54,-974.16 49.76,-854.46"/>
+<polygon fill="#000000" stroke="#000000" points="53.25,-854.16 49.4,-844.29 46.25,-854.4 53.25,-854.16"/>
+</g>
+<!-- module~fit_functions -->
+<g id="module~~graph~~ModuleGraph_node15" class="node">
+<title>module~fit_functions</title>
+<g id="a_module~~graph~~ModuleGraph_node15"><a xlink:href="../module/fit_functions.html" xlink:title="fit_functions">
+<polygon fill="#337ab7" stroke="#337ab7" points="236,-1248 159,-1248 159,-1224 236,-1224 236,-1248"/>
+<text text-anchor="middle" x="197.5" y="-1233.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fit_functions</text>
+</a>
+</g>
+</g>
+<!-- module~fit_functions&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge24" class="edge">
+<title>module~fit_functions&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M158.82,-1227.72C148.85,-1223.85 138.94,-1218.21 132,-1210 85.57,-1155.09 58.76,-927.74 51.22,-854.7"/>
+<polygon fill="#000000" stroke="#000000" points="54.66,-853.95 50.17,-844.35 47.69,-854.66 54.66,-853.95"/>
+</g>
+<!-- module~fourier -->
+<g id="module~~graph~~ModuleGraph_node16" class="node">
+<title>module~fourier</title>
+<g id="a_module~~graph~~ModuleGraph_node16"><a xlink:href="../module/fourier.html" xlink:title="fourier">
+<polygon fill="#337ab7" stroke="#337ab7" points="224.5,-884 170.5,-884 170.5,-860 224.5,-860 224.5,-884"/>
+<text text-anchor="middle" x="197.5" y="-869.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier</text>
+</a>
+</g>
+</g>
+<!-- module~fourier&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge25" class="edge">
+<title>module~fourier&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M170.47,-864.94C148.2,-858.9 115.76,-850.1 90,-843.12"/>
+<polygon fill="#000000" stroke="#000000" points="90.71,-839.68 80.14,-840.44 88.88,-846.44 90.71,-839.68"/>
+</g>
+<!-- module~fourier_field -->
+<g id="module~~graph~~ModuleGraph_node17" class="node">
+<title>module~fourier_field</title>
+<g id="a_module~~graph~~ModuleGraph_node17"><a xlink:href="../module/fourier_field.html" xlink:title="fourier_field">
+<polygon fill="#337ab7" stroke="#337ab7" points="470,-1652 393,-1652 393,-1628 470,-1628 470,-1652"/>
+<text text-anchor="middle" x="431.5" y="-1637.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier_field</text>
+</a>
+</g>
+</g>
+<!-- module~fourier_field&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge27" class="edge">
+<title>module~fourier_field&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M392.85,-1643.33C321.03,-1648.8 168.34,-1655.87 132,-1621 75.02,-1566.32 53.52,-976.39 49.66,-854.11"/>
+<polygon fill="#000000" stroke="#000000" points="53.16,-853.94 49.35,-844.05 46.16,-854.16 53.16,-853.94"/>
+</g>
+<!-- module~fourier_field&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge28" class="edge">
+<title>module~fourier_field&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M392.74,-1641.71C364.01,-1641.02 325.1,-1635.57 299,-1614 266.11,-1586.81 283.87,-1562.21 263,-1525 249.37,-1500.7 229.91,-1475.39 215.94,-1458.37"/>
+<polygon fill="#000000" stroke="#000000" points="218.28,-1455.72 209.19,-1450.28 212.9,-1460.2 218.28,-1455.72"/>
+</g>
+<!-- interpolate -->
+<g id="module~~graph~~ModuleGraph_node65" class="node">
+<title>interpolate</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="233,-1612 162,-1612 162,-1588 233,-1588 233,-1612"/>
+<text text-anchor="middle" x="197.5" y="-1597.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate</text>
+</g>
+<!-- module~fourier_field&#45;&gt;interpolate -->
+<g id="module~~graph~~ModuleGraph_edge26" class="edge">
+<title>module~fourier_field&#45;&gt;interpolate</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M392.97,-1633.53C352.13,-1626.49 286.85,-1615.23 243.34,-1607.73"/>
+<polygon fill="#000000" stroke="#000000" points="243.77,-1604.25 233.32,-1606 242.58,-1611.15 243.77,-1604.25"/>
+</g>
+<!-- module~integrate -->
+<g id="module~~graph~~ModuleGraph_node18" class="node">
+<title>module~integrate</title>
+<g id="a_module~~graph~~ModuleGraph_node18"><a xlink:href="../module/integrate.html" xlink:title="integrate">
+<polygon fill="#337ab7" stroke="#337ab7" points="228,-344 167,-344 167,-320 228,-320 228,-344"/>
+<text text-anchor="middle" x="197.5" y="-329.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate</text>
+</a>
+</g>
+</g>
+<!-- module~integrate&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge30" class="edge">
+<title>module~integrate&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.97,-337.25C154.4,-340.98 140.66,-347.3 132,-358 74.46,-429.08 54.63,-725.27 50.1,-809.54"/>
+<polygon fill="#000000" stroke="#000000" points="46.59,-809.61 49.57,-819.78 53.58,-809.97 46.59,-809.61"/>
+</g>
+<!-- module~integrate&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge29" class="edge">
+<title>module~integrate&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.76,-324.4C155.01,-320.34 141.98,-314.4 132,-306 94.92,-274.79 69.42,-222.62 57.22,-193.44"/>
+<polygon fill="#000000" stroke="#000000" points="60.46,-192.1 53.47,-184.14 53.97,-194.73 60.46,-192.1"/>
+</g>
+<!-- module~integrate_substituted -->
+<g id="module~~graph~~ModuleGraph_node19" class="node">
+<title>module~integrate_substituted</title>
+<g id="a_module~~graph~~ModuleGraph_node19"><a xlink:href="../module/integrate_substituted.html" xlink:title="integrate_substituted">
+<polygon fill="#337ab7" stroke="#337ab7" points="494,-104 369,-104 369,-80 494,-80 494,-104"/>
+<text text-anchor="middle" x="431.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate_substituted</text>
+</a>
+</g>
+</g>
+<!-- module~integrate_substituted&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge32" class="edge">
+<title>module~integrate_substituted&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.94,-88.36C344.58,-90.09 317.93,-96.36 299,-113 256.54,-150.32 297.93,-190.55 263,-235 221.41,-287.93 170.09,-255.5 132,-311 74.84,-394.28 54.56,-720.81 50.04,-809.61"/>
+<polygon fill="#000000" stroke="#000000" points="46.55,-809.5 49.55,-819.66 53.54,-809.84 46.55,-809.5"/>
+</g>
+<!-- module~integrate_substituted&#45;&gt;module~integrate -->
+<g id="module~~graph~~ModuleGraph_edge33" class="edge">
+<title>module~integrate_substituted&#45;&gt;module~integrate</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.79,-87.8C344.25,-89.4 317.51,-95.74 299,-113 247.28,-161.23 297.45,-206.23 263,-268 253.14,-285.68 236.95,-301.72 223.26,-313.32"/>
+<polygon fill="#000000" stroke="#000000" points="220.67,-310.91 215.14,-319.95 225.1,-316.34 220.67,-310.91"/>
+</g>
+<!-- module~integrate_substituted&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge31" class="edge">
+<title>module~integrate_substituted&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.89,-101.47C346.82,-104.96 321.78,-109.03 299,-113 254.22,-120.81 243.59,-126.27 198.5,-132"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-132C160.83,-136.53 121.59,-147.48 92.56,-156.77"/>
+<polygon fill="#000000" stroke="#000000" points="91.15,-153.55 82.73,-159.98 93.33,-160.2 91.15,-153.55"/>
+</g>
+<!-- module~make_fieldline -->
+<g id="module~~graph~~ModuleGraph_node20" class="node">
+<title>module~make_fieldline</title>
+<g id="a_module~~graph~~ModuleGraph_node20"><a xlink:href="../module/make_fieldline.html" xlink:title="make_fieldline">
+<polygon fill="#337ab7" stroke="#337ab7" points="477,-1328 386,-1328 386,-1304 477,-1304 477,-1328"/>
+<text text-anchor="middle" x="431.5" y="-1313.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_fieldline</text>
+</a>
+</g>
+</g>
+<!-- module~make_fieldline&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge34" class="edge">
+<title>module~make_fieldline&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.78,-1321.46C359.92,-1325.45 327.04,-1331.95 299,-1342 251.27,-1359.11 239.51,-1425.82 198.5,-1396"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-1396C154.63,-1365.55 151.27,-1347.05 132,-1299 66.97,-1136.82 52.72,-922.66 49.75,-854.1"/>
+<polygon fill="#000000" stroke="#000000" points="53.24,-853.89 49.35,-844.04 46.25,-854.17 53.24,-853.89"/>
+</g>
+<!-- module~make_fieldline&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge35" class="edge">
+<title>module~make_fieldline&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.8,-1315.45C358.36,-1317.23 323.83,-1323.53 299,-1342 271.56,-1362.41 288.1,-1386.77 263,-1410 256.56,-1415.96 248.65,-1420.78 240.61,-1424.63"/>
+<polygon fill="#000000" stroke="#000000" points="238.97,-1421.53 231.18,-1428.72 241.75,-1427.95 238.97,-1421.53"/>
+</g>
+<!-- module~make_fieldline&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge36" class="edge">
+<title>module~make_fieldline&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.85,-1308.05C356.21,-1300.29 319.17,-1285.33 299,-1257 246.46,-1183.22 296.89,-935 263,-851 253.45,-827.33 234.43,-805.13 219.51,-790.15"/>
+<polygon fill="#000000" stroke="#000000" points="221.76,-787.46 212.15,-783.01 216.89,-792.48 221.76,-787.46"/>
+</g>
+<!-- module~netcdf_mod -->
+<g id="module~~graph~~ModuleGraph_node21" class="node">
+<title>module~netcdf_mod</title>
+<g id="a_module~~graph~~ModuleGraph_node21"><a xlink:href="../module/netcdf_mod.html" xlink:title="netcdf_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="763,-1858 687,-1858 687,-1834 763,-1834 763,-1858"/>
+<text text-anchor="middle" x="725" y="-1843.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">netcdf_mod</text>
+</a>
+</g>
+</g>
+<!-- module~netcdf_mod&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge37" class="edge">
+<title>module~netcdf_mod&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M686.82,-1838.76C619.8,-1826.05 481.14,-1801.51 432.5,-1806"/>
+</g>
+<!-- module~read_file -->
+<g id="module~~graph~~ModuleGraph_node22" class="node">
+<title>module~read_file</title>
+<g id="a_module~~graph~~ModuleGraph_node22"><a xlink:href="../module/read_file.html" xlink:title="read_file">
+<polygon fill="#337ab7" stroke="#337ab7" points="226.5,-226 168.5,-226 168.5,-202 226.5,-202 226.5,-226"/>
+<text text-anchor="middle" x="197.5" y="-211.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">read_file</text>
+</a>
+</g>
+</g>
+<!-- module~read_file&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge39" class="edge">
+<title>module~read_file&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M168.46,-218.64C155.41,-222.27 140.85,-228.68 132,-240 60.68,-331.24 50.63,-713.28 49.23,-809.78"/>
+<polygon fill="#000000" stroke="#000000" points="45.73,-809.82 49.1,-819.87 52.73,-809.91 45.73,-809.82"/>
+</g>
+<!-- module~read_file&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge38" class="edge">
+<title>module~read_file&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M168.41,-206C149.41,-200.59 123.73,-193.28 101.06,-186.82"/>
+<polygon fill="#000000" stroke="#000000" points="101.8,-183.4 91.23,-184.02 99.89,-190.13 101.8,-183.4"/>
+</g>
+<!-- module~shaing_callen_integration -->
+<g id="module~~graph~~ModuleGraph_node23" class="node">
+<title>module~shaing_callen_integration</title>
+<g id="a_module~~graph~~ModuleGraph_node23"><a xlink:href="../module/shaing_callen_integration.html" xlink:title="shaing_callen_integration">
+<polygon fill="#337ab7" stroke="#337ab7" points="506,-608 357,-608 357,-584 506,-584 506,-608"/>
+<text text-anchor="middle" x="431.5" y="-593.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_integration</text>
+</a>
+</g>
+</g>
+<!-- module~shaing_callen_integration&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge40" class="edge">
+<title>module~shaing_callen_integration&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.42,-608.07C349.65,-614.32 322.24,-623.17 299,-635 248.86,-660.54 248.93,-687.04 198.5,-712"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.5,-712C166.68,-726.76 158.37,-729.71 132,-750 107.44,-768.9 82.6,-794.49 66.58,-812.03"/>
+<polygon fill="#000000" stroke="#000000" points="63.56,-810.15 59.46,-819.93 68.76,-814.84 63.56,-810.15"/>
+</g>
+<!-- module~shaing_callen_integration&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge41" class="edge">
+<title>module~shaing_callen_integration&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M390.71,-608.07C362.42,-618.26 324.99,-635.19 299,-660 274.83,-683.07 285.29,-701.11 263,-726 253.49,-736.62 241.01,-746.06 229.56,-753.52"/>
+<polygon fill="#000000" stroke="#000000" points="227.7,-750.55 221.08,-758.82 231.41,-756.49 227.7,-750.55"/>
+</g>
+<!-- module~shaing_callen_integration&#45;&gt;module~integrate -->
+<g id="module~~graph~~ModuleGraph_edge42" class="edge">
+<title>module~shaing_callen_integration&#45;&gt;module~integrate</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M356.92,-599.42C335.82,-596.72 314.38,-589.86 299,-575 239.06,-517.11 303.79,-463.66 263,-391 253.98,-374.93 239.01,-360.84 225.76,-350.45"/>
+<polygon fill="#000000" stroke="#000000" points="227.49,-347.37 217.38,-344.18 223.29,-352.98 227.49,-347.37"/>
+</g>
+<!-- module~utils -->
+<g id="module~~graph~~ModuleGraph_node27" class="node">
+<title>module~utils</title>
+<g id="a_module~~graph~~ModuleGraph_node27"><a xlink:href="../module/utils.html" xlink:title="utils">
+<polygon fill="#337ab7" stroke="#337ab7" points="224.5,-550 170.5,-550 170.5,-526 224.5,-526 224.5,-550"/>
+<text text-anchor="middle" x="197.5" y="-535.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">utils</text>
+</a>
+</g>
+</g>
+<!-- module~shaing_callen_integration&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge43" class="edge">
+<title>module~shaing_callen_integration&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M356.94,-586.84C337.92,-583.76 317.57,-579.85 299,-575 276.94,-569.24 252.96,-560.51 233.95,-552.97"/>
+<polygon fill="#000000" stroke="#000000" points="235.09,-549.66 224.5,-549.16 232.47,-556.15 235.09,-549.66"/>
+</g>
+<!-- module~shaing_callen_mod -->
+<g id="module~~graph~~ModuleGraph_node24" class="node">
+<title>module~shaing_callen_mod</title>
+<g id="a_module~~graph~~ModuleGraph_node24"><a xlink:href="../module/shaing_callen_mod.html" xlink:title="shaing_callen_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="782.5,-686 667.5,-686 667.5,-662 782.5,-662 782.5,-686"/>
+<text text-anchor="middle" x="725" y="-671.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_mod</text>
+</a>
+</g>
+</g>
+<!-- module~shaing_callen_mod&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge44" class="edge">
+<title>module~shaing_callen_mod&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M667.31,-681.48C608.58,-689.2 514.13,-701.57 432.5,-712"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-712C328.22,-725.07 290.91,-666.25 198.5,-712"/>
+</g>
+<!-- module~shaing_callen_mod&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge45" class="edge">
+<title>module~shaing_callen_mod&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M667.18,-669.09C642.99,-670.25 616.59,-676.44 600,-695 504.76,-801.52 660.58,-1231.69 564,-1337 483.58,-1424.69 405.78,-1322.51 299,-1375 278.97,-1384.84 281.54,-1397.58 263,-1410 256.08,-1414.64 248.26,-1418.79 240.52,-1422.39"/>
+<polygon fill="#000000" stroke="#000000" points="238.93,-1419.27 231.18,-1426.51 241.75,-1425.68 238.93,-1419.27"/>
+</g>
+<!-- module~shaing_callen_mod&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge46" class="edge">
+<title>module~shaing_callen_mod&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-712C371.57,-719.53 356.45,-720.85 299,-736 278.86,-741.31 256.97,-748.73 238.77,-755.37"/>
+<polygon fill="#000000" stroke="#000000" points="237.51,-752.11 229.35,-758.86 239.94,-758.67 237.51,-752.11"/>
+</g>
+<!-- module~shaing_callen_mod&#45;&gt;module~shaing_callen_integration -->
+<g id="module~~graph~~ModuleGraph_edge47" class="edge">
+<title>module~shaing_callen_mod&#45;&gt;module~shaing_callen_integration</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M667.44,-670.92C645.57,-668.09 620.85,-662.8 600,-653 580.89,-644.02 582.98,-631.24 564,-622 549.27,-614.83 532.7,-609.64 516.41,-605.88"/>
+<polygon fill="#000000" stroke="#000000" points="516.84,-602.39 506.33,-603.71 515.37,-609.23 516.84,-602.39"/>
+</g>
+<!-- module~shaing_callen_wrappers -->
+<g id="module~~graph~~ModuleGraph_node25" class="node">
+<title>module~shaing_callen_wrappers</title>
+<g id="a_module~~graph~~ModuleGraph_node25"><a xlink:href="../module/shaing_callen_wrappers.html" xlink:title="shaing_callen_wrappers">
+<polygon fill="#337ab7" stroke="#337ab7" points="501.5,-844 361.5,-844 361.5,-820 501.5,-820 501.5,-844"/>
+<text text-anchor="middle" x="431.5" y="-829.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_wrappers</text>
+</a>
+</g>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge48" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.41,-832C282.49,-832 155.89,-832 90.73,-832"/>
+<polygon fill="#000000" stroke="#000000" points="90.44,-828.5 80.44,-832 90.44,-835.5 90.44,-828.5"/>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge49" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.11,-844.06C344.66,-852.6 315.75,-866.99 299,-891 232.85,-985.82 329.73,-1315.59 263,-1410 257.52,-1417.76 249.4,-1423.39 240.77,-1427.47"/>
+<polygon fill="#000000" stroke="#000000" points="239.24,-1424.31 231.29,-1431.31 241.87,-1430.8 239.24,-1424.31"/>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge50" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.3,-823.87C341.02,-820.71 318.95,-816.49 299,-811 276.7,-804.86 252.59,-795.37 233.57,-787.17"/>
+<polygon fill="#000000" stroke="#000000" points="234.97,-783.96 224.41,-783.15 232.16,-790.37 234.97,-783.96"/>
+</g>
+<!-- module~surface_average_mod -->
+<g id="module~~graph~~ModuleGraph_node26" class="node">
+<title>module~surface_average_mod</title>
+<g id="a_module~~graph~~ModuleGraph_node26"><a xlink:href="../module/surface_average_mod.html" xlink:title="surface_average_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="263,-1693 132,-1693 132,-1669 263,-1669 263,-1693"/>
+<text text-anchor="middle" x="197.5" y="-1678.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">surface_average_mod</text>
+</a>
+</g>
+</g>
+<!-- module~surface_average_mod&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge51" class="edge">
+<title>module~surface_average_mod&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M150.21,-1668.93C143.17,-1665.2 136.7,-1660.34 132,-1654 83,-1587.84 55.13,-979.24 49.9,-854.34"/>
+<polygon fill="#000000" stroke="#000000" points="53.39,-853.93 49.48,-844.09 46.4,-854.22 53.39,-853.93"/>
+</g>
+<!-- module~utils&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge52" class="edge">
+<title>module~utils&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M190.35,-550.26C167.67,-595.46 88.56,-753.16 59.67,-810.74"/>
+<polygon fill="#000000" stroke="#000000" points="56.53,-809.18 55.18,-819.69 62.79,-812.32 56.53,-809.18"/>
+</g>
+<!-- proc~calc_avg_b_squared_over_avg_lambda -->
+<g id="module~~graph~~ModuleGraph_node28" class="node">
+<title>proc~calc_avg_b_squared_over_avg_lambda</title>
+<g id="a_module~~graph~~ModuleGraph_node28"><a xlink:href="../proc/calc_avg_b_squared_over_avg_lambda.html" xlink:title="calc_avg_B_squared_over_avg_lambda">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="835,-844 615,-844 615,-820 835,-820 835,-844"/>
+<text text-anchor="middle" x="725" y="-829.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_B_squared_over_avg_lambda</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_b_squared_over_avg_lambda&#45;&gt;module~shaing_callen_wrappers -->
+<g id="module~~graph~~ModuleGraph_edge53" class="edge">
+<title>proc~calc_avg_b_squared_over_avg_lambda&#45;&gt;module~shaing_callen_wrappers</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M614.63,-832C580.52,-832 543.56,-832 511.92,-832"/>
+<polygon fill="#000000" stroke="#000000" points="511.84,-828.5 501.84,-832 511.84,-835.5 511.84,-828.5"/>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared -->
+<g id="module~~graph~~ModuleGraph_node29" class="node">
+<title>proc~calc_avg_lambda_over_b_squared</title>
+<g id="a_module~~graph~~ModuleGraph_node29"><a xlink:href="../proc/calc_avg_lambda_over_b_squared.html" xlink:title="calc_avg_lambda_over_B_squared">
+<polygon fill="#d9534f" stroke="#d9534f" points="822.5,-644 627.5,-644 627.5,-620 822.5,-620 822.5,-644"/>
+<text text-anchor="middle" x="725" y="-629.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_lambda_over_B_squared</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge54" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M627.36,-633.29C538.65,-637.61 405.26,-652.13 299,-698 280.39,-706.03 279.32,-713.97 263,-726 250.65,-735.1 236.72,-744.88 224.97,-752.99"/>
+<polygon fill="#000000" stroke="#000000" points="222.73,-750.28 216.47,-758.83 226.7,-756.05 222.73,-750.28"/>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~integrate_substituted -->
+<g id="module~~graph~~ModuleGraph_edge55" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~integrate_substituted</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M627.21,-629.02C616.92,-625.03 607.49,-619.24 600,-611 525.38,-528.88 639,-194.76 564,-113 548.89,-96.53 526.43,-89.5 504.34,-87.14"/>
+<polygon fill="#000000" stroke="#000000" points="504.48,-83.64 494.24,-86.36 503.94,-90.62 504.48,-83.64"/>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~shaing_callen_wrappers -->
+<g id="module~~graph~~ModuleGraph_edge56" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~shaing_callen_wrappers</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M627.45,-636.46C617.31,-640.24 607.85,-645.58 600,-653 547.66,-702.47 616.57,-761.77 564,-811 549.84,-824.25 530.85,-831.08 511.7,-834.26"/>
+<polygon fill="#000000" stroke="#000000" points="511.15,-830.81 501.7,-835.61 512.08,-837.74 511.15,-830.81"/>
+</g>
+<!-- proc~calc_avg_normalized_b_squared_dphimax_dxi0 -->
+<g id="module~~graph~~ModuleGraph_node30" class="node">
+<title>proc~calc_avg_normalized_b_squared_dphimax_dxi0</title>
+<g id="a_module~~graph~~ModuleGraph_node30"><a xlink:href="../proc/calc_avg_normalized_b_squared_dphimax_dxi0.html" xlink:title="calc_avg_normalized_B_squared_dphimax_dxi0">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="564,-966 299,-966 299,-942 564,-942 564,-966"/>
+<text text-anchor="middle" x="431.5" y="-951.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_normalized_B_squared_dphimax_dxi0</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_normalized_b_squared_dphimax_dxi0&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge57" class="edge">
+<title>proc~calc_avg_normalized_b_squared_dphimax_dxi0&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M349.84,-966C332.8,-969.63 315.1,-974.23 299,-980 272.92,-989.35 245.34,-1004.6 225.69,-1016.51"/>
+<polygon fill="#000000" stroke="#000000" points="223.65,-1013.65 216.98,-1021.88 227.33,-1019.61 223.65,-1013.65"/>
+</g>
+<!-- proc~calc_avg_normalized_b_squared_dphimax_dxi0&#45;&gt;module~fourier -->
+<g id="module~~graph~~ModuleGraph_edge58" class="edge">
+<title>proc~calc_avg_normalized_b_squared_dphimax_dxi0&#45;&gt;module~fourier</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M329.31,-941.95C318.93,-939.49 308.66,-936.55 299,-933 270.92,-922.69 242.05,-904.19 222.5,-890.26"/>
+<polygon fill="#000000" stroke="#000000" points="224.36,-887.28 214.21,-884.23 220.24,-892.94 224.36,-887.28"/>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0 -->
+<g id="module~~graph~~ModuleGraph_node31" class="node">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0</title>
+<g id="a_module~~graph~~ModuleGraph_node31"><a xlink:href="../proc/calc_avg_normalized_lambda_dphimax_dxi0.html" xlink:title="calc_avg_normalized_lambda_dphimax_dxi0">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="850,-946 600,-946 600,-922 850,-922 850,-946"/>
+<text text-anchor="middle" x="725" y="-931.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_normalized_lambda_dphimax_dxi0</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fieldline_integrands -->
+<g id="module~~graph~~ModuleGraph_edge59" class="edge">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fieldline_integrands</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M715.89,-946.47C693.71,-981.17 631.61,-1082.37 600,-1175 571.54,-1258.41 625.92,-1307.29 564,-1370 547.55,-1386.66 523.72,-1394.24 500.85,-1397.31"/>
+<polygon fill="#000000" stroke="#000000" points="500.35,-1393.84 490.78,-1398.38 501.1,-1400.8 500.35,-1393.84"/>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge60" class="edge">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M682.18,-946.04C650.06,-954.97 604.5,-966.93 564,-975 447.31,-998.25 416.18,-992.38 299,-1013 284.24,-1015.6 268.33,-1018.76 253.62,-1021.82"/>
+<polygon fill="#000000" stroke="#000000" points="252.72,-1018.44 243.66,-1023.93 254.17,-1025.29 252.72,-1018.44"/>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fourier -->
+<g id="module~~graph~~ModuleGraph_edge61" class="edge">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~fourier</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M687.93,-921.97C655.81,-911.81 607.32,-897.87 564,-891 444.81,-872.1 301.3,-870.79 235.16,-871.37"/>
+<polygon fill="#000000" stroke="#000000" points="234.81,-867.87 224.85,-871.48 234.88,-874.87 234.81,-867.87"/>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~shaing_callen_wrappers -->
+<g id="module~~graph~~ModuleGraph_edge62" class="edge">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;module~shaing_callen_wrappers</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M702.97,-921.92C673.02,-905.21 615.97,-875.18 564,-858 547.38,-852.5 529.17,-847.99 511.74,-844.36"/>
+<polygon fill="#000000" stroke="#000000" points="512.08,-840.86 501.58,-842.33 510.7,-847.72 512.08,-840.86"/>
+</g>
+<!-- proc~calc_deviation -->
+<g id="module~~graph~~ModuleGraph_node32" class="node">
+<title>proc~calc_deviation</title>
+<g id="a_module~~graph~~ModuleGraph_node32"><a xlink:href="../proc/calc_deviation.html" xlink:title="calc_deviation">
+<polygon fill="#d9534f" stroke="#d9534f" points="476,-1248 387,-1248 387,-1224 476,-1224 476,-1248"/>
+<text text-anchor="middle" x="431.5" y="-1233.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_deviation</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_deviation&#45;&gt;module~error_handling -->
+<g id="module~~graph~~ModuleGraph_edge63" class="edge">
+<title>proc~calc_deviation&#45;&gt;module~error_handling</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.86,-1243.9C348.99,-1250.76 293.98,-1260.72 253.18,-1268.1"/>
+<polygon fill="#000000" stroke="#000000" points="252.34,-1264.7 243.13,-1269.92 253.59,-1271.58 252.34,-1264.7"/>
+</g>
+<!-- proc~calc_deviation&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge64" class="edge">
+<title>proc~calc_deviation&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.41,-1223.96C361.76,-1214.41 325.63,-1198.98 299,-1177 256.98,-1142.32 224.46,-1085.93 208.79,-1055.36"/>
+<polygon fill="#000000" stroke="#000000" points="211.91,-1053.77 204.3,-1046.39 205.65,-1056.9 211.91,-1053.77"/>
+</g>
+<!-- proc~calc_deviation&#45;&gt;module~fit_functions -->
+<g id="module~~graph~~ModuleGraph_edge65" class="edge">
+<title>proc~calc_deviation&#45;&gt;module~fit_functions</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.86,-1236C346.81,-1236 287.59,-1236 246.28,-1236"/>
+<polygon fill="#000000" stroke="#000000" points="246.19,-1232.5 236.19,-1236 246.19,-1239.5 246.19,-1232.5"/>
+</g>
+<!-- proc~calc_deviation&#45;&gt;module~surface_average_mod -->
+<g id="module~~graph~~ModuleGraph_edge66" class="edge">
+<title>proc~calc_deviation&#45;&gt;module~surface_average_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.99,-1243.84C357.29,-1251.59 319.7,-1266.58 299,-1295 213.18,-1412.83 328.46,-1490.76 263,-1621 254.53,-1637.86 239.24,-1652.41 225.67,-1662.95"/>
+<polygon fill="#000000" stroke="#000000" points="223.47,-1660.22 217.52,-1668.99 227.64,-1665.85 223.47,-1660.22"/>
+</g>
+<!-- proc~calc_fieldline_integrals -->
+<g id="module~~graph~~ModuleGraph_node33" class="node">
+<title>proc~calc_fieldline_integrals</title>
+<g id="a_module~~graph~~ModuleGraph_node33"><a xlink:href="../proc/calc_fieldline_integrals.html" xlink:title="calc_fieldline_integrals">
+<polygon fill="#d9534f" stroke="#d9534f" points="792,-104 658,-104 658,-80 792,-80 792,-104"/>
+<text text-anchor="middle" x="725" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_fieldline_integrals</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_fieldline_integrals&#45;&gt;module~integrate_substituted -->
+<g id="module~~graph~~ModuleGraph_edge67" class="edge">
+<title>proc~calc_fieldline_integrals&#45;&gt;module~integrate_substituted</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M657.85,-92C612.16,-92 551.4,-92 504.49,-92"/>
+<polygon fill="#000000" stroke="#000000" points="504.4,-88.5 494.4,-92 504.4,-95.5 504.4,-88.5"/>
+</g>
+<!-- proc~calc_finite_boundary_layer_correction -->
+<g id="module~~graph~~ModuleGraph_node34" class="node">
+<title>proc~calc_finite_boundary_layer_correction</title>
+<g id="a_module~~graph~~ModuleGraph_node34"><a xlink:href="../proc/calc_finite_boundary_layer_correction.html" xlink:title="calc_finite_boundary_layer_correction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="538.5,-1694 324.5,-1694 324.5,-1670 538.5,-1670 538.5,-1694"/>
+<text text-anchor="middle" x="431.5" y="-1679.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_finite_boundary_layer_correction</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_finite_boundary_layer_correction&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge68" class="edge">
+<title>proc~calc_finite_boundary_layer_correction&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M324.2,-1676.43C314.98,-1672.69 306.37,-1667.67 299,-1661 252.62,-1619.06 290.1,-1581.35 263,-1525 250.88,-1499.81 231.09,-1474.54 216.62,-1457.77"/>
+<polygon fill="#000000" stroke="#000000" points="219.24,-1455.45 210,-1450.26 213.98,-1460.08 219.24,-1455.45"/>
+</g>
+<!-- proc~calc_finite_boundary_layer_correction&#45;&gt;module~surface_average_mod -->
+<g id="module~~graph~~ModuleGraph_edge69" class="edge">
+<title>proc~calc_finite_boundary_layer_correction&#45;&gt;module~surface_average_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M324.34,-1681.54C307.22,-1681.47 289.8,-1681.39 273.6,-1681.32"/>
+<polygon fill="#000000" stroke="#000000" points="273.17,-1677.82 263.15,-1681.28 273.14,-1684.82 273.17,-1677.82"/>
+</g>
+<!-- proc~calc_gradient_scaling_factor_r_eff -->
+<g id="module~~graph~~ModuleGraph_node35" class="node">
+<title>proc~calc_gradient_scaling_factor_r_eff</title>
+<g id="a_module~~graph~~ModuleGraph_node35"><a xlink:href="../proc/calc_gradient_scaling_factor_r_eff.html" xlink:title="calc_gradient_scaling_factor_r_eff">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="528,-1736 335,-1736 335,-1712 528,-1712 528,-1736"/>
+<text text-anchor="middle" x="431.5" y="-1721.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_gradient_scaling_factor_r_eff</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_gradient_scaling_factor_r_eff&#45;&gt;module~surface_average_mod -->
+<g id="module~~graph~~ModuleGraph_edge70" class="edge">
+<title>proc~calc_gradient_scaling_factor_r_eff&#45;&gt;module~surface_average_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.4,-1711.96C333.4,-1709.19 315.58,-1706.14 299,-1703 286.61,-1700.66 273.4,-1697.93 260.78,-1695.21"/>
+<polygon fill="#000000" stroke="#000000" points="261.32,-1691.75 250.8,-1693.04 259.83,-1698.59 261.32,-1691.75"/>
+</g>
+<!-- proc~calc_offset_coefficients -->
+<g id="module~~graph~~ModuleGraph_node36" class="node">
+<title>proc~calc_offset_coefficients</title>
+<g id="a_module~~graph~~ModuleGraph_node36"><a xlink:href="../proc/calc_offset_coefficients.html" xlink:title="calc_offset_coefficients">
+<polygon fill="#d9534f" stroke="#d9534f" points="793,-1572 657,-1572 657,-1548 793,-1548 793,-1572"/>
+<text text-anchor="middle" x="725" y="-1557.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_offset_coefficients</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_offset_coefficients&#45;&gt;module~deviation -->
+<g id="module~~graph~~ModuleGraph_edge71" class="edge">
+<title>proc~calc_offset_coefficients&#45;&gt;module~deviation</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M656.76,-1560C599.86,-1560 520.21,-1560 472.74,-1560"/>
+<polygon fill="#000000" stroke="#000000" points="472.54,-1556.5 462.54,-1560 472.54,-1563.5 472.54,-1556.5"/>
+</g>
+<!-- proc~calc_offset_coefficients&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge72" class="edge">
+<title>proc~calc_offset_coefficients&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M656.73,-1570.6C574.02,-1583.42 443.21,-1602.97 432.5,-1600"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-1600C373.6,-1584.22 348.67,-1612.94 299,-1581 274.11,-1565 279.82,-1549.34 263,-1525 246.98,-1501.82 227.61,-1475.96 214.3,-1458.5"/>
+<polygon fill="#000000" stroke="#000000" points="216.81,-1456.02 207.95,-1450.2 211.25,-1460.27 216.81,-1456.02"/>
+</g>
+<!-- proc~calc_periodic_dydx -->
+<g id="module~~graph~~ModuleGraph_node37" class="node">
+<title>proc~calc_periodic_dydx</title>
+<g id="a_module~~graph~~ModuleGraph_node37"><a xlink:href="../proc/calc_periodic_dydx.html" xlink:title="calc_periodic_dydx">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="488.5,-924 374.5,-924 374.5,-900 488.5,-900 488.5,-924"/>
+<text text-anchor="middle" x="431.5" y="-909.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_periodic_dydx</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_periodic_dydx&#45;&gt;module~fourier -->
+<g id="module~~graph~~ModuleGraph_edge73" class="edge">
+<title>proc~calc_periodic_dydx&#45;&gt;module~fourier</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M374.34,-902.32C330.82,-894.81 271.84,-884.64 234.47,-878.2"/>
+<polygon fill="#000000" stroke="#000000" points="234.98,-874.74 224.53,-876.49 233.79,-881.64 234.98,-874.74"/>
+</g>
+<!-- proc~calc_surface_averages -->
+<g id="module~~graph~~ModuleGraph_node38" class="node">
+<title>proc~calc_surface_averages</title>
+<g id="a_module~~graph~~ModuleGraph_node38"><a xlink:href="../proc/calc_surface_averages.html" xlink:title="calc_surface_averages">
+<polygon fill="#d9534f" stroke="#d9534f" points="498.5,-398 364.5,-398 364.5,-374 498.5,-374 498.5,-398"/>
+<text text-anchor="middle" x="431.5" y="-383.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_surface_averages</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_surface_averages&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge75" class="edge">
+<title>proc~calc_surface_averages&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.38,-381C340.66,-382.82 315.69,-389.53 299,-407 249.73,-458.59 299.49,-664.7 263,-726 256.22,-737.39 245.31,-746.61 234.38,-753.67"/>
+<polygon fill="#000000" stroke="#000000" points="232.47,-750.73 225.68,-758.87 236.06,-756.74 232.47,-750.73"/>
+</g>
+<!-- proc~calc_surface_averages&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge74" class="edge">
+<title>proc~calc_surface_averages&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.19,-385.9C342.05,-383.24 318.16,-377.3 299,-365 274.72,-349.42 284.02,-330.75 263,-311 213.94,-264.91 188.03,-272.31 132,-235 110.97,-221 88.18,-203.52 71.82,-190.53"/>
+<polygon fill="#000000" stroke="#000000" points="73.88,-187.7 63.89,-184.19 69.51,-193.17 73.88,-187.7"/>
+</g>
+<!-- proc~cannot_resolve -->
+<g id="module~~graph~~ModuleGraph_node39" class="node">
+<title>proc~cannot_resolve</title>
+<g id="a_module~~graph~~ModuleGraph_node39"><a xlink:href="../proc/cannot_resolve.html" xlink:title="cannot_resolve">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="478,-314 385,-314 385,-290 478,-290 478,-314"/>
+<text text-anchor="middle" x="431.5" y="-299.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cannot_resolve</text>
+</a>
+</g>
+</g>
+<!-- proc~cannot_resolve&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge76" class="edge">
+<title>proc~cannot_resolve&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.8,-297.03C356.43,-296.6 321.26,-301.29 299,-323 236.22,-384.23 320.81,-451.06 263,-517 255.71,-525.32 245.08,-530.36 234.54,-533.41"/>
+<polygon fill="#000000" stroke="#000000" points="233.51,-530.06 224.58,-535.77 235.12,-536.87 233.51,-530.06"/>
+</g>
+<!-- proc~cannot_resolve_at_edge -->
+<g id="module~~graph~~ModuleGraph_node40" class="node">
+<title>proc~cannot_resolve_at_edge</title>
+<g id="a_module~~graph~~ModuleGraph_node40"><a xlink:href="../proc/cannot_resolve_at_edge.html" xlink:title="cannot_resolve_at_edge">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="502,-272 361,-272 361,-248 502,-248 502,-272"/>
+<text text-anchor="middle" x="431.5" y="-257.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cannot_resolve_at_edge</text>
+</a>
+</g>
+</g>
+<!-- proc~cannot_resolve_at_edge&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge77" class="edge">
+<title>proc~cannot_resolve_at_edge&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M360.99,-255.68C338.45,-257.94 315.13,-264.76 299,-281 224.24,-356.29 331.65,-436.1 263,-517 255.84,-525.44 245.25,-530.51 234.7,-533.55"/>
+<polygon fill="#000000" stroke="#000000" points="233.66,-530.2 224.72,-535.89 235.26,-537.02 233.66,-530.2"/>
+</g>
+<!-- proc~check_if_valid_input -->
+<g id="module~~graph~~ModuleGraph_node41" class="node">
+<title>proc~check_if_valid_input</title>
+<g id="a_module~~graph~~ModuleGraph_node41"><a xlink:href="../proc/check_if_valid_input.html" xlink:title="check_if_valid_input">
+<polygon fill="#d9534f" stroke="#d9534f" points="491,-566 372,-566 372,-542 491,-542 491,-566"/>
+<text text-anchor="middle" x="431.5" y="-551.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_if_valid_input</text>
+</a>
+</g>
+</g>
+<!-- proc~check_if_valid_input&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge78" class="edge">
+<title>proc~check_if_valid_input&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.96,-549.96C328.83,-546.99 271.53,-543.04 234.82,-540.5"/>
+<polygon fill="#000000" stroke="#000000" points="234.8,-537 224.59,-539.8 234.32,-543.98 234.8,-537"/>
+</g>
+<!-- proc~check_if_valid_namelist -->
+<g id="module~~graph~~ModuleGraph_node42" class="node">
+<title>proc~check_if_valid_namelist</title>
+<g id="a_module~~graph~~ModuleGraph_node42"><a xlink:href="../proc/check_if_valid_namelist.html" xlink:title="check_if_valid_namelist">
+<polygon fill="#d9534f" stroke="#d9534f" points="794,-728 656,-728 656,-704 794,-704 794,-728"/>
+<text text-anchor="middle" x="725" y="-713.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_if_valid_namelist</text>
+</a>
+</g>
+</g>
+<!-- proc~check_if_valid_namelist&#45;&gt;module~make_fieldline -->
+<g id="module~~graph~~ModuleGraph_edge79" class="edge">
+<title>proc~check_if_valid_namelist&#45;&gt;module~make_fieldline</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M697.27,-728.02C667.76,-742.88 621.56,-771.17 600,-811 549.2,-904.88 634.81,-1210.12 564,-1290 545.18,-1311.23 514.46,-1318.14 487.44,-1319.55"/>
+<polygon fill="#000000" stroke="#000000" points="487.19,-1316.05 477.3,-1319.84 487.39,-1323.05 487.19,-1316.05"/>
+</g>
+<!-- proc~check_if_valid_namelist&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge80" class="edge">
+<title>proc~check_if_valid_namelist&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.98,-709.87C569.25,-699.93 416.45,-675.17 299,-617 267.68,-601.49 236.86,-575.16 217.77,-557.2"/>
+<polygon fill="#000000" stroke="#000000" points="219.99,-554.47 210.35,-550.07 215.14,-559.52 219.99,-554.47"/>
+</g>
+<!-- proc~contains_nan -->
+<g id="module~~graph~~ModuleGraph_node43" class="node">
+<title>proc~contains_nan</title>
+<g id="a_module~~graph~~ModuleGraph_node43"><a xlink:href="../proc/contains_nan.html" xlink:title="contains_nan">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="239,-184 156,-184 156,-160 239,-160 239,-184"/>
+<text text-anchor="middle" x="197.5" y="-169.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">contains_nan</text>
+</a>
+</g>
+</g>
+<!-- proc~contains_nan&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge81" class="edge">
+<title>proc~contains_nan&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M155.8,-172C140.48,-172 122.76,-172 106.21,-172"/>
+<polygon fill="#000000" stroke="#000000" points="106.08,-168.5 96.08,-172 106.08,-175.5 106.08,-168.5"/>
+</g>
+<!-- proc~estimate_symmetry_violation -->
+<g id="module~~graph~~ModuleGraph_node44" class="node">
+<title>proc~estimate_symmetry_violation</title>
+<g id="a_module~~graph~~ModuleGraph_node44"><a xlink:href="../proc/estimate_symmetry_violation.html" xlink:title="estimate_symmetry_violation">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="516,-524 347,-524 347,-500 516,-500 516,-524"/>
+<text text-anchor="middle" x="431.5" y="-509.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">estimate_symmetry_violation</text>
+</a>
+</g>
+</g>
+<!-- proc~estimate_symmetry_violation&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge82" class="edge">
+<title>proc~estimate_symmetry_violation&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M346.74,-521.39C308.2,-525.71 264.49,-530.6 234.58,-533.96"/>
+<polygon fill="#000000" stroke="#000000" points="234.15,-530.48 224.61,-535.07 234.93,-537.44 234.15,-530.48"/>
+</g>
+<!-- proc~find_global_extrema -->
+<g id="module~~graph~~ModuleGraph_node45" class="node">
+<title>proc~find_global_extrema</title>
+<g id="a_module~~graph~~ModuleGraph_node45"><a xlink:href="../proc/find_global_extrema.html" xlink:title="find_global_extrema">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="491.5,-482 371.5,-482 371.5,-458 491.5,-458 491.5,-482"/>
+<text text-anchor="middle" x="431.5" y="-467.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_global_extrema</text>
+</a>
+</g>
+</g>
+<!-- proc~find_global_extrema&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge83" class="edge">
+<title>proc~find_global_extrema&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.29,-473.54C348.09,-476.43 321.65,-481.64 299,-491 280.76,-498.54 280.6,-508.06 263,-517 254.04,-521.55 243.88,-525.4 234.33,-528.52"/>
+<polygon fill="#000000" stroke="#000000" points="233.19,-525.2 224.66,-531.49 235.25,-531.9 233.19,-525.2"/>
+</g>
+<!-- proc~find_local_maxima -->
+<g id="module~~graph~~ModuleGraph_node46" class="node">
+<title>proc~find_local_maxima</title>
+<g id="a_module~~graph~~ModuleGraph_node46"><a xlink:href="../proc/find_local_maxima.html" xlink:title="find_local_maxima">
+<polygon fill="#d9534f" stroke="#d9534f" points="487.5,-146 375.5,-146 375.5,-122 487.5,-122 487.5,-146"/>
+<text text-anchor="middle" x="431.5" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_local_maxima</text>
+</a>
+</g>
+</g>
+<!-- proc~find_local_maxima&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge85" class="edge">
+<title>proc~find_local_maxima&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.37,-128.38C348.61,-128.84 318.19,-134.64 299,-155 243.55,-213.83 313.68,-454.02 263,-517 256.01,-525.69 245.36,-530.83 234.72,-533.85"/>
+<polygon fill="#000000" stroke="#000000" points="233.61,-530.51 224.63,-536.14 235.16,-537.33 233.61,-530.51"/>
+</g>
+<!-- proc~find_local_maxima&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge84" class="edge">
+<title>proc~find_local_maxima&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.41,-129.37C328.25,-126.39 258.64,-124.36 198.5,-132"/>
+</g>
+<!-- proc~find_maxima_along_fieldline -->
+<g id="module~~graph~~ModuleGraph_node47" class="node">
+<title>proc~find_maxima_along_fieldline</title>
+<g id="a_module~~graph~~ModuleGraph_node47"><a xlink:href="../proc/find_maxima_along_fieldline.html" xlink:title="find_maxima_along_fieldline">
+<polygon fill="#d9534f" stroke="#d9534f" points="807.5,-1530 642.5,-1530 642.5,-1506 807.5,-1506 807.5,-1530"/>
+<text text-anchor="middle" x="725" y="-1515.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_maxima_along_fieldline</text>
+</a>
+</g>
+</g>
+<!-- proc~find_maxima_along_fieldline&#45;&gt;module~field_along_fieldline -->
+<g id="module~~graph~~ModuleGraph_edge86" class="edge">
+<title>proc~find_maxima_along_fieldline&#45;&gt;module~field_along_fieldline</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M642.41,-1518C598.07,-1518 543.82,-1518 501.58,-1518"/>
+<polygon fill="#000000" stroke="#000000" points="501.39,-1514.5 491.39,-1518 501.39,-1521.5 501.39,-1514.5"/>
+</g>
+<!-- proc~find_maxima_along_fieldline&#45;&gt;module~find_extrema -->
+<g id="module~~graph~~ModuleGraph_edge87" class="edge">
+<title>proc~find_maxima_along_fieldline&#45;&gt;module~find_extrema</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M642.46,-1517.47C626.65,-1521.04 611.45,-1527.61 600,-1539 534.11,-1604.55 630.2,-1679.76 564,-1745 543.05,-1765.65 510.44,-1770.96 482.93,-1771.08"/>
+<polygon fill="#000000" stroke="#000000" points="482.74,-1767.57 472.68,-1770.89 482.61,-1774.57 482.74,-1767.57"/>
+</g>
+<!-- proc~fourier_field_init -->
+<g id="module~~graph~~ModuleGraph_node48" class="node">
+<title>proc~fourier_field_init</title>
+<g id="a_module~~graph~~ModuleGraph_node48"><a xlink:href="../proc/fourier_field_init.html" xlink:title="fourier_field_init">
+<polygon fill="#d9534f" stroke="#d9534f" points="481,-440 382,-440 382,-416 481,-416 481,-440"/>
+<text text-anchor="middle" x="431.5" y="-425.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier_field_init</text>
+</a>
+</g>
+</g>
+<!-- proc~fourier_field_init&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge88" class="edge">
+<title>proc~fourier_field_init&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M381.85,-425.62C355.17,-426.65 322.78,-431.98 299,-449 271.19,-468.9 289.17,-494.99 263,-517 254.89,-523.82 244.51,-528.44 234.46,-531.57"/>
+<polygon fill="#000000" stroke="#000000" points="233.36,-528.24 224.61,-534.22 235.18,-535 233.36,-528.24"/>
+</g>
+<!-- proc~fourier_transform_over_label -->
+<g id="module~~graph~~ModuleGraph_node49" class="node">
+<title>proc~fourier_transform_over_label</title>
+<g id="a_module~~graph~~ModuleGraph_node49"><a xlink:href="../proc/fourier_transform_over_label.html" xlink:title="fourier_transform_over_label">
+<polygon fill="#d9534f" stroke="#d9534f" points="515,-802 348,-802 348,-778 515,-778 515,-802"/>
+<text text-anchor="middle" x="431.5" y="-787.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fourier_transform_over_label</text>
+</a>
+</g>
+</g>
+<!-- proc~fourier_transform_over_label&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge89" class="edge">
+<title>proc~fourier_transform_over_label&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M347.73,-783.22C315.27,-780.56 279.03,-777.6 250.39,-775.25"/>
+<polygon fill="#000000" stroke="#000000" points="250.46,-771.74 240.21,-774.42 249.89,-778.72 250.46,-771.74"/>
+</g>
+<!-- proc~fourier_transform_over_label&#45;&gt;module~fourier -->
+<g id="module~~graph~~ModuleGraph_edge90" class="edge">
+<title>proc~fourier_transform_over_label&#45;&gt;module~fourier</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M347.87,-798.18C331.38,-801.21 314.41,-805.34 299,-811 270.92,-821.31 242.05,-839.81 222.5,-853.74"/>
+<polygon fill="#000000" stroke="#000000" points="220.24,-851.06 214.21,-859.77 224.36,-856.72 220.24,-851.06"/>
+</g>
+<!-- proc~get_labels -->
+<g id="module~~graph~~ModuleGraph_node50" class="node">
+<title>proc~get_labels</title>
+<g id="a_module~~graph~~ModuleGraph_node50"><a xlink:href="../proc/get_labels.html" xlink:title="get_labels">
+<polygon fill="#d9534f" stroke="#d9534f" points="465,-230 398,-230 398,-206 465,-206 465,-230"/>
+<text text-anchor="middle" x="431.5" y="-215.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">get_labels</text>
+</a>
+</g>
+</g>
+<!-- proc~get_labels&#45;&gt;module~diophantine -->
+<g id="module~~graph~~ModuleGraph_edge91" class="edge">
+<title>proc~get_labels&#45;&gt;module~diophantine</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M397.84,-213.91C368.28,-212.13 325.44,-214.64 299,-239 249.53,-284.58 307.04,-335.16 263,-386 258.11,-391.65 251.81,-396.08 245.08,-399.56"/>
+<polygon fill="#000000" stroke="#000000" points="243.42,-396.47 235.71,-403.74 246.27,-402.86 243.42,-396.47"/>
+</g>
+<!-- proc~get_labels&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge92" class="edge">
+<title>proc~get_labels&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M397.77,-213.29C367.74,-210.97 324.2,-213.04 299,-239 212.22,-328.39 342.54,-421.1 263,-517 255.88,-525.59 245.2,-530.69 234.56,-533.72"/>
+<polygon fill="#000000" stroke="#000000" points="233.46,-530.38 224.5,-536.03 235.03,-537.2 233.46,-530.38"/>
+</g>
+<!-- proc~get_non_omnigenous_remainder -->
+<g id="module~~graph~~ModuleGraph_node51" class="node">
+<title>proc~get_non_omnigenous_remainder</title>
+<g id="a_module~~graph~~ModuleGraph_node51"><a xlink:href="../proc/get_non_omnigenous_remainder.html" xlink:title="get_non_omnigenous_remainder">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="818.5,-602 631.5,-602 631.5,-578 818.5,-578 818.5,-602"/>
+<text text-anchor="middle" x="725" y="-587.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">get_non_omnigenous_remainder</text>
+</a>
+</g>
+</g>
+<!-- proc~get_non_omnigenous_remainder&#45;&gt;module~shaing_callen_integration -->
+<g id="module~~graph~~ModuleGraph_edge93" class="edge">
+<title>proc~get_non_omnigenous_remainder&#45;&gt;module~shaing_callen_integration</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M631.37,-591.91C594.65,-592.66 552.72,-593.53 516.86,-594.26"/>
+<polygon fill="#000000" stroke="#000000" points="516.35,-590.77 506.42,-594.48 516.49,-597.77 516.35,-590.77"/>
+</g>
+<!-- proc~has_sin_modes -->
+<g id="module~~graph~~ModuleGraph_node52" class="node">
+<title>proc~has_sin_modes</title>
+<g id="a_module~~graph~~ModuleGraph_node52"><a xlink:href="../proc/has_sin_modes.html" xlink:title="has_sin_modes">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="478,-1046 385,-1046 385,-1022 478,-1022 478,-1046"/>
+<text text-anchor="middle" x="431.5" y="-1031.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">has_sin_modes</text>
+</a>
+</g>
+</g>
+<!-- proc~has_sin_modes&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge94" class="edge">
+<title>proc~has_sin_modes&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.94,-1034C347.31,-1034 293.76,-1034 253.7,-1034"/>
+<polygon fill="#000000" stroke="#000000" points="253.56,-1030.5 243.56,-1034 253.56,-1037.5 253.56,-1030.5"/>
+</g>
+<!-- proc~integrate_1d -->
+<g id="module~~graph~~ModuleGraph_node53" class="node">
+<title>proc~integrate_1d</title>
+<g id="a_module~~graph~~ModuleGraph_node53"><a xlink:href="../proc/integrate_1d.html" xlink:title="integrate_1d">
+<polygon fill="#d9534f" stroke="#d9534f" points="966,-1900 886,-1900 886,-1876 966,-1876 966,-1900"/>
+<text text-anchor="middle" x="926" y="-1885.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate_1d</text>
+</a>
+</g>
+</g>
+<!-- quadpack_double -->
+<g id="module~~graph~~ModuleGraph_node66" class="node">
+<title>quadpack_double</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="778.5,-1900 671.5,-1900 671.5,-1876 778.5,-1876 778.5,-1900"/>
+<text text-anchor="middle" x="725" y="-1885.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quadpack_double</text>
+</g>
+<!-- proc~integrate_1d&#45;&gt;quadpack_double -->
+<g id="module~~graph~~ModuleGraph_edge95" class="edge">
+<title>proc~integrate_1d&#45;&gt;quadpack_double</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M885.68,-1888C858.09,-1888 820.6,-1888 788.88,-1888"/>
+<polygon fill="#000000" stroke="#000000" points="788.8,-1884.5 778.8,-1888 788.8,-1891.5 788.8,-1884.5"/>
+</g>
+<!-- proc~make_flock_from_labels -->
+<g id="module~~graph~~ModuleGraph_node54" class="node">
+<title>proc~make_flock_from_labels</title>
+<g id="a_module~~graph~~ModuleGraph_node54"><a xlink:href="../proc/make_flock_from_labels.html" xlink:title="make_flock_from_labels">
+<polygon fill="#d9534f" stroke="#d9534f" points="795,-1208 655,-1208 655,-1184 795,-1184 795,-1208"/>
+<text text-anchor="middle" x="725" y="-1193.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_flock_from_labels</text>
+</a>
+</g>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge96" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M654.92,-1199.96C521.13,-1207.06 236.44,-1219.15 198.5,-1196"/>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;module~error_handling -->
+<g id="module~~graph~~ModuleGraph_edge97" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;module~error_handling</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M697.69,-1208.1C666.46,-1221.97 612.49,-1244.42 564,-1257 506.84,-1271.83 491.4,-1271.75 432.5,-1276"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-1276C369.99,-1280.36 300.38,-1280.29 253.32,-1279.48"/>
+<polygon fill="#000000" stroke="#000000" points="253.11,-1275.98 243.04,-1279.29 252.98,-1282.98 253.11,-1275.98"/>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;module~field_checks -->
+<g id="module~~graph~~ModuleGraph_edge98" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;module~field_checks</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M682.61,-1208.02C655.18,-1218.09 620.57,-1235.21 600,-1262 556.92,-1318.09 615.72,-1368.77 564,-1417 542.11,-1437.41 508.73,-1442.55 481.08,-1442.64"/>
+<polygon fill="#000000" stroke="#000000" points="480.86,-1439.14 470.8,-1442.45 480.73,-1446.14 480.86,-1439.14"/>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;module~fieldline_integrals -->
+<g id="module~~graph~~ModuleGraph_edge99" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;module~fieldline_integrals</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M654.92,-1186.52C606.45,-1179.87 542.17,-1171.05 495.18,-1164.6"/>
+<polygon fill="#000000" stroke="#000000" points="495.52,-1161.11 485.13,-1163.22 494.56,-1168.05 495.52,-1161.11"/>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge100" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M697.7,-1183.89C666.47,-1170.01 612.49,-1147.55 564,-1135 448.82,-1105.18 410.72,-1137.93 299,-1097 270.2,-1086.45 240.89,-1066.85 221.41,-1052.3"/>
+<polygon fill="#000000" stroke="#000000" points="223.52,-1049.5 213.45,-1046.22 219.27,-1055.07 223.52,-1049.5"/>
+</g>
+<!-- proc~make_flock_of_fieldlines -->
+<g id="module~~graph~~ModuleGraph_node55" class="node">
+<title>proc~make_flock_of_fieldlines</title>
+<g id="a_module~~graph~~ModuleGraph_node55"><a xlink:href="../proc/make_flock_of_fieldlines.html" xlink:title="make_flock_of_fieldlines">
+<polygon fill="#d9534f" stroke="#d9534f" points="502.5,-1088 360.5,-1088 360.5,-1064 502.5,-1064 502.5,-1088"/>
+<text text-anchor="middle" x="431.5" y="-1073.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_flock_of_fieldlines</text>
+</a>
+</g>
+</g>
+<!-- proc~make_flock_of_fieldlines&#45;&gt;module~fieldline_labels -->
+<g id="module~~graph~~ModuleGraph_edge101" class="edge">
+<title>proc~make_flock_of_fieldlines&#45;&gt;module~fieldline_labels</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M360.44,-1065.45C340.55,-1062.28 318.89,-1058.66 299,-1055 284.26,-1052.28 268.36,-1049.09 253.65,-1046.02"/>
+<polygon fill="#000000" stroke="#000000" points="254.19,-1042.55 243.69,-1043.92 252.75,-1049.4 254.19,-1042.55"/>
+</g>
+<!-- proc~negative_func -->
+<g id="module~~graph~~ModuleGraph_node56" class="node">
+<title>proc~negative_func</title>
+<g id="a_module~~graph~~ModuleGraph_node56"><a xlink:href="../proc/negative_func.html" xlink:title="negative_func">
+<polygon fill="#d9534f" stroke="#d9534f" points="241.5,-508 153.5,-508 153.5,-484 241.5,-484 241.5,-508"/>
+<text text-anchor="middle" x="197.5" y="-493.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">negative_func</text>
+</a>
+</g>
+</g>
+<!-- proc~negative_func&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge102" class="edge">
+<title>proc~negative_func&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M153.46,-503.4C145.47,-506.48 137.82,-510.84 132,-517 91.16,-560.25 61.39,-745.13 52.08,-809.67"/>
+<polygon fill="#000000" stroke="#000000" points="48.56,-809.54 50.62,-819.93 55.49,-810.52 48.56,-809.54"/>
+</g>
+<!-- proc~not_same_scalar -->
+<g id="module~~graph~~ModuleGraph_node57" class="node">
+<title>proc~not_same_scalar</title>
+<g id="a_module~~graph~~ModuleGraph_node57"><a xlink:href="../proc/not_same_scalar.html" xlink:title="not_same_scalar">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="248.5,-104 146.5,-104 146.5,-80 248.5,-80 248.5,-104"/>
+<text text-anchor="middle" x="197.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">not_same_scalar</text>
+</a>
+</g>
+</g>
+<!-- proc~not_same_scalar&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge103" class="edge">
+<title>proc~not_same_scalar&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M163.13,-104.02C152.95,-108.07 141.85,-112.87 132,-118 111.67,-128.58 90.01,-142.79 73.91,-153.97"/>
+<polygon fill="#000000" stroke="#000000" points="71.75,-151.21 65.59,-159.83 75.78,-156.94 71.75,-151.21"/>
+</g>
+<!-- proc~read_namelist -->
+<g id="module~~graph~~ModuleGraph_node58" class="node">
+<title>proc~read_namelist</title>
+<g id="a_module~~graph~~ModuleGraph_node58"><a xlink:href="../proc/read_namelist.html" xlink:title="read_namelist">
+<polygon fill="#d9534f" stroke="#d9534f" points="475.5,-356 387.5,-356 387.5,-332 475.5,-332 475.5,-356"/>
+<text text-anchor="middle" x="431.5" y="-341.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">read_namelist</text>
+</a>
+</g>
+</g>
+<!-- proc~read_namelist&#45;&gt;module~utils -->
+<g id="module~~graph~~ModuleGraph_edge104" class="edge">
+<title>proc~read_namelist&#45;&gt;module~utils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M387.34,-339.44C358.77,-338.89 322.38,-343.29 299,-365 248.12,-412.24 310.03,-465.93 263,-517 255.56,-525.07 244.99,-530.05 234.55,-533.12"/>
+<polygon fill="#000000" stroke="#000000" points="233.59,-529.75 224.69,-535.51 235.24,-536.56 233.59,-529.75"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum -->
+<g id="module~~graph~~ModuleGraph_node59" class="node">
+<title>proc~suspect_omnigenous_origin_not_minimum</title>
+<g id="a_module~~graph~~ModuleGraph_node59"><a xlink:href="../proc/suspect_omnigenous_origin_not_minimum.html" xlink:title="suspect_omnigenous_origin_not_minimum">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="844.5,-1488 605.5,-1488 605.5,-1464 844.5,-1464 844.5,-1488"/>
+<text text-anchor="middle" x="725" y="-1473.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">suspect_omnigenous_origin_not_minimum</text>
+</a>
+</g>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~field_along_fieldline -->
+<g id="module~~graph~~ModuleGraph_edge105" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~field_along_fieldline</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M640.47,-1488.04C596.33,-1494.4 542.82,-1502.11 501.13,-1508.11"/>
+<polygon fill="#000000" stroke="#000000" points="500.47,-1504.67 491.07,-1509.56 501.46,-1511.6 500.47,-1504.67"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~field_base -->
+<g id="module~~graph~~ModuleGraph_edge106" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M605.41,-1476.51C519.93,-1475.61 401.97,-1471.73 299,-1459 279.92,-1456.64 259.09,-1452.54 241.36,-1448.59"/>
+<polygon fill="#000000" stroke="#000000" points="241.84,-1445.11 231.31,-1446.29 240.28,-1451.94 241.84,-1445.11"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge107" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M670.01,-1463.96C644.42,-1455.32 616.01,-1440.85 600,-1417 519.63,-1297.25 661.4,-875.37 564,-769 524.12,-725.45 486.83,-773.14 432.5,-750"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~find_extrema -->
+<g id="module~~graph~~ModuleGraph_edge108" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;module~find_extrema</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M610.73,-1488.13C606.88,-1490.7 603.28,-1493.64 600,-1497 522.18,-1576.68 642.19,-1665.69 564,-1745 543.27,-1766.02 510.51,-1771.3 482.87,-1771.3"/>
+<polygon fill="#000000" stroke="#000000" points="482.64,-1767.8 472.56,-1771.07 482.48,-1774.8 482.64,-1767.8"/>
+</g>
+<!-- proc~wrapper_lambda_over_b_squared~2 -->
+<g id="module~~graph~~ModuleGraph_node60" class="node">
+<title>proc~wrapper_lambda_over_b_squared~2</title>
+<g id="a_module~~graph~~ModuleGraph_node60"><a xlink:href="../proc/wrapper_lambda_over_b_squared~2.html" xlink:title="wrapper_lambda_over_B_squared">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="821.5,-1408 628.5,-1408 628.5,-1384 821.5,-1384 821.5,-1408"/>
+<text text-anchor="middle" x="725" y="-1393.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapper_lambda_over_B_squared</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapper_lambda_over_b_squared~2&#45;&gt;module~fieldline_integrands -->
+<g id="module~~graph~~ModuleGraph_edge109" class="edge">
+<title>proc~wrapper_lambda_over_b_squared~2&#45;&gt;module~fieldline_integrands</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.15,-1396C586.59,-1396 538.87,-1396 500.97,-1396"/>
+<polygon fill="#000000" stroke="#000000" points="500.55,-1392.5 490.55,-1396 500.55,-1399.5 500.55,-1392.5"/>
+</g>
+<!-- proc~write_dat_output -->
+<g id="module~~graph~~ModuleGraph_node61" class="node">
+<title>proc~write_dat_output</title>
+<g id="a_module~~graph~~ModuleGraph_node61"><a xlink:href="../proc/write_dat_output.html" xlink:title="write_dat_output">
+<polygon fill="#d9534f" stroke="#d9534f" points="248,-466 147,-466 147,-442 248,-442 248,-466"/>
+<text text-anchor="middle" x="197.5" y="-451.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_dat_output</text>
+</a>
+</g>
+</g>
+<!-- proc~write_dat_output&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge110" class="edge">
+<title>proc~write_dat_output&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M146.79,-464.16C141.26,-466.94 136.14,-470.49 132,-475 86.16,-524.97 59.12,-739.19 51.35,-809.53"/>
+<polygon fill="#000000" stroke="#000000" points="47.82,-809.57 50.23,-819.88 54.78,-810.32 47.82,-809.57"/>
+</g>
+<!-- program~main -->
+<g id="module~~graph~~ModuleGraph_node62" class="node">
+<title>program~main</title>
+<g id="a_module~~graph~~ModuleGraph_node62"><a xlink:href="../program/main.html" xlink:title="main">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="953,-768 899,-768 899,-744 953,-744 953,-768"/>
+<text text-anchor="middle" x="926" y="-753.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">main</text>
+</a>
+</g>
+</g>
+<!-- program~main&#45;&gt;module~boozer_field -->
+<g id="module~~graph~~ModuleGraph_edge113" class="edge">
+<title>program~main&#45;&gt;module~boozer_field</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M924.77,-768.23C922.84,-866.01 907.83,-1518.53 850,-1581 831.14,-1601.37 800.44,-1606.69 774.3,-1606.88"/>
+<polygon fill="#000000" stroke="#000000" points="774.23,-1603.38 764.17,-1606.71 774.11,-1610.38 774.23,-1603.38"/>
+</g>
+<!-- program~main&#45;&gt;module~coefficients -->
+<g id="module~~graph~~ModuleGraph_edge114" class="edge">
+<title>program~main&#45;&gt;module~coefficients</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M921.52,-743.63C901.3,-674.33 791.83,-332.6 564,-197 538.48,-181.81 505.46,-176.58 478.9,-175.13"/>
+<polygon fill="#000000" stroke="#000000" points="478.82,-171.63 468.69,-174.74 478.55,-178.62 478.82,-171.63"/>
+</g>
+<!-- program~main&#45;&gt;module~constants -->
+<g id="module~~graph~~ModuleGraph_edge115" class="edge">
+<title>program~main&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M924.63,-768.06C921.48,-867.29 898.22,-1547.47 850,-1623 740.98,-1793.76 634.24,-1787.37 432.5,-1806"/>
+</g>
+<!-- program~main&#45;&gt;module~error_handling -->
+<g id="module~~graph~~ModuleGraph_edge116" class="edge">
+<title>program~main&#45;&gt;module~error_handling</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M924.52,-768.25C921.7,-833.81 905.62,-1142.91 850,-1217 813.36,-1265.81 775.13,-1239.8 726,-1276"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M724,-1276C619.7,-1352.85 561.72,-1266.68 432.5,-1276"/>
+</g>
+<!-- program~main&#45;&gt;module~fieldline_mod -->
+<g id="module~~graph~~ModuleGraph_edge117" class="edge">
+<title>program~main&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M898.83,-756.84C803.12,-759.75 475.42,-768.28 432.5,-750"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-750C368.01,-723.28 287.59,-740.69 239.71,-755.81"/>
+<polygon fill="#000000" stroke="#000000" points="238.42,-752.54 230,-758.98 240.6,-759.2 238.42,-752.54"/>
+</g>
+<!-- program~main&#45;&gt;module~make_fieldline -->
+<g id="module~~graph~~ModuleGraph_edge118" class="edge">
+<title>program~main&#45;&gt;module~make_fieldline</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M724,-1276C654.76,-1327.02 550.5,-1328.23 487.24,-1323.08"/>
+<polygon fill="#000000" stroke="#000000" points="487.34,-1319.58 477.07,-1322.17 486.71,-1326.55 487.34,-1319.58"/>
+</g>
+<!-- program~main&#45;&gt;module~netcdf_mod -->
+<g id="module~~graph~~ModuleGraph_edge119" class="edge">
+<title>program~main&#45;&gt;module~netcdf_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M925.01,-768.35C925.03,-881.55 922.73,-1736.62 850,-1820 831.3,-1841.44 799.85,-1847.85 773.3,-1848.95"/>
+<polygon fill="#000000" stroke="#000000" points="772.96,-1845.45 763.03,-1849.13 773.09,-1852.45 772.96,-1845.45"/>
+</g>
+<!-- program~main&#45;&gt;module~read_file -->
+<g id="module~~graph~~ModuleGraph_edge120" class="edge">
+<title>program~main&#45;&gt;module~read_file</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-52C372.27,-61.79 343.64,-32.34 299,-71 256.26,-108.01 302.42,-152.47 263,-193 255.93,-200.27 246.32,-205.02 236.68,-208.13"/>
+<polygon fill="#000000" stroke="#000000" points="235.47,-204.83 226.73,-210.81 237.29,-211.59 235.47,-204.83"/>
+</g>
+<!-- program~main&#45;&gt;module~shaing_callen_mod -->
+<g id="module~~graph~~ModuleGraph_edge121" class="edge">
+<title>program~main&#45;&gt;module~shaing_callen_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M914.09,-743.96C900.54,-729.81 875.99,-706.77 850,-695 832.3,-686.98 811.92,-682 792.86,-678.91"/>
+<polygon fill="#000000" stroke="#000000" points="793.14,-675.42 782.73,-677.43 792.12,-682.34 793.14,-675.42"/>
+</g>
+<!-- git_version -->
+<g id="module~~graph~~ModuleGraph_node63" class="node">
+<title>git_version</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="760,-24 690,-24 690,0 760,0 760,-24"/>
+<text text-anchor="middle" x="725" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">git_version</text>
+</g>
+<!-- program~main&#45;&gt;git_version -->
+<g id="module~~graph~~ModuleGraph_edge111" class="edge">
+<title>program~main&#45;&gt;git_version</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M924.59,-743.98C921.39,-654.39 899.43,-92.78 850,-38 830.27,-16.13 797.26,-10.03 770.25,-9.18"/>
+<polygon fill="#000000" stroke="#000000" points="770.27,-5.68 760.24,-9.09 770.21,-12.68 770.27,-5.68"/>
+</g>
+<!-- program~main&#45;&gt;ieee_arithmetic -->
+<g id="module~~graph~~ModuleGraph_edge112" class="edge">
+<title>program~main&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M924.6,-743.9C921.61,-656.12 901.25,-119.09 850,-71 816.14,-39.22 478.29,-44.3 432.5,-52"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M430.5,-52C299.15,-72.48 250.33,-10.41 132,-71 97.91,-88.46 72.7,-126.78 59.47,-150.88"/>
+<polygon fill="#000000" stroke="#000000" points="56.26,-149.46 54.7,-159.94 62.46,-152.73 56.26,-149.46"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulegraphModuleGraph = svgPanZoom('#modulegraphModuleGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#ModuleGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="ModuleGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="518pt" height="32pt"
+ viewBox="0.00 0.00 517.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 513.5,-28 513.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="145.5,-24 72.5,-24 72.5,0 145.5,0 145.5,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-24 164,-24 164,0 234,0 234,-24"/>
+<text text-anchor="middle" x="199" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="310,-24 252,-24 252,0 310,0 310,-24"/>
+<text text-anchor="middle" x="281" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="386,-24 328,-24 328,0 386,0 386,-24"/>
+<text text-anchor="middle" x="357" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="509.5,-24 404.5,-24 404.5,0 509.5,0 509.5,-24"/>
+<text text-anchor="middle" x="457" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              rabe
+ was developed by Georg Grassler<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-08-19T19:14:45.270555+0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

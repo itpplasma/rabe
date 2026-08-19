@@ -1,0 +1,896 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Asymptotic bootstrap current expressions for near-omnigenous stellarators">
+    <meta name="author" content="Georg Grassler" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>calc_avg_lambda_over_B_squared &ndash; rabe</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">rabe </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>calc_avg_lambda_over_B_squared
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.9% of total for procedures.">18 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/shaing_callen.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/shaing_callen.f90.html'>shaing_callen.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/shaing_callen_mod.html'>shaing_callen_mod</a></li>
+            <li class="breadcrumb-item active" aria-current="page">calc_avg_lambda_over_B_squared</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  subroutine calc_avg_lambda_over_B_squared(fieldline, eta_grid, avg_lambda_over_B_squared)  
+</h2>
+        <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='../module/fieldline_mod.html'>fieldline_mod</a></li>
+                  <li class="list-inline-item"><a href='../module/integrate_substituted.html'>integrate_substituted</a></li>
+                  <li class="list-inline-item"><a href='../module/shaing_callen_wrappers.html'>shaing_callen_wrappers</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~calc_avg_lambda_over_b_squared~~UsesGraph Pages: 1 -->
+<svg id="proccalc_avg_lambda_over_b_squaredUsesGraph" width="632pt" height="212pt"
+ viewBox="0.00 0.00 632.00 212.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 208)">
+<title>proc~~calc_avg_lambda_over_b_squared~~UsesGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-208 628,-208 628,4 -4,4"/>
+<!-- proc~calc_avg_lambda_over_b_squared -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node1" class="node">
+<title>proc~calc_avg_lambda_over_b_squared</title>
+<polygon fill="none" stroke="black" points="624,-104 429,-104 429,-80 624,-80 624,-104"/>
+<text text-anchor="middle" x="526.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50">calc_avg_lambda_over_B_squared</text>
+</g>
+<!-- module~fieldline_mod -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node2" class="node">
+<title>module~fieldline_mod</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node2"><a xlink:href="../module/fieldline_mod.html" xlink:title="fieldline_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="217,-104 132,-104 132,-80 217,-80 217,-104"/>
+<text text-anchor="middle" x="174.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_mod</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~fieldline_mod -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge1" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M428.93,-92C363.87,-92 280.57,-92 227.6,-92"/>
+<polygon fill="#000000" stroke="#000000" points="227.42,-88.5 217.42,-92 227.42,-95.5 227.42,-88.5"/>
+</g>
+<!-- module~integrate_substituted -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node3" class="node">
+<title>module~integrate_substituted</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node3"><a xlink:href="../module/integrate_substituted.html" xlink:title="integrate_substituted">
+<polygon fill="#337ab7" stroke="#337ab7" points="385.5,-164 260.5,-164 260.5,-140 385.5,-140 385.5,-164"/>
+<text text-anchor="middle" x="323" y="-149.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate_substituted</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~integrate_substituted -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge2" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~integrate_substituted</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M484.72,-104.14C452.8,-113.65 408.25,-126.91 374.14,-137.07"/>
+<polygon fill="#000000" stroke="#000000" points="372.96,-133.77 364.37,-139.98 374.95,-140.48 372.96,-133.77"/>
+</g>
+<!-- module~shaing_callen_wrappers -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node4" class="node">
+<title>module~shaing_callen_wrappers</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node4"><a xlink:href="../module/shaing_callen_wrappers.html" xlink:title="shaing_callen_wrappers">
+<polygon fill="#337ab7" stroke="#337ab7" points="393,-64 253,-64 253,-40 393,-40 393,-64"/>
+<text text-anchor="middle" x="323" y="-49.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">shaing_callen_wrappers</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;module~shaing_callen_wrappers -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge3" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;module~shaing_callen_wrappers</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M465.04,-80C442.93,-75.61 417.71,-70.6 394.78,-66.05"/>
+<polygon fill="#000000" stroke="#000000" points="395.25,-62.58 384.76,-64.06 393.89,-69.44 395.25,-62.58"/>
+</g>
+<!-- module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node6" class="node">
+<title>module~constants</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node6"><a xlink:href="../module/constants.html" xlink:title="constants">
+<polygon fill="#337ab7" stroke="#337ab7" points="80,-104 16,-104 16,-80 80,-80 80,-104"/>
+<text text-anchor="middle" x="48" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">constants</text>
+</a>
+</g>
+</g>
+<!-- module~fieldline_mod&#45;&gt;module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge4" class="edge">
+<title>module~fieldline_mod&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M131.7,-92C118.43,-92 103.77,-92 90.52,-92"/>
+<polygon fill="#000000" stroke="#000000" points="90.26,-88.5 80.26,-92 90.26,-95.5 90.26,-88.5"/>
+</g>
+<!-- ieee_arithmetic -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node5" class="node">
+<title>ieee_arithmetic</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/ieee_arithmetic" xlink:title="ieee_arithmetic">
+<polygon fill="#337ab7" stroke="#337ab7" points="96,-204 0,-204 0,-180 96,-180 96,-204"/>
+<text text-anchor="middle" x="48" y="-189.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ieee_arithmetic</text>
+</a>
+</g>
+</g>
+<!-- module~integrate_substituted&#45;&gt;ieee_arithmetic -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge5" class="edge">
+<title>module~integrate_substituted&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M298.57,-164.08C277.77,-174.07 246.23,-187.5 217,-193 180.66,-199.84 139.11,-199.66 106.42,-197.74"/>
+<polygon fill="#000000" stroke="#000000" points="106.35,-194.23 96.14,-197.06 105.89,-201.21 106.35,-194.23"/>
+</g>
+<!-- module~integrate_substituted&#45;&gt;module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge6" class="edge">
+<title>module~integrate_substituted&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.24,-140.06C223,-132.68 174.67,-122.77 132,-113 118.26,-109.85 103.31,-106.16 89.93,-102.75"/>
+<polygon fill="#000000" stroke="#000000" points="90.61,-99.31 80.06,-100.21 88.87,-106.09 90.61,-99.31"/>
+</g>
+<!-- module~integrate -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node8" class="node">
+<title>module~integrate</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node8"><a xlink:href="../module/integrate.html" xlink:title="integrate">
+<polygon fill="#337ab7" stroke="#337ab7" points="205,-184 144,-184 144,-160 205,-160 205,-184"/>
+<text text-anchor="middle" x="174.5" y="-169.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate</text>
+</a>
+</g>
+</g>
+<!-- module~integrate_substituted&#45;&gt;module~integrate -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge7" class="edge">
+<title>module~integrate_substituted&#45;&gt;module~integrate</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.3,-160.42C245.09,-162.5 229.21,-164.67 215.35,-166.56"/>
+<polygon fill="#000000" stroke="#000000" points="214.63,-163.13 205.19,-167.95 215.57,-170.06 214.63,-163.13"/>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~fieldline_mod -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge10" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~fieldline_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M278.05,-64C262.13,-68.35 244.01,-73.29 227.47,-77.81"/>
+<polygon fill="#000000" stroke="#000000" points="226.14,-74.55 217.41,-80.56 227.98,-81.3 226.14,-74.55"/>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge8" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.62,-56.46C216.48,-59.4 171.67,-64.04 132,-71 118.23,-73.42 103.38,-76.89 90.1,-80.32"/>
+<polygon fill="#000000" stroke="#000000" points="89.07,-76.97 80.29,-82.92 90.86,-83.74 89.07,-76.97"/>
+</g>
+<!-- module~field_base -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node7" class="node">
+<title>module~field_base</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~UsesGraph_node7"><a xlink:href="../module/field_base.html" xlink:title="field_base">
+<polygon fill="#337ab7" stroke="#337ab7" points="208,-24 141,-24 141,0 208,0 208,-24"/>
+<text text-anchor="middle" x="174.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">field_base</text>
+</a>
+</g>
+</g>
+<!-- module~shaing_callen_wrappers&#45;&gt;module~field_base -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge9" class="edge">
+<title>module~shaing_callen_wrappers&#45;&gt;module~field_base</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M278.05,-40C259.04,-34.81 236.89,-28.76 218.05,-23.62"/>
+<polygon fill="#000000" stroke="#000000" points="218.81,-20.2 208.24,-20.94 216.97,-26.95 218.81,-20.2"/>
+</g>
+<!-- module~field_base&#45;&gt;module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge11" class="edge">
+<title>module~field_base&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M154.03,-24.1C147.07,-28.46 139.17,-33.42 132,-38 113.17,-50.02 92.07,-63.75 75.86,-74.36"/>
+<polygon fill="#000000" stroke="#000000" points="73.85,-71.49 67.4,-79.9 77.69,-77.35 73.85,-71.49"/>
+</g>
+<!-- module~integrate&#45;&gt;ieee_arithmetic -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge12" class="edge">
+<title>module~integrate&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M144,-176.74C132.65,-178.56 119.28,-180.71 106.2,-182.81"/>
+<polygon fill="#000000" stroke="#000000" points="105.62,-179.36 96.3,-184.4 106.73,-186.27 105.62,-179.36"/>
+</g>
+<!-- module~integrate&#45;&gt;module~constants -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~UsesGraph_edge13" class="edge">
+<title>module~integrate&#45;&gt;module~constants</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M154.03,-159.9C147.07,-155.54 139.17,-150.58 132,-146 113.17,-133.98 92.07,-120.25 75.86,-109.64"/>
+<polygon fill="#000000" stroke="#000000" points="77.69,-106.65 67.4,-104.1 73.85,-112.51 77.69,-106.65"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="518pt" height="32pt"
+ viewBox="0.00 0.00 517.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 513.5,-28 513.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="145.5,-24 72.5,-24 72.5,0 145.5,0 145.5,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-24 164,-24 164,0 234,0 234,-24"/>
+<text text-anchor="middle" x="199" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="310,-24 252,-24 252,0 310,0 310,-24"/>
+<text text-anchor="middle" x="281" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="386,-24 328,-24 328,0 386,0 386,-24"/>
+<text text-anchor="middle" x="357" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="509.5,-24 404.5,-24 404.5,0 509.5,0 509.5,-24"/>
+<text text-anchor="middle" x="457" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fieldline~7"></span>
+              type(<a href='../type/fieldline_t.html'>fieldline_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fieldline</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eta_grid~5"></span>
+              real(kind=dp),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>eta_grid</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-avg_lambda_over_b_squared~2"></span>
+              real(kind=dp),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:)
+            </td>
+            <td>::</td>
+            <td><strong>avg_lambda_over_B_squared</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~calc_avg_lambda_over_b_squared~~CallsGraph Pages: 1 -->
+<svg id="proccalc_avg_lambda_over_b_squaredCallsGraph" width="641pt" height="113pt"
+ viewBox="0.00 0.00 641.00 112.83" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph" class="graph" transform="scale(0.97 0.97) rotate(0) translate(4 112)">
+<title>proc~~calc_avg_lambda_over_b_squared~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-112 655,-112 655,4 -4,4"/>
+<!-- proc~calc_avg_lambda_over_b_squared -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node1" class="node">
+<title>proc~calc_avg_lambda_over_b_squared</title>
+<polygon fill="none" stroke="black" points="195,-66 0,-66 0,-42 195,-42 195,-66"/>
+<text text-anchor="middle" x="97.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50">calc_avg_lambda_over_B_squared</text>
+</g>
+<!-- proc~integrate_1d_substituted -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node2" class="node">
+<title>proc~integrate_1d_substituted</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node2"><a xlink:href="../proc/integrate_1d_substituted.html" xlink:title="integrate_1d_substituted">
+<polygon fill="#d9534f" stroke="#d9534f" points="375,-66 231,-66 231,-42 375,-42 375,-66"/>
+<text text-anchor="middle" x="303" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate_1d_substituted</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_lambda_over_b_squared&#45;&gt;proc~integrate_1d_substituted -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_edge1" class="edge">
+<title>proc~calc_avg_lambda_over_b_squared&#45;&gt;proc~integrate_1d_substituted</title>
+<path fill="none" stroke="#000000" d="M195.18,-54C203.71,-54 212.29,-54 220.68,-54"/>
+<polygon fill="#000000" stroke="#000000" points="220.79,-57.5 230.79,-54 220.79,-50.5 220.79,-57.5"/>
+</g>
+<!-- proc~integrate_1d -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node3" class="node">
+<title>proc~integrate_1d</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node3"><a xlink:href="../proc/integrate_1d.html" xlink:title="integrate_1d">
+<polygon fill="#d9534f" stroke="#d9534f" points="491,-66 411,-66 411,-42 491,-42 491,-66"/>
+<text text-anchor="middle" x="451" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">integrate_1d</text>
+</a>
+</g>
+</g>
+<!-- proc~integrate_1d_substituted&#45;&gt;proc~integrate_1d -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_edge2" class="edge">
+<title>proc~integrate_1d_substituted&#45;&gt;proc~integrate_1d</title>
+<path fill="none" stroke="#000000" d="M375.29,-54C383.84,-54 392.42,-54 400.57,-54"/>
+<polygon fill="#000000" stroke="#000000" points="400.61,-57.5 410.61,-54 400.61,-50.5 400.61,-57.5"/>
+</g>
+<!-- proc~convert_to_dp -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node4" class="node">
+<title>proc~convert_to_dp</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node4"><a xlink:href="../proc/convert_to_dp.html" xlink:title="convert_to_dp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="633,-108 545,-108 545,-84 633,-84 633,-108"/>
+<text text-anchor="middle" x="589" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">convert_to_dp</text>
+</a>
+</g>
+</g>
+<!-- proc~integrate_1d&#45;&gt;proc~convert_to_dp -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_edge3" class="edge">
+<title>proc~integrate_1d&#45;&gt;proc~convert_to_dp</title>
+<path fill="none" stroke="#000000" d="M490.97,-66.04C506.05,-70.69 523.48,-76.07 539.36,-80.98"/>
+<polygon fill="#000000" stroke="#000000" points="538.43,-84.36 549.02,-83.96 540.5,-77.67 538.43,-84.36"/>
+</g>
+<!-- proc~convert_to_quadkind -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node5" class="node">
+<title>proc~convert_to_quadkind</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node5"><a xlink:href="../proc/convert_to_quadkind.html" xlink:title="convert_to_quadkind">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="651,-66 527,-66 527,-42 651,-42 651,-66"/>
+<text text-anchor="middle" x="589" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">convert_to_quadkind</text>
+</a>
+</g>
+</g>
+<!-- proc~integrate_1d&#45;&gt;proc~convert_to_quadkind -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_edge4" class="edge">
+<title>proc~integrate_1d&#45;&gt;proc~convert_to_quadkind</title>
+<path fill="none" stroke="#000000" d="M491.34,-54C499.34,-54 508,-54 516.73,-54"/>
+<polygon fill="#000000" stroke="#000000" points="516.97,-57.5 526.97,-54 516.97,-50.5 516.97,-57.5"/>
+</g>
+<!-- qag -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_node6" class="node">
+<title>qag</title>
+<polygon fill="#777777" stroke="#777777" points="616,-24 562,-24 562,0 616,0 616,-24"/>
+<text text-anchor="middle" x="589" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">qag</text>
+</g>
+<!-- proc~integrate_1d&#45;&gt;qag -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CallsGraph_edge5" class="edge">
+<title>proc~integrate_1d&#45;&gt;qag</title>
+<path fill="none" stroke="#000000" d="M490.97,-41.96C510.27,-36.01 533.4,-28.86 552.24,-23.04"/>
+<polygon fill="#000000" stroke="#000000" points="553.41,-26.35 561.93,-20.05 551.34,-19.66 553.41,-26.35"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panproccalc_avg_lambda_over_b_squaredCallsGraph = svgPanZoom('#proccalc_avg_lambda_over_b_squaredCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~calc_avg_lambda_over_b_squared~~CalledByGraph Pages: 1 -->
+<svg id="proccalc_avg_lambda_over_b_squaredCalledByGraph" width="641pt" height="51pt"
+ viewBox="0.00 0.00 641.00 50.62" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph" class="graph" transform="scale(0.68 0.68) rotate(0) translate(4 70)">
+<title>proc~~calc_avg_lambda_over_b_squared~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-70 933,-70 933,4 -4,4"/>
+<!-- proc~calc_avg_lambda_over_b_squared -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node1" class="node">
+<title>proc~calc_avg_lambda_over_b_squared</title>
+<polygon fill="none" stroke="black" points="929,-45 734,-45 734,-21 929,-21 929,-45"/>
+<text text-anchor="middle" x="831.5" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50">calc_avg_lambda_over_B_squared</text>
+</g>
+<!-- proc~calc_avg_b_squared_over_avg_lambda -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node2" class="node">
+<title>proc~calc_avg_b_squared_over_avg_lambda</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node2"><a xlink:href="../proc/calc_avg_b_squared_over_avg_lambda.html" xlink:title="calc_avg_B_squared_over_avg_lambda">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="683,-24 463,-24 463,0 683,0 683,-24"/>
+<text text-anchor="middle" x="573" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_B_squared_over_avg_lambda</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_b_squared_over_avg_lambda&#45;&gt;proc~calc_avg_lambda_over_b_squared -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge1" class="edge">
+<title>proc~calc_avg_b_squared_over_avg_lambda&#45;&gt;proc~calc_avg_lambda_over_b_squared</title>
+<path fill="none" stroke="#000000" d="M683.15,-20.94C696.52,-22.03 710.16,-23.15 723.5,-24.24"/>
+<polygon fill="#000000" stroke="#000000" points="723.37,-27.74 733.62,-25.07 723.94,-20.76 723.37,-27.74"/>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0 -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node3" class="node">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node3"><a xlink:href="../proc/calc_avg_normalized_lambda_dphimax_dxi0.html" xlink:title="calc_avg_normalized_lambda_dphimax_dxi0">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="698,-66 448,-66 448,-42 698,-42 698,-66"/>
+<text text-anchor="middle" x="573" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_avg_normalized_lambda_dphimax_dxi0</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;proc~calc_avg_lambda_over_b_squared -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge2" class="edge">
+<title>proc~calc_avg_normalized_lambda_dphimax_dxi0&#45;&gt;proc~calc_avg_lambda_over_b_squared</title>
+<path fill="none" stroke="#000000" d="M698.12,-43.84C706.66,-43.14 715.23,-42.44 723.68,-41.75"/>
+<polygon fill="#000000" stroke="#000000" points="724.22,-45.21 733.9,-40.91 723.65,-38.24 724.22,-45.21"/>
+</g>
+<!-- proc~calc_trapped_fraction -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node4" class="node">
+<title>proc~calc_trapped_fraction</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node4"><a xlink:href="../proc/calc_trapped_fraction.html" xlink:title="calc_trapped_fraction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="382.5,-24 254.5,-24 254.5,0 382.5,0 382.5,-24"/>
+<text text-anchor="middle" x="318.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_trapped_fraction</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_trapped_fraction&#45;&gt;proc~calc_avg_b_squared_over_avg_lambda -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge3" class="edge">
+<title>proc~calc_trapped_fraction&#45;&gt;proc~calc_avg_b_squared_over_avg_lambda</title>
+<path fill="none" stroke="#000000" d="M382.57,-12C403.78,-12 428.21,-12 452.31,-12"/>
+<polygon fill="#000000" stroke="#000000" points="452.61,-15.5 462.61,-12 452.61,-8.5 452.61,-15.5"/>
+</g>
+<!-- proc~get_non_omnigenous_remainder -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node5" class="node">
+<title>proc~get_non_omnigenous_remainder</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node5"><a xlink:href="../proc/get_non_omnigenous_remainder.html" xlink:title="get_non_omnigenous_remainder">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="412,-66 225,-66 225,-42 412,-42 412,-66"/>
+<text text-anchor="middle" x="318.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">get_non_omnigenous_remainder</text>
+</a>
+</g>
+</g>
+<!-- proc~get_non_omnigenous_remainder&#45;&gt;proc~calc_avg_b_squared_over_avg_lambda -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge4" class="edge">
+<title>proc~get_non_omnigenous_remainder&#45;&gt;proc~calc_avg_b_squared_over_avg_lambda</title>
+<path fill="none" stroke="#000000" d="M391.86,-41.96C422.36,-36.89 458.04,-30.96 489.56,-25.71"/>
+<polygon fill="#000000" stroke="#000000" points="490.34,-29.13 499.63,-24.04 489.19,-22.23 490.34,-29.13"/>
+</g>
+<!-- proc~get_non_omnigenous_remainder&#45;&gt;proc~calc_avg_normalized_lambda_dphimax_dxi0 -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge5" class="edge">
+<title>proc~get_non_omnigenous_remainder&#45;&gt;proc~calc_avg_normalized_lambda_dphimax_dxi0</title>
+<path fill="none" stroke="#000000" d="M412.09,-54C420.48,-54 429.1,-54 437.76,-54"/>
+<polygon fill="#000000" stroke="#000000" points="437.94,-57.5 447.94,-54 437.94,-50.5 437.94,-57.5"/>
+</g>
+<!-- proc~calc_lambda_lc -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node6" class="node">
+<title>proc~calc_lambda_lc</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node6"><a xlink:href="../proc/calc_lambda_lc.html" xlink:title="calc_lambda_LC">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="189,-25 90,-25 90,-1 189,-1 189,-25"/>
+<text text-anchor="middle" x="139.5" y="-10.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_lambda_LC</text>
+</a>
+</g>
+</g>
+<!-- proc~calc_lambda_lc&#45;&gt;proc~calc_trapped_fraction -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge6" class="edge">
+<title>proc~calc_lambda_lc&#45;&gt;proc~calc_trapped_fraction</title>
+<path fill="none" stroke="#000000" d="M189.33,-12.72C206.26,-12.63 225.62,-12.52 244.08,-12.41"/>
+<polygon fill="#000000" stroke="#000000" points="244.24,-15.91 254.22,-12.36 244.2,-8.91 244.24,-15.91"/>
+</g>
+<!-- program~main -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node7" class="node">
+<title>program~main</title>
+<g id="a_proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_node7"><a xlink:href="../program/main.html" xlink:title="main">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="54,-45 0,-45 0,-21 54,-21 54,-45"/>
+<text text-anchor="middle" x="27" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">main</text>
+</a>
+</g>
+</g>
+<!-- program~main&#45;&gt;proc~get_non_omnigenous_remainder -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge7" class="edge">
+<title>program~main&#45;&gt;proc~get_non_omnigenous_remainder</title>
+<path fill="none" stroke="#000000" d="M54.2,-34.9C90.24,-37.52 157.18,-42.37 214.54,-46.53"/>
+<polygon fill="#000000" stroke="#000000" points="214.53,-50.04 224.76,-47.27 215.04,-43.06 214.53,-50.04"/>
+</g>
+<!-- program~main&#45;&gt;proc~calc_lambda_lc -->
+<g id="proc~~calc_avg_lambda_over_b_squared~~CalledByGraph_edge8" class="edge">
+<title>program~main&#45;&gt;proc~calc_lambda_lc</title>
+<path fill="none" stroke="#000000" d="M54.19,-28.26C62.06,-26.84 71.04,-25.21 80.12,-23.57"/>
+<polygon fill="#000000" stroke="#000000" points="80.77,-27.01 89.98,-21.78 79.52,-20.12 80.77,-27.01"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panproccalc_avg_lambda_over_b_squaredCalledByGraph = svgPanZoom('#proccalc_avg_lambda_over_b_squaredCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              rabe
+ was developed by Georg Grassler<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-08-19T19:14:45.270555+0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,537 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Asymptotic bootstrap current expressions for near-omnigenous stellarators">
+    <meta name="author" content="Georg Grassler" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>get_theta_scalar &ndash; rabe</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">rabe </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../program/main.html">Program</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>get_theta_scalar
+      <small>Function</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.3% of total for procedures.">6 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/fieldline.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/fieldline.f90.html'>fieldline.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/fieldline_mod.html'>fieldline_mod</a></li>
+            <li class="breadcrumb-item active" aria-current="page">get_theta_scalar</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  function get_theta_scalar(self, phi) result(theta)  
+</h2>
+    
+
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/fieldline_t.html'>fieldline_t</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~14"></span>
+              class(<a href='../type/fieldline_t.html'>fieldline_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-phi~6"></span>
+              real(kind=dp)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>phi</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-theta~5"></span>
+          real(kind=dp)
+        </small>
+      </h3>
+      
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~get_theta_scalar~~CalledByGraph Pages: 1 -->
+<svg id="procget_theta_scalarCalledByGraph" width="641pt" height="77pt"
+ viewBox="0.00 0.00 641.00 77.24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~get_theta_scalar~~CalledByGraph" class="graph" transform="scale(0.5 0.5) rotate(0) translate(4 150)">
+<title>proc~~get_theta_scalar~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-150 1274,-150 1274,4 -4,4"/>
+<!-- proc~get_theta_scalar -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node1" class="node">
+<title>proc~get_theta_scalar</title>
+<polygon fill="none" stroke="black" points="1270,-84 1108,-84 1108,-60 1270,-60 1270,-84"/>
+<text text-anchor="middle" x="1189" y="-69.6" font-family="Helvetica,sans-Serif" font-size="10.50">fieldline_t%get_theta_scalar</text>
+</g>
+<!-- none~get_theta -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node2" class="node">
+<title>none~get_theta</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node2"><a xlink:href="../type/fieldline_t.html#boundprocedure-get_theta" xlink:title="fieldline_t%get_theta">
+<polygon fill="#a7506f" stroke="#a7506f" points="1072,-84 948,-84 948,-60 1072,-60 1072,-84"/>
+<text text-anchor="middle" x="1010" y="-69.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fieldline_t%get_theta</text>
+</a>
+</g>
+</g>
+<!-- none~get_theta&#45;&gt;proc~get_theta_scalar -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge1" class="edge">
+<title>none~get_theta&#45;&gt;proc~get_theta_scalar</title>
+<path fill="none" stroke="#000000" d="M1072.41,-72C1080.66,-72 1089.26,-72 1097.88,-72"/>
+<polygon fill="#000000" stroke="#000000" points="1097.99,-75.5 1107.99,-72 1097.99,-68.5 1097.99,-75.5"/>
+</g>
+<!-- proc~b_mod_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node3" class="node">
+<title>proc~b_mod_along_fieldline</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node3"><a xlink:href="../proc/b_mod_along_fieldline.html" xlink:title="B_mod_along_fieldline">
+<polygon fill="#d9534f" stroke="#d9534f" points="882,-146 749,-146 749,-122 882,-122 882,-146"/>
+<text text-anchor="middle" x="815.5" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">B_mod_along_fieldline</text>
+</a>
+</g>
+</g>
+<!-- proc~b_mod_along_fieldline&#45;&gt;none~get_theta -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge2" class="edge">
+<title>proc~b_mod_along_fieldline&#45;&gt;none~get_theta</title>
+<path fill="none" stroke="#000000" d="M879.1,-121.96C890.15,-119.35 901.49,-116.35 912,-113 933.36,-106.2 956.52,-96.51 974.84,-88.25"/>
+<polygon fill="#000000" stroke="#000000" points="976.31,-91.43 983.95,-84.09 973.4,-85.06 976.31,-91.43"/>
+</g>
+<!-- proc~db_dphi_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node4" class="node">
+<title>proc~db_dphi_along_fieldline</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node4"><a xlink:href="../proc/db_dphi_along_fieldline.html" xlink:title="dB_dphi_along_fieldline">
+<polygon fill="#d9534f" stroke="#d9534f" points="885,-104 746,-104 746,-80 885,-80 885,-104"/>
+<text text-anchor="middle" x="815.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dB_dphi_along_fieldline</text>
+</a>
+</g>
+</g>
+<!-- proc~db_dphi_along_fieldline&#45;&gt;none~get_theta -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge3" class="edge">
+<title>proc~db_dphi_along_fieldline&#45;&gt;none~get_theta</title>
+<path fill="none" stroke="#000000" d="M885.18,-84.86C902.24,-83.09 920.56,-81.19 937.74,-79.4"/>
+<polygon fill="#000000" stroke="#000000" points="938.12,-82.88 947.71,-78.37 937.4,-75.92 938.12,-82.88"/>
+</g>
+<!-- proc~nudge_maxima_inward -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node5" class="node">
+<title>proc~nudge_maxima_inward</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node5"><a xlink:href="../proc/nudge_maxima_inward.html" xlink:title="nudge_maxima_inward">
+<polygon fill="#d9534f" stroke="#d9534f" points="631.5,-62 495.5,-62 495.5,-38 631.5,-38 631.5,-62"/>
+<text text-anchor="middle" x="563.5" y="-47.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">nudge_maxima_inward</text>
+</a>
+</g>
+</g>
+<!-- proc~nudge_maxima_inward&#45;&gt;none~get_theta -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge4" class="edge">
+<title>proc~nudge_maxima_inward&#45;&gt;none~get_theta</title>
+<path fill="none" stroke="#000000" d="M631.53,-53.32C714.03,-57.4 853.53,-64.31 937.87,-68.48"/>
+<polygon fill="#000000" stroke="#000000" points="937.71,-71.98 947.87,-68.97 938.06,-64.98 937.71,-71.98"/>
+</g>
+<!-- proc~wrapper_lambda_over_b_squared~2 -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node6" class="node">
+<title>proc~wrapper_lambda_over_b_squared~2</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node6"><a xlink:href="../proc/wrapper_lambda_over_b_squared~2.html" xlink:title="wrapper_lambda_over_B_squared">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="912,-24 719,-24 719,0 912,0 912,-24"/>
+<text text-anchor="middle" x="815.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapper_lambda_over_B_squared</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapper_lambda_over_b_squared~2&#45;&gt;none~get_theta -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge5" class="edge">
+<title>proc~wrapper_lambda_over_b_squared~2&#45;&gt;none~get_theta</title>
+<path fill="none" stroke="#000000" d="M863.32,-24.03C878.88,-28.22 896.25,-33.1 912,-38 930.09,-43.63 949.86,-50.43 966.8,-56.47"/>
+<polygon fill="#000000" stroke="#000000" points="965.82,-59.84 976.42,-59.93 968.19,-53.25 965.82,-59.84"/>
+</g>
+<!-- proc~find_maxima_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node7" class="node">
+<title>proc~find_maxima_along_fieldline</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node7"><a xlink:href="../proc/find_maxima_along_fieldline.html" xlink:title="find_maxima_along_fieldline">
+<polygon fill="#d9534f" stroke="#d9534f" points="646,-104 481,-104 481,-80 646,-80 646,-104"/>
+<text text-anchor="middle" x="563.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_maxima_along_fieldline</text>
+</a>
+</g>
+</g>
+<!-- proc~find_maxima_along_fieldline&#45;&gt;proc~b_mod_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge6" class="edge">
+<title>proc~find_maxima_along_fieldline&#45;&gt;proc~b_mod_along_fieldline</title>
+<path fill="none" stroke="#000000" d="M636.14,-104.04C668.31,-109.44 706.28,-115.82 738.9,-121.3"/>
+<polygon fill="#000000" stroke="#000000" points="738.4,-124.76 748.84,-122.97 739.56,-117.86 738.4,-124.76"/>
+</g>
+<!-- proc~find_maxima_along_fieldline&#45;&gt;proc~db_dphi_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge8" class="edge">
+<title>proc~find_maxima_along_fieldline&#45;&gt;proc~db_dphi_along_fieldline</title>
+<path fill="none" stroke="#000000" d="M646.01,-92C674.69,-92 706.86,-92 735.35,-92"/>
+<polygon fill="#000000" stroke="#000000" points="735.66,-95.5 745.66,-92 735.66,-88.5 735.66,-95.5"/>
+</g>
+<!-- proc~make_flock_from_labels -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node8" class="node">
+<title>proc~make_flock_from_labels</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node8"><a xlink:href="../proc/make_flock_from_labels.html" xlink:title="make_flock_from_labels">
+<polygon fill="#d9534f" stroke="#d9534f" points="408,-104 268,-104 268,-80 408,-80 408,-104"/>
+<text text-anchor="middle" x="338" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_flock_from_labels</text>
+</a>
+</g>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;proc~nudge_maxima_inward -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge10" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;proc~nudge_maxima_inward</title>
+<path fill="none" stroke="#000000" d="M397.82,-80C412.86,-76.99 429.02,-73.82 444,-71 457.38,-68.48 471.63,-65.88 485.44,-63.4"/>
+<polygon fill="#000000" stroke="#000000" points="486.17,-66.83 495.4,-61.63 484.94,-59.94 486.17,-66.83"/>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;proc~find_maxima_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge11" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;proc~find_maxima_along_fieldline</title>
+<path fill="none" stroke="#000000" d="M408.19,-92C427.91,-92 449.71,-92 470.56,-92"/>
+<polygon fill="#000000" stroke="#000000" points="470.7,-95.5 480.7,-92 470.7,-88.5 470.7,-95.5"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node9" class="node">
+<title>proc~suspect_omnigenous_origin_not_minimum</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node9"><a xlink:href="../proc/suspect_omnigenous_origin_not_minimum.html" xlink:title="suspect_omnigenous_origin_not_minimum">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="683,-146 444,-146 444,-122 683,-122 683,-146"/>
+<text text-anchor="middle" x="563.5" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">suspect_omnigenous_origin_not_minimum</text>
+</a>
+</g>
+</g>
+<!-- proc~make_flock_from_labels&#45;&gt;proc~suspect_omnigenous_origin_not_minimum -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge13" class="edge">
+<title>proc~make_flock_from_labels&#45;&gt;proc~suspect_omnigenous_origin_not_minimum</title>
+<path fill="none" stroke="#000000" d="M397.82,-104C412.86,-107.01 429.02,-110.18 444,-113 456.68,-115.39 470.14,-117.85 483.26,-120.21"/>
+<polygon fill="#000000" stroke="#000000" points="482.75,-123.67 493.21,-121.99 483.99,-116.78 482.75,-123.67"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;proc~b_mod_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge7" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;proc~b_mod_along_fieldline</title>
+<path fill="none" stroke="#000000" d="M683.28,-134C702.13,-134 721.17,-134 738.68,-134"/>
+<polygon fill="#000000" stroke="#000000" points="738.8,-137.5 748.8,-134 738.8,-130.5 738.8,-137.5"/>
+</g>
+<!-- proc~suspect_omnigenous_origin_not_minimum&#45;&gt;proc~db_dphi_along_fieldline -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge9" class="edge">
+<title>proc~suspect_omnigenous_origin_not_minimum&#45;&gt;proc~db_dphi_along_fieldline</title>
+<path fill="none" stroke="#000000" d="M636.14,-121.96C667.26,-116.74 703.8,-110.6 735.69,-105.24"/>
+<polygon fill="#000000" stroke="#000000" points="736.58,-108.64 745.86,-103.53 735.42,-101.74 736.58,-108.64"/>
+</g>
+<!-- proc~make_flock_of_fieldlines -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node10" class="node">
+<title>proc~make_flock_of_fieldlines</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node10"><a xlink:href="../proc/make_flock_of_fieldlines.html" xlink:title="make_flock_of_fieldlines">
+<polygon fill="#d9534f" stroke="#d9534f" points="232,-104 90,-104 90,-80 232,-80 232,-104"/>
+<text text-anchor="middle" x="161" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_flock_of_fieldlines</text>
+</a>
+</g>
+</g>
+<!-- proc~make_flock_of_fieldlines&#45;&gt;proc~make_flock_from_labels -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge12" class="edge">
+<title>proc~make_flock_of_fieldlines&#45;&gt;proc~make_flock_from_labels</title>
+<path fill="none" stroke="#000000" d="M232.17,-92C240.65,-92 249.35,-92 257.94,-92"/>
+<polygon fill="#000000" stroke="#000000" points="257.95,-95.5 267.95,-92 257.95,-88.5 257.95,-95.5"/>
+</g>
+<!-- program~main -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_node11" class="node">
+<title>program~main</title>
+<g id="a_proc~~get_theta_scalar~~CalledByGraph_node11"><a xlink:href="../program/main.html" xlink:title="main">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="54,-104 0,-104 0,-80 54,-80 54,-104"/>
+<text text-anchor="middle" x="27" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">main</text>
+</a>
+</g>
+</g>
+<!-- program~main&#45;&gt;proc~make_flock_of_fieldlines -->
+<g id="proc~~get_theta_scalar~~CalledByGraph_edge14" class="edge">
+<title>program~main&#45;&gt;proc~make_flock_of_fieldlines</title>
+<path fill="none" stroke="#000000" d="M54.08,-92C61.75,-92 70.57,-92 79.78,-92"/>
+<polygon fill="#000000" stroke="#000000" points="79.89,-95.5 89.89,-92 79.89,-88.5 79.89,-95.5"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocget_theta_scalarCalledByGraph = svgPanZoom('#procget_theta_scalarCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              rabe
+ was developed by Georg Grassler<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-08-19T19:14:45.270555+0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
