@@ -94,7 +94,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 7.0% of total for modules and submodules.">200 statements</a>
+                 title=" 6.9% of total for modules and submodules.">202 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -149,19 +149,7 @@
       </div>
     </div>
 
-      <div class="card mb-4">
-      <a data-bs-toggle="collapse" href="#funcs-0"
-         aria-expanded="false" aria-controls="funcs-0">
-         <h4 class="card-header bg-primary text-white">Functions</h4>
-      </a>
-      <div id="funcs-0" class="collapse">
-        <div class="list-group list-group-flush">
-            <a class="list-group-item" href="../module/fourier_field.html#proc-next_power_of_two">next_power_of_two</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-rel_accuracy_b~2">rel_accuracy_B</a>
-        </div>
-      </div>
-    </div>
-
+  
       <div class="card mb-4">
       <a data-bs-toggle="collapse" href="#subs-0"
          aria-expanded="false" aria-controls="subs-0">
@@ -170,13 +158,7 @@
       <div id="subs-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../module/fourier_field.html#proc-fourier_field_init">fourier_field_init</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-fft_1d">fft_1d</a>
             <a class="list-group-item" href="../module/fourier_field.html#proc-ifft_modes_to_b">ifft_modes_to_B</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-compute_b_sqrtg_db_dx~2">compute_B_sqrtg_dB_dx</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-compute_b_and_db_dx~2">compute_B_and_dB_dx</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-compute_b_mod~2">compute_B_mod</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-compute_nabla_s~2">compute_nabla_s</a>
-            <a class="list-group-item" href="../module/fourier_field.html#proc-get_covariant_components~2">get_covariant_components</a>
         </div>
       </div>
     </div>
@@ -203,8 +185,8 @@
             <li class="list-group-item">
               <ul class="list-inline">
                   <li class="list-inline-item"><a href='constants.html'>constants</a></li>
-                  <li class="list-inline-item"><a href='field_base.html'>field_base</a></li>
                   <li class="list-inline-item">interpolate</li>
+                  <li class="list-inline-item"><a href='field_base.html'>field_base</a></li>
               </ul>
             </li>
             <li class="list-group-item">
@@ -386,7 +368,7 @@ evaluated via 2D spline interpolation.</p><a href="../type/fourier_field_t.html"
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-initialized~3"></span>
+              <span class="anchor" id="variable-initialized"></span>
               logical,
             </td>
               <td>public</td>
@@ -420,7 +402,7 @@ evaluated via 2D spline interpolation.</p><a href="../type/fourier_field_t.html"
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-nfp~11"></span>
+              <span class="anchor" id="variable-nfp~6"></span>
               real(kind=dp),
             </td>
               <td>public</td>
@@ -550,100 +532,6 @@ evaluated via 2D spline interpolation.</p><a href="../type/fourier_field_t.html"
         </section>
         <br>
 
-        <section>
-          <h2>Functions</h2>
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-next_power_of_two"></span> <h3>public  function <a href='../proc/next_power_of_two.html'>next_power_of_two</a>(n) result(p)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-n~4"></span>
-              integer,
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>n</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>integer</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-rel_accuracy_b~2"></span> <h3>public  function <a href='../proc/rel_accuracy_b~2.html'>rel_accuracy_B</a>(self)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~20"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-    <h4>
-    Return Value
-    <small>real(kind=dp)</small>
-    </h4>
-    
-
-    </div>
-  </div>
-
-        </section>
-        <br>
 
         <section>
           <h2>Subroutines</h2>
@@ -668,7 +556,7 @@ evaluated via 2D spline interpolation.</p><a href="../proc/fourier_field_init.ht
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-field~10"></span>
+              <span class="anchor" id="variable-field~12"></span>
               type(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -758,7 +646,7 @@ evaluated via 2D spline interpolation.</p><a href="../proc/fourier_field_init.ht
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-nfp~12"></span>
+              <span class="anchor" id="variable-nfp~7"></span>
               integer,
             </td>
 <td>intent(in),</td>
@@ -784,47 +672,6 @@ evaluated via 2D spline interpolation.</p><a href="../proc/fourier_field_init.ht
             <td><strong>n_grid_in</strong></td>
             <td>
 <p>spline grid points per angle (rounded up to 2^k + 1 for fft init)</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-fft_1d"></span> <h3>public  subroutine <a href='../proc/fft_1d.html'>fft_1d</a>(z)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>In-place radix-2 FFT with a positive phase kernel and no normalisation,
-i.e. <code>z_out(p) = sum_j z_in(j) * exp(2*pi*i*(j-1)*(p-1)/n)</code>.</p><a href="../proc/fft_1d.html" class="pull-right"><emph>Read more&hellip;</emph></a>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-z~2"></span>
-              complex(kind=dp),
-            </td>
-<td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>z</strong>(:)</td>
-            <td>
-
             </td>
         </tr>
     </tbody>
@@ -935,461 +782,6 @@ on the equidistant angle grid by a single 2D inverse FFT.</p><a href="../proc/if
     </div>
   </div>
 
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-compute_b_sqrtg_db_dx~2"></span> <h3>public  subroutine <a href='../proc/compute_b_sqrtg_db_dx~2.html'>compute_B_sqrtg_dB_dx</a>(self, theta, phi, B_mod, sqrtg, dB_dx)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~16"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-theta~16"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>theta</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phi~19"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>phi</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b_mod~7"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>B_mod</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-sqrtg~3"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>sqrtg</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-db_dx~4"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>dB_dx</strong>(3)</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-compute_b_and_db_dx~2"></span> <h3>public  subroutine <a href='../proc/compute_b_and_db_dx~2.html'>compute_B_and_dB_dx</a>(self, theta, phi, B_mod, dB_dx)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~17"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-theta~17"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>theta</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phi~20"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>phi</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b_mod~8"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>B_mod</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-db_dx~5"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>dB_dx</strong>(3)</td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-compute_b_mod~2"></span> <h3>public  subroutine <a href='../proc/compute_b_mod~2.html'>compute_B_mod</a>(self, theta, phi, B_mod)  
-</h3></div>
-    <div class="card-body">
-          
-  <p>Evaluate the spline-interpolated field strength <code>B_mod</code> at Boozer angles.</p>
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~18"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-theta~18"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>theta</strong></td>
-            <td>
-<p>poloidal Boozer angle in radians</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phi~21"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>phi</strong></td>
-            <td>
-<p>toroidal Boozer angle in radians</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b_mod~9"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>B_mod</strong></td>
-            <td>
-<p>magnetic field strength in Tesla</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-compute_nabla_s~2"></span> <h3>public  subroutine <a href='../proc/compute_nabla_s~2.html'>compute_nabla_s</a>(self, theta, phi, nabla_s)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~19"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-theta~19"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>theta</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phi~22"></span>
-              real(kind=dp),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>phi</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nabla_s~3"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nabla_s</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
-              <div class="card">
-    <div class="card-header codesum"><span class="anchor" id="proc-get_covariant_components~2"></span> <h3>public  subroutine <a href='../proc/get_covariant_components~2.html'>get_covariant_components</a>(self, B_theta_covariant, B_phi_covariant)  
-</h3></div>
-    <div class="card-body">
-          
-  
-
-  <h4>Arguments</h4>
-      <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
-        <th scope="col"></th>
-        <th scope="col">Name</th>
-        <th scope="col"></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-self~21"></span>
-              class(<a href='../type/fourier_field_t.html'>fourier_field_t</a>),
-            </td>
-<td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>self</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b_theta_covariant~4"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>B_theta_covariant</strong></td>
-            <td>
-
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-b_phi_covariant~4"></span>
-              real(kind=dp),
-            </td>
-<td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>B_phi_covariant</strong></td>
-            <td>
-
-            </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-    </div>
-  </div>
-
         </section>
         <br>
 
@@ -1413,7 +805,7 @@ on the equidistant angle grid by a single 2D inverse FFT.</p><a href="../proc/if
             <p class="text-end">
               Documentation generated by
               <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
- on 2026-08-19T19:14:45.270555+0000             </p>
+ on 2026-08-23T15:42:12.793552+0000             </p>
           </div>
         </div>
         <br>
