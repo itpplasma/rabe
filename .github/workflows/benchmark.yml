@@ -17,11 +17,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.12'
 
@@ -50,7 +50,7 @@ jobs:
       run: |
         git checkout "${{ steps.baseline.outputs.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' "$CTEST_LAST_TEST")
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Clean build
@@ -61,7 +61,7 @@ jobs:
       run: |
         git checkout "${{ github.sha }}"
         make CONFIG=Release golden_run
-        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' $CTEST_LAST_TEST)
+        MS=$(awk '/Test time =/ {printf "%d\n", $(NF-1) * 1000}' "$CTEST_LAST_TEST")
         echo "ms=$MS" >> "$GITHUB_OUTPUT"
 
     - name: Write step summary

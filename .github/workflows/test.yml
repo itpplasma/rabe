@@ -12,13 +12,16 @@ on:
       libneo_ref:
         description: libneo branch, tag or commit to build against
         default: ''
+      fortio_ref:
+        description: fortio branch, tag or commit to build against
+        default: ''
 
 jobs:
   test:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - uses: cachix/install-nix-action@v31.10.6
       with:
@@ -26,12 +29,18 @@ jobs:
           experimental-features = nix-command flakes
 
     - name: Build project
+      env:
+        FORTIO_REF: ${{ inputs.fortio_ref }}
+        LIBNEO_REF: ${{ inputs.libneo_ref }}
       run: |
-        if [ -n "${{ inputs.libneo_ref }}" ]; then
-          nix develop .#default --command make LIBNEO_REF=${{ inputs.libneo_ref }}
-        else
-          nix develop .#default --command make
+        args=()
+        if [ -n "$FORTIO_REF" ]; then
+          args+=("FORTIO_REF=$FORTIO_REF")
         fi
+        if [ -n "$LIBNEO_REF" ]; then
+          args+=("LIBNEO_REF=$LIBNEO_REF")
+        fi
+        nix develop .#default --command make "${args[@]}"
 
     - name: Run tests
       run: nix develop .#default --command make test_all

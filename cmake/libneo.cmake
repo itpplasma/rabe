@@ -4,7 +4,8 @@ include(FetchContent)
 set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fetch)")
 
 # -DLIBNEO_REF=<branch|tag|sha>: fetch this libneo revision instead of the pin.
-set(LIBNEO_REF  "" CACHE STRING "libneo git ref (branch, tag, or sha) to fetch")
+set(LIBNEO_REF "7262c32bf0406594a8ef27e84654d249aef2cb86" CACHE STRING
+    "libneo git ref (branch, tag, or sha) to fetch")
 
 # rabe links only libneo's light targets (boozer, vmec_support, interpolate);
 # skip its numerics-heavy core so BLAS/LAPACK and fortnum are not required here.
@@ -25,15 +26,10 @@ function(rabe_add_libneo)
                          "${CMAKE_CURRENT_BINARY_DIR}/libneo"
                          EXCLUDE_FROM_ALL)
     else()
-        if(LIBNEO_REF STREQUAL "")
-            set(_libneo_ref "bc36357664212d7ef4e01f0d9325eead3da7bca9")
-        else()
-            set(_libneo_ref "${LIBNEO_REF}")
-        endif()
         FetchContent_Declare(
             libneo
             GIT_REPOSITORY https://github.com/itpplasma/libneo.git
-            GIT_TAG        ${_libneo_ref}
+            GIT_TAG        ${LIBNEO_REF}
             EXCLUDE_FROM_ALL
         )
         FetchContent_MakeAvailable(libneo)

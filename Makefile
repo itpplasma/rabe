@@ -1,7 +1,10 @@
 CONFIG ?= Debug
 
-# Forward LIBNEO_REF and LIBNEO_PATH only when given on the make command line;
+# Forward dependency overrides only when given on the make command line;
 # an ambient shell value is ignored.
+ifeq ($(origin FORTIO_REF),command line)
+  _FORTIO_REF_ARG := -DFORTIO_REF=$(FORTIO_REF)
+endif
 ifeq ($(origin LIBNEO_REF),command line)
   _LIBNEO_REF_ARG := -DLIBNEO_REF=$(LIBNEO_REF)
 endif
@@ -13,7 +16,7 @@ endif
 all: build
 
 build/CMakeCache.txt:
-	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=$(CONFIG) $(_FORTIO_REF_ARG) $(_LIBNEO_REF_ARG) $(_LIBNEO_PATH_ARG)
 
 build: build/CMakeCache.txt
 	cmake --build build

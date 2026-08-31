@@ -290,9 +290,17 @@ make test_all
 
 The tests as well as their description, can be found in `test`.
 
-### Overriding the libneo dependency
+### Overriding fetched dependencies
 
-By default the build fetches a pinned libneo commit. Two explicit options change this:
+By default the build fetches pinned commits for libneo and Fortio. Explicit
+options can select a different ref for a candidate or compatibility build:
+
+- `-DFORTIO_REF=<branch|tag|sha>` selects a different Fortio ref:
+
+  ```bash
+  make FORTIO_REF=main
+  # or directly: cmake -S . -B build -DFORTIO_REF=main
+  ```
 
 - `-DLIBNEO_REF=<branch|tag|sha>` selects a different git ref:
 
