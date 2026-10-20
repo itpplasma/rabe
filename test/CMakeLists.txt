@@ -40,6 +40,9 @@ add_subdirectory(integration)
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
+    add_test(NAME TestCIEvents
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_ci_events.py)
+    set_tests_properties(TestCIEvents PROPERTIES LABELS "quick")
     add_subdirectory(plot)
 else()
     message(STATUS "Python3 not found - plot tests disabled")
