@@ -16,8 +16,8 @@
         pkgs.pkg-config
         pkgs.git
       ];
-      # Python for the golden-record compare; only needed where the test runs.
-      pyenv = pkgs: pkgs.python3.withPackages (ps: [ ps.xarray ps.numpy ps.netcdf4 ]);
+      # Python for golden-record comparison and workflow regression tests.
+      pyenv = pkgs: pkgs.python3.withPackages (ps: [ ps.xarray ps.numpy ps.netcdf4 ps.pyyaml ]);
       mkShell = pkgs: packages:
         pkgs.mkShell {
           packages = packages;
