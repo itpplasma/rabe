@@ -62,3 +62,8 @@ add_test(TestShaingCallenQS test_shaing_callen_against_quasi_symmetric.x)
 set_tests_properties(TestShaingCallenQS PROPERTIES LABELS "quick")
 
 add_subdirectory(vmec)
+
+add_executable(test_flock_helicity.x test_flock_helicity.f90)
+target_link_libraries(test_flock_helicity.x rabe_lib helpers_lib)
+add_test(NAME TestFlockHelicity COMMAND test_flock_helicity.x)
+set_tests_properties(TestFlockHelicity PROPERTIES LABELS "quick")

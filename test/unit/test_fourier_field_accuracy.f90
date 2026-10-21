@@ -100,9 +100,11 @@ program plot_fourier_field_accuracy
             "  rel_err_dB =", max_rel_err_dB(k)
     end do
 
-    ! --- Reference lines n^{-6}, anchored to last (well-converged) point ---
-    ref_line_B = max_rel_err_B(n_sweep)*(n_grids_dp(n_sweep)/n_grids_dp)**6
-    ref_line_dB = max_rel_err_dB(n_sweep)*(n_grids_dp(n_sweep)/n_grids_dp)**5
+    ! A closed periodic grid has n_grid-1 intervals: errors scale as h^6/h^5.
+    ref_line_B = max_rel_err_B(n_sweep)* &
+                 ((n_grids_dp(n_sweep) - 1)/(n_grids_dp - 1))**6
+    ref_line_dB = max_rel_err_dB(n_sweep)* &
+                  ((n_grids_dp(n_sweep) - 1)/(n_grids_dp - 1))**5
 
     do k = 1, n_sweep
         if (n_grids(k) >= 30) then ! need sufficient points for asymptotics
