@@ -40,8 +40,10 @@ module netcdf_mod
         procedure :: add_int_1d => netcdf_add_int_1d
         procedure :: add_real_2d => netcdf_add_real_2d
         procedure :: add_real_3d => netcdf_add_real_3d
+        procedure :: add_real_4d => netcdf_add_real_4d
         procedure :: write_real_2d => netcdf_write_real_2d
         procedure :: write_real_3d => netcdf_write_real_3d
+        procedure :: write_real_4d => netcdf_write_real_4d
         procedure :: read_real_2d => netcdf_read_real_2d
         procedure :: read_real_3d => netcdf_read_real_3d
         procedure :: read_dim => netcdf_read_dim
@@ -571,6 +573,18 @@ contains
         call netcdf_add_real_nd(this, var_name, names)
     end subroutine netcdf_add_real_3d
 
+    subroutine netcdf_add_real_4d(this, var_name, dim1, dim2, dim3, dim4)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2, dim3, dim4
+        character(len=100) :: names(4)
+
+        names(1) = dim1
+        names(2) = dim2
+        names(3) = dim3
+        names(4) = dim4
+        call netcdf_add_real_nd(this, var_name, names)
+    end subroutine netcdf_add_real_4d
+
     integer function find_var_id(this, var_name) result(var_id)
         class(netcdf_t), intent(inout) :: this
         character(len=*), intent(in) :: var_name
@@ -609,6 +623,17 @@ contains
         status = nf90_put_var(this%ncid, find_var_id(this, var_name), value)
         call check_netcdf_status(status, "writing 3D array variable: "//var_name)
     end subroutine netcdf_write_real_3d
+
+    subroutine netcdf_write_real_4d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :, :, :), intent(in) :: value
+        integer :: status
+
+        status = nf90_put_var(this%ncid, find_var_id(this, var_name), value)
+        call check_netcdf_status(status, "writing 4D array variable: "//var_name)
+    end subroutine netcdf_write_real_4d
 
     subroutine netcdf_read_real_2d(this, var_name, value)
         use netcdf

@@ -114,9 +114,47 @@ These follow `rabe-derivatives/PHILOSOPHY.md` of the design notes.
 6. **Spectrum source.** Without `spectrum_file` the libneo spline field is
    projected onto the truncated spectrum; `spectral_residual` reports
    `max|B - B_spectrum|/B_00`. The projection itself is not differentiated.
+   With `wout_derivative = .true.` the spectrum comes from libneo's
+   differentiated transform instead, see below.
 7. **lambda_off.** `lambda_off = Lambda_A/sqrt(nu_star) + Lambda_B/nu_star` is
    the above-critical asymptote and its gradient is only meaningful for `nu_star
    >= nu_star_crit`.
+
+## Chain to the VMEC wout harmonics
+
+With `wout_derivative = .true.` (VMEC input, no `spectrum_file`) the module
+`wout_chain` composes the spectrum Jacobian with libneo's VMEC -> Boozer
+tangent and adjoint (`boozer_vmec_ad`, libneo PR
+[#449](https://github.com/itpplasma/libneo/pull/449)). `bmnc`, `iota`, `G`
+and `I` of each surface then come from libneo's transform, and
+`rabe_deriv.nc` holds in addition the gradients of every output with respect to
+the wout arrays `rmnc`, `zmns`, `lmns` (half-mesh, as stored in the wout) and
+`iotaf`. For a cotangent `v[surface, output]` the wout cotangent is the
+contraction `sum v * grad_X`, which is the VJP the VMEC++ adjoint needs; the
+library routine `wout_chain_vjp` computes the same product with one libneo
+adjoint sweep, and `wout_chain_jvp` the tangent.
+
+- `nabla_s_mnc`, `psi_edge` and `R` still come from the projection of rabe's
+  own field and are held fixed, so the gradients miss their dependence on the
+  geometry. libneo's transform does not produce `|grad s|`.
+- The wout arrays `bmnc`, `bsubumnc` and `bsubvmnc` do not enter libneo's
+  transform, which rebuilds `B` from `R`, `Z`, `lambda` and `iota`, so their
+  gradients are zero and are not written.
+- The derivatives are those of libneo's discrete algorithm (splines in `rho`
+  and the angles, Lagrange re-interpolation with a frozen stencil), not of the
+  continuous Boozer transform; see the libneo PR for its kink at
+  stellarator-symmetric points.
+- The `iota` column stays the frozen-rational surrogate: chaining it with
+  libneo's `iota` tangent moves the field-line iota with the true iota at fixed
+  `p/q` and labels. libneo's `bmnc`, `G` and `I` also depend on `iota`, and
+  that part is an ordinary derivative.
+
+`TestWoutChainQH` and `TestWoutChainQA` perturb the wout harmonics in memory,
+re-spline libneo's VMEC data and compare fourth-order central differences of
+the composed primal (frozen structure, fixed `nabla_s_mnc`) with
+`wout_chain_jvp`, separately for a geometry direction (`rmnc`, `zmns`, `lmns`)
+and for `iotaf` at frozen field-line iota, and check the adjoint duality of
+`wout_chain_jvp` and `wout_chain_vjp`.
 
 ## Usage
 
@@ -128,6 +166,7 @@ surfaces, `sign_sqrtg`, `max_n_fieldlines`) and the optional group
         n_gauss = 64,                ! Gauss points per half well
         nu_star = 1e-3, 1e-2,        ! optional lambda_off evaluations
         continuum_extrema = .true.,
+        wout_derivative = .false.,   ! chain to the wout harmonics (VMEC input)
         spectrum_file = "",          ! read the spectrum instead of a field
         output_file = "rabe_deriv.nc"
     /
@@ -152,6 +191,9 @@ be read back as a spectrum file.
 | `diagnostics` | (surface, diagnostic) | gaps, Newton shift, `min lambda^2`, resonant weights, continuum shifts, iota kinks, mode flag |
 | `spectral_residual`, `spectral_asymmetry` | (surface) | projection quality |
 | `lambda_off`, `lambda_off_jacobian` | (surface, nu), (surface, nu, param) | when `nu_star` is given |
+| `grad_rmnc`, `grad_zmns`, `grad_lmns` | (surface, output, radius, mn_mode) | `d values / d` wout array, with `wout_derivative` |
+| `grad_iotaf` | (surface, output, radius) | `d values / d iotaf`, with `wout_derivative` |
+| `wout_spectrum_difference` | (surface) | `max|bmnc_libneo - bmnc_projected|/B_00`, with `wout_derivative` |
 
 ## Tests
 
