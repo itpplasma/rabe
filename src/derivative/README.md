@@ -51,8 +51,14 @@ the parameters.
 - **eta_b and nu_star_crit.** By default (`continuum_extrema = .true.`) the
   discrete maximum over labels is replaced by the global maximum of `B` on the
   surface, and the discrete minimum of the left maxima by the saddle of `B` on
-  the maximum ridge (the mountain pass), both found by 2D Newton from the
-  lattice argmax and argmin. These are the continuum limits of the discrete
+  the maximum ridge (the mountain pass), both found by 2D Newton started from
+  every line maximum within 1e-2 (relative) of the lattice maximum or minimum,
+  keeping the highest maximum and the lowest saddle. A single start from the
+  lattice argmax can stop at a lower local maximum that the lattice happens to
+  sample at its peak (LP QA, s = 0.3: 1.1e-6 below the global maximum), which
+  made the primal jump whenever the argmax line switched. If no saddle is
+  found, `nu_star_crit` falls back to the discrete minimum with a warning, and
+  the mode flag in `diagnostics` is 0. These are the continuum limits of the discrete
   selections, their derivatives are the basis functions at the critical point
   (envelope theorem), and they do not depend on `iota`. The difference to the
   discrete values shrinks like the square of the label spacing (synthetic QA:
@@ -99,7 +105,14 @@ These follow `rabe-derivatives/PHILOSOPHY.md` of the design notes.
    the discrete mode the tie set (within 1e-10) is averaged, which gives the
    central derivative, and `eta_b_iota_kink` and `nu_crit_iota_kink` report the
    spread. Ties between mirror images or identical points keep equal slopes in
-   all spectrum directions.
+   all spectrum directions. The continuum extrema are themselves a maximum
+   (or minimum) over the local critical points of `B`, so they are kinked where
+   two distinct local maxima or ridge saddles exchange order. In near
+   quasi-axisymmetry the ridge is almost flat and such exchanges are close: on
+   LP QA at s = 0.3 the order of two local maxima 1.1e-6 apart changes within a
+   wout perturbation of relative size 5e-6, and at s = 0.7 the ridge saddle is
+   not found and the discrete fallback for `nu_star_crit` is kinked at the base
+   point. The Jacobian is then a one-sided derivative.
 4. **Moving endpoints and square-root singularities.** Lines whose maximum lies
    just below `1/eta_b` have near-singular derivatives of order `log(1/delta)`.
    They are integrable over the label, but a fixed rule resolves them only

@@ -57,6 +57,10 @@ module spectrum_derivative
     real(dp), parameter :: c_Lambda_S = 1.5_dp*0.855_dp
     real(dp), parameter :: resonance_tol = 1e-9_dp
     real(dp), parameter :: tie_tol = 1e-10_dp
+    !> Line maxima within this relative distance of the lattice extremum start
+    !! the Newton search for the continuum extremum. It must exceed the
+    !! sampling deficit of the lattice, O(B''/B dxi^2).
+    real(dp), parameter :: multistart_window = 1e-2_dp
         !! relative tolerance for ties of the discrete max (eta_b) and min
         !! (nu_star_crit) over field-line maxima
 
@@ -484,8 +488,9 @@ contains
         real(dp) :: norm, B_sq, lam_b, nab, raw_A, raw_B, dev_A, dev_B, dr
         real(dp) :: Lambda_A, Lambda_B, Lambda_S, hf, I_hat, nu_crit, B1_min
         real(dp) :: delta_max, x_mode, w_res, w_all, slope, factor_A, factor_S
-        real(dp) :: tie_lo, tie_hi, B_crit
+        real(dp) :: tie_lo, tie_hi, B_crit, B_best
         logical :: ok
+        real(dp), allocatable :: cos_c(:), cos_best(:)
         real(dp), allocatable :: d_tie(:)
         real(dp), allocatable :: cos_k(:), sin_k(:), xg(:), wg(:)
         real(dp), allocatable :: phi_m(:, :), B_m(:, :), dphi_m(:, :, :), dB_m(:, :, :)
@@ -598,21 +603,38 @@ contains
             diag%eta_b_iota_kink = (tie_hi - tie_lo)/B_glob
         end if
         diag%continuum_extrema = .false.
+        allocate (cos_c(K), cos_best(K))
         if (settings%continuum_extrema) then
             ! Continuum limit of the discrete max over labels: the global maximum
-            ! of B on the surface, polished by 2D Newton from the lattice argmax.
-            theta_0 = N_tor*structure%xi(diag%argmax_line)/nfp
-            phi_0 = M_pol*structure%xi(diag%argmax_line)/nfp
-            phi = phi_m(diag%argmax_side, diag%argmax_line)
-            call critical_point(field, theta_0 + iota*(phi - phi_0), phi, &
-                                +1, B_crit, cos_k, ok)
-            if (ok .and. B_crit >= B_glob*(1.0_dp - 1e-13_dp)) then
+            ! of B on the surface, polished by 2D Newton from every line maximum
+            ! near the lattice maximum. A single start from the lattice argmax
+            ! can stop at a lower local maximum when the lattice samples that one
+            ! at its peak (a line through a symmetry point) and the higher one
+            ! off its peak; the primal then jumps when the argmax line switches
+            ! (LP QA, s = 0.3: 1.3e-6 relative in eta_b).
+            B_best = -huge(1.0_dp)
+            do j = 1, n
+                do side = 1, 2
+                    if (B_m(side, j) < B_glob*(1.0_dp - multistart_window)) cycle
+                    theta_0 = N_tor*structure%xi(j)/nfp
+                    phi_0 = M_pol*structure%xi(j)/nfp
+                    phi = phi_m(side, j)
+                    call critical_point(field, theta_0 + iota*(phi - phi_0), phi, &
+                                        +1, B_crit, cos_c, ok)
+                    if (ok .and. B_crit > B_best .and. &
+                        B_crit <= B_glob*(1.0_dp + multistart_window)) then
+                        B_best = B_crit
+                        cos_best = cos_c
+                    end if
+                end do
+            end do
+            if (B_best >= B_glob*(1.0_dp - 1e-13_dp)) then
                 diag%continuum_extrema = .true.
-                diag%eta_b_shift = (B_crit - B_glob)/B_glob
-                B_glob = B_crit
+                diag%eta_b_shift = (B_best - B_glob)/B_glob
+                B_glob = B_best
                 if (np > 0) then
                     d_tie = 0.0_dp
-                    d_tie(1:K) = cos_k
+                    d_tie(1:K) = cos_best
                 end if
             end if
         end if
@@ -866,19 +888,31 @@ contains
         end if
         if (diag%continuum_extrema) then
             ! Continuum limit of the discrete min over labels of the left
-            ! maxima: the saddle of B on the maximum ridge (mountain pass).
-            theta_0 = N_tor*structure%xi(diag%argmin_line)/nfp
-            phi_0 = M_pol*structure%xi(diag%argmin_line)/nfp
-            phi = phi_m(1, diag%argmin_line)
-            call critical_point(field, theta_0 + iota*(phi - phi_0), phi, &
-                                0, B_crit, cos_k, ok)
-            if (ok .and. B_crit <= B1_min*(1.0_dp + 1e-13_dp)) then
-                diag%nu_crit_shift = (B_crit - B1_min)/B1_min
-                B1_min = B_crit
+            ! maxima: the lowest saddle of B on the maximum ridge (mountain
+            ! pass), by 2D Newton from every left maximum near the lattice
+            ! minimum. Saddles further below than the window are not on the
+            ! ridge and are rejected.
+            B_best = huge(1.0_dp)
+            do j = 1, n
+                if (B_m(1, j) > B1_min*(1.0_dp + multistart_window)) cycle
+                theta_0 = N_tor*structure%xi(j)/nfp
+                phi_0 = M_pol*structure%xi(j)/nfp
+                phi = phi_m(1, j)
+                call critical_point(field, theta_0 + iota*(phi - phi_0), phi, &
+                                    0, B_crit, cos_c, ok)
+                if (ok .and. B_crit < B_best .and. &
+                    B_crit >= B1_min*(1.0_dp - multistart_window)) then
+                    B_best = B_crit
+                    cos_best = cos_c
+                end if
+            end do
+            if (B_best <= B1_min*(1.0_dp + 1e-13_dp)) then
+                diag%nu_crit_shift = (B_best - B1_min)/B1_min
+                B1_min = B_best
                 delta_max = eta_b - 1.0_dp/B1_min
                 if (np > 0) then
                     d_tie = 0.0_dp
-                    d_tie(1:K) = cos_k
+                    d_tie(1:K) = cos_best
                 end if
             else
                 diag%continuum_extrema = .false.
