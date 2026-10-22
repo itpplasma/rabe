@@ -42,6 +42,11 @@ add_executable(${PROJECT_NAME} app/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
+# Derivative mode (opt-in): exact Jacobians with respect to the Boozer spectrum.
+add_executable(rabe_deriv app/rabe_deriv.f90)
+target_link_libraries(rabe_deriv rabe_lib)
+set_target_properties(rabe_deriv PROPERTIES OUTPUT_NAME "rabe_deriv.x")
+
 enable_testing()
 add_subdirectory(test)
 

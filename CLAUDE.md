@@ -53,6 +53,9 @@ rabe_lib (main static library)
 │   shaing_callen.f90, shaing_callen_integration.f90, shaing_callen_wrappers.f90
 ├── netcdf_lib (src/netcdf/)
 │   netcdf.f90 - NetCDF output via type netcdf_t (backed by fortio)
+├── derivative_lib (src/derivative/) — see src/derivative/README.md
+│   spectral_surface.f90, spectrum_derivative.f90, spectrum_io.f90 —
+│   exact Jacobians w.r.t. the Boozer spectrum (app/rabe_deriv.f90)
 ├── error_handling_lib (src/error_handling/)
 │   error_handling.f90 - Sanity-check helpers: failed_sanity_check(),
 │                        reset_failed_check_counter(), did_fail_any_sanity_check(),
