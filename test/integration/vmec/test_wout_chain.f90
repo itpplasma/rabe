@@ -23,6 +23,7 @@ program test_wout_chain
     implicit none
 
     real(dp), parameter :: s_tor = 0.5_dp
+    real(dp), parameter :: ds_radial = 0.01_dp
     integer, parameter :: mboz = 6, nboz = 6, grid_refinement = 6
 
     type(boozer_field_t) :: field
@@ -68,7 +69,7 @@ program test_wout_chain
                            asymmetry)
 
     call wout_chain_init(chain, trim(wout_file), mboz, nboz, grid_refinement)
-    call wout_chain_spectrum(chain, s_tor, spec)
+    call wout_chain_spectrum(chain, s_tor, spec, ds_radial)
     iota_ad = spec%iota
     print "(A,A,3ES12.4)", trim(case_name), ": iota, G, I libneo AD ", &
         spec%iota, spec%G, spec%I
@@ -82,12 +83,12 @@ program test_wout_chain
     K = size(spec%xm)
     allocate (jac(n_params(K), n_outputs, 1))
     call evaluate(params, spec, settings, structure, values, jac(:, :, 1))
-    print "(A,7ES13.5)", "    values ", values
+    print "(A,9ES13.5)", "    values ", values
 
     ! Geometry direction (rmnc, zmns, lmns), iotaf fixed: the full chain.
     call wout_tangent_alloc(chain%ctx, t)
     call geometry_direction(t)
-    call wout_chain_jvp(chain, [s_tor], jac, t, dv)
+    call wout_chain_jvp(chain, [s_tor], jac, t, dv, ds_radial)
     call fd_check("rmnc, zmns, lmns", t, dv(:, 1), &
                   abs_scale(jac(:, :, 1), t), .false.)
 
@@ -97,7 +98,7 @@ program test_wout_chain
     call iota_direction(t)
     allocate (jac_frozen_iota, source=jac)
     jac_frozen_iota(2*K + off_iota, :, :) = 0.0_dp
-    call wout_chain_jvp(chain, [s_tor], jac_frozen_iota, t, dv)
+    call wout_chain_jvp(chain, [s_tor], jac_frozen_iota, t, dv, ds_radial)
     call fd_check("iotaf (line iota frozen)", t, dv(:, 1), &
                   abs_scale(jac_frozen_iota(:, :, 1), t), .true.)
 
@@ -109,7 +110,7 @@ program test_wout_chain
     ! terms relative to `scale` as well.
     call wout_tangent_alloc(chain%ctx, t)
     t%phiedge = chain%ctx%phiedge
-    call wout_chain_jvp(chain, [s_tor], jac, t, dv)
+    call wout_chain_jvp(chain, [s_tor], jac, t, dv, ds_radial)
     scale_phi = abs_scale(jac(:, :, 1), t)
     print "(A,4ES10.2)", "    phiedge: |analytic|/scale of the invariant outputs ", &
         abs(dv(1:4, 1))/scale_phi(1:4)
@@ -118,11 +119,12 @@ program test_wout_chain
         n_failed = n_failed + 1
     end if
     call fd_check("phiedge", t, dv(:, 1), scale_phi, .false., &
-                  absolute=[.true., .true., .true., .true., .false., .true., .true.])
+                  absolute=[.true., .true., .true., .true., .false., .true., .true., &
+                            .true., .true.])
     ! Rmajor_p, read from the file and passed through to R.
     call wout_tangent_alloc(chain%ctx, t)
     t%rmajor = 1e-2_dp*chain%ctx%rmajor
-    call wout_chain_jvp(chain, [s_tor], jac, t, dv)
+    call wout_chain_jvp(chain, [s_tor], jac, t, dv, ds_radial)
     call fd_check("rmajor", t, dv(:, 1), abs_scale(jac(:, :, 1), t), .false.)
 
     ! Adjoint duality with all inputs, including the iota column.
@@ -131,9 +133,9 @@ program test_wout_chain
     call iota_direction(t)
     t%phiedge = 3e-3_dp*chain%ctx%phiedge
     t%rmajor = -2e-3_dp*chain%ctx%rmajor
-    call wout_chain_jvp(chain, [s_tor], jac, t, dv)
-    cot(:, 1) = [0.7_dp, -1.3_dp, 2.1_dp, 0.4_dp, -0.9_dp, 1.1_dp, -0.6_dp]
-    call wout_chain_vjp(chain, [s_tor], jac, cot, tb)
+    call wout_chain_jvp(chain, [s_tor], jac, t, dv, ds_radial)
+    cot(:, 1) = [0.7_dp, -1.3_dp, 2.1_dp, 0.4_dp, -0.9_dp, 1.1_dp, -0.6_dp, 0.8_dp, -0.5_dp]
+    call wout_chain_vjp(chain, [s_tor], jac, cot, tb, ds_radial)
     lhs = sum(cot*dv)
     rhs = sum(tb%rmnc*t%rmnc) + sum(tb%zmns*t%zmns) + sum(tb%lmns*t%lmns) &
           + sum(tb%iotaf*t%iotaf) + tb%phiedge*t%phiedge + tb%rmajor*t%rmajor
@@ -209,7 +211,7 @@ contains
         real(dp) :: d(n_outputs, 1)
 
         call wout_chain_jvp(chain, [s_tor], reshape(abs(jac1), [size(jac1, 1), &
-                            n_outputs, 1]), abs_tangent(t), d)
+                            n_outputs, 1]), abs_tangent(t), d, ds_radial)
         scale = abs(d(:, 1))
     end function abs_scale
 
@@ -257,9 +259,9 @@ contains
                 where (absolute) err(:, i) = abs(fd - analytic)/max(scale, 1e-300_dp)
             end if
         end do
-        print "(A,A30,A,7ES10.2)", "  ", label, " best rel err ", minval(err, dim=2)
+        print "(A,A30,A,9ES10.2)", "  ", label, " best rel err ", minval(err, dim=2)
         do i = 1, n_steps
-            print "(A,ES8.1,A,7ES10.2)", "    step ", steps(i), " rel err ", err(:, i)
+            print "(A,ES8.1,A,9ES10.2)", "    step ", steps(i), " rel err ", err(:, i)
         end do
         do o = 1, n_outputs
             if (scale(o) == 0.0_dp) cycle
@@ -284,7 +286,7 @@ contains
         shifted = chain
         call boozer_ad_perturb(shifted%ctx, t, eps)
         sp = spec
-        call wout_chain_spectrum(shifted, s_tor, sp)
+        call wout_chain_spectrum(shifted, s_tor, sp, ds_radial)
         if (freeze_iota) then
             sp%iota = iota_line
         else

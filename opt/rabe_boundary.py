@@ -13,7 +13,9 @@ Chain, per evaluation:
    and ``R``.
 4. rabe's derivative mode in JAX, :mod:`pyrabe.spectrum_derivative`, for
    ``Lambda_A``, ``Lambda_B``, ``Lambda_S``, ``nu_star_crit``, ``eta_b`` and
-   the alpha criteria ``Lambda_alpha`` and ``Gamma_well``.
+   the alpha criteria ``Lambda_alpha``, ``Gamma_well``, ``var_dJ`` and
+   ``Gamma_s`` (the last needs ``ds_radial > 0``: the radial derivative of the
+   spectrum from the transforms at ``s +- ds_radial``).
 
 Steps 3 and 4 are :class:`pyrabe.wout_derivative.WoutChain`.  The gradient is
 one VMEC++ solve, one VJP of the pyrabe chain and one implicit adjoint solve of
@@ -24,7 +26,7 @@ so the gradient is that of the smooth branch through the current point.
 The default objective is the offset of the 1/nu-regime transport coefficient,
 ``sum_s w_s (Lambda_A(s) / sqrt(nu_star) + Lambda_B(s) / nu_star)``, as in
 ``pyrabe.simsopt.RabeOptimizable.Lambda_offset``.  Any other smooth scalar of
-the outputs can be supplied as ``reduce`` (a JAX function of the ``(S, 7)``
+the outputs can be supplied as ``reduce`` (a JAX function of the ``(S, n_outputs)``
 value array), for example the alpha objective :func:`alpha_reduce`.
 ``constraints`` adds penalties that are JAX functions of the boundary and of
 the primary wout arrays (:func:`aspect_penalty`, :func:`volume_penalty`,
@@ -51,6 +53,7 @@ jax.config.update("jax_enable_x64", True)
 OUTPUT_NAMES = sd.OUTPUT_NAMES
 N_OUT = len(OUTPUT_NAMES)
 I_OUT = {name: i for i, name in enumerate(OUTPUT_NAMES)}
+N_TERMS = 6  # columns of alpha_terms
 
 
 def offset_reduce(nu_star: float, weights: Sequence[float] | None = None,
@@ -68,8 +71,11 @@ class AlphaWeights:
     """Weights of the alpha objective :func:`alpha_reduce` (Kasilov's criteria).
 
     ``nu_star_crit`` aligns the maxima (1), ``offset`` weights ``Lambda_A^2 +
-    Lambda_B^2`` (2a), ``Lambda_alpha`` its square (2b) and ``Gamma_well`` the
-    drift within the wells (3).  ``reference`` divides each term by its value
+    Lambda_B^2`` (2a), ``Lambda_alpha`` its square (2b, projection onto the
+    bootstrap weights), ``var_dJ`` the label variance of ``J`` of the
+    transitioning particles (2b, direct), ``Gamma_well`` the drift within the
+    wells normalized by ``J`` and ``Gamma_s`` the same normalized by ``dJ/ds``
+    (3, needs ``ds_radial > 0``).  ``reference`` divides each term by its value
     at a reference boundary (``AlphaWeights.normalized``), so that the weights
     are relative.
     """
@@ -78,33 +84,39 @@ class AlphaWeights:
     offset: float = 1.0
     Lambda_alpha: float = 1.0
     Gamma_well: float = 1.0
-    reference: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0)
+    var_dJ: float = 0.0
+    Gamma_s: float = 0.0
+    reference: tuple[float, ...] = (1.0,) * N_TERMS
+
+    def weights(self) -> tuple[float, ...]:
+        return (self.nu_star_crit, self.offset, self.Lambda_alpha, self.Gamma_well,
+                self.var_dJ, self.Gamma_s)
 
     def normalized(self, values) -> "AlphaWeights":
-        """Same weights with the reference set to the terms at ``values`` ``(S, 7)``."""
+        """Same weights with the reference set to the terms at ``values`` ``(S, n_outputs)``."""
         terms = np.asarray(alpha_terms(jnp.asarray(values)))
         ref = tuple(float(t) if t > 0.0 else 1.0 for t in terms.sum(axis=0))
-        return AlphaWeights(self.nu_star_crit, self.offset, self.Lambda_alpha,
-                            self.Gamma_well, ref)
+        return AlphaWeights(*self.weights(), ref)
 
 
 def alpha_terms(values):
-    """``(S, 4)`` terms ``nu_star_crit, Lambda_A^2 + Lambda_B^2, Lambda_alpha^2,
-    Gamma_well`` per surface.  The offsets enter squared because their plain
-    sum is unbounded below."""
+    """``(S, 6)`` terms ``nu_star_crit, Lambda_A^2 + Lambda_B^2, Lambda_alpha^2,
+    Gamma_well, var_dJ, Gamma_s`` per surface.  The offsets enter squared because
+    their plain sum is unbounded below."""
     v = values
     return jnp.stack([v[:, I_OUT["nu_star_crit"]],
                       v[:, I_OUT["Lambda_A"]] ** 2 + v[:, I_OUT["Lambda_B"]] ** 2,
                       v[:, I_OUT["Lambda_alpha"]] ** 2,
-                      v[:, I_OUT["Gamma_well"]]], axis=1)
+                      v[:, I_OUT["Gamma_well"]],
+                      v[:, I_OUT["var_dJ"]],
+                      v[:, I_OUT["Gamma_s"]]], axis=1)
 
 
 def alpha_reduce(weights: AlphaWeights = AlphaWeights(),
                  surface_weights: Sequence[float] | None = None) -> Callable:
     """``F = sum_s w_s [w1 nu*_crit + w2 (Lambda_A^2 + Lambda_B^2) + w2b Lambda_alpha^2
-    + w3 Gamma_well]``, each term divided by its reference."""
-    w = jnp.asarray([weights.nu_star_crit, weights.offset, weights.Lambda_alpha,
-                     weights.Gamma_well]) / jnp.asarray(weights.reference)
+    + w3 Gamma_well + w2v var_dJ + w3s Gamma_s]``, each term divided by its reference."""
+    w = jnp.asarray(weights.weights()) / jnp.asarray(weights.reference)
 
     def reduce(values):
         ws = (jnp.ones(values.shape[0]) if surface_weights is None
@@ -262,11 +274,13 @@ class BoundaryObjective:
         s_list: Normalized toroidal fluxes of the surfaces.
         settings: rabe settings (helicity ``M_pol``, ``N_tor``, lines, ``n_gauss``).
         mboz, nboz: Boozer resolution, ``m < mboz`` (libneo convention).
-        reduce: Scalar of the ``(S, 7)`` outputs; default :func:`offset_reduce`.
+        reduce: Scalar of the ``(S, n_outputs)`` outputs; default :func:`offset_reduce`.
         nu_star: Collisionality of the default offset objective.
         squared: Default objective ``sum_s L_s^2`` instead of ``sum_s L_s``.
         constraints: Penalties ``c(boundary, harm)`` (JAX scalars) added to the
             objective, with ``harm`` the primary wout arrays of the equilibrium.
+        ds_radial: Half step of the radial central difference for ``Gamma_s``
+            (two more Boozer transforms per surface); 0 leaves ``Gamma_s = 0``.
 
     ``boundary`` is an array of shape ``(2, mpol, 2 ntor + 1)`` with rows
     ``rbc`` and ``zbs`` in VMEC++'s layout.  The last evaluation is cached, so
@@ -276,12 +290,13 @@ class BoundaryObjective:
     def __init__(self, indata, s_list, settings: sd.DerivativeSettings, mboz: int, nboz: int,
                  reduce: Callable | None = None, nu_star: float = 1e-3, squared: bool = False,
                  workdir=None, constraints: Sequence[Callable] = (),
-                 max_threads: int | None = None):
+                 max_threads: int | None = None, ds_radial: float = 0.0):
         if indata.lasym:
             raise ValueError("stellarator-symmetric equilibria only")
         self.indata = indata.model_copy(update={"always_fix_m1_gauge": True})
         self.s = np.atleast_1d(np.asarray(s_list, dtype=float))
         self.settings = settings
+        self.ds_radial = float(ds_radial)
         self.mboz, self.nboz = int(mboz), int(nboz)
         self.reduce = offset_reduce(nu_star, squared=squared) if reduce is None else reduce
         self._dreduce = jax.jit(jax.grad(self.reduce))
@@ -349,7 +364,8 @@ class BoundaryObjective:
         self.n_solves += 1
         t1 = time.perf_counter()
         harm = {k: jnp.asarray(np.asarray(v)) for k, v in harm.items()}
-        chain = WoutChain(self.base_wout, self.s, self.settings, self.mboz, self.nboz, harm=harm)
+        chain = WoutChain(self.base_wout, self.s, self.settings, self.mboz, self.nboz, harm=harm,
+                          ds_radial=self.ds_radial)
         values = chain.values()
         t2 = time.perf_counter()
         self._last = Evaluation(boundary, harm, chain, values, pullback,
@@ -357,7 +373,7 @@ class BoundaryObjective:
         return self._last
 
     def values(self, boundary) -> np.ndarray:
-        """``(S, 7)`` outputs with the structure found at this boundary.
+        """``(S, n_outputs)`` outputs with the structure found at this boundary.
 
         The solve keeps the VMEC++ pullback, so a following :meth:`grad` at the
         same boundary needs only the adjoint solve.

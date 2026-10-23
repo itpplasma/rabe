@@ -53,6 +53,7 @@ module netcdf_mod
         procedure :: write_int_1d => netcdf_write_int_1d
         procedure :: read_real => netcdf_read_real
         procedure :: read_real_1d => netcdf_read_real_1d
+        procedure :: has_var => netcdf_has_var
         procedure :: read_int_1d => netcdf_read_int_1d
         procedure :: close => netcdf_close
         final :: netcdf_final
@@ -436,6 +437,17 @@ contains
         status = nf90_get_var(this%ncid, var_id, value)
         call check_netcdf_status(status, "reading variable: "//var_name)
     end subroutine netcdf_read_real
+
+    !> Whether the open file has a variable of this name.
+    logical function netcdf_has_var(this, var_name)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        integer :: var_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        netcdf_has_var = nf90_inq_varid(this%ncid, var_name, var_id) == nf90_noerr
+    end function netcdf_has_var
 
     subroutine netcdf_read_real_1d(this, var_name, value)
         use netcdf

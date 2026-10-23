@@ -7,10 +7,13 @@ module spectrum_derivative
     !!
     !!     params = [bmnc(1:K), nabla_s_mnc(1:K), iota, G, I, psi_edge, R]
     !!
-    !! with K modes. The outputs are `[Lambda_A, Lambda_B, Lambda_S, nu_star_crit,
-    !! eta_b, Lambda_alpha, Gamma_well]`, and `jacobian(i_param, i_output) = d
-    !! output / d param`. `Lambda_alpha` and `Gamma_well` are the alpha-particle
-    !! criteria of `alpha_criteria.md`.
+    !!     params = [..., dbmnc_ds(1:K), diota_ds, dG_ds, dI_ds]
+    !!
+    !! with K modes, where the radial derivatives of the second line enter only
+    !! `Gamma_s`. The outputs are `[Lambda_A, Lambda_B, Lambda_S, nu_star_crit,
+    !! eta_b, Lambda_alpha, Gamma_well, var_dJ, Gamma_s]`, and
+    !! `jacobian(i_param, i_output) = d output / d param`. The last four are the
+    !! alpha-particle criteria of `alpha_criteria.md`.
     !!
     !! The primal in derivative mode follows the standard rabe pipeline, with the
     !! changes that make it a smooth function of the parameters:
@@ -40,20 +43,25 @@ module spectrum_derivative
     implicit none
     private
 
-    integer, parameter, public :: n_outputs = 7
+    integer, parameter, public :: n_outputs = 9
     integer, parameter, public :: i_Lambda_A = 1, i_Lambda_B = 2, &
                                   i_Lambda_S = 3, i_nu_star_crit = 4, &
                                   i_eta_b = 5, i_Lambda_alpha = 6, &
-                                  i_Gamma_well = 7
+                                  i_Gamma_well = 7, i_var_dJ = 8, i_Gamma_s = 9
     character(len=*), parameter, public :: output_names = &
                                            "Lambda_A Lambda_B Lambda_S nu_star_crit eta_b "// &
-                                           "Lambda_alpha Gamma_well"
+                                           "Lambda_alpha Gamma_well var_dJ Gamma_s"
     character(len=*), parameter, public :: parameter_layout = &
-                                           "bmnc(1:K) nabla_s_mnc(1:K) iota G I psi_edge R"
+                                           "bmnc(1:K) nabla_s_mnc(1:K) iota G I psi_edge R "// &
+                                           "dbmnc_ds(1:K) diota_ds dG_ds dI_ds"
 
-    !> Offsets of the scalar parameters after the two mode blocks.
+    !> Offsets of the scalar parameters after the two mode blocks (index 2K + off).
     integer, parameter, public :: off_iota = 1, off_G = 2, off_I = 3, &
                                   off_psi_edge = 4, off_R = 5
+    !> The radial block: dbmnc_ds at 2K + off_dbmnc_ds + (1:K), and the radial
+    !! scalars at 3K + off.
+    integer, parameter, public :: off_dbmnc_ds = 5, off_diota_ds = 6, &
+                                  off_dG_ds = 7, off_dI_ds = 8
 
     real(dp), parameter :: S_A_slope = 0.3_dp
     real(dp), parameter :: fit_eps = 1e-15_dp
@@ -99,6 +107,11 @@ module spectrum_derivative
             !! toroidal flux at the edge in Wb (sign as in rabe)
         real(dp) :: R = 0.0_dp
             !! major radius in m
+        logical :: has_radial = .false.
+            !! radial derivatives below are given (else Gamma_s = 0)
+        real(dp), allocatable :: dbmnc_ds(:)
+            !! d bmnc/ds at fixed Boozer angles in T
+        real(dp) :: diota_ds = 0.0_dp, dG_ds = 0.0_dp, dI_ds = 0.0_dp
     end type surface_spectrum_t
 
     type, public :: derivative_settings_t
@@ -183,7 +196,7 @@ contains
     pure integer function n_params(n_modes)
         integer, intent(in) :: n_modes
 
-        n_params = 2*n_modes + 5
+        n_params = 3*n_modes + 8
     end function n_params
 
     subroutine pack_parameters(spec, params)
@@ -201,6 +214,12 @@ contains
         params(2*K + off_I) = spec%I
         params(2*K + off_psi_edge) = spec%psi_edge
         params(2*K + off_R) = spec%R
+        params(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds) = 0.0_dp
+        if (allocated(spec%dbmnc_ds)) &
+            params(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds) = spec%dbmnc_ds
+        params(3*K + off_diota_ds) = spec%diota_ds
+        params(3*K + off_dG_ds) = spec%dG_ds
+        params(3*K + off_dI_ds) = spec%dI_ds
     end subroutine pack_parameters
 
     subroutine unpack_parameters(params, template, spec)
@@ -224,6 +243,11 @@ contains
         spec%I = params(2*K + off_I)
         spec%psi_edge = params(2*K + off_psi_edge)
         spec%R = params(2*K + off_R)
+        spec%has_radial = template%has_radial
+        spec%dbmnc_ds = params(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds)
+        spec%diota_ds = params(3*K + off_diota_ds)
+        spec%dG_ds = params(3*K + off_dG_ds)
+        spec%dI_ds = params(3*K + off_dI_ds)
     end subroutine unpack_parameters
 
     subroutine make_field(spec, field, structure)
@@ -816,7 +840,8 @@ contains
         real(dp), allocatable :: J_b(:), dJ_b(:, :), dJ_ref(:), d_SJ(:)
         real(dp), allocatable :: delta_J(:), d_delta_J(:, :), dJ_c(:), dJ_s(:)
         real(dp), allocatable :: d_dJ_c(:, :), d_dJ_s(:, :), d_rawal(:), d_devAl(:)
-        real(dp), allocatable :: d_Lal(:), d_Gamma(:)
+        real(dp), allocatable :: d_Lal(:), d_Gamma(:), d_var(:), d_Gs(:)
+        real(dp) :: var_dJ, Gamma_s
 
         K = size(template%xm)
         if (size(params) /= n_params(K)) error stop "evaluate: wrong params length"
@@ -1089,6 +1114,34 @@ contains
             d_delta_J(:, j) = 0.5_dp*sqrt(J_ref/J_b(j))* &
                               (dJ_ref/J_ref - dJ_b(:, j)/J_b(j))
         end do
+        ! var_dJ: label variance of delta J_j, whose label mean is zero by the
+        ! choice of J_ref (Parseval: the sum of its squared label modes).
+        ! delta J_j does not depend on the factor G + iota I, which is left out
+        ! here so that the derivatives in G and I vanish exactly.
+        allocate (d_var(np))
+        block
+            real(dp) :: S0, Jr0, dl
+            real(dp), allocatable :: dS0(:), dJr0(:), ddl(:)
+
+            allocate (dS0(np), dJr0(np), ddl(np))
+            S0 = sum(1.0_dp/sqrt(F_int(5, :)))
+            Jr0 = (real(n, dp)/S0)**2
+            dS0 = 0.0_dp
+            do j = 1, n
+                dS0 = dS0 - 0.5_dp*F_int(5, j)**(-1.5_dp)*dF_int(:, 5, j)
+            end do
+            dJr0 = -2.0_dp*real(n, dp)**2/S0**3*dS0
+            var_dJ = 0.0_dp
+            d_var = 0.0_dp
+            do j = 1, n
+                dl = sqrt(Jr0/F_int(5, j)) - 1.0_dp
+                ddl = 0.5_dp*sqrt(Jr0/F_int(5, j))*(dJr0/Jr0 - dF_int(:, 5, j)/F_int(5, j))
+                var_dJ = var_dJ + dl**2
+                d_var = d_var + 2.0_dp*dl*ddl
+            end do
+            var_dJ = var_dJ/real(n, dp)
+            d_var = d_var/real(n, dp)
+        end block
 
         ! ---- Fourier transform over labels ----
         iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
@@ -1299,9 +1352,10 @@ contains
                - nu_crit*(2.0_dp*d_eta/eta_b + d_Ihat/I_hat)
 
         ! ---- Gamma_well: <(dJ/dalpha)^2>/<J^2> over the trapped levels ----
-        allocate (d_Gamma(np))
-        call well_criterion(field, template, structure, settings, iota, e_iota, &
-                            phi_m, B_m, dB_m, Gamma_well, d_Gamma)
+        allocate (d_Gamma(np), d_Gs(np))
+        call well_criterion(field, spec, structure, settings, iota, e_iota, &
+                            phi_m, B_m, dB_m, Gt, d_Gt, Gamma_well, d_Gamma, &
+                            Gamma_s, d_Gs)
 
         values(i_Lambda_A) = Lambda_A
         values(i_Lambda_B) = Lambda_B
@@ -1310,6 +1364,8 @@ contains
         values(i_eta_b) = eta_b
         values(i_Lambda_alpha) = Lambda_alpha
         values(i_Gamma_well) = Gamma_well
+        values(i_var_dJ) = var_dJ
+        values(i_Gamma_s) = Gamma_s
         if (np > 0) then
             jacobian(:, i_Lambda_A) = d_LA
             jacobian(:, i_Lambda_B) = d_LB
@@ -1318,6 +1374,8 @@ contains
             jacobian(:, i_eta_b) = d_eta
             jacobian(:, i_Lambda_alpha) = d_Lal
             jacobian(:, i_Gamma_well) = d_Gamma
+            jacobian(:, i_var_dJ) = d_var
+            jacobian(:, i_Gamma_s) = d_Gs
         end if
         if (present(diagnostics)) diagnostics = diag
     end subroutine evaluate
@@ -1384,14 +1442,23 @@ contains
     !! turning point and sums the cosine differences as -2 sin(arg_a + c)
     !! sin(c), c = (m iota - n) d/2; 1 - eta B would lose the digits of B next
     !! to the end (noise of relative size eps/u_1^2 in dJ/dalpha).
-    subroutine well_criterion(field, template, structure, settings, iota, e_iota, &
-                              phi_m, B_m, dB_m, Gamma, dGamma)
+    !!
+    !! On the same levels Gamma_s = sum_jk W_jk D_jk^2 / sum_jk W_jk (D_jk^2 + P_jk^2)
+    !! with D = dJ/dalpha/G_t, P = dJ/ds/G_t = j_s + (G_t'/G_t) J,
+    !! j_s = -int dphi (1 + lambda^2)/(2 lambda B^2) (B_s + iota' (phi - phi_min) B_t)
+    !! from the radial block of `spec` (zero without it); phi_min moves by the
+    !! implicit function theorem on B_p + iota B_t = 0.
+    subroutine well_criterion(field, spec, structure, settings, iota, e_iota, &
+                              phi_m, B_m, dB_m, Gt, d_Gt, Gamma, dGamma, &
+                              Gamma_s, dGamma_s)
         type(spectral_surface_t), intent(in) :: field
-        type(surface_spectrum_t), intent(in) :: template
+        type(surface_spectrum_t), intent(in) :: spec
         type(derivative_structure_t), intent(in) :: structure
         type(derivative_settings_t), intent(in) :: settings
         real(dp), intent(in) :: iota, e_iota(:), phi_m(:, :), B_m(:, :), dB_m(:, :, :)
-        real(dp), intent(out) :: Gamma, dGamma(:)
+        real(dp), intent(in) :: Gt, d_Gt(:)
+            !! G + iota I and its tangent
+        real(dp), intent(out) :: Gamma, dGamma(:), Gamma_s, dGamma_s(:)
 
         integer :: K, np, n, j, lev, side, i, half, ne, ng, i_min, ig, iter, lo_i
         real(dp) :: M_pol, N_tor, nfp, theta_0, phi_0, phi, B, B_t, B_p, B_tt, B_tp, B_pp
@@ -1404,13 +1471,46 @@ contains
         real(dp), allocatable :: daccJ(:), daccD(:), dJv(:), dDv(:), dW(:), dnum(:), dden(:)
         real(dp), allocatable :: dBmin(:), arg_end(:, :), rate(:)
         real(dp) :: d_end
+        logical :: radial
+        integer :: i_db, i_rad_iota, i_rad_G, i_rad_I, i_Icov
+        real(dp) :: g_rad, accS, Sv, Pv, Q, Bs, Bs_t, Bs_p, numS, denS
+        real(dp), allocatable :: dphimin(:), dg_rad(:), daccS(:), dSv(:), dPv(:), dQ(:)
+        real(dp), allocatable :: dnumS(:), ddenS(:), dbds(:)
 
-        K = size(template%xm)
+        K = size(spec%xm)
         np = size(dGamma)
+        radial = spec%has_radial
+        i_Icov = 2*K + off_I
+        i_db = 2*K + off_dbmnc_ds
+        i_rad_iota = 3*K + off_diota_ds
+        i_rad_G = 3*K + off_dG_ds
+        i_rad_I = 3*K + off_dI_ds
+        allocate (dphimin(np), dg_rad(np), daccS(np), dSv(np), dPv(np), dQ(np))
+        allocate (dnumS(np), ddenS(np), dbds(K))
+        dphimin = 0.0_dp
+        numS = 0.0_dp
+        denS = 0.0_dp
+        dnumS = 0.0_dp
+        ddenS = 0.0_dp
+        g_rad = 0.0_dp
+        dg_rad = 0.0_dp
+        if (radial) then
+            dbds = spec%dbmnc_ds
+            ! G_t'/G_t with G_t' = G' + iota' I + iota I'
+            g_rad = (spec%dG_ds + spec%diota_ds*spec%I + iota*spec%dI_ds)/Gt
+            if (np > 0) then
+                dg_rad(i_rad_G) = 1.0_dp
+                dg_rad(i_rad_iota) = spec%I
+                dg_rad(i_Icov) = dg_rad(i_Icov) + spec%diota_ds
+                dg_rad = dg_rad + spec%dI_ds*e_iota
+                dg_rad(i_rad_I) = iota
+                dg_rad = dg_rad/Gt - g_rad*d_Gt/Gt
+            end if
+        end if
         n = structure%n_lines
         M_pol = settings%M_pol
         N_tor = settings%N_tor
-        nfp = template%nfp
+        nfp = spec%nfp
         ne = settings%n_eta
         ng = settings%n_gauss_well
         allocate (cos_k(K), sin_k(K), t_lev(ne), w_lev(ne), xg(ng), wg(ng))
@@ -1419,7 +1519,7 @@ contains
         allocate (dtheta(np), dB(np), dBt(np), dlam(np), daccJ(np), daccD(np))
         allocate (dJv(np), dDv(np), dW(np), dnum(np), dden(np), dBmin(np))
         allocate (arg_end(K, 2), rate(K))
-        rate = template%xm*iota - template%xn
+        rate = spec%xm*iota - spec%xn
         call well_levels(ne, t_lev, w_lev)
         call gauss_legendre_01(ng, xg, wg)
         num = 0.0_dp
@@ -1448,6 +1548,12 @@ contains
                 dBmin = (phi_min - phi_0)*B_t*e_iota
                 dBmin(1:K) = dBmin(1:K) + cos_k
                 d_eta_hi = -dBmin/B_min**2
+                if (radial) then
+                    ! implicit function theorem on B_p + iota B_t = 0
+                    dphimin = (B_t + (B_tp + iota*B_tt)*(phi_min - phi_0))*e_iota
+                    dphimin(1:K) = dphimin(1:K) + (spec%xn - iota*spec%xm)*sin_k
+                    dphimin = -dphimin/(B_pp + 2.0_dp*iota*B_tp + iota**2*B_tt)
+                end if
             end if
             side = 1
             if (B_m(2, j) < B_m(1, j)) side = 2
@@ -1503,9 +1609,9 @@ contains
                     call field%basis(theta_0 + iota*(x - phi_0), x, cos_k, sin_k)
                     call field%B_derivatives(cos_k, sin_k, Bl, B_t, B_p, B_tt, B_tp, B_pp)
                     tp(side) = x
-                    arg_end(:, side) = template%xm*(theta_0 + iota*(x - phi_0) &
-                                                    + field%theta_origin) &
-                                       - template%xn*(x + field%phi_origin)
+                    arg_end(:, side) = spec%xm*(theta_0 + iota*(x - phi_0) &
+                                                + field%theta_origin) &
+                                       - spec%xn*(x + field%phi_origin)
                     if (np > 0) then
                         ! 1 - eta B(phi*) = 0: dphi* = -(B deta + eta dB|phi)/(eta B')
                         dB = (x - phi_0)*B_t*e_iota
@@ -1516,9 +1622,11 @@ contains
                 L = tp(2) - tp(1)
                 accJ = 0.0_dp
                 accD = 0.0_dp
+                accS = 0.0_dp
                 if (np > 0) then
                     daccJ = 0.0_dp
                     daccD = 0.0_dp
+                    daccS = 0.0_dp
                 end if
                 do half = 1, 2
                     do i = 1, ng
@@ -1546,18 +1654,35 @@ contains
                         wu = wg(i)*u
                         accJ = accJ + wu*lam/B
                         accD = accD - wu*B_t*hq/B**2
+                        if (radial) then
+                            Bs = sum(dbds*cos_k)
+                            Q = Bs + spec%diota_ds*(phi - phi_min)*B_t
+                            accS = accS - wu*Q*hq/B**2
+                        end if
                         if (np > 0) then
                             dphi = cA*dtp(:, 1) + cB*dtp(:, 2)
                             dtheta = iota*dphi + (phi - phi_0)*e_iota
                             dB = B_t*dtheta + B_p*dphi
                             dB(1:K) = dB(1:K) + cos_k
                             dBt = B_tt*dtheta + B_tp*dphi
-                            dBt(1:K) = dBt(1:K) - template%xm*sin_k
+                            dBt(1:K) = dBt(1:K) - spec%xm*sin_k
                             dlam = -(eta*dB + B*d_eta)/(2.0_dp*lam)
                             daccJ = daccJ + wu*(dlam/B - lam/B**2*dB)
                             daccD = daccD - wu*(dBt*hq/B**2 &
                                                 + B_t*(L2 - 1.0_dp)/(2.0_dp*L2)*dlam/B**2 &
                                                 - 2.0_dp*B_t*hq/B**3*dB)
+                            if (radial) then
+                                Bs_t = -sum(dbds*spec%xm*sin_k)
+                                Bs_p = sum(dbds*spec%xn*sin_k)
+                                dQ = Bs_t*dtheta + Bs_p*dphi &
+                                     + spec%diota_ds*((dphi - dphimin)*B_t &
+                                                      + (phi - phi_min)*dBt)
+                                dQ(i_db + 1:i_db + K) = dQ(i_db + 1:i_db + K) + cos_k
+                                dQ(i_rad_iota) = dQ(i_rad_iota) + (phi - phi_min)*B_t
+                                daccS = daccS - wu*(dQ*hq/B**2 &
+                                                    + Q*(L2 - 1.0_dp)/(2.0_dp*L2)*dlam/B**2 &
+                                                    - 2.0_dp*Q*hq/B**3*dB)
+                            end if
                         end if
                     end do
                 end do
@@ -1573,10 +1698,28 @@ contains
                     dnum = dnum + dW*Dv**2 + 2.0_dp*W*Dv*dDv
                     dden = dden + dW*Jv**2 + 2.0_dp*W*Jv*dJv
                 end if
+                if (radial) then
+                    Sv = L*accS
+                    Pv = Sv + g_rad*Jv
+                    numS = numS + W*Dv**2
+                    denS = denS + W*(Dv**2 + Pv**2)
+                    if (np > 0) then
+                        dSv = L*daccS + accS*(dtp(:, 2) - dtp(:, 1))
+                        dPv = dSv + dg_rad*Jv + g_rad*dJv
+                        dnumS = dnumS + dW*Dv**2 + 2.0_dp*W*Dv*dDv
+                        ddenS = ddenS + dW*(Dv**2 + Pv**2) + 2.0_dp*W*(Dv*dDv + Pv*dPv)
+                    end if
+                end if
             end do
         end do
         Gamma = num/den
         if (np > 0) dGamma = (dnum - Gamma*dden)/den
+        Gamma_s = 0.0_dp
+        if (np > 0) dGamma_s = 0.0_dp
+        if (radial) then
+            Gamma_s = numS/denS
+            if (np > 0) dGamma_s = (dnumS - Gamma_s*ddenS)/denS
+        end if
     end subroutine well_criterion
 
     pure real(dp) function safe_ratio(a, b)
