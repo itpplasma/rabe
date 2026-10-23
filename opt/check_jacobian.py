@@ -101,12 +101,14 @@ def main():
     for h in (float(v) for v in a.hs.split(",")):
         fd_r = (p.evaluate(x + h * d, "r").r - p.evaluate(x - h * d, "r").r) / (2 * h)
         fd_f = (frozen(x + h * d) - frozen(x - h * d)) / (2 * h)
-        rows.append(dict(h=h, refound=err(fd_r), frozen=err(fd_f)))
-        print(rows[-1], flush=True)
+        rows.append(dict(h=h, refound=err(fd_r), frozen=err(fd_f),
+                         rows=dict(Jd=Jd.tolist(), refound=fd_r.tolist(), frozen=fd_f.tolist())))
+        print({k: v for k, v in rows[-1].items() if k != "rows"}, flush=True)
     res = dict(input=os.path.basename(a.input), ns=ns, objective=a.objective, n=p.n, K=int(ev.r.size),
                s=s_list, t_J=t_J, t_g=t_g, info_J=ev.info, info_g=eg.info,
                grad_vs_JTr=float(np.max(np.abs(eg.g - ev.g)) / np.max(np.abs(ev.g))),
                active={g: int(np.count_nonzero(ev.r[sl])) for g, sl in groups.items()},
+               r=ev.r.tolist(), values=ev.values.tolist(), output_names=list(lo.sd.OUTPUT_NAMES),
                vcurve=rows, boozer_route=lo.BOOZER_ROUTE)
     json.dump(res, open(a.out, "w"), indent=1, default=float)
     print(json.dumps({k: res[k] for k in ("n", "K", "t_J", "t_g", "grad_vs_JTr", "active")}))
