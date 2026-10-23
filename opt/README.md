@@ -52,6 +52,11 @@ converged only to about 1e-3, and the gradient moved by 3 % between
 
 Stellarator-symmetric fixed-boundary inputs only. `phiedge` and the profiles
 are held fixed (VMEC++ also differentiates power-series profiles, not wired
-here). The iota direction of rabe uses the frozen rational surrogate `p/q`.
+here). The iota direction of rabe uses the frozen rational surrogate: within
+one structure the field-line iota is `p/q + (iota - iota_input)`
+(`pyrabe.spectrum_derivative.locate`), whereas a fresh structure resets it to
+`p/q`. The objective with the structure recomputed at every point therefore
+differs from the differentiated branch by a smooth term, 6e-4 of the
+directional derivative on LP QA (ns = 25) and 6e-7 on LP QH.
 Derivatives are of the discretization (VMEC++ at the given `ns`, the libneo
 splines, rabe's Gauss-Legendre rule), not of the continuum.

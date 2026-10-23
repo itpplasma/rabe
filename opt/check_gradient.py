@@ -5,7 +5,7 @@ the pyrabe primal, with the discrete structure frozen at the base boundary
 (``frozen``) and, for the objective, also recomputed (``full``).  The gradient
 side is VMEC++'s implicit adjoint composed with the JAX VJP of pyrabe.
 
-usage: check_gradient.py INPUT NS S1,S2,.. M_POL N_TOR MBOZ NBOZ LINES NGAUSS [SEED]
+usage: check_gradient.py INPUT NS S1,S2,.. M_POL N_TOR MBOZ NBOZ LINES NGAUSS [SEED [OUT.json]]
 """
 
 from __future__ import annotations
@@ -68,14 +68,24 @@ def main(argv):
     fd_frozen = {k: [] for k in rows}
     fd_full = []
     for h in hs:
-        vp = obj.frozen_values(x0 + h * d, ev)
-        vm = obj.frozen_values(x0 - h * d, ev)
+        # A large step can move a line maximum out of reach of the frozen
+        # structure (pyrabe locate raises); that step is recorded as NaN.
+        try:
+            vp = obj.frozen_values(x0 + h * d, ev)
+            vm = obj.frozen_values(x0 - h * d, ev)
+        except RuntimeError as err:
+            print(f"h={h:.0e} frozen: {err}")
+            vp = vm = np.full((S, 5), np.nan)
         dv = (vp - vm) / (2 * h)
         fd_frozen["objective"].append(float((obj.reduce(vp) - obj.reduce(vm)) / (2 * h)))
         for o in (0, 1):
             for i in range(S):
                 fd_frozen[f"{sd.OUTPUT_NAMES[o]}@{s_list[i]}"].append(float(dv[i, o]))
-        fd_full.append((obj.objective(x0 + h * d) - obj.objective(x0 - h * d)) / (2 * h))
+        try:
+            fd_full.append((obj.objective(x0 + h * d) - obj.objective(x0 - h * d)) / (2 * h))
+        except RuntimeError as err:
+            print(f"h={h:.0e} full: {err}")
+            fd_full.append(float("nan"))
     out = {"input": path, "ns": int(ns), "s": s_list, "J0": J0, "values": ev.values.tolist(),
            "timing": timing, "h": hs, "exact": exact, "fd_frozen": fd_frozen, "fd_full": fd_full}
     print(f"ns={ns} s={s_list} J0={J0:.6e} timing={ {k: round(v, 2) for k, v in timing.items()} }")
@@ -90,6 +100,6 @@ def main(argv):
 
 if __name__ == "__main__":
     res = main(sys.argv[1:])
-    if len(sys.argv) > 10:
-        with open(sys.argv[10], "w") as f:
+    if len(sys.argv) > 11:
+        with open(sys.argv[11], "w") as f:
             json.dump(res, f, indent=1)
