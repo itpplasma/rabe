@@ -48,8 +48,10 @@ contains
         ! integrates to rel tol 1e-6, so agreement is limited to about that
         ! level on B-dominated quantities and somewhat worse on the small
         ! symmetry-breaking deviations.
-        real(dp), parameter :: tol(n_outputs) = [1e-4_dp, 1e-4_dp, 1e-6_dp, &
-                                                 1e-6_dp, 1e-8_dp]
+        ! the standard pipeline has no alpha criteria (outputs 6 and 7)
+        integer, parameter :: n_std = 5
+        real(dp), parameter :: tol(n_std) = [1e-4_dp, 1e-4_dp, 1e-6_dp, &
+                                             1e-6_dp, 1e-8_dp]
         real(dp), parameter :: tol_gauss = 1e-10_dp
 
         type(spectral_surface_t) :: field
@@ -57,8 +59,8 @@ contains
         type(derivative_structure_t) :: structure
         type(derivative_settings_t) :: fine, lattice
         real(dp), allocatable :: params(:)
-        real(dp) :: standard(n_outputs), smooth(n_outputs), smooth_fine(n_outputs)
-        real(dp) :: dr, rel(n_outputs), rel_gauss(n_outputs)
+        real(dp) :: standard(n_std), smooth(n_outputs), smooth_fine(n_outputs)
+        real(dp) :: dr, rel(n_std), rel_gauss(n_outputs)
         integer :: split, K
 
         ! The standard pipeline needs a minimum at the origin, so it runs on
@@ -90,13 +92,13 @@ contains
         call evaluate(params, spec, fine, structure, smooth_fine)
         call continuum_shift(name, spec, settings, n_failed)
 
-        rel = abs(smooth - standard)/abs(standard)
+        rel = abs(smooth(1:n_std) - standard)/abs(standard)
         rel_gauss = abs(smooth_fine - smooth)/abs(smooth_fine)
         print "(A,A)", name, ": outputs Lambda_A Lambda_B Lambda_S nu_star_crit eta_b"
         print "(A,5ES14.6)", "  standard pipeline   ", standard
-        print "(A,5ES14.6)", "  derivative (lattice)", smooth
+        print "(A,5ES14.6)", "  derivative (lattice)", smooth(1:n_std)
         print "(A,5ES10.2)", "  rel difference      ", rel
-        print "(A,5ES10.2)", "  rel change n_gauss x2 ", rel_gauss
+        print "(A,7ES10.2)", "  rel change n_gauss x2 ", rel_gauss
         if (any(rel > tol)) then
             print *, name, ": derivative primal deviates from the standard pipeline"
             n_failed = n_failed + 1
@@ -134,7 +136,7 @@ contains
             call evaluate(params, spec, cases(i), structure, v_cont)
             call evaluate(params, spec, lattice, structure, v_lat)
             shift(:, i) = abs(v_cont - v_lat)/abs(v_lat)
-            print "(A,A,I5,A,5ES10.2)", name, ": lines ", structure%n_lines, &
+            print "(A,A,I5,A,7ES10.2)", name, ": lines ", structure%n_lines, &
                 "  rel continuum - lattice ", shift(:, i)
         end do
         ! eta_b and nu_star_crit converge with the label spacing
