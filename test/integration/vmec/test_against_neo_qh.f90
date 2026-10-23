@@ -14,8 +14,10 @@ program test_against_neo_qh
     ! Symmetry-zero dB_dx components (exact 0 in the NEO reference) come out
     ! as spline roundoff, measured <= 1.6e-10 with an optimized libneo build.
     real(dp), parameter :: abstol_roundoff = 1e-9
+    ! Frozen NEO values below retain the original ns50 reference. The ns101
+    ! equilibrium preserves its boundary, profiles and edge toroidal flux.
     character(len=*), parameter :: nc_filename = &
-                      "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+                      "input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc"
 
     type(boozer_field_t) :: bfield
 

@@ -19,7 +19,7 @@ The CMake build copies files from `test/integration/input/` and `test/integratio
 
 Available input files:
 - **NEO `.bc` files**: `quasi_helical.bc`, `helical_anti.bc`, `helical_anti_small_aspect.bc`, `poloidal_anti_minuspert.bc`, `single_mode_m_2_n_minus4.bc`
-- **VMEC `.nc` files**: `wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc`, `wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc`
+- **VMEC `.nc` files**: `wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc`, `wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc`, `wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc`
 - **VMEC-derived `.bc` files**: `landreman_paul_qh.bc`, `landreman_paul_qa.bc`
 
 ## myplot API (`use myplot_module, only: myplot`)

@@ -1,0 +1,2 @@
+test/golden/expected/rabe.nc	golden record of rabe.x on the public LandremanPaul2021 QH wout, 1.9 kB, regenerated with make golden_update
+test/integration/vmec/input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc	public-derived Landreman-Paul QH ns101 test fixture, 2623464 bytes; immutable source, runtime and regeneration provenance in the adjacent README.md
