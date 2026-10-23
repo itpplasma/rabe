@@ -25,8 +25,9 @@ one rabe structure and values; ``dR/d(values, boundary, harm)`` by ``jax.jacrev`
 of the (jitted) residual map; per surface one VJP of the pyrabe chain per used
 output; and one batched VMEC++ implicit adjoint (one factorization, one
 back-substitution per residual that depends on the equilibrium).  The gradient
-mode needs a single adjoint row.  rabe's discrete structure is frozen at every
-evaluated boundary, as in :mod:`rabe_boundary`.
+mode needs a single adjoint row.  LM trials retain the accepted point's rabe
+structure so their residuals follow the branch differentiated by the Jacobian.
+The structure is re-found after accepting a step, as in :mod:`rabe_boundary`.
 """
 
 from __future__ import annotations
@@ -126,6 +127,11 @@ class Evaluation:
     c_eq: np.ndarray | None = None
     c_in: np.ndarray | None = None
     info: dict = field(default_factory=dict)
+
+    @property
+    def structure(self) -> WoutChain:
+        """The rabe chain whose structure defines this evaluation's smooth branch."""
+        return self._chain
 
     @property
     def F(self):
@@ -273,7 +279,17 @@ class Problem:
         return harmonics_of(vj.traced_run(self.inp, boundary, max_threads=self.max_threads,
                                           warm_key=self.warm_key).wout)
 
-    def _forward(self, boundary, x=None):
+    def _set_values(self, ev, structure=None):
+        t0 = time.perf_counter()
+        chain = structure if structure is not None else WoutChain(
+            self.base_wout, self.s, self.settings, self.mboz, self.nboz, harm=ev._harm)
+        values = chain.values(ev._harm)
+        if not np.all(np.isfinite(values)):
+            raise FloatingPointError("non-finite rabe values")
+        ev.values, ev._chain = values, chain
+        ev.info.update(t_values=time.perf_counter() - t0, frozen_structure=structure is not None)
+
+    def _forward(self, boundary, x=None, structure=None):
         t0 = time.perf_counter()
         ev = Evaluation(x=None if x is None else np.asarray(x, float), boundary=boundary, ok=False)
         try:
@@ -283,13 +299,10 @@ class Problem:
                 raise RuntimeError(f"VMEC++ not converged: {solve}")
             harm = {k: jnp.asarray(np.asarray(v)) for k, v in harm.items()}
             t1 = time.perf_counter()
-            chain = WoutChain(self.base_wout, self.s, self.settings, self.mboz, self.nboz, harm=harm)
-            values = chain.values(harm)
-            if not np.all(np.isfinite(values)):
-                raise FloatingPointError("non-finite rabe values")
-            ev.values, ev.ok = values, True
-            ev.info.update(solve=solve, t_solve=t1 - t0, t_values=time.perf_counter() - t1)
-            ev._harm, ev._pullback, ev._chain = harm, pullback, chain
+            ev._harm, ev._pullback = harm, pullback
+            ev.info.update(solve=solve, t_solve=t1 - t0)
+            self._set_values(ev, structure)
+            ev.ok = True
         except Exception as e:  # noqa: BLE001 - a failed evaluation is a rejected step
             ev.info["error"] = f"{type(e).__name__}: {e}"
         return ev
@@ -302,8 +315,14 @@ class Problem:
         return Reference(np.where(sums > 0, sums, 1.0), asp, vol, float(iota.min()),
                          float(iota.max()), np.asarray(self.mirror(ev._harm)))
 
-    def evaluate(self, x, mode: str = "r") -> Evaluation:
-        """``mode``: ``"r"`` residuals, ``"J"`` plus the Jacobian, ``"g"`` plus ``grad |r|^2``."""
+    def evaluate(self, x, mode: str = "r", *, structure=None) -> Evaluation:
+        """Residuals, optionally with ``"J"`` or ``"g"`` derivatives.
+
+        ``structure=accepted.structure`` retains that point's discrete choices
+        and iota reference, while extrema are re-located at ``x``.  Omitting it
+        re-finds the structure, including after a frozen trial at the same
+        boundary.  The VMEC++ solve is shared across those two evaluations.
+        """
         x = np.asarray(x, float)
         b = self.boundary(x)
         last = getattr(self, "_last_fwd", None)
@@ -312,10 +331,16 @@ class Problem:
             ev.info["reused_forward"] = True
             if last.ok:
                 ev._harm, ev._pullback, ev._chain = last._harm, last._pullback, last._chain
+                if ((structure is None and last.info["frozen_structure"])
+                        or (structure is not None and structure is not last._chain)):
+                    try:
+                        self._set_values(ev, structure)
+                    except Exception as e:  # noqa: BLE001 - reject an invalid branch
+                        ev.ok, ev.info["error"] = False, f"{type(e).__name__}: {e}"
         else:
-            ev = self._forward(b, x)
+            ev = self._forward(b, x, structure)
             self.n_eval += 1
-            self._last_fwd = ev if ev.ok else None
+        self._last_fwd = ev if ev.ok else None
         if not ev.ok:
             return ev
         params = self.params()
@@ -374,9 +399,6 @@ class Problem:
                 ev.J = Jx
                 ev.g = 2.0 * Jx.T @ ev.r
             ev.info.update(t_pyrabe=t1 - t0, t_adjoint=t2 - t1, adjoint_rows=int(active.size))
-        if ev is not self._last_fwd:
-            for k in ("_harm", "_pullback", "_chain"):
-                ev.__dict__.pop(k, None)
         return ev
 
 
@@ -397,8 +419,12 @@ def levenberg_marquardt(problem: Problem, x0, *, maxiter=50, lam0=1e-2, max_step
 
     ``(J^T J + lam I) dx = -J^T r``; a trial is accepted when the gain ratio
     ``rho = (F - F_trial) / (F - |r + J dx|^2) > 1e-3``; ``lam`` follows
-    Nielsen's update.  Trials need residuals only, the Jacobian is evaluated at
-    accepted points.  ``state`` restores ``(x, lam, nu, k)`` from a checkpoint.
+    Nielsen's update.  Trials use the accepted point's frozen rabe structure.
+    After acceptance the structure is re-found and its residual jump is logged
+    with the new Jacobian.  Convergence uses the reduction on the frozen branch
+    and requires that re-finding caused no material residual jump.
+    ``state`` restores ``(x, lam, nu, k)`` at a re-found accepted point, so a
+    checkpoint needs no serialized structure.
     """
     st = dict(x=np.asarray(x0, float), lam=lam0, nu=2.0, k=0, nfev=0, njev=0)
     if state:
@@ -424,7 +450,7 @@ def levenberg_marquardt(problem: Problem, x0, *, maxiter=50, lam0=1e-2, max_step
             xt = np.clip(st["x"] + dx, -bound, bound)
             dx = xt - st["x"]
             pred = ev.F - float(np.sum((r + J @ dx) ** 2))
-            et = problem.evaluate(xt, "r")
+            et = problem.evaluate(xt, "r", structure=ev.structure)
             st["nfev"] += 1
             if on_eval:
                 on_eval(et, "r")
@@ -441,15 +467,25 @@ def levenberg_marquardt(problem: Problem, x0, *, maxiter=50, lam0=1e-2, max_step
         ev_new = problem.evaluate(xt, "J")
         st["nfev"] += 1
         st["njev"] += 1
+        if not ev_new.ok:  # residual was fine but the Jacobian failed
+            if on_eval:
+                on_eval(ev_new, "J")
+            return ev, st, f"Jacobian failed: {ev_new.info.get('error')}"
+        jump = float(np.max(np.abs(ev_new.r - et.r), initial=0.0))
+        rscale = max(float(np.max(np.abs(ev_new.r), initial=0.0)),
+                     float(np.max(np.abs(et.r), initial=0.0)), np.finfo(float).tiny)
+        ev_new.info["structure_jump"] = dict(residual_max=jump, residual_relative=jump / rscale,
+                                              F_delta=ev_new.F - et.F,
+                                              material=bool(jump > 1e-3 * rscale))
         if on_eval:
             on_eval(ev_new, "J")
-        if not ev_new.ok:  # residual was fine but the Jacobian failed
-            return ev, st, f"Jacobian failed: {ev_new.info.get('error')}"
-        dF = ev.F - ev_new.F
+        dF = ev.F - et.F
         ev, st["x"], st["k"] = ev_new, xt, st["k"] + 1
         if on_iter:
             on_iter(ev, st)
-        if dF <= ftol * max(ev.F, 1e-300) or np.linalg.norm(dx) <= xtol * (1 + np.linalg.norm(xt)):
+        small_change = (dF <= ftol * max(et.F, 1e-300)
+                        or np.linalg.norm(dx) <= xtol * (1 + np.linalg.norm(xt)))
+        if small_change and not ev.info["structure_jump"]["material"]:
             return ev, st, "converged"
     return ev, st, "maxiter"
 
