@@ -14,8 +14,12 @@ program test_against_neo_qh
     ! Symmetry-zero dB_dx components (exact 0 in the NEO reference) come out
     ! as spline roundoff, measured <= 1.6e-10 with an optimized libneo build.
     real(dp), parameter :: abstol_roundoff = 1e-9
-    ! Frozen NEO values below retain the original ns50 reference. The ns101
-    ! equilibrium preserves its boundary, profiles and edge toroidal flux.
+    ! NEO values below are for the ns101 fixture (wout SHA256 a8fb3ac3...).
+    ! They were regenerated with the route that reproduces the original ns50
+    ! values to 7.2e-9: booz_xform 0.1.0 (mboz = nboz = 32) on all half-grid
+    ! surfaces, written with the libneo boozer.py stellarator-symmetric .bc
+    ! writer with vmns = +numns_b*nfp/(2*pi), and evaluated by neo_field_t of
+    ! rabe_internal 3b37cf4. The 100-surface .bc has SHA256 a8e7d0d3....
     character(len=*), parameter :: nc_filename = &
                       "input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc"
 
@@ -51,58 +55,58 @@ program test_against_neo_qh
     theta = [0.0_dp, 1.0_dp, 3.14_dp, 0.5_dp, 2.0_dp]
     phi = [0.0_dp, 0.5_dp, 1.57_dp, 2.0_dp, 3.0_dp]
 
-    iota_ref = [-1.24071689922512540e+00_dp, &
-                -1.24292805961154729e+00_dp, &
-                -1.24354459000000217e+00_dp, &
-                -1.24415222615299226e+00_dp, &
-                -1.24472774238178752e+00_dp]
+    iota_ref = [-1.24190205199088588e+00_dp, &
+                -1.24282935621631685e+00_dp, &
+                -1.24348360775440425e+00_dp, &
+                -1.24410842130342236e+00_dp, &
+                -1.24469547847326711e+00_dp]
 
-    B_theta_ref = [1.95255977851786137e-16_dp, &
-                   5.86292403810843430e-16_dp, &
-                   -6.21031004000000052e-16_dp, &
-                   -4.40056927220479126e-16_dp, &
-                   -2.19425745400124919e-17_dp]
+    B_theta_ref = [2.65738812255297193e-16_dp, &
+                   -3.20754212570409648e-16_dp, &
+                   -6.84778672128444935e-16_dp, &
+                   -4.30291922957897257e-17_dp, &
+                   -2.18349235602578885e-15_dp]
 
-    B_phi_ref = [1.02238518141380709e+02_dp, &
-                 1.02238488245105472e+02_dp, &
-                 1.02238467200000187e+02_dp, &
-                 1.02238454689203053e+02_dp, &
-                 1.02238446704235940e+02_dp]
+    B_phi_ref = [1.02238469207864199e+02_dp, &
+                 1.02238456374797025e+02_dp, &
+                 1.02238451199997868e+02_dp, &
+                 1.02238448000010081e+02_dp, &
+                 1.02238445599999793e+02_dp]
 
-    bmod_ref = [5.58389078029500130e+00_dp, &
-                6.44701243605253538e+00_dp, &
-                6.64030869700747317e+00_dp, &
-                6.43027846079623178e+00_dp, &
-                5.80708194880627726e+00_dp]
+    bmod_ref = [5.58457421386239261e+00_dp, &
+                6.44751295416938319e+00_dp, &
+                6.64012823602645064e+00_dp, &
+                6.42993108804714275e+00_dp, &
+                5.80699374768080379e+00_dp]
 
-    sqrtg_ref = [-2.18474283967293203e+07_dp, &
-                 -1.63891719501446038e+07_dp, &
-                 -1.54488942118170653e+07_dp, &
-                 -1.64745789734431263e+07_dp, &
-                 -2.02003056883056164e+07_dp]
+    sqrtg_ref = [-2.18420709451071694e+07_dp, &
+                 -1.63866223697137162e+07_dp, &
+                 -1.54497315248996336e+07_dp, &
+                 -1.64763579998579454e+07_dp, &
+                 -2.02009191106078215e+07_dp]
     sqrtg_ref = sqrtg_ref*(cm2m**3.0_dp)
 
-    dB_dx_ref(1, :) = [-1.44077730567127604e+00_dp, &
+    dB_dx_ref(1, :) = [-1.43832229148989721e+00_dp, &
                        0.00000000000000000e+00_dp, &
                        0.00000000000000000e+00_dp]
-    dB_dx_ref(2, :) = [1.01155913223093696e+00_dp, &
-                       8.13915228819103859e-02_dp, &
-                       3.29782295582588203e-01_dp]
-    dB_dx_ref(3, :) = [8.24117782542400312e-01_dp, &
-                       3.85688857474143776e-03_dp, &
-                       1.52445741914789129e-02_dp]
-    dB_dx_ref(4, :) = [4.34149361141258405e-01_dp, &
-                       6.94592020903635365e-01_dp, &
-                       2.78307702440704308e+00_dp]
-    dB_dx_ref(5, :) = [-2.83188161564565527e-02_dp, &
-                       9.01242770896047984e-01_dp, &
-                       3.60496554369149980e+00_dp]
+    dB_dx_ref(2, :) = [1.01144187047813827e+00_dp, &
+                       8.28688681473852135e-02_dp, &
+                       3.32286861749094331e-01_dp]
+    dB_dx_ref(3, :) = [8.23617368255439630e-01_dp, &
+                       3.83248854998836062e-03_dp, &
+                       1.51487651151810329e-02_dp]
+    dB_dx_ref(4, :) = [4.34479001471452964e-01_dp, &
+                       6.94134340983508569e-01_dp, &
+                       2.78178410488925065e+00_dp]
+    dB_dx_ref(5, :) = [-2.77241453503382224e-02_dp, &
+                       9.01822519643726728e-01_dp, &
+                       3.60561428573554688e+00_dp]
 
-    nabla_s_ref = [0.75369886165216027_dp, &
-                   0.67255511319280181_dp, &
-                   2.0144853453318401_dp, &
-                   0.80518369474188856_dp, &
-                   0.77957223538352005_dp]
+    nabla_s_ref = [7.54027404433375570e-01_dp, &
+                   6.72419478593518916e-01_dp, &
+                   2.01580646707398969e+00_dp, &
+                   8.04748159252873796e-01_dp, &
+                   7.80362731036828627e-01_dp]
 
     ! Compare global quantities
     if (not_same(bfield%psi_tor_edge, psi_tor_edge_ref, &

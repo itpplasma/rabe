@@ -10,8 +10,10 @@ The test suite uses the following VMEC equilibrium files
 `wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc` is a public-derived
 radial refinement of the same reactor-scale QH equilibrium. Native tests copy
 this tracked file locally and require neither a network connection nor VMEC++.
-The original ns50 file above remains unchanged, as do the frozen NEO reference
-values derived from it.
+The original ns50 file above remains unchanged. The NEO reference values in
+`test_against_neo_qh.f90` were regenerated for this ns101 fixture with the same
+booz_xform, `.bc` writer and `neo_field_t` route that reproduces the original
+ns50 values, as recorded in that test.
 
 The input comes from [simsopt revision
 81436b4f7c655a4099eadadb168b7cc27923e555](https://github.com/hiddenSymmetries/simsopt/blob/81436b4f7c655a4099eadadb168b7cc27923e555/tests/test_files/input.LandremanPaul2021_QH_reactorScale_lowres).
