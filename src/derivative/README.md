@@ -167,41 +167,50 @@ These follow `rabe-derivatives/PHILOSOPHY.md` of the design notes.
 
 With `wout_derivative = .true.` (VMEC input, no `spectrum_file`) the module
 `wout_chain` composes the spectrum Jacobian with libneo's VMEC -> Boozer
-tangent and adjoint (`boozer_vmec_ad`, libneo PR
-[#449](https://github.com/itpplasma/libneo/pull/449)). `bmnc`, `iota`, `G`
-and `I` of each surface then come from libneo's transform, and
-`rabe_deriv.nc` holds in addition the gradients of every output with respect to
-the wout arrays `rmnc`, `zmns`, `lmns` (half-mesh, as stored in the wout) and
-`iotaf`. For a cotangent `v[surface, output]` the wout cotangent is the
+tangent and adjoint (`boozer_vmec_ad`, libneo PRs
+[#449](https://github.com/itpplasma/libneo/pull/449),
+[#450](https://github.com/itpplasma/libneo/pull/450) and
+[#451](https://github.com/itpplasma/libneo/pull/451)). Every spectrum
+parameter of each surface then comes from libneo's transform: `bmnc`, the
+`|grad s|` spectrum `nabla_s_mnc` (1/m), `iota`, `G`, `I`, `psi_edge` =
+`phi_edge/(2 pi)` and `R` = `Rmajor_p`. `rabe_deriv.nc` holds in addition the
+gradients of every output with respect to the wout arrays `rmnc`, `zmns`,
+`lmns` (half-mesh, as stored in the wout) and `iotaf`, and with respect to the
+scalars `phiedge` (a scaling of the whole `phi` profile) and `rmajor`
+(`Rmajor_p`). For a cotangent `v[surface, output]` the wout cotangent is the
 contraction `sum v * grad_X`, which is the VJP the VMEC++ adjoint needs; the
 library routine `wout_chain_vjp` computes the same product with one libneo
 adjoint sweep, and `wout_chain_jvp` the tangent.
 
-- The wout is read and splined once: libneo's `boozer_ad_init` splines it,
-  and rabe's field is built from those splines (`init_from_splined_vmec`),
-  with outputs bit-identical to loading it twice (LP QH, 5 surfaces: 15.3 s
-  to 13.3 s wall, of which 5 s are rabe's Boozer transform for `nabla_s_mnc`).
-- `nabla_s_mnc`, `psi_edge` and `R` still come from the projection of rabe's
-  own field and are held fixed, so the gradients miss their dependence on the
-  geometry. libneo's transform does not produce `|grad s|`.
+- rabe's own field and projection are not used in this mode, so the wout is
+  read once (LP QH, 5 surfaces, 200 lines, `mboz = nboz = 16`, Release:
+  14.4 s to 5.7 s wall; the 25 wout VJPs take 0.2 s).
+- `lambda_half_to_full` (`'linear'`, libneo's default, or `'cubic'`) selects
+  libneo's half -> full mesh map of `lmns` for the VMEC field (both modes).
+- `B`, `G`, `I` and `psi_edge` are proportional to the flux, so `Lambda_A`,
+  `Lambda_B`, `Lambda_S` and `nu_star_crit` do not depend on `phiedge` and
+  their `grad_phiedge` vanishes to roundoff; `eta_b` scales like `1/B`. `R`
+  is read from the file, as rabe's field does, and depends only on `rmajor`.
 - The wout arrays `bmnc`, `bsubumnc` and `bsubvmnc` do not enter libneo's
   transform, which rebuilds `B` from `R`, `Z`, `lambda` and `iota`, so their
   gradients are zero and are not written.
 - The derivatives are those of libneo's discrete algorithm (splines in `rho`
   and the angles, Lagrange re-interpolation with a frozen stencil), not of the
-  continuous Boozer transform; see the libneo PR for its kink at
+  continuous Boozer transform; see the libneo PRs for its kink at
   stellarator-symmetric points.
 - The `iota` column stays the frozen-rational surrogate: chaining it with
   libneo's `iota` tangent moves the field-line iota with the true iota at fixed
   `p/q` and labels. libneo's `bmnc`, `G` and `I` also depend on `iota`, and
   that part is an ordinary derivative.
 
-`TestWoutChainQH` and `TestWoutChainQA` perturb the wout harmonics in memory,
-re-spline libneo's VMEC data and compare fourth-order central differences of
-the composed primal (frozen structure, fixed `nabla_s_mnc`) with
-`wout_chain_jvp`, separately for a geometry direction (`rmnc`, `zmns`, `lmns`)
-and for `iotaf` at frozen field-line iota, and check the adjoint duality of
-`wout_chain_jvp` and `wout_chain_vjp`.
+`TestWoutChainQH` and `TestWoutChainQA` perturb the wout data in memory
+(libneo's `boozer_ad_perturb`) and compare fourth-order central differences of
+the composed primal (frozen structure, every spectrum parameter recomputed)
+with `wout_chain_jvp`, separately for a geometry direction (`rmnc`, `zmns`,
+`lmns`), for `iotaf` at frozen field-line iota, for `phiedge` (including the
+invariance above) and for `rmajor`, check the adjoint duality of
+`wout_chain_jvp` and `wout_chain_vjp`, and compare libneo's `nabla_s_mnc`,
+`psi_edge` and `R` with rabe's own field.
 
 ## Usage
 
@@ -214,6 +223,7 @@ surfaces, `sign_sqrtg`, `max_n_fieldlines`) and the optional group
         nu_star = 1e-3, 1e-2,        ! optional lambda_off evaluations
         continuum_extrema = .true.,
         wout_derivative = .false.,   ! chain to the wout harmonics (VMEC input)
+        lambda_half_to_full = 'linear', ! libneo lambda map: 'linear' or 'cubic'
         spectrum_file = "",          ! read the spectrum instead of a field
         output_file = "rabe_deriv.nc"
     /
@@ -236,11 +246,11 @@ be read back as a spectrum file.
 | `G`, `I`, `psi_edge`, `R` | (surface) | scalar parameters |
 | `q`, `p`, `n_lines`, `n_split_lines` | (surface) | frozen structure |
 | `diagnostics` | (surface, diagnostic) | gaps, Newton shift, `min lambda^2`, resonant weights, continuum shifts, iota kinks, mode flag, `nu_crit_crossing` |
-| `spectral_residual`, `spectral_asymmetry` | (surface) | projection quality |
+| `spectral_residual`, `spectral_asymmetry` | (surface) | projection quality (0 with `spectrum_file` or `wout_derivative`) |
 | `lambda_off`, `lambda_off_jacobian` | (surface, nu), (surface, nu, param) | when `nu_star` is given |
 | `grad_rmnc`, `grad_zmns`, `grad_lmns` | (surface, output, radius, mn_mode) | `d values / d` wout array, with `wout_derivative` |
 | `grad_iotaf` | (surface, output, radius) | `d values / d iotaf`, with `wout_derivative` |
-| `wout_spectrum_difference` | (surface) | `max|bmnc_libneo - bmnc_projected|/B_00`, with `wout_derivative` |
+| `grad_phiedge`, `grad_rmajor` | (surface, output) | `d values / d phi_edge` (whole `phi` profile scaled), `d values / d Rmajor_p`, with `wout_derivative` |
 
 ## Tests
 

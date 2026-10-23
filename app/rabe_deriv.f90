@@ -4,9 +4,10 @@ program rabe_deriv
     !! with their exact Jacobian with respect to the Boozer spectrum, written to
     !! rabe_deriv.nc. Reads the usual `&rabe_config` from rabe.in and an
     !! optional `&rabe_derivative` group; see src/derivative/README.md. With
-    !! `wout_derivative = .true.` (VMEC input only) the Boozer spectrum comes
-    !! from libneo's differentiated VMEC -> Boozer transform, and the gradients
-    !! of the outputs with respect to the wout harmonics are written as well.
+    !! `wout_derivative = .true.` (VMEC input only) all spectrum parameters
+    !! come from libneo's differentiated VMEC -> Boozer transform, and the
+    !! gradients of the outputs with respect to the wout harmonics, `phiedge`
+    !! and `Rmajor_p` are written as well.
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_nan
     use constants, only: dp
     use netcdf_mod, only: netcdf_t
@@ -35,8 +36,9 @@ program rabe_deriv
     logical :: continuum_extrema, wout_derivative
     real(dp) :: nu_star(max_nu)
     character(len=256) :: spectrum_file, output_file
+    character(len=8) :: lambda_half_to_full
     namelist /rabe_derivative/ mboz, nboz, n_gauss, nu_star, spectrum_file, &
-        output_file, continuum_extrema, wout_derivative
+        output_file, continuum_extrema, wout_derivative, lambda_half_to_full
 
     type(boozer_field_t) :: field
     type(surface_spectrum_t), allocatable :: spectra(:)
@@ -49,9 +51,9 @@ program rabe_deriv
     real(dp), allocatable :: diag_real(:, :)
     type(wout_chain_t) :: chain
     type(boozer_wout_tangent_t) :: wout_bar
-    real(dp), allocatable :: bmnc_projected(:), wout_difference(:)
     real(dp), allocatable :: grad_rmnc(:, :, :, :), grad_zmns(:, :, :, :)
     real(dp), allocatable :: grad_lmns(:, :, :, :), grad_iotaf(:, :, :)
+    real(dp), allocatable :: grad_phiedge(:, :), grad_rmajor(:, :)
     real(dp) :: unit_cotangent(n_outputs, 1)
     integer :: i_out
     integer, allocatable :: q(:), p_rat(:), n_lines(:), n_split(:)
@@ -77,26 +79,37 @@ program rabe_deriv
         error stop "rabe_deriv: wout_derivative needs field_type = 'vmec_nc' "// &
         "and no spectrum_file"
 
+    if (trim(lambda_half_to_full) /= 'linear' .and. &
+        trim(lambda_half_to_full) /= 'cubic') &
+        error stop "rabe_deriv: lambda_half_to_full must be 'linear' or 'cubic'"
+
     if (len_trim(spectrum_file) > 0) then
         call read_spectrum_file(trim(spectrum_file), s_tor, spectra)
         n_surf = size(s_tor)
         allocate (residual(n_surf), asymmetry(n_surf))
         residual = 0.0_dp
         asymmetry = 0.0_dp
+    else if (wout_derivative) then
+        ! Every spectrum parameter comes from libneo's differentiated
+        ! transform, so rabe's own field and projection are not needed.
+        s_tor = s_tor_config
+        n_surf = size(s_tor)
+        allocate (spectra(n_surf), residual(n_surf), asymmetry(n_surf))
+        residual = 0.0_dp
+        asymmetry = 0.0_dp
+        call set_lambda_map(lambda_half_to_full)
+        call wout_chain_init(chain, field_file, mboz, nboz, grid_refinement)
+        do i = 1, n_surf
+            call wout_chain_spectrum(chain, s_tor(i), spectra(i))
+        end do
     else
         s_tor = s_tor_config
         n_surf = size(s_tor)
         allocate (spectra(n_surf), residual(n_surf), asymmetry(n_surf))
         select case (trim(field_type))
         case ('vmec_nc')
-            if (wout_derivative) then
-                ! libneo's differentiated transform reads and splines the wout
-                ! (same orders and refinement), and the rabe field reuses it.
-                call wout_chain_init(chain, field_file, mboz, nboz, grid_refinement)
-                call field%init_from_splined_vmec()
-            else
-                call field%init_from_vmec(field_file, grid_refinement=grid_refinement)
-            end if
+            call set_lambda_map(lambda_half_to_full)
+            call field%init_from_vmec(field_file, grid_refinement=grid_refinement)
         case ('booz_xform')
             call field%init_from_boozmn(field_file)
         case ('chartmap')
@@ -115,17 +128,6 @@ program rabe_deriv
             spectra(i)%R = field%R
             call spectralize_field(field, field%nfp, mboz, nboz, spectra(i), &
                                    residual(i), asymmetry(i))
-        end do
-    end if
-
-    if (wout_derivative) then
-        ! nabla_s_mnc, psi_edge and R stay those of the rabe projection.
-        allocate (wout_difference(n_surf))
-        do i = 1, n_surf
-            bmnc_projected = spectra(i)%bmnc
-            call wout_chain_spectrum(chain, s_tor(i), spectra(i))
-            wout_difference(i) = maxval(abs(spectra(i)%bmnc - bmnc_projected)) &
-                                 /abs(spectra(i)%bmnc(1))
         end do
     end if
 
@@ -184,11 +186,14 @@ program rabe_deriv
                                         size(wout_bar%rmnc, 2), n_outputs, n_surf))
                     allocate (grad_zmns, grad_lmns, mold=grad_rmnc)
                     allocate (grad_iotaf(size(wout_bar%iotaf), n_outputs, n_surf))
+                    allocate (grad_phiedge(n_outputs, n_surf), grad_rmajor(n_outputs, n_surf))
                 end if
                 grad_rmnc(:, :, i_out, i) = wout_bar%rmnc
                 grad_zmns(:, :, i_out, i) = wout_bar%zmns
                 grad_lmns(:, :, i_out, i) = wout_bar%lmns
                 grad_iotaf(:, i_out, i) = wout_bar%iotaf
+                grad_phiedge(i_out, i) = wout_bar%phiedge
+                grad_rmajor(i_out, i) = wout_bar%rmajor
             end do
         end do
         call system_clock(t_end)
@@ -209,6 +214,7 @@ contains
         n_gauss = 64
         continuum_extrema = .true.
         wout_derivative = .false.
+        lambda_half_to_full = 'linear'
         nu_star = ieee_value(1.0_dp, ieee_quiet_nan)
         spectrum_file = ""
         output_file = "rabe_deriv.nc"
@@ -220,6 +226,15 @@ contains
             error stop
         end if
     end subroutine read_derivative_namelist
+
+    !> libneo's half -> full mesh map of the VMEC lambda harmonics
+    !! ('linear' is libneo's default, 'cubic' is more accurate near the axis).
+    subroutine set_lambda_map(option)
+        use new_vmec_stuff_mod, only: lambda_map => lambda_half_to_full
+        character(len=*), intent(in) :: option
+
+        lambda_map = option
+    end subroutine set_lambda_map
 
     subroutine write_output()
         type(netcdf_t) :: nc
@@ -324,11 +339,12 @@ contains
             call nc%write_real_3d("lambda_off_jacobian", lam_off_jac)
         end if
         if (wout_derivative) then
-            call nc%write_real_1d("wout_spectrum_difference", wout_difference)
             call nc%write_real_4d("grad_rmnc", grad_rmnc)
             call nc%write_real_4d("grad_zmns", grad_zmns)
             call nc%write_real_4d("grad_lmns", grad_lmns)
             call nc%write_real_3d("grad_iotaf", grad_iotaf)
+            call nc%write_real_2d("grad_phiedge", grad_phiedge)
+            call nc%write_real_2d("grad_rmajor", grad_rmajor)
         end if
         call nc%close()
     end subroutine write_output
@@ -340,18 +356,20 @@ contains
                                      "python: grad_X[surface, output, radius, mn_mode] = "// &
                                      "d values[surface, output] / d wout X[radius, mn_mode] "// &
                                      "for X = rmnc, zmns, lmns (wout half-mesh lmns), "// &
-                                     "grad_iotaf[surface, output, radius] w.r.t. wout iotaf; "// &
-                                     "libneo boozer_vmec_ad chained with the spectrum "// &
-                                     "Jacobian, nabla_s_mnc, psi_edge, R held fixed")
+                                     "grad_iotaf[surface, output, radius] w.r.t. wout iotaf, "// &
+                                     "grad_phiedge[surface, output] w.r.t. phi_edge "// &
+                                     "(whole phi profile scaled), grad_rmajor[surface, "// &
+                                     "output] w.r.t. Rmajor_p; libneo boozer_vmec_ad "// &
+                                     "chained with the full spectrum Jacobian")
+        call nc%add_global_attribute("lambda_half_to_full", trim(lambda_half_to_full))
         call nc%def_dim("radius", size(grad_rmnc, 2))
         call nc%def_dim("mn_mode", size(grad_rmnc, 1))
-        call nc%add_real_1d("wout_spectrum_difference", "surface")
-        call nc%add_attr("wout_spectrum_difference", "long_name", &
-                         "max |bmnc_libneo_ad - bmnc_projected|/B_00")
         call nc%add_real_4d("grad_rmnc", "mn_mode", "radius", "output", "surface")
         call nc%add_real_4d("grad_zmns", "mn_mode", "radius", "output", "surface")
         call nc%add_real_4d("grad_lmns", "mn_mode", "radius", "output", "surface")
         call nc%add_real_3d("grad_iotaf", "radius", "output", "surface")
+        call nc%add_real_2d("grad_phiedge", "output", "surface")
+        call nc%add_real_2d("grad_rmajor", "output", "surface")
     end subroutine define_wout_gradients
 
 end program rabe_deriv

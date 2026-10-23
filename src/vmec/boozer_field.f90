@@ -28,7 +28,6 @@ module boozer_field
         real(dp) :: R
     contains
         procedure :: init_from_vmec
-        procedure :: init_from_splined_vmec
         procedure :: init_from_boozmn
         procedure :: init_from_chartmap
         procedure :: evaluate
@@ -70,22 +69,6 @@ contains
         call finish_init(self)
 
     end subroutine init_from_vmec
-
-    !> Build the Boozer splines from the VMEC splines that the caller has
-    !! already loaded (libneo `spline_vmec_data`, e.g. through libneo's
-    !! `boozer_ad_init` with the same file and spline settings), so that the
-    !! wout is read and splined once.
-    subroutine init_from_splined_vmec(self)
-        use boozer_coordinates_mod, only: use_B_r
-        use boozer_sub, only: get_boozer_coordinates
-        class(boozer_field_t), intent(inout) :: self
-
-        call assert_no_active_field("init_from_splined_vmec")
-        use_B_r = .true.
-        call get_boozer_coordinates()
-        call finish_init(self)
-
-    end subroutine init_from_splined_vmec
 
     !> Load Boozer-coordinate splines from a booz_xform boozmn netCDF file.
     !!

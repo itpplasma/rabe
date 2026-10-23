@@ -6,10 +6,14 @@ module wout_chain
     !! The composed map is wout -> (bmnc, iota, G, I) -> rabe outputs. The first
     !! factor is libneo's discrete VMEC -> Boozer algorithm with its exact JVP
     !! and VJP with respect to `rmnc`, `zmns`, `lmns` (wout shapes, half-mesh
-    !! `lmns`) and the full-mesh `iotaf`; the second factor is the dense
-    !! spectrum Jacobian of `spectrum_derivative`. `nabla_s_mnc`, `psi_edge` and
-    !! `R` are not produced by libneo's transform and are held fixed, so their
-    !! columns do not enter the chain. The `iota` column of the spectrum
+    !! `lmns`), the full-mesh `iotaf` and the scalars `phiedge` (scales the
+    !! whole toroidal flux profile) and `rmajor` (`Rmajor_p`); the second
+    !! factor is the dense spectrum Jacobian of `spectrum_derivative`. libneo
+    !! provides every spectrum parameter: `bmnc`, `nabla_s_mnc` (its |grad s|
+    !! spectrum in 1/m), `iota`, `G`, `I`, `psi_edge` = phi_edge/(2 pi) and
+    !! `R` = `Rmajor_p`, so all columns of the Jacobian enter the chain. `R` is
+    !! read from the file, as rabe's field does, and depends only on `rmajor`.
+    !! The `iota` column of the spectrum
     !! Jacobian is the frozen-rational surrogate (see README), and chaining it
     !! with libneo's iota tangent makes the field-line iota move with the true
     !! iota at fixed `p/q` and labels.
@@ -23,7 +27,7 @@ module wout_chain
                               boozer_ad_primal, boozer_ad_jvp, boozer_ad_vjp, &
                               wout_tangent_alloc, spectrum_alloc
     use spectrum_derivative, only: surface_spectrum_t, n_outputs, n_params, &
-                                   off_iota, off_G, off_I
+                                   off_iota, off_G, off_I, off_psi_edge, off_R
 
     implicit none
     private
@@ -31,10 +35,10 @@ module wout_chain
     public :: wout_chain_t, boozer_wout_tangent_t, wout_tangent_alloc
     public :: wout_chain_init, wout_chain_spectrum, wout_chain_jvp, wout_chain_vjp
 
-    !> Differentiated VMEC -> Boozer transform of one wout file. libneo keeps the
-    !! VMEC splines as module state, so only one chain can be active, and no
-    !! other wout may be splined after `wout_chain_init`. A Boozer field built
-    !! from the same splines (`boozer_field_t%init_from_splined_vmec`) is fine.
+    !> Differentiated VMEC -> Boozer transform of one wout file. The context
+    !! holds the wout data and does not use libneo's VMEC spline state, but
+    !! `boozer_ad_init` sets libneo's module settings (file name, spline
+    !! orders, grid refinement), so a rabe field loaded afterwards uses them.
     type :: wout_chain_t
         type(boozer_ad_context_t) :: ctx
     end type wout_chain_t
@@ -52,9 +56,9 @@ contains
                             grid_refinement=grid_refinement)
     end subroutine wout_chain_init
 
-    !> Overwrite `nfp`, `xm`, `xn`, `bmnc`, `iota`, `G` and `I` of `spec` by
-    !! libneo's transform at `s_tor`. If `spec` already holds a mode set (for
-    !! `nabla_s_mnc`), it must be the same.
+    !> Set all fields of `spec` (`nfp`, `xm`, `xn`, `bmnc`, `nabla_s_mnc`,
+    !! `iota`, `G`, `I`, `psi_edge`, `R`) from libneo's transform at `s_tor`.
+    !! If `spec` already holds a mode set, it must be the same.
     subroutine wout_chain_spectrum(chain, s_tor, spec)
         type(wout_chain_t), intent(in) :: chain
         real(dp), intent(in) :: s_tor
@@ -74,17 +78,17 @@ contains
         spec%xm = real(chain%ctx%xm_b, dp)
         spec%xn = real(chain%ctx%xn_b, dp)
         spec%bmnc = y%bmnc(:, 1)
-        if (.not. allocated(spec%nabla_s_mnc)) then
-            allocate (spec%nabla_s_mnc(chain%ctx%mnboz))
-            spec%nabla_s_mnc = 0.0_dp
-        end if
+        spec%nabla_s_mnc = y%gradsmnc(:, 1)
         spec%iota = y%iota(1)
         spec%G = y%g(1)
         spec%I = y%i(1)
+        spec%psi_edge = y%psi_edge(1)
+        spec%R = y%rmajor(1)
     end subroutine wout_chain_spectrum
 
     !> Tangent of the outputs for a wout tangent `t`:
-    !! d values(:, j) = J_j^T (dbmnc, diota, dG, dI)_j on each surface j.
+    !! d values(:, j) = J_j^T dparams_j on each surface j, with dparams the
+    !! tangent of (bmnc, nabla_s_mnc, iota, G, I, psi_edge, R).
     subroutine wout_chain_jvp(chain, s_list, jacobians, t, dvalues)
         type(wout_chain_t), intent(in) :: chain
         real(dp), intent(in) :: s_list(:)
@@ -101,9 +105,12 @@ contains
         call boozer_ad_jvp(chain%ctx, s_list, t, y, yd)
         do j = 1, size(s_list)
             dvalues(:, j) = matmul(yd%bmnc(:, j), jacobians(1:K, :, j)) &
+                            + matmul(yd%gradsmnc(:, j), jacobians(K + 1:2*K, :, j)) &
                             + yd%iota(j)*jacobians(2*K + off_iota, :, j) &
                             + yd%g(j)*jacobians(2*K + off_G, :, j) &
-                            + yd%i(j)*jacobians(2*K + off_I, :, j)
+                            + yd%i(j)*jacobians(2*K + off_I, :, j) &
+                            + yd%psi_edge(j)*jacobians(2*K + off_psi_edge, :, j) &
+                            + yd%rmajor(j)*jacobians(2*K + off_R, :, j)
         end do
     end subroutine wout_chain_jvp
 
@@ -126,9 +133,13 @@ contains
         call spectrum_alloc(chain%ctx, size(s_list), yb)
         do j = 1, size(s_list)
             yb%bmnc(:, j) = matmul(jacobians(1:K, :, j), cotangent(:, j))
+            yb%gradsmnc(:, j) = matmul(jacobians(K + 1:2*K, :, j), cotangent(:, j))
             yb%iota(j) = dot_product(jacobians(2*K + off_iota, :, j), cotangent(:, j))
             yb%g(j) = dot_product(jacobians(2*K + off_G, :, j), cotangent(:, j))
             yb%i(j) = dot_product(jacobians(2*K + off_I, :, j), cotangent(:, j))
+            yb%psi_edge(j) = dot_product(jacobians(2*K + off_psi_edge, :, j), &
+                                         cotangent(:, j))
+            yb%rmajor(j) = dot_product(jacobians(2*K + off_R, :, j), cotangent(:, j))
         end do
         call boozer_ad_vjp(chain%ctx, s_list, yb, t)
     end subroutine wout_chain_vjp
