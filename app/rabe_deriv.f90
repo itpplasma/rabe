@@ -1,13 +1,16 @@
 program rabe_deriv
     !! Derivative mode of rabe (opt-in, separate executable): values of
-    !! Lambda_A, Lambda_B, Lambda_S, nu_star_crit and eta_b per surface together
+    !! Lambda_A, Lambda_B, Lambda_S, nu_star_crit, eta_b and the alpha criteria per surface together
     !! with their exact Jacobian with respect to the Boozer spectrum, written to
     !! rabe_deriv.nc. Reads the usual `&rabe_config` from rabe.in and an
     !! optional `&rabe_derivative` group; see src/derivative/README.md. With
     !! `wout_derivative = .true.` (VMEC input only) all spectrum parameters
     !! come from libneo's differentiated VMEC -> Boozer transform, and the
     !! gradients of the outputs with respect to the wout harmonics, `phiedge`
-    !! and `Rmajor_p` are written as well.
+    !! and `Rmajor_p` are written as well. The alpha criteria Lambda_alpha,
+    !! Gamma_well, var_dJ and Gamma_s follow (src/derivative/alpha_criteria.md);
+    !! Gamma_s needs the radial derivatives of the spectrum, central differences
+    !! over `s +- ds_radial` (default 0.01) or variables of the spectrum file.
     use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_nan
     use constants, only: dp
     use netcdf_mod, only: netcdf_t
@@ -34,15 +37,17 @@ program rabe_deriv
 
     integer :: mboz, nboz, n_gauss, n_eta, n_gauss_well
     logical :: continuum_extrema, wout_derivative
-    real(dp) :: nu_star(max_nu)
+    real(dp) :: nu_star(max_nu), ds_radial
     character(len=256) :: spectrum_file, output_file
     character(len=8) :: lambda_half_to_full
     namelist /rabe_derivative/ mboz, nboz, n_gauss, nu_star, spectrum_file, &
         output_file, continuum_extrema, wout_derivative, lambda_half_to_full, &
-        n_eta, n_gauss_well
+        n_eta, n_gauss_well, ds_radial
 
     type(boozer_field_t) :: field
     type(surface_spectrum_t), allocatable :: spectra(:)
+    type(surface_spectrum_t) :: spec_minus, spec_plus
+    real(dp) :: res_pm, asym_pm
     type(derivative_settings_t) :: settings
     type(derivative_structure_t) :: structure
     type(derivative_diagnostics_t) :: diag
@@ -103,7 +108,7 @@ program rabe_deriv
         call set_lambda_map(lambda_half_to_full)
         call wout_chain_init(chain, field_file, mboz, nboz, grid_refinement)
         do i = 1, n_surf
-            call wout_chain_spectrum(chain, s_tor(i), spectra(i))
+            call wout_chain_spectrum(chain, s_tor(i), spectra(i), ds_radial)
         end do
     else
         s_tor = s_tor_config
@@ -121,16 +126,19 @@ program rabe_deriv
             error stop "rabe_deriv: unknown field_type"
         end select
         do i = 1, n_surf
-            call field%fix_to_surface(s_tor(i))
-            call field%get_iota(s_tor(i), iota)
-            call field%get_covariant_components(B_I, B_G)
-            spectra(i)%iota = iota
-            spectra(i)%G = B_G
-            spectra(i)%I = B_I
-            spectra(i)%psi_edge = field%psi_tor_edge
-            spectra(i)%R = field%R
-            call spectralize_field(field, field%nfp, mboz, nboz, spectra(i), &
-                                   residual(i), asymmetry(i))
+            if (ds_radial > 0.0_dp) then
+                ! radial block: central difference of the spectra at s +- ds_radial
+                call field_spectrum(s_tor(i) - ds_radial, spec_minus, res_pm, asym_pm)
+                call field_spectrum(s_tor(i) + ds_radial, spec_plus, res_pm, asym_pm)
+            end if
+            call field_spectrum(s_tor(i), spectra(i), residual(i), asymmetry(i))
+            if (ds_radial > 0.0_dp) then
+                spectra(i)%has_radial = .true.
+                spectra(i)%dbmnc_ds = (spec_plus%bmnc - spec_minus%bmnc)/(2.0_dp*ds_radial)
+                spectra(i)%diota_ds = (spec_plus%iota - spec_minus%iota)/(2.0_dp*ds_radial)
+                spectra(i)%dG_ds = (spec_plus%G - spec_minus%G)/(2.0_dp*ds_radial)
+                spectra(i)%dI_ds = (spec_plus%I - spec_minus%I)/(2.0_dp*ds_radial)
+            end if
         end do
     end if
 
@@ -165,8 +173,8 @@ program rabe_deriv
             call lambda_off(values(:, i), jac(:, :, i), nu_list(i_nu), &
                             lam_off(i_nu, i), lam_off_jac(:, i_nu, i))
         end do
-        print "(A,F8.5,A,7ES14.6)", " s_tor ", s_tor(i), &
-            "  L_A L_B L_S nu_crit eta_b L_alpha G_well ", values(:, i)
+        print "(A,F8.5,A,9ES14.6)", " s_tor ", s_tor(i), &
+            "  L_A L_B L_S nu_crit eta_b L_alpha G_well var_dJ G_s ", values(:, i)
         print "(A,I4,A,I4,A,ES9.2,A,2ES9.2,A,ES9.2)", "   q ", q(i), "  lines ", &
             n_lines(i), "  eta_b gap ", diag%eta_b_gap, &
             "  continuum shift eta_b, nu_crit ", diag%eta_b_shift, &
@@ -183,7 +191,7 @@ program rabe_deriv
                 unit_cotangent = 0.0_dp
                 unit_cotangent(i_out, 1) = 1.0_dp
                 call wout_chain_vjp(chain, s_tor(i:i), jac(:, :, i:i), &
-                                    unit_cotangent, wout_bar)
+                                    unit_cotangent, wout_bar, ds_radial)
                 if (.not. allocated(grad_rmnc)) then
                     allocate (grad_rmnc(size(wout_bar%rmnc, 1), &
                                         size(wout_bar%rmnc, 2), n_outputs, n_surf))
@@ -217,6 +225,7 @@ contains
         n_gauss = 64
         n_eta = 32
         n_gauss_well = 32
+        ds_radial = 0.01_dp
         continuum_extrema = .true.
         wout_derivative = .false.
         lambda_half_to_full = 'linear'
@@ -232,6 +241,24 @@ contains
         end if
     end subroutine read_derivative_namelist
 
+    !> Spectrum of rabe's own field on the surface s.
+    subroutine field_spectrum(s, spec, res, asym)
+        real(dp), intent(in) :: s
+        type(surface_spectrum_t), intent(inout) :: spec
+        real(dp), intent(out) :: res, asym
+
+        call field%fix_to_surface(s)
+        call field%get_iota(s, iota)
+        call field%get_covariant_components(B_I, B_G)
+        spec%iota = iota
+        spec%G = B_G
+        spec%I = B_I
+        spec%psi_edge = field%psi_tor_edge
+        spec%R = field%R
+        if (allocated(spec%bmnc)) deallocate (spec%bmnc, spec%nabla_s_mnc)
+        call spectralize_field(field, field%nfp, mboz, nboz, spec, res, asym)
+    end subroutine field_spectrum
+
     !> libneo's half -> full mesh map of the VMEC lambda harmonics
     !! ('linear' is libneo's default, 'cubic' is more accurate near the axis).
     subroutine set_lambda_map(option)
@@ -243,13 +270,15 @@ contains
 
     subroutine write_output()
         type(netcdf_t) :: nc
-        real(dp), allocatable :: bmnc(:, :), smnc(:, :)
+        real(dp), allocatable :: bmnc(:, :), smnc(:, :), dbmnc(:, :)
         integer :: j
 
-        allocate (bmnc(K, n_surf), smnc(K, n_surf))
+        allocate (bmnc(K, n_surf), smnc(K, n_surf), dbmnc(K, n_surf))
+        dbmnc = 0.0_dp
         do j = 1, n_surf
             bmnc(:, j) = spectra(j)%bmnc
             smnc(:, j) = spectra(j)%nabla_s_mnc
+            if (spectra(j)%has_radial) dbmnc(:, j) = spectra(j)%dbmnc_ds
         end do
 
         call nc%create(trim(output_file))
@@ -291,6 +320,15 @@ contains
         call nc%add_attr("psi_edge", "unit", "Wb")
         call nc%add_real_1d("R", "surface")
         call nc%add_attr("R", "unit", "m")
+        call nc%add_real_2d("dbmnc_ds", "mode", "surface")
+        call nc%add_attr("dbmnc_ds", "long_name", "d bmnc/ds at fixed Boozer angles "// &
+                         "(radial block, zero without radial data)")
+        call nc%add_real_1d("diota_ds", "surface")
+        call nc%add_real_1d("dG_ds", "surface")
+        call nc%add_real_1d("dI_ds", "surface")
+        call nc%add_real_1d("ds_radial", "surface")
+        call nc%add_attr("ds_radial", "long_name", "half step of the central "// &
+                         "difference of the radial block (0: given or none)")
         call nc%add_real_2d("values", "output", "surface")
         call nc%add_attr("values", "long_name", output_names)
         call nc%add_real_3d("jacobian", "param", "output", "surface")
@@ -329,6 +367,13 @@ contains
         call nc%write_real_1d("I", [(spectra(j)%I, j=1, n_surf)])
         call nc%write_real_1d("psi_edge", [(spectra(j)%psi_edge, j=1, n_surf)])
         call nc%write_real_1d("R", [(spectra(j)%R, j=1, n_surf)])
+        call nc%write_real_2d("dbmnc_ds", dbmnc)
+        call nc%write_real_1d("diota_ds", [(spectra(j)%diota_ds, j=1, n_surf)])
+        call nc%write_real_1d("dG_ds", [(spectra(j)%dG_ds, j=1, n_surf)])
+        call nc%write_real_1d("dI_ds", [(spectra(j)%dI_ds, j=1, n_surf)])
+        call nc%write_real_1d("ds_radial", [(merge(ds_radial, 0.0_dp, &
+                              spectra(j)%has_radial .and. len_trim(spectrum_file) == 0), &
+                              j=1, n_surf)])
         call nc%write_real_2d("values", values)
         call nc%write_real_3d("jacobian", jac)
         call nc%write_int_1d("q", q)

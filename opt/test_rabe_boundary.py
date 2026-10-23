@@ -43,21 +43,22 @@ def test_boundary_gradient_matches_resolved_fd():
 
 
 def test_alpha_objective_with_constraints_matches_resolved_fd():
-    """Composite F (all four criteria, normalized) plus aspect and iota penalties."""
+    """Composite F (all six criteria, normalized, Gamma_s with the radial
+    difference) plus aspect and iota penalties."""
     st = sd.DerivativeSettings(M_pol=-1.0, N_tor=4.0, max_n_fieldlines=40, n_gauss=32,
                                n_eta=16, n_gauss_well=16)
     inp = load_input(INPUT, 13)
     nfp, ntor = int(inp.nfp), int(inp.ntor)
-    probe = BoundaryObjective(inp, [0.5], st, 7, 6)
-    weights = AlphaWeights().normalized(probe.values(probe.x0))
+    probe = BoundaryObjective(inp, [0.5], st, 7, 6, ds_radial=0.01)
+    weights = AlphaWeights(var_dJ=1.0, Gamma_s=1.0).normalized(probe.values(probe.x0))
     iota0 = np.asarray(probe._last.harm["iotaf"])
     a0 = float(boundary_geometry(probe.x0, nfp, ntor)[1])
-    obj = BoundaryObjective(inp, [0.5], st, 7, 6, reduce=alpha_reduce(weights),
+    obj = BoundaryObjective(inp, [0.5], st, 7, 6, reduce=alpha_reduce(weights), ds_radial=0.01,
                             constraints=[aspect_penalty(a0 - 0.1, 10.0, nfp, ntor),
                                          iota_penalty(iota0 + 0.01, 100.0)])
     x0 = obj.x0
     F0 = obj.objective(x0)
-    assert F0 > 4.0  # four normalized terms plus the active penalties
+    assert F0 > 6.0  # six normalized terms plus the active penalties
     g = obj.grad(x0)
     d = smooth_direction(x0, ntor, 7)
     exact = float(np.sum(g * d))

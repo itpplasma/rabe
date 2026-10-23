@@ -9,8 +9,9 @@ surfaces,
     J = sum_s w_s L_s,   L = Lambda_A / sqrt(nu_star) + Lambda_B / nu_star,
 
 as `pyrabe.simsopt.RabeOptimizable.Lambda_offset`, optionally squared
-(`squared=True`). Any smooth function of the `(S, 7)` outputs `(Lambda_A,
-Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well)` can be
+(`squared=True`). Any smooth function of the `(S, 9)` outputs `(Lambda_A,
+Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well, var_dJ,
+Gamma_s)` can be
 passed as `reduce`, and `vjp(boundary, cotangent)` pulls back an arbitrary
 output cotangent.
 
@@ -19,9 +20,12 @@ output cotangent.
 `alpha_reduce(AlphaWeights(...))` is the composite objective of Kasilov's
 criteria (see [alpha_criteria.md](../src/derivative/alpha_criteria.md)),
 
-    F = sum_s w_s [ w1 nu*_crit + w2 (Lambda_A^2 + Lambda_B^2) + w2b Lambda_alpha^2 + w3 Gamma_well ],
+    F = sum_s w_s [ w1 nu*_crit + w2 (Lambda_A^2 + Lambda_B^2) + w2b Lambda_alpha^2 + w3 Gamma_well
+                    + w2v var_dJ + w3s Gamma_s ],
 
-with every term divided by a reference (`AlphaWeights().normalized(values)`
+(`var_dJ` and `Gamma_s` have weight 0 by default, and `Gamma_s` needs
+`BoundaryObjective(..., ds_radial=0.01)`), with every term divided by a
+reference (`AlphaWeights().normalized(values)`
 takes the values at the start boundary, so that the weights are relative).
 The offsets enter squared because their plain sum is unbounded below.
 `constraints=[...]` adds penalties `c(boundary, harm)`, JAX functions of the
@@ -61,8 +65,8 @@ a1f7bfc or later), then run the scripts from this directory.
 - `ns_scan.py`: values, gradients and cost per gradient against `ns`.
 - `smoke_descent.py`: a few steepest-descent steps with backtracking.
 - `alpha_optimize.py`: L-BFGS-B on the boundary for the experiments E1
-  (`nu*_crit`, `Lambda_A^2 + Lambda_B^2`) and E2 (`nu*_crit`, `Lambda_alpha^2`,
-  `Gamma_well`), with aspect, volume, iota-range and Boozer mirror-ratio
+  (`nu*_crit`, `Lambda_A^2 + Lambda_B^2`), E2 (`nu*_crit`, `Lambda_alpha^2`,
+  `Gamma_well`) and E3 (`nu*_crit`, `var_dJ`, `Gamma_s`, config `ds_radial`), with aspect, volume, iota-range and Boozer mirror-ratio
   penalties (`iota_range_penalty`, `MirrorRatioPenalty`) around the start
   point. It checkpoints every iteration, restarts from the checkpoint, stages
   and submits SIMPLE alpha-loss runs of the start, every N-th and the final
