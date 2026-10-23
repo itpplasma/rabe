@@ -65,15 +65,9 @@ def test_lsq_jacobian_frozen_fd():
     assert np.max(np.abs(eg.g - ev.g)) <= 1e-9 * np.max(np.abs(ev.g))
     d = rng.standard_normal(p.n)
     d /= np.linalg.norm(d)
-    base = p._forward(p.boundary(x))
-    f, _ = p._residual_jit("pen")
-    prm = p.params()
-    prm.pop("mode")
 
     def frozen(xx):
-        e = p._forward(p.boundary(xx))
-        return np.asarray(f(jnp.asarray(base._chain.values(e._harm)), jnp.asarray(p.boundary(xx)),
-                            e._harm, prm))
+        return p.evaluate(xx, structure=ev.structure).r
 
     h = 0.01
     fd = (frozen(x + h * d) - frozen(x - h * d)) / (2 * h)
