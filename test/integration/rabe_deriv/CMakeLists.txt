@@ -1,7 +1,7 @@
 # rabe_deriv.x on a field, then on its own output as spectrum file, and on a
 # wout with the libneo VMEC -> Boozer chain (wout_derivative).
 set(RD_DIR ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../vmec/input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../vmec/input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc
      DESTINATION ${RD_DIR})
 configure_file(rabe_from_field.in ${RD_DIR}/from_field/rabe.in COPYONLY)
 configure_file(rabe_from_spectrum.in ${RD_DIR}/from_spectrum/rabe.in COPYONLY)

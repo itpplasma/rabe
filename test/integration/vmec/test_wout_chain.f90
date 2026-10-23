@@ -42,7 +42,7 @@ program test_wout_chain
     call get_command_argument(1, case_name)
     select case (trim(case_name))
     case ("qh")
-        wout_file = "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+        wout_file = "input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc"
         settings%M_pol = -1.0_dp
         settings%N_tor = 4.0_dp
     case ("qa")

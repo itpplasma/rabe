@@ -32,7 +32,7 @@ program test_spectrum_derivative_vmec
     select case (trim(case_name))
     case ("qh")
         call field%init_from_vmec( &
-            "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc", &
+            "input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc", &
             grid_refinement=6)
         settings%M_pol = -1.0_dp
         settings%N_tor = 4.0_dp
