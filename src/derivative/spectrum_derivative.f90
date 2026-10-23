@@ -1278,7 +1278,11 @@ contains
                     diag%nu_crit_crossing = crossing
                 end if
             end do
-            if (B_best <= B1_min*(1.0_dp + 1e-13_dp)) then
+            ! The lattice follows frozen maximum branches. At a crossing a
+            ! perturbed branch can lie below the upper envelope independently
+            ! bracketed and certified by ridge_saddle, so that continuum value
+            ! need not stay below the stale lattice sample.
+            if (B_best <= B1_min*(1.0_dp + multistart_window)) then
                 diag%nu_crit_shift = (B_best - B1_min)/B1_min
                 B1_min = B_best
                 delta_max = eta_b - 1.0_dp/B1_min

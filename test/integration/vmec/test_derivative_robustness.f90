@@ -1,7 +1,7 @@
 program test_derivative_robustness
     !! Regressions for the derivative mode on Landreman-Paul spectra projected
     !! from the reactor-scale low-res references. Usage:
-    !! test_derivative_robustness.x mirror|saddle|gauss256
+    !! test_derivative_robustness.x mirror|saddle|crossing|gauss256
     !!
     !! mirror   LP QA, s = 0.5, 200 lines: lines with two mirror-image maxima on
     !!          one side. A relative spectrum perturbation of 1e-14 must not
@@ -15,6 +15,7 @@ program test_derivative_robustness
     !!          depends on the last bits of the spectrum; the surface is one
     !!          where it is negative (-2.4e-15) with the pinned libneo.
     use constants, only: dp
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use boozer_field, only: boozer_field_t
     use spectrum_derivative, only: surface_spectrum_t, derivative_settings_t, &
                                    derivative_structure_t, &
@@ -33,7 +34,7 @@ program test_derivative_robustness
     character(len=16) :: case_name
     real(dp), allocatable :: params(:), jac(:, :), u(:), noise(:), bmnc_0(:)
     real(dp) :: values(n_outputs), values_2(n_outputs), rel_change(n_outputs)
-    real(dp) :: s_tor, max_change
+    real(dp) :: s_tor, max_change, analytic, fd
     integer :: K, P, n_failed, dir, seed
 
     call get_command_argument(1, case_name)
@@ -96,6 +97,46 @@ program test_derivative_robustness
             call fd_check(dir, params, spec, settings, structure, jac, u, n_failed)
         end do
 
+    case ("crossing")
+        ! Synthetic B = 1 - .2 cos(3 phi) + .001 cos(alpha)
+        ! + (.01 cos(alpha) + delta) cos(phi), alpha = theta - phi.
+        ! Its upper envelope crosses exactly on a label at delta=0. A frozen
+        ! lattice branch falls below the continuum minimum for delta<0.
+        settings%M_pol = 0.0_dp
+        settings%N_tor = 1.0_dp
+        settings%max_n_fieldlines = 20
+        settings%n_gauss = 16
+        settings%n_eta = 2
+        settings%n_gauss_well = 2
+        spec%nfp = 1.0_dp
+        spec%xm = [0.0_dp, 0.0_dp, 1.0_dp, 1.0_dp, 0.0_dp, 1.0_dp]
+        spec%xn = [0.0_dp, 3.0_dp, 0.0_dp, 2.0_dp, 1.0_dp, 1.0_dp]
+        spec%bmnc = [1.0_dp, -0.2_dp, 0.005_dp, 0.005_dp, 0.0_dp, 0.001_dp]
+        spec%nabla_s_mnc = [1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]
+        spec%iota = 1.0_dp
+        spec%G = 1.0_dp
+        spec%I = 0.0_dp
+        spec%psi_edge = 1.0_dp
+        spec%R = 1.0_dp
+        call find_structure(spec, settings, structure)
+        call pack_parameters(spec, params)
+        K = size(spec%xm)
+        P = n_params(K)
+        allocate (jac(P, n_outputs), u(P))
+        call evaluate(params, spec, settings, structure, values, jac, diag)
+        analytic = jac(5, i_nu_star_crit)
+        u = 0.0_dp
+        u(5) = 1e-6_dp
+        call evaluate(params + u, spec, settings, structure, values, diagnostics=diag)
+        if (.not. diag%nu_crit_crossing) n_failed = n_failed + 1
+        call evaluate(params - u, spec, settings, structure, values_2, diagnostics=diag)
+        if (.not. diag%nu_crit_crossing) n_failed = n_failed + 1
+        fd = (values(i_nu_star_crit) - values_2(i_nu_star_crit))/(2e-6_dp)
+        print "(A,2ES16.7)", "  crossing nu_star_crit FD, analytic ", fd, analytic
+        if (.not. (ieee_is_finite(fd) .and. ieee_is_finite(analytic))) &
+            n_failed = n_failed + 1
+        if (abs(fd - analytic) > 1e-7_dp*abs(analytic)) n_failed = n_failed + 1
+
     case ("gauss256")
         s_tor = 0.35_dp
         settings%max_n_fieldlines = 200
@@ -121,7 +162,7 @@ program test_derivative_robustness
         if (maxval(rel_change) > 1e-9_dp) n_failed = n_failed + 1
 
     case default
-        error stop "usage: test_derivative_robustness.x mirror|saddle|gauss256"
+        error stop "usage: test_derivative_robustness.x mirror|saddle|crossing|gauss256"
     end select
 
     if (n_failed > 0) then
