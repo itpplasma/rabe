@@ -163,6 +163,71 @@ def iota_penalty(target, weight: float):
     return c
 
 
+def iota_range_penalty(lower, upper, weight: float):
+    """``weight * mean(max(iotaf - upper, 0)^2 + max(lower - iotaf, 0)^2)`` on the
+    full mesh; ``lower`` and ``upper`` are scalars or arrays over the radial grid."""
+    def c(boundary, harm):
+        iota = harm["iotaf"]
+        return weight * jnp.mean(jnp.maximum(iota - jnp.asarray(upper), 0.0) ** 2
+                                 + jnp.maximum(jnp.asarray(lower) - iota, 0.0) ** 2)
+    return c
+
+
+def mirror_ratio(bmnc, xm, xn, n_theta: int = 64, n_phi: int = 64):
+    """``(B_max - B_min) / (B_max + B_min)`` of one Boozer spectrum on a grid.
+
+    ``B = sum bmnc cos(xm theta - xn phi)`` with ``xn`` carrying ``nfp``; ``phi``
+    covers one field period.  The grid maximum and minimum are differentiable
+    almost everywhere (a subgradient at ties).
+    """
+    th = jnp.linspace(0.0, 2.0 * np.pi, n_theta, endpoint=False)
+    nmin = jnp.min(jnp.where(jnp.abs(xn) > 0, jnp.abs(xn), jnp.inf))
+    period = jnp.where(jnp.isfinite(nmin), 2.0 * np.pi / nmin, 2.0 * np.pi)
+    ph = jnp.linspace(0.0, 1.0, n_phi, endpoint=False) * period
+    B = jnp.sum(bmnc[None, None, :] * jnp.cos(xm * th[:, None, None]
+                                              - xn * ph[None, :, None]), axis=-1)
+    bmax, bmin = jnp.max(B), jnp.min(B)
+    return (bmax - bmin) / (bmax + bmin)
+
+
+class MirrorRatioPenalty:
+    """``weight * mean_s [max(D_s - upper, 0)^2 + max(lower - D_s, 0)^2]`` of the
+    Boozer mirror ratio ``D_s`` (:func:`mirror_ratio`) on the surfaces ``s_list``.
+
+    The Boozer spectrum comes from the same differentiable libneo transform as
+    the rabe outputs, so the penalty gradient joins the VMEC++ adjoint.  The
+    libneo plans need a base wout, which :meth:`bind` sets (for example
+    ``BoundaryObjective.base_wout``) before the first call.
+    """
+
+    def __init__(self, s_list, lower, upper, weight: float, mboz: int, nboz: int):
+        self.s = np.atleast_1d(np.asarray(s_list, dtype=float))
+        self.lower = np.broadcast_to(np.asarray(lower, float), self.s.shape).copy()
+        self.upper = np.broadcast_to(np.asarray(upper, float), self.s.shape).copy()
+        self.weight, self.mboz, self.nboz = float(weight), int(mboz), int(nboz)
+        self.plans = None
+
+    def bind(self, base_wout: str) -> "MirrorRatioPenalty":
+        from pyrabe import boozer_libneo as bl
+        self.plans = [bl.cached_plan(base_wout, float(s)) for s in self.s]
+        return self
+
+    def ratios(self, harm):
+        from pyrabe.wout_derivative import spectrum_from_harmonics
+        if self.plans is None:
+            raise RuntimeError("MirrorRatioPenalty.bind(base_wout) first")
+        out = []
+        for plan in self.plans:
+            p, xm, xn = spectrum_from_harmonics(plan, harm, self.mboz, self.nboz)
+            out.append(mirror_ratio(p.bmnc, xm, xn))
+        return jnp.stack(out)
+
+    def __call__(self, boundary, harm):
+        d = self.ratios(harm)
+        return self.weight * jnp.mean(jnp.maximum(d - self.upper, 0.0) ** 2
+                                      + jnp.maximum(self.lower - d, 0.0) ** 2)
+
+
 def harmonics_of(wout) -> dict:
     """Primary arrays of a VMEC++ wout in the layout of :func:`pyrabe.wout_derivative.load_harmonics`."""
     return {
@@ -210,7 +275,8 @@ class BoundaryObjective:
 
     def __init__(self, indata, s_list, settings: sd.DerivativeSettings, mboz: int, nboz: int,
                  reduce: Callable | None = None, nu_star: float = 1e-3, squared: bool = False,
-                 workdir=None, constraints: Sequence[Callable] = ()):
+                 workdir=None, constraints: Sequence[Callable] = (),
+                 max_threads: int | None = None):
         if indata.lasym:
             raise ValueError("stellarator-symmetric equilibria only")
         self.indata = indata.model_copy(update={"always_fix_m1_gauge": True})
@@ -224,13 +290,29 @@ class BoundaryObjective:
         def penalty(boundary, harm):
             return sum((c(boundary, harm) for c in self.constraints), jnp.float64(0.0))
         self._penalty = jax.jit(jax.value_and_grad(penalty, argnums=(0, 1)))
+        self.max_threads = max_threads
+        self.solver_info: dict = {}
         self._workdir = workdir or tempfile.mkdtemp(prefix="rabe_boundary_")
         # The libneo plans depend only on ns, the mode table and nfp, which are the
         # same for every boundary, so one reference wout serves all evaluations.
         self.base_wout = os.path.join(self._workdir, "wout_base.nc")
-        vmecpp.run(self.indata, verbose=False).wout.save(self.base_wout)
+        vmecpp.run(self.indata, max_threads=max_threads, verbose=False).wout.save(self.base_wout)
         self._last: Evaluation | None = None
         self.n_solves = 0
+
+    def set_objective(self, reduce: Callable | None = None,
+                      constraints: Sequence[Callable] | None = None) -> None:
+        """Replace ``reduce`` and/or the constraints, for example with weights and
+        targets taken from the values at the start boundary."""
+        if reduce is not None:
+            self.reduce = reduce
+            self._dreduce = jax.jit(jax.grad(reduce))
+        if constraints is not None:
+            self.constraints = tuple(constraints)
+
+            def penalty(boundary, harm):
+                return sum((c(boundary, harm) for c in self.constraints), jnp.float64(0.0))
+            self._penalty = jax.jit(jax.value_and_grad(penalty, argnums=(0, 1)))
 
     @property
     def x0(self) -> np.ndarray:
@@ -239,8 +321,19 @@ class BoundaryObjective:
     def _input(self, boundary):
         return self.indata.model_copy(update={"rbc": boundary[0], "zbs": boundary[1]})
 
+    def solve(self, boundary) -> vmecpp.VmecOutput:
+        """Plain (untraced) VMEC++ solve of ``boundary``, for example to save its wout."""
+        return vmecpp.run(self._input(np.asarray(boundary, float)), max_threads=self.max_threads,
+                          verbose=False)
+
     def _harm_of_boundary(self, boundary):
-        return harmonics_of(vmecpp.run(self._input(boundary), verbose=False).wout)
+        wout = vmecpp.run(self._input(boundary), max_threads=self.max_threads, verbose=False).wout
+        try:
+            self.solver_info = {k: float(np.asarray(getattr(wout, k)))
+                                for k in ("fsqr", "fsqz", "fsql", "itfsq", "ier_flag")}
+        except Exception:  # noqa: BLE001 - diagnostics only, traced fields are not concrete
+            self.solver_info = {}
+        return harmonics_of(wout)
 
     def evaluate(self, boundary, *, with_pullback: bool = True) -> Evaluation:
         boundary = np.asarray(boundary, dtype=float)
