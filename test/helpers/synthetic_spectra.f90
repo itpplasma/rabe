@@ -112,6 +112,7 @@ contains
         sign_k = 1.0_dp - 2.0_dp*modulo(nint(spec%xn/spec%nfp), 2)
         spec%bmnc = sign_k*spec%bmnc
         spec%nabla_s_mnc = sign_k*spec%nabla_s_mnc
+        spec%dbmnc_ds = sign_k*spec%dbmnc_ds
     end subroutine shift_half_period
 
     subroutine fill(spec, table, nfp)
@@ -123,6 +124,14 @@ contains
         spec%xn = table(2, :)*nfp
         spec%bmnc = table(3, :)
         spec%nabla_s_mnc = table(4, :)
+        ! synthetic radial block for Gamma_s: the modes grow outward, faster
+        ! with m, and the mirror term of B_00 is weak
+        spec%has_radial = .true.
+        spec%dbmnc_ds = (0.6_dp + 0.4_dp*table(1, :))*table(3, :)
+        spec%dbmnc_ds(1) = -0.02_dp*table(3, 1)
+        spec%diota_ds = 0.3_dp
+        spec%dG_ds = -0.05_dp
+        spec%dI_ds = 0.02_dp
     end subroutine fill
 
 end module synthetic_spectra

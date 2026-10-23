@@ -98,7 +98,7 @@ contains
         print "(A,5ES14.6)", "  standard pipeline   ", standard
         print "(A,5ES14.6)", "  derivative (lattice)", smooth(1:n_std)
         print "(A,5ES10.2)", "  rel difference      ", rel
-        print "(A,7ES10.2)", "  rel change n_gauss x2 ", rel_gauss
+        print "(A,9ES10.2)", "  rel change n_gauss x2 ", rel_gauss
         if (any(rel > tol)) then
             print *, name, ": derivative primal deviates from the standard pipeline"
             n_failed = n_failed + 1
@@ -136,7 +136,7 @@ contains
             call evaluate(params, spec, cases(i), structure, v_cont)
             call evaluate(params, spec, lattice, structure, v_lat)
             shift(:, i) = abs(v_cont - v_lat)/abs(v_lat)
-            print "(A,A,I5,A,7ES10.2)", name, ": lines ", structure%n_lines, &
+            print "(A,A,I5,A,9ES10.2)", name, ": lines ", structure%n_lines, &
                 "  rel continuum - lattice ", shift(:, i)
         end do
         ! eta_b and nu_star_crit converge with the label spacing
