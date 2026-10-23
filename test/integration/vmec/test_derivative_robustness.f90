@@ -9,9 +9,11 @@ program test_derivative_robustness
     !! saddle   LP QA, s = 0.7, 60 lines: the continuum minimum of the left
     !!          maxima must be found (2D Newton missed it) and nu_star_crit must
     !!          agree with central finite differences.
-    !! gauss256 LP QH, s = 0.1, discrete extrema, n_gauss = 256: Gauss nodes
+    !! gauss256 LP QH, s = 0.35, discrete extrema, n_gauss = 256: Gauss nodes
     !!          next to the global maximum give 1 - eta_b*B < 0 by roundoff,
-    !!          which must not stop the evaluation.
+    !!          which must not stop the evaluation. The sign of that roundoff
+    !!          depends on the last bits of the spectrum; the surface is one
+    !!          where it is negative (-2.4e-15) with the pinned libneo.
     use constants, only: dp
     use boozer_field, only: boozer_field_t
     use spectrum_derivative, only: surface_spectrum_t, derivative_settings_t, &
@@ -95,7 +97,7 @@ program test_derivative_robustness
         end do
 
     case ("gauss256")
-        s_tor = 0.1_dp
+        s_tor = 0.35_dp
         settings%max_n_fieldlines = 200
         settings%continuum_extrema = .false.
         call setup("qh", 16)
