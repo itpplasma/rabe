@@ -49,3 +49,11 @@ add_test(NAME TestWoutChainQH COMMAND test_wout_chain.x qh)
 set_tests_properties(TestWoutChainQH PROPERTIES LABELS "quick")
 add_test(NAME TestWoutChainQA COMMAND test_wout_chain.x qa)
 set_tests_properties(TestWoutChainQA PROPERTIES LABELS "quick")
+
+add_executable(test_derivative_robustness.x test_derivative_robustness.f90)
+target_link_libraries(test_derivative_robustness.x vmec_lib derivative_lib utils_lib)
+foreach(case mirror saddle gauss256)
+    add_test(NAME TestDerivativeRobustness_${case}
+             COMMAND test_derivative_robustness.x ${case})
+    set_tests_properties(TestDerivativeRobustness_${case} PROPERTIES LABELS "quick")
+endforeach()

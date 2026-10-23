@@ -57,6 +57,15 @@ module spectrum_derivative
     real(dp), parameter :: c_Lambda_S = 1.5_dp*0.855_dp
     real(dp), parameter :: resonance_tol = 1e-9_dp
     real(dp), parameter :: tie_tol = 1e-10_dp
+    !> Floor of the relative symmetry violation used to identify mirror maxima
+    !! on one side of a line (`pick_maximum_on_each_side`), well above the
+    !! roundoff of B (a few machine_eps times sum |bmnc|/B_00) and well below
+    !! physical differences between distinct maxima.
+    real(dp), parameter :: pick_roundoff_floor = 5e-13_dp
+    !> 1 - eta_b*B below zero by less than this many machine_eps times
+    !! eta_b*sum |bmnc| is roundoff of the Fourier sum, not a field point above
+    !! the global maximum.
+    real(dp), parameter :: L2_roundoff_factor = 64.0_dp
     !> Line maxima within this relative distance of the lattice extremum start
     !! the Newton search for the continuum extremum. It must exceed the
     !! sampling deficit of the lattice, O(B''/B dxi^2).
@@ -122,6 +131,9 @@ module spectrum_derivative
             !! sizes of the tie sets of the discrete max and min
         logical :: continuum_extrema = .false.
             !! whether eta_b and nu_star_crit use the continuum extrema
+        logical :: nu_crit_crossing = .false.
+            !! the continuum min of B_max(1) is a crossing of two maxima on
+            !! one line (kink of the ridge), not a saddle of B
         real(dp) :: eta_b_shift = 0.0_dp, nu_crit_shift = 0.0_dp
             !! relative change of B_max and min B_max(1) from the lattice values
         real(dp) :: eta_b_iota_kink = 0.0_dp, nu_crit_iota_kink = 0.0_dp
@@ -133,6 +145,20 @@ module spectrum_derivative
         real(dp) :: resonant_weight_B = 0.0_dp
             !! share of |rd_sin*delta_cos| on modes with m*iota_p = 0 mod pi
     end type derivative_diagnostics_t
+
+    !> Maximum of B along one line, followed in the label by `ridge_saddle`.
+    type :: branch_point_t
+        real(dp) :: xi = 0.0_dp, phi = 0.0_dp, B = 0.0_dp
+        real(dp) :: f = 0.0_dp
+            !! dF/dxi = (N_tor - iota*M_pol)/nfp*B_t
+        real(dp) :: slope = 0.0_dp
+            !! dphi/dxi of the maximum
+        real(dp) :: g_iota = 0.0_dp
+            !! dF/d iota at fixed label, B_t*(phi - phi_0)
+        real(dp), allocatable :: cos_k(:)
+            !! dF/d bmnc at fixed label
+        logical :: ok = .false.
+    end type branch_point_t
 
     public :: n_params, pack_parameters, unpack_parameters
     public :: find_structure, evaluate, spectrum_jvp, spectrum_vjp
@@ -199,20 +225,15 @@ contains
     subroutine find_structure(spec, settings, structure)
         use diophantine, only: rational_approx
         use fieldline_labels, only: calc_iota_p, get_labels
-        use fieldline_mod, only: fieldline_t
-        use make_fieldline, only: maxima_t, find_maxima_along_fieldline, &
-                                  pick_maximum_on_each_side
         use field_checks, only: suspect_omnigenous_origin_not_minimum
         type(surface_spectrum_t), intent(in) :: spec
         type(derivative_settings_t), intent(in) :: settings
         type(derivative_structure_t), intent(out) :: structure
 
         type(spectral_surface_t) :: field
-        type(fieldline_t) :: line
-        type(maxima_t) :: maxima
-        real(dp) :: M_pol, N_tor, nfp, iota_p, interval(2)
-        real(dp) :: phi_max(2), phi_max_error(2)
+        real(dp) :: M_pol, N_tor, nfp, iota_p
         integer :: j
+        logical :: split
 
         M_pol = settings%M_pol
         N_tor = settings%N_tor
@@ -240,25 +261,11 @@ contains
         allocate (structure%phi_max(2, structure%n_lines))
         structure%n_split_lines = 0
         do j = 1, structure%n_lines
-            line%xi_0 = structure%xi(j)
-            line%iota = structure%iota_line
-            line%theta_0 = N_tor*structure%xi(j)/nfp
-            line%phi_0 = M_pol*structure%xi(j)/nfp
-            interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - structure%iota_line*M_pol) &
-                       + line%phi_0
-            call find_maxima_along_fieldline(field, line, interval, maxima)
-            if (maxima%n < 2) then
-                print *, "find_structure: fewer than two maxima on line ", j
-                error stop
-            elseif (maxima%n > 2) then
-                call pick_maximum_on_each_side(maxima, line%phi_0, &
-                                               structure%symmetry_violation, &
-                                               phi_max, phi_max_error)
-                structure%n_split_lines = structure%n_split_lines + 1
-            else
-                phi_max = maxima%phi(1:2)
-            end if
-            structure%phi_max(:, j) = phi_max
+            call line_bounding_maxima(field, structure%xi(j), structure%iota_line, &
+                                      M_pol, N_tor, nfp, &
+                                      structure%symmetry_violation, &
+                                      structure%phi_max(:, j), split)
+            if (split) structure%n_split_lines = structure%n_split_lines + 1
         end do
     end subroutine find_structure
 
@@ -390,31 +397,288 @@ contains
 
     !> Newton polish of a maximum of B along the line theta = theta_0 +
     !! iota*(phi - phi_0), starting from a bracket estimate.
-    subroutine polish_maximum(field, theta_0, phi_0, iota, phi, cos_k, sin_k)
+    !! Without `ok` a non-concave start is a fatal error; with `ok` it, a move
+    !! by more than `max_move` or no convergence returns ok = .false.
+    subroutine polish_maximum(field, theta_0, phi_0, iota, phi, cos_k, sin_k, ok)
         type(spectral_surface_t), intent(in) :: field
         real(dp), intent(in) :: theta_0, phi_0, iota
         real(dp), intent(inout) :: phi
         real(dp), intent(out) :: cos_k(:), sin_k(:)
+        logical, intent(out), optional :: ok
 
         integer, parameter :: max_iter = 50
+        real(dp), parameter :: max_move = 0.5_dp, newton_roundoff = 1e-10_dp
         integer :: iter
-        real(dp) :: B, B_t, B_p, B_tt, B_tp, B_pp, g, dg, step
+        real(dp) :: B, B_t, B_p, B_tt, B_tp, B_pp, g, dg, step, phi_start
 
+        phi_start = phi
+        if (present(ok)) ok = .false.
         do iter = 1, max_iter
             call field%basis(theta_0 + iota*(phi - phi_0), phi, cos_k, sin_k)
             call field%B_derivatives(cos_k, sin_k, B, B_t, B_p, B_tt, B_tp, B_pp)
             g = B_p + iota*B_t
             dg = B_pp + 2.0_dp*iota*B_tp + iota**2*B_tt
             if (dg >= 0.0_dp) then
+                if (present(ok)) return
                 print *, "polish_maximum: d2B/dphi2 >= 0 at phi = ", phi
                 error stop
             end if
             step = -g/dg
             phi = phi + step
-            if (abs(step) <= 4.0_dp*machine_eps*(1.0_dp + abs(phi))) exit
+            if (present(ok)) then
+                if (abs(phi - phi_start) > max_move) return
+            end if
+            if (abs(step) <= 4.0_dp*machine_eps*(1.0_dp + abs(phi))) then
+                if (present(ok)) ok = .true.
+                exit
+            end if
         end do
+        ! On flat maxima (small dg) the roundoff of g/dg can stay above the
+        ! tolerance; a last step at roundoff level is converged.
+        if (present(ok) .and. iter > max_iter) &
+            ok = abs(step) <= newton_roundoff*(1.0_dp + abs(phi))
         call field%basis(theta_0 + iota*(phi - phi_0), phi, cos_k, sin_k)
     end subroutine polish_maximum
+
+    !> Lowest point of the ridge of left line maxima near the label xi_c, the
+    !! continuum limit of the discrete min over labels of B_max(1).
+    !!
+    !! F(xi) is B at the left maximum that bounds the line of label xi, picked
+    !! as in `find_structure` (bracket search, `line_bounding_maxima`) and
+    !! polished by Newton. By the envelope theorem F'(xi) = c*B_t with
+    !! c = (N_tor - iota*M_pol)/nfp. F is the larger of the local-maximum
+    !! branches on that side of the line, so its minimum is either
+    !!
+    !! * a smooth minimum on one branch, F' = 0: there B_t = 0 and
+    !!   B_p + iota*B_t = 0, a saddle of B (mountain pass), or
+    !! * a crossing of two branches, F_a = F_b with F_a' < 0 < F_b': two equal
+    !!   maxima on one line, e.g. mirror images at a symmetry label.
+    !!
+    !! F' is sampled on [xi_c - dxi, xi_c + dxi], the sign change from - to +
+    !! closest to xi_c is bracketed and bisected to roundoff (the first steps
+    !! with the bracket search, then the larger of the two endpoint branches,
+    !! and the final endpoints are checked against the bracket search). Bisection needs
+    !! neither the ridge curvature, which is tiny on the almost flat ridges of
+    !! quasi-axisymmetric fields, nor smoothness across branch crossings. If
+    !! the bisection ends on two branches that are not equal there, the
+    !! bounding maximum disappears (a fold) and F jumps, so there is no
+    !! continuum minimum and ok = .false.
+    !!
+    !! Outputs the minimum B and its derivatives with respect to bmnc and to
+    !! the field-line iota: at a smooth minimum the envelope cos_k and
+    !! B_t*(phi - phi_0) (= 0 there), at a crossing the implicit-function
+    !! derivative (f_a*g_b - f_b*g_a)/(f_a - f_b) of F_a(xi*) = F_b(xi*).
+    subroutine ridge_saddle(field, M_pol, N_tor, nfp, iota, xi_c, dxi, &
+                            violation, B, dB_dbmnc, dB_diota, crossing, ok)
+        type(spectral_surface_t), intent(in) :: field
+        real(dp), intent(in) :: M_pol, N_tor, nfp, iota, xi_c, dxi
+        real(dp), intent(in) :: violation
+        real(dp), intent(out) :: B
+        real(dp), intent(out) :: dB_dbmnc(:)
+        real(dp), intent(out) :: dB_diota
+        logical, intent(out) :: crossing, ok
+
+        integer, parameter :: n_sub = 2, max_iter = 200
+        integer, parameter :: n_bracket_search = 10
+            !! bisection steps with the full bracket search, before the
+            !! bracket (dxi/2**11) is followed by continuation of its ends
+        integer, parameter :: n_pts = 2*n_sub + 1
+        real(dp), parameter :: same_point_tol = 1e-9_dp
+        real(dp), parameter :: crossing_tol = 1e-10_dp
+        type(branch_point_t) :: pts(n_pts), a, b_, mid, pa, pb
+        real(dp) :: c, xm, step
+        integer :: i, ia, iter
+
+        ok = .false.
+        crossing = .false.
+        B = 0.0_dp
+        dB_dbmnc = 0.0_dp
+        dB_diota = 0.0_dp
+        c = (N_tor - iota*M_pol)/nfp
+
+        do i = 1, n_pts
+            call bounding_point(xi_c + real(i - n_sub - 1, dp)*dxi/real(n_sub, dp), &
+                                pts(i))
+            if (.not. pts(i)%ok) return
+        end do
+        ! sign change - to + of F' closest to xi_c
+        ia = 0
+        do i = 1, n_pts - 1
+            if (pts(i)%f <= 0.0_dp .and. pts(i + 1)%f >= 0.0_dp) then
+                if (ia == 0) then
+                    ia = i
+                elseif (abs(real(i - n_sub, dp) - 0.5_dp) < &
+                        abs(real(ia - n_sub, dp) - 0.5_dp)) then
+                    ia = i
+                end if
+            end if
+        end do
+        if (ia == 0) return
+        a = pts(ia)
+        b_ = pts(ia + 1)
+
+        do iter = 1, max_iter
+            if (.not. (a%f < 0.0_dp)) then
+                b_ = a
+                exit
+            end if
+            if (.not. (b_%f > 0.0_dp)) then
+                a = b_
+                exit
+            end if
+            xm = 0.5_dp*(a%xi + b_%xi)
+            if (.not. (xm > a%xi .and. xm < b_%xi)) exit
+            if (iter <= n_bracket_search) then
+                call bounding_point(xm, mid)
+                if (.not. mid%ok) return
+            else
+                ! the larger of the two endpoint branches continued to xm
+                call line_point(xm, a%phi + a%slope*(xm - a%xi), pa)
+                call line_point(xm, b_%phi + b_%slope*(xm - b_%xi), pb)
+                if (pa%ok .and. pb%ok) then
+                    mid = pa
+                    if (pb%B > pa%B) mid = pb
+                elseif (pa%ok) then
+                    mid = pa
+                elseif (pb%ok) then
+                    mid = pb
+                else
+                    return
+                end if
+            end if
+            if (mid%f < 0.0_dp) then
+                a = mid
+            else
+                b_ = mid
+            end if
+        end do
+
+        ! the endpoints must still be the bounding maxima of their lines
+        call bounding_point(a%xi, pa)
+        call bounding_point(b_%xi, pb)
+        if (.not. (pa%ok .and. pb%ok)) return
+        if (abs(pa%B - a%B) > crossing_tol*a%B .or. &
+            abs(pb%B - b_%B) > crossing_tol*b_%B) return
+        if (abs(a%phi - b_%phi) <= same_point_tol*(1.0_dp + abs(a%phi))) then
+            ! smooth minimum: envelope derivatives at the point with smaller F'
+            if (abs(a%f) <= abs(b_%f)) then
+                mid = a
+            else
+                mid = b_
+            end if
+            B = mid%B
+            dB_dbmnc = mid%cos_k
+            dB_diota = mid%g_iota
+            ok = .true.
+            return
+        end if
+        ! two branches: both continued to the midpoint must be equal there
+        xm = 0.5_dp*(a%xi + b_%xi)
+        call line_point(xm, a%phi + a%slope*(xm - a%xi), pa)
+        call line_point(xm, b_%phi + b_%slope*(xm - b_%xi), pb)
+        if (.not. (pa%ok .and. pb%ok)) return
+        if (abs(pa%B - pb%B) > crossing_tol*pa%B) return
+        if (.not. (pa%f < 0.0_dp .and. pb%f > 0.0_dp)) return
+        ! Newton on F_a - F_b = 0 removes the offset of the bisection end,
+        ! which follows the tie tolerance of the bracket-search pick
+        do iter = 1, 5
+            step = -(pa%B - pb%B)/(pa%f - pb%f)
+            xm = xm + step
+            call line_point(xm, pa%phi + pa%slope*step, pa)
+            call line_point(xm, pb%phi + pb%slope*step, pb)
+            if (.not. (pa%ok .and. pb%ok)) return
+            if (abs(step) <= 4.0_dp*machine_eps*(1.0_dp + abs(xm))) exit
+        end do
+        if (.not. (pa%f < 0.0_dp .and. pb%f > 0.0_dp)) return
+        crossing = .true.
+        B = max(pa%B, pb%B)
+        dB_dbmnc = (pa%f*pb%cos_k - pb%f*pa%cos_k)/(pa%f - pb%f)
+        dB_diota = (pa%f*pb%g_iota - pb%f*pa%g_iota)/(pa%f - pb%f)
+        ok = .true.
+
+    contains
+
+        !> The bounding left maximum of the line xi.
+        subroutine bounding_point(xi, p)
+            real(dp), intent(in) :: xi
+            type(branch_point_t), intent(out) :: p
+
+            real(dp) :: phi_bracket(2)
+            logical :: split
+
+            call line_bounding_maxima(field, xi, iota, M_pol, N_tor, nfp, &
+                                      violation, phi_bracket, split)
+            call line_point(xi, phi_bracket(1), p)
+        end subroutine bounding_point
+
+        !> Maximum of B along the line xi from phi_guess.
+        subroutine line_point(xi, phi_guess, p)
+            real(dp), intent(in) :: xi, phi_guess
+            type(branch_point_t), intent(out) :: p
+
+            real(dp) :: theta_0, phi_0, dg, B_t, B_p, B_tt, B_tp, B_pp
+            real(dp) :: sin_k(size(dB_dbmnc))
+
+            allocate (p%cos_k(size(dB_dbmnc)))
+            theta_0 = N_tor*xi/nfp
+            phi_0 = M_pol*xi/nfp
+            p%xi = xi
+            p%phi = phi_guess
+            call polish_maximum(field, theta_0, phi_0, iota, p%phi, p%cos_k, &
+                                sin_k, p%ok)
+            if (.not. p%ok) return
+            call field%B_derivatives(p%cos_k, sin_k, p%B, B_t, B_p, B_tt, B_tp, B_pp)
+            dg = B_pp + 2.0_dp*iota*B_tp + iota**2*B_tt
+            p%f = c*B_t
+            ! d theta/d xi = c at fixed phi, so dg/dxi = (B_tp + iota*B_tt)*c
+            p%slope = -(B_tp + iota*B_tt)*c/dg
+            p%g_iota = B_t*(p%phi - phi_0)
+        end subroutine line_point
+    end subroutine ridge_saddle
+
+    !> Bracket estimates of the two maxima that bound the line of label xi, as
+    !! in `make_flock_of_fieldlines`. Mirror maxima are identified within
+    !! max(violation, pick_roundoff_floor).
+    subroutine line_bounding_maxima(field, xi, iota_line, M_pol, N_tor, nfp, &
+                                    violation, phi_max, split)
+        use fieldline_mod, only: fieldline_t
+        use make_fieldline, only: maxima_t, find_maxima_along_fieldline, &
+                                  pick_maximum_on_each_side
+        type(spectral_surface_t), intent(in) :: field
+        real(dp), intent(in) :: xi, iota_line, M_pol, N_tor, nfp, violation
+        real(dp), intent(out) :: phi_max(2)
+        logical, intent(out) :: split
+
+        type(fieldline_t) :: line
+        type(maxima_t) :: maxima
+        real(dp) :: interval(2), phi_max_error(2)
+
+        line%xi_0 = xi
+        line%iota = iota_line
+        line%theta_0 = N_tor*xi/nfp
+        line%phi_0 = M_pol*xi/nfp
+        interval = [-1.5_dp*pi, 1.5_dp*pi]/abs(N_tor - iota_line*M_pol) &
+                   + line%phi_0
+        call find_maxima_along_fieldline(field, line, interval, maxima)
+        split = .false.
+        if (maxima%n < 2) then
+            print *, "line_bounding_maxima: fewer than two maxima on line xi = ", xi
+            error stop
+        elseif (maxima%n > 2) then
+            ! Maxima equal within the symmetry violation are mirror images
+            ! and the one closest to phi_0 bounds the well. The exact Fourier
+            ! sum of a symmetric spectrum has zero violation, so without a
+            ! roundoff floor the choice between two mirror maxima would follow
+            ! their last-bit difference (LP QA, s = 0.5: a 1e-14 spectrum
+            ! perturbation moved Lambda_S by 1.4e-4).
+            call pick_maximum_on_each_side(maxima, line%phi_0, &
+                                           max(violation, pick_roundoff_floor), &
+                                           phi_max, phi_max_error)
+            split = .true.
+        else
+            phi_max = maxima%phi(1:2)
+        end if
+    end subroutine line_bounding_maxima
 
     !> 2D Newton for a critical point of B(theta, phi): a maximum (kind = +1)
     !! or a saddle (kind = 0), started near a field-line maximum.
@@ -488,8 +752,9 @@ contains
         real(dp) :: norm, B_sq, lam_b, nab, raw_A, raw_B, dev_A, dev_B, dr
         real(dp) :: Lambda_A, Lambda_B, Lambda_S, hf, I_hat, nu_crit, B1_min
         real(dp) :: delta_max, x_mode, w_res, w_all, slope, factor_A, factor_S
-        real(dp) :: tie_lo, tie_hi, B_crit, B_best
-        logical :: ok
+        real(dp) :: tie_lo, tie_hi, B_crit, B_best, dB_diota, dB_diota_best
+        real(dp) :: L2_roundoff
+        logical :: ok, crossing
         real(dp), allocatable :: cos_c(:), cos_best(:)
         real(dp), allocatable :: d_tie(:)
         real(dp), allocatable :: cos_k(:), sin_k(:), xg(:), wg(:)
@@ -643,6 +908,8 @@ contains
 
         ! ---- line integrals by fixed Gauss-Legendre in sqrt substitution ----
         ng = settings%n_gauss
+        ! roundoff bound of eta_b*B for the Fourier sum of B
+        L2_roundoff = L2_roundoff_factor*machine_eps*eta_b*sum(abs(spec%bmnc))
         allocate (xg(ng), wg(ng))
         call gauss_legendre_01(ng, xg, wg)
         allocate (F_int(4, n), dF_int(np, 4, n), dacc(np, 4))
@@ -674,11 +941,16 @@ contains
                     call field%nabla_s_derivatives(cos_k, sin_k, s_val, s_t, s_p)
                     L2 = 1.0_dp - eta_b*B
                     diag%min_lambda_squared = min(diag%min_lambda_squared, L2)
-                    if (L2 < 0.0_dp) then
+                    if (L2 < -L2_roundoff) then
                         print *, "evaluate: 1 - eta_b*B < 0 on line ", j, &
-                            " phi = ", phi, " value ", L2
+                            " phi = ", phi, " value ", L2, " roundoff ", &
+                            L2_roundoff
                         error stop
                     end if
+                    ! B <= B_glob, so 1 - eta_b*B >= 1 - c0 holds exactly; a
+                    ! smaller value is roundoff of B at nodes next to a maximum
+                    ! (n_gauss = 256 on LP QH gave -5.6e-16)
+                    L2 = max(L2, 1.0_dp - c0)
                     lam = sqrt(L2)
                     f(1) = 0.5_dp*lam*(3.0_dp + L2)*B_t/B**3
                     f(2) = lam/B**2
@@ -889,21 +1161,30 @@ contains
         if (diag%continuum_extrema) then
             ! Continuum limit of the discrete min over labels of the left
             ! maxima: the lowest saddle of B on the maximum ridge (mountain
-            ! pass), by 2D Newton from every left maximum near the lattice
-            ! minimum. Saddles further below than the window are not on the
-            ! ridge and are rejected.
+            ! pass), by a bracketed 1D search along the ridge from every
+            ! lattice local minimum near the global one (`ridge_saddle`). 2D
+            ! Newton on grad B = 0 was used before and converged to nearby
+            ! maxima of B on the flat ridge of LP QA, s = 0.7.
+            ! Saddles further below than the window are not on the ridge and
+            ! are rejected.
             B_best = huge(1.0_dp)
+            dB_diota_best = 0.0_dp
+            dxi = 2.0_dp*pi/real(n, dp)
             do j = 1, n
                 if (B_m(1, j) > B1_min*(1.0_dp + multistart_window)) cycle
-                theta_0 = N_tor*structure%xi(j)/nfp
-                phi_0 = M_pol*structure%xi(j)/nfp
-                phi = phi_m(1, j)
-                call critical_point(field, theta_0 + iota*(phi - phi_0), phi, &
-                                    0, B_crit, cos_c, ok)
+                ! lattice local minima only (cyclic in the label)
+                if (B_m(1, j) > B_m(1, modulo(j - 2, n) + 1) .or. &
+                    B_m(1, j) > B_m(1, modulo(j, n) + 1)) cycle
+                call ridge_saddle(field, M_pol, N_tor, nfp, iota, &
+                                  structure%xi(j), dxi, &
+                                  structure%symmetry_violation, B_crit, cos_c, &
+                                  dB_diota, crossing, ok)
                 if (ok .and. B_crit < B_best .and. &
                     B_crit >= B1_min*(1.0_dp - multistart_window)) then
                     B_best = B_crit
                     cos_best = cos_c
+                    dB_diota_best = dB_diota
+                    diag%nu_crit_crossing = crossing
                 end if
             end do
             if (B_best <= B1_min*(1.0_dp + 1e-13_dp)) then
@@ -913,6 +1194,7 @@ contains
                 if (np > 0) then
                     d_tie = 0.0_dp
                     d_tie(1:K) = cos_best
+                    d_tie(i_iota) = dB_diota_best
                 end if
             else
                 diag%continuum_extrema = .false.

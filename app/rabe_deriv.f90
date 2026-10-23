@@ -28,7 +28,7 @@ program rabe_deriv
 
     character(len=*), parameter :: input_file = "rabe.in"
     integer, parameter :: max_nu = 100
-    integer, parameter :: n_diag = 11
+    integer, parameter :: n_diag = 12
     integer, parameter :: grid_refinement = 6
 
     integer :: mboz, nboz, n_gauss
@@ -149,7 +149,8 @@ program rabe_deriv
                            diag%resonant_weight_B, diag%eta_b_shift, &
                            diag%nu_crit_shift, diag%eta_b_iota_kink, &
                            diag%nu_crit_iota_kink, &
-                           merge(1.0_dp, 0.0_dp, diag%continuum_extrema)]
+                           merge(1.0_dp, 0.0_dp, diag%continuum_extrema), &
+                           merge(1.0_dp, 0.0_dp, diag%nu_crit_crossing)]
         do i_nu = 1, n_nu
             call lambda_off(values(:, i), jac(:, :, i), nu_list(i_nu), &
                             lam_off(i_nu, i), lam_off_jac(:, i_nu, i))
@@ -277,7 +278,7 @@ contains
                          "eta_b_gap nu_crit_gap max_newton_shift "// &
                          "min_lambda_squared resonant_weight_A resonant_weight_B "// &
                          "eta_b_shift nu_crit_shift eta_b_iota_kink "// &
-                         "nu_crit_iota_kink continuum_extrema")
+                         "nu_crit_iota_kink continuum_extrema nu_crit_crossing")
         call nc%add_real_1d("spectral_residual", "surface")
         call nc%add_attr("spectral_residual", "long_name", &
                          "max |B_field - B_spectrum|/B_00 (0 for spectrum_file)")

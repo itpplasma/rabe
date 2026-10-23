@@ -43,24 +43,45 @@ the parameters.
 - **Structure.** `find_structure` freezes the discrete choices with the
   standard algorithms: the continued-fraction approximation `p/q` of `iota_p`,
   the labels, and the pair of maxima that bound each line (bracket search and
-  `pick_maximum_on_each_side`).
+  `pick_maximum_on_each_side`). Two maxima on one side of a line whose values
+  agree within the symmetry violation are mirror images, and the one closest
+  to the line origin bounds the well. The exact Fourier sum of a symmetric
+  spectrum has zero violation, so the tolerance has a roundoff floor of 5e-13
+  (relative). Without it the choice between two mirror maxima followed their
+  last-bit difference, and a relative spectrum perturbation of 1e-14 moved
+  `Lambda_S` by 1.4e-4 and `Lambda_A` by 1 % (LP QA, s = 0.5, booz_xform
+  spectrum, two of 192 lines).
 - **Field-line maxima.** They are polished by Newton on `g = B_phi + iota
   B_theta = 0` and not nudged inward. Their tangents follow from the implicit
   function theorem, `dphi* = -dg/(B_phiphi + 2 iota B_thetaphi + iota^2
   B_thetatheta)`, and `B_max` from the envelope theorem.
 - **eta_b and nu_star_crit.** By default (`continuum_extrema = .true.`) the
   discrete maximum over labels is replaced by the global maximum of `B` on the
-  surface, and the discrete minimum of the left maxima by the saddle of `B` on
-  the maximum ridge (the mountain pass), both found by 2D Newton started from
-  every line maximum within 1e-2 (relative) of the lattice maximum or minimum,
-  keeping the highest maximum and the lowest saddle. A single start from the
-  lattice argmax can stop at a lower local maximum that the lattice happens to
-  sample at its peak (LP QA, s = 0.3: 1.1e-6 below the global maximum), which
-  made the primal jump whenever the argmax line switched. If no saddle is
-  found, `nu_star_crit` falls back to the discrete minimum with a warning, and
-  the mode flag in `diagnostics` is 0. These are the continuum limits of the discrete
-  selections, their derivatives are the basis functions at the critical point
-  (envelope theorem), and they do not depend on `iota`. The difference to the
+  surface, found by 2D Newton started from every line maximum within 1e-2
+  (relative) of the lattice maximum, keeping the highest. A single start from
+  the lattice argmax can stop at a lower local maximum that the lattice happens
+  to sample at its peak (LP QA, s = 0.3: 1.1e-6 below the global maximum),
+  which made the primal jump whenever the argmax line switched. Its
+  derivative is the basis function at the maximum (envelope theorem) and does
+  not depend on `iota`.
+  The discrete minimum of the left maxima is replaced by the minimum over the
+  continuous label `xi` of `F(xi)`, the bounding left maximum of the line `xi`
+  as picked by the bracket search (`ridge_saddle`). `F' = (N_tor - iota
+  M_pol)/nfp B_theta` by the envelope theorem, and its sign change from - to +
+  is bracketed within one label spacing of every lattice local minimum within
+  1e-2 of the lattice minimum and bisected to roundoff. The minimum is either
+  a saddle of `B` on the maximum ridge (smooth minimum of one branch,
+  derivative = basis function at the saddle) or a crossing of two maxima of
+  equal height on one line (two branches, e.g. mirror images at a symmetry
+  label, refined by Newton on `F_a = F_b`, derivative
+  `(F_a' g_b - F_b' g_a)/(F_a' - F_b')` with `g` the derivative of a branch at
+  fixed label, which includes `B_theta (phi - phi_0)` in the `iota`
+  direction); `nu_crit_crossing` in `diagnostics` tells which. 2D Newton on
+  `grad B = 0`, used before, converged to nearby maxima of `B` on the flat
+  ridge of LP QA at s = 0.7, where the minimum is a crossing. If the minimum
+  is not found (or `F` jumps because the bounding maximum disappears),
+  `nu_star_crit` falls back to the discrete minimum with a warning, and the
+  mode flag in `diagnostics` is 0. The difference to the
   discrete values shrinks like the square of the label spacing (synthetic QA:
   1.4e-5 relative in `eta_b` at 31 lines, 4.7e-7 at 171 lines). With
   `continuum_extrema = .false.` the discrete selections are used, and their
@@ -107,16 +128,25 @@ These follow `rabe-derivatives/PHILOSOPHY.md` of the design notes.
    spread. Ties between mirror images or identical points keep equal slopes in
    all spectrum directions. The continuum extrema are themselves a maximum
    (or minimum) over the local critical points of `B`, so they are kinked where
-   two distinct local maxima or ridge saddles exchange order. In near
+   two distinct local maxima or ridge minima exchange order. In near
    quasi-axisymmetry the ridge is almost flat and such exchanges are close: on
    LP QA at s = 0.3 the order of two local maxima 1.1e-6 apart changes within a
-   wout perturbation of relative size 5e-6, and at s = 0.7 the ridge saddle is
-   not found and the discrete fallback for `nu_star_crit` is kinked at the base
-   point. The Jacobian is then a one-sided derivative.
+   wout perturbation of relative size 5e-6. The Jacobian is then a one-sided
+   derivative. The same holds for the bounding maxima frozen in the
+   structure: when two distinct (not mirror) maxima on one side of a line
+   exchange order, the well and the primal jump, which is inherent in rabe's
+   definition of the well. The frozen structure keeps the derivative on one
+   side of such a jump, and `n_split_lines` counts the lines where it can
+   happen.
 4. **Moving endpoints and square-root singularities.** Lines whose maximum lies
    just below `1/eta_b` have near-singular derivatives of order `log(1/delta)`.
    They are integrable over the label, but a fixed rule resolves them only
-   approximately, which is why `n_gauss = 64` is the default.
+   approximately, which is why `n_gauss = 64` is the default. On the line of
+   the global maximum the nodes next to it can give `1 - eta_b B` below its
+   exact lower bound `1 - c0 = 2 machine_eps` by roundoff of the Fourier sum
+   (LP QH, s = 0.1, `n_gauss = 256`: -1.6e-15). Values within
+   `64 machine_eps eta_b sum|bmnc|` below zero are raised to that bound, larger
+   ones stop the evaluation.
 5. **Derivative of the discretization.** The result is the exact derivative of
    the smooth discrete primal described above, not of rabe.x with QAG and nudged
    maxima. On the synthetic QH case both primals agree to 9e-8, and on LP QH
@@ -201,7 +231,7 @@ be read back as a spectrum file.
 | `iota`, `iota_input` | (surface) | rational field-line iota, input iota |
 | `G`, `I`, `psi_edge`, `R` | (surface) | scalar parameters |
 | `q`, `p`, `n_lines`, `n_split_lines` | (surface) | frozen structure |
-| `diagnostics` | (surface, diagnostic) | gaps, Newton shift, `min lambda^2`, resonant weights, continuum shifts, iota kinks, mode flag |
+| `diagnostics` | (surface, diagnostic) | gaps, Newton shift, `min lambda^2`, resonant weights, continuum shifts, iota kinks, mode flag, `nu_crit_crossing` |
 | `spectral_residual`, `spectral_asymmetry` | (surface) | projection quality |
 | `lambda_off`, `lambda_off_jacobian` | (surface, nu), (surface, nu, param) | when `nu_star` is given |
 | `grad_rmnc`, `grad_zmns`, `grad_lmns` | (surface, output, radius, mn_mode) | `d values / d` wout array, with `wout_derivative` |
@@ -218,4 +248,9 @@ compares the smooth primal with the standard pipeline on the same exact field
 and checks the Gauss-Legendre convergence and the convergence of the continuum
 shift. `TestSpectrumDerivativeQH` and `TestSpectrumDerivativeQA` repeat the
 finite-difference check on spectra projected from the Landreman-Paul QH and QA
-equilibria.
+equilibria. `TestDerivativeRobustness_mirror` checks that 1e-14 spectrum noise
+moves the outputs by less than 1e-9 on LP QA (s = 0.5, 37 lines with mirror
+maxima; 1.2e-2 without the roundoff floor), `_saddle` that the ridge minimum
+of LP QA at s = 0.7 is found and that `nu_star_crit` agrees with central
+differences, and `_gauss256` that `n_gauss = 256` evaluates on LP QH at
+s = 0.1 and agrees with 128 nodes.
