@@ -18,7 +18,7 @@ program test_wout_chain
     use boozer_vmec_ad, only: boozer_ad_perturb
     use wout_chain, only: wout_chain_t, boozer_wout_tangent_t, wout_tangent_alloc, &
                           wout_chain_init, wout_chain_spectrum, wout_chain_jvp, &
-                          wout_chain_vjp
+                          wout_chain_vjp, wout_chain_modes
 
     implicit none
 
@@ -174,14 +174,16 @@ contains
     subroutine geometry_direction(t)
         type(boozer_wout_tangent_t), intent(inout) :: t
         integer :: i, j
+        integer, allocatable :: xm(:), xn(:)
         real(dp) :: s, decay
 
+        call wout_chain_modes(chain, xm, xn)
         ! smooth in s and decaying with m and n like a boundary perturbation
         do j = 0, chain%ctx%kpar
             s = real(j, dp)/real(chain%ctx%kpar, dp)
             do i = 1, chain%ctx%nstrm
-                decay = 1.0_dp/(real(1 + chain%ctx%xm(i), dp)**2* &
-                                real(1 + abs(chain%ctx%xn(i))/chain%ctx%nper, dp)**2)
+                decay = 1.0_dp/(real(1 + xm(i), dp)**2* &
+                                real(1 + abs(xn(i))/chain%ctx%nper, dp)**2)
                 t%rmnc(i, j) = 1e-3_dp*s*cos(0.7_dp*i)*decay
                 t%zmns(i, j) = 1e-3_dp*s*sin(1.3_dp*i)*decay
                 t%lmns(i, j) = 1e-2_dp*s*cos(2.1_dp*i)*decay

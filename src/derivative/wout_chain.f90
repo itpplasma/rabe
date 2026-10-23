@@ -25,7 +25,8 @@ module wout_chain
     use boozer_vmec_ad, only: boozer_ad_context_t, boozer_wout_tangent_t, &
                               boozer_spectrum_t, boozer_ad_init, &
                               boozer_ad_primal, boozer_ad_jvp, boozer_ad_vjp, &
-                              wout_tangent_alloc, spectrum_alloc
+                              wout_tangent_alloc, spectrum_alloc, BOOZER_HYBRID, &
+                              BOOZER_LEGACY
     use spectrum_derivative, only: surface_spectrum_t, n_outputs, n_params, &
                                    off_iota, off_G, off_I, off_psi_edge, off_R
 
@@ -34,6 +35,7 @@ module wout_chain
 
     public :: wout_chain_t, boozer_wout_tangent_t, wout_tangent_alloc
     public :: wout_chain_init, wout_chain_spectrum, wout_chain_jvp, wout_chain_vjp
+    public :: wout_chain_modes
 
     !> Differentiated VMEC -> Boozer transform of one wout file. The context
     !! holds the wout data and does not use libneo's VMEC spline state, but
@@ -55,6 +57,29 @@ contains
         call boozer_ad_init(chain%ctx, wout_file, mboz + 1, nboz, &
                             grid_refinement=grid_refinement)
     end subroutine wout_chain_init
+
+    !> Mode numbers (m, n), n including nfp, of the wout harmonics that index
+    !! the first dimension of a wout tangent (`rmnc`, `zmns`, `lmns`). They
+    !! are taken from the construction that `chain` was initialised with:
+    !! the hybrid construction keeps them in its own state and leaves the
+    !! context arrays `xm`, `xn` of the legacy construction unallocated.
+    subroutine wout_chain_modes(chain, xm, xn)
+        type(wout_chain_t), intent(in) :: chain
+        integer, allocatable, intent(out) :: xm(:), xn(:)
+
+        select case (chain%ctx%construction)
+        case (BOOZER_HYBRID)
+            xm = chain%ctx%hyb%xm
+            xn = chain%ctx%hyb%xn
+        case (BOOZER_LEGACY)
+            xm = chain%ctx%xm
+            xn = chain%ctx%xn
+        case default
+            error stop "wout_chain_modes: unknown libneo construction"
+        end select
+        if (size(xm) /= chain%ctx%nstrm .or. size(xn) /= chain%ctx%nstrm) &
+            error stop "wout_chain_modes: mode count differs from the wout tangent"
+    end subroutine wout_chain_modes
 
     !> Set all fields of `spec` (`nfp`, `xm`, `xn`, `bmnc`, `nabla_s_mnc`,
     !! `iota`, `G`, `I`, `psi_edge`, `R`) from libneo's transform at `s_tor`.
