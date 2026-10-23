@@ -38,6 +38,15 @@ module netcdf_mod
         procedure :: add_attr => netcdf_add_attr
         procedure :: read_attr => netcdf_read_attr
         procedure :: add_int_1d => netcdf_add_int_1d
+        procedure :: add_real_2d => netcdf_add_real_2d
+        procedure :: add_real_3d => netcdf_add_real_3d
+        procedure :: add_real_4d => netcdf_add_real_4d
+        procedure :: write_real_2d => netcdf_write_real_2d
+        procedure :: write_real_3d => netcdf_write_real_3d
+        procedure :: write_real_4d => netcdf_write_real_4d
+        procedure :: read_real_2d => netcdf_read_real_2d
+        procedure :: read_real_3d => netcdf_read_real_3d
+        procedure :: read_dim => netcdf_read_dim
         procedure :: end_define => netcdf_end_define
         procedure :: write_real => netcdf_write_real
         procedure :: write_real_1d => netcdf_write_real_1d
@@ -509,6 +518,166 @@ contains
             call this%close()
         end if
     end subroutine netcdf_final
+
+    !> Define a double variable over several named dimensions, given in
+    !! Fortran (column-major) order; C and Python readers see them reversed.
+    subroutine netcdf_add_real_nd(this, var_name, dim_names)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        character(len=*), intent(in) :: dim_names(:)
+        integer :: status, var_id, i, j
+        integer :: dim_ids(size(dim_names))
+
+        if (.not. this%is_open) error stop "NetCDF file not open"
+        if (.not. this%in_define_mode) error stop "Not in define mode"
+        if (this%n_vars >= max_vars) error stop "Maximum number of variables exceeded"
+
+        do i = 1, size(dim_names)
+            dim_ids(i) = -1
+            do j = 1, this%n_dims
+                if (trim(this%dims(j)%name) == trim(dim_names(i))) then
+                    dim_ids(i) = this%dims(j)%dim_id
+                    exit
+                end if
+            end do
+            if (dim_ids(i) == -1) error stop "Dimension not found: "//trim(dim_names(i))
+        end do
+
+        status = nf90_def_var(this%ncid, var_name, NF90_DOUBLE, dim_ids, var_id)
+        call check_netcdf_status(status, "defining variable: "//var_name)
+
+        this%n_vars = this%n_vars + 1
+        this%vars(this%n_vars)%name = var_name
+        this%vars(this%n_vars)%var_id = var_id
+    end subroutine netcdf_add_real_nd
+
+    subroutine netcdf_add_real_2d(this, var_name, dim1, dim2)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2
+        character(len=100) :: names(2)
+
+        names(1) = dim1
+        names(2) = dim2
+        call netcdf_add_real_nd(this, var_name, names)
+    end subroutine netcdf_add_real_2d
+
+    subroutine netcdf_add_real_3d(this, var_name, dim1, dim2, dim3)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2, dim3
+        character(len=100) :: names(3)
+
+        names(1) = dim1
+        names(2) = dim2
+        names(3) = dim3
+        call netcdf_add_real_nd(this, var_name, names)
+    end subroutine netcdf_add_real_3d
+
+    subroutine netcdf_add_real_4d(this, var_name, dim1, dim2, dim3, dim4)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2, dim3, dim4
+        character(len=100) :: names(4)
+
+        names(1) = dim1
+        names(2) = dim2
+        names(3) = dim3
+        names(4) = dim4
+        call netcdf_add_real_nd(this, var_name, names)
+    end subroutine netcdf_add_real_4d
+
+    integer function find_var_id(this, var_name) result(var_id)
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        integer :: i
+
+        if (.not. this%is_open) error stop "NetCDF file not open for writing"
+        if (this%in_define_mode) call this%end_define()
+        var_id = -1
+        do i = 1, this%n_vars
+            if (trim(this%vars(i)%name) == trim(var_name)) then
+                var_id = this%vars(i)%var_id
+                exit
+            end if
+        end do
+        if (var_id == -1) error stop "Variable not found: "//var_name
+    end function find_var_id
+
+    subroutine netcdf_write_real_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :), intent(in) :: value
+        integer :: status
+
+        status = nf90_put_var(this%ncid, find_var_id(this, var_name), value)
+        call check_netcdf_status(status, "writing 2D array variable: "//var_name)
+    end subroutine netcdf_write_real_2d
+
+    subroutine netcdf_write_real_3d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :, :), intent(in) :: value
+        integer :: status
+
+        status = nf90_put_var(this%ncid, find_var_id(this, var_name), value)
+        call check_netcdf_status(status, "writing 3D array variable: "//var_name)
+    end subroutine netcdf_write_real_3d
+
+    subroutine netcdf_write_real_4d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :, :, :), intent(in) :: value
+        integer :: status
+
+        status = nf90_put_var(this%ncid, find_var_id(this, var_name), value)
+        call check_netcdf_status(status, "writing 4D array variable: "//var_name)
+    end subroutine netcdf_write_real_4d
+
+    subroutine netcdf_read_real_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :), intent(out) :: value
+        integer :: status, var_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+        status = nf90_get_var(this%ncid, var_id, value)
+        call check_netcdf_status(status, "reading variable: "//var_name)
+    end subroutine netcdf_read_real_2d
+
+    subroutine netcdf_read_real_3d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :, :), intent(out) :: value
+        integer :: status, var_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+        status = nf90_get_var(this%ncid, var_id, value)
+        call check_netcdf_status(status, "reading variable: "//var_name)
+    end subroutine netcdf_read_real_3d
+
+    !> Length of a named dimension of an opened file.
+    subroutine netcdf_read_dim(this, dim_name, dim_length)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: dim_name
+        integer, intent(out) :: dim_length
+        integer :: status, dim_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        status = nf90_inq_dimid(this%ncid, dim_name, dim_id)
+        call check_netcdf_status(status, "finding dimension: "//dim_name)
+        status = nf90_inquire_dimension(this%ncid, dim_id, len=dim_length)
+        call check_netcdf_status(status, "reading dimension: "//dim_name)
+    end subroutine netcdf_read_dim
+
 
     subroutine check_netcdf_status(status, operation)
         use netcdf

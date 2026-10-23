@@ -1,0 +1,12 @@
+&rabe_config
+    field_file = "unused",
+    M_pol = -1.0d0,
+    N_tor = 4.0d0,
+    s_tor = 0.5,
+    sign_sqrtg = -1.0d0,
+    max_n_fieldlines = 60,
+/
+&rabe_derivative
+    spectrum_file = "../from_field/rabe_deriv.nc",
+    nu_star = 1e-3, 1e-2,
+/

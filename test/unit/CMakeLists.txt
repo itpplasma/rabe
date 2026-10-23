@@ -92,3 +92,18 @@ add_executable(test_fft.x test_fft.f90)
 target_link_libraries(test_fft.x rabe_lib helpers_lib)
 add_test(TestFFT test_fft.x)
 set_tests_properties(TestFFT PROPERTIES LABELS "quick")
+
+add_library(synthetic_spectra_lib STATIC ../helpers/synthetic_spectra.f90)
+target_link_libraries(synthetic_spectra_lib PUBLIC derivative_lib utils_lib)
+
+add_executable(test_spectrum_derivative.x test_spectrum_derivative.f90)
+target_link_libraries(test_spectrum_derivative.x synthetic_spectra_lib
+                      derivative_lib fieldline_lib offset_lib utils_lib)
+add_test(TestSpectrumDerivative test_spectrum_derivative.x)
+set_tests_properties(TestSpectrumDerivative PROPERTIES LABELS "quick")
+
+add_executable(test_spectrum_derivative_primal.x test_spectrum_derivative_primal.f90)
+target_link_libraries(test_spectrum_derivative_primal.x synthetic_spectra_lib
+                      derivative_lib fieldline_lib offset_lib utils_lib)
+add_test(TestSpectrumDerivativePrimal test_spectrum_derivative_primal.x)
+set_tests_properties(TestSpectrumDerivativePrimal PROPERTIES LABELS "quick")
