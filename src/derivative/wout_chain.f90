@@ -33,7 +33,8 @@ module wout_chain
 
     !> Differentiated VMEC -> Boozer transform of one wout file. libneo keeps the
     !! VMEC splines as module state, so only one chain can be active, and no
-    !! other VMEC field may be loaded after `wout_chain_init`.
+    !! other wout may be splined after `wout_chain_init`. A Boozer field built
+    !! from the same splines (`boozer_field_t%init_from_splined_vmec`) is fine.
     type :: wout_chain_t
         type(boozer_ad_context_t) :: ctx
     end type wout_chain_t

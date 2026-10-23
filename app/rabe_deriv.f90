@@ -89,7 +89,14 @@ program rabe_deriv
         allocate (spectra(n_surf), residual(n_surf), asymmetry(n_surf))
         select case (trim(field_type))
         case ('vmec_nc')
-            call field%init_from_vmec(field_file, grid_refinement=grid_refinement)
+            if (wout_derivative) then
+                ! libneo's differentiated transform reads and splines the wout
+                ! (same orders and refinement), and the rabe field reuses it.
+                call wout_chain_init(chain, field_file, mboz, nboz, grid_refinement)
+                call field%init_from_splined_vmec()
+            else
+                call field%init_from_vmec(field_file, grid_refinement=grid_refinement)
+            end if
         case ('booz_xform')
             call field%init_from_boozmn(field_file)
         case ('chartmap')
@@ -112,10 +119,8 @@ program rabe_deriv
     end if
 
     if (wout_derivative) then
-        ! libneo re-splines the wout here, so the rabe field is not used below.
         ! nabla_s_mnc, psi_edge and R stay those of the rabe projection.
         allocate (wout_difference(n_surf))
-        call wout_chain_init(chain, field_file, mboz, nboz, grid_refinement)
         do i = 1, n_surf
             bmnc_projected = spectra(i)%bmnc
             call wout_chain_spectrum(chain, s_tor(i), spectra(i))

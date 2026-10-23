@@ -177,6 +177,10 @@ contraction `sum v * grad_X`, which is the VJP the VMEC++ adjoint needs; the
 library routine `wout_chain_vjp` computes the same product with one libneo
 adjoint sweep, and `wout_chain_jvp` the tangent.
 
+- The wout is read and splined once: libneo's `boozer_ad_init` splines it,
+  and rabe's field is built from those splines (`init_from_splined_vmec`),
+  with outputs bit-identical to loading it twice (LP QH, 5 surfaces: 15.3 s
+  to 13.3 s wall, of which 5 s are rabe's Boozer transform for `nabla_s_mnc`).
 - `nabla_s_mnc`, `psi_edge` and `R` still come from the projection of rabe's
   own field and are held fixed, so the gradients miss their dependence on the
   geometry. libneo's transform does not produce `|grad s|`.
