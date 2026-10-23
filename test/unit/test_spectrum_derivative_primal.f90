@@ -9,7 +9,7 @@ program test_spectrum_derivative_primal
                                    derivative_structure_t, n_outputs, &
                                    pack_parameters, find_structure, evaluate, &
                                    off_iota
-    use synthetic_spectra, only: synthetic_qh, synthetic_qa
+    use synthetic_spectra, only: synthetic_qh, synthetic_qa, synthetic_qi
 
     implicit none
 
@@ -22,6 +22,8 @@ program test_spectrum_derivative_primal
     call compare("QH", spec, settings, n_failed)
     call synthetic_qa(spec, settings)
     call compare("QA", spec, settings, n_failed)
+    call synthetic_qi(spec, settings)
+    call compare("QI", spec, settings, n_failed)
     if (n_failed > 0) then
         print *, "FAILED checks: ", n_failed
         error stop 1
@@ -59,8 +61,14 @@ contains
         real(dp) :: dr, rel(n_outputs), rel_gauss(n_outputs)
         integer :: split, K
 
+        ! The standard pipeline needs a minimum at the origin, so it runs on
+        ! the field with the origin chosen by find_structure (QI: half a
+        ! period away from the booz_xform origin).
+        call find_structure(spec, settings, structure)
         call spectral_surface_init(field, spec%xm, spec%xn, spec%bmnc, &
                                    spec%nabla_s_mnc, spec%I, spec%G)
+        field%theta_origin = structure%theta_origin
+        field%phi_origin = structure%phi_origin
         call make_flock_of_fieldlines(flock, settings%max_n_fieldlines, spec%iota, &
                                       field, settings%M_pol, settings%N_tor, &
                                       spec%nfp, split)
@@ -71,7 +79,6 @@ contains
         standard(4) = calc_nu_star_crit(flock, spec%R)
         standard(5) = flock%eta_b
 
-        call find_structure(spec, settings, structure)
         call pack_parameters(spec, params)
         K = size(spec%xm)
         params(2*K + off_iota) = structure%iota_line

@@ -40,6 +40,16 @@ the parameters.
 - **Field.** `spectral_surface_t` sums the Fourier series exactly, so `B` and
   `|grad s|` are linear in their coefficients and `dB/dbmnc(k)` is the basis
   function itself. There is no spline.
+- **Origin.** rabe measures the field-line labels from a minimum of the ideal
+  omnigenous field at `theta = phi = 0`. A quasi-isodynamic spectrum
+  (`M_pol = 0`, `N_tor = nfp`) in booz_xform convention has its maximum there,
+  and the bounding-maxima search stopped with "fewer than two maxima" (SQuID,
+  Nautilus). When `suspect_omnigenous_origin_not_minimum` flags the origin,
+  `find_structure` moves it by half a period (`phi_origin = pi/nfp`, or
+  `theta_origin = pi` for `N_tor = 0`), the other stellarator-symmetric point,
+  as the half-period shift of the QI `.bc` files of the bootstrap benchmark
+  did. The field is evaluated at the shifted angles with the given
+  coefficients, so the Jacobian stays with respect to the input spectrum.
 - **Structure.** `find_structure` freezes the discrete choices with the
   standard algorithms: the continued-fraction approximation `p/q` of `iota_p`,
   the labels, and the pair of maxima that bound each line (bracket search and
