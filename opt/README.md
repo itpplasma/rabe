@@ -67,6 +67,20 @@ a1f7bfc or later), then run the scripts from this directory.
   point. It checkpoints every iteration, restarts from the checkpoint, stages
   and submits SIMPLE alpha-loss runs of the start, every N-th and the final
   iterate, and has an `ftol-check` mode that picks the VMEC++ force tolerance.
+- `vmecpp_jacobian.py`: the traced `vmecpp.run` with hot restarts from the
+  last converged solve and one factorization of the implicit adjoint per
+  equilibrium, shared by all cotangents of a `jax.vmap`ped pullback (private
+  vmecpp 0.9 internals, version checked on import).
+- `lsq_opt.py`: E1, E2 and E3 (`nu*_crit`, `var_dJ`, `Gamma_s`, needs a pyrabe
+  with those outputs) as a residual vector with the constraints as penalty or
+  augmented-Lagrangian residuals, the exact Jacobian, Levenberg-Marquardt with
+  a step cap and an augmented Lagrangian.
+- `run_opt.py`: the checkpointed campaign entry point
+  (`--engine vmecpp --objective E1|E2|E3 --solver lm|trf|lbfgs|al`) with
+  continuation in the free modes and in `ns`, multi-start and SIMPLE staging.
+- `check_jacobian.py`: FD V-curve of the residual Jacobian, with the rabe
+  structure re-found and frozen; `test_lsq_opt.py`: the batched adjoint
+  against vmecpp's own VJP and the Jacobian against a frozen-structure FD.
 - `test_rabe_boundary.py`: pytest (`RABE_OPT_INPUT=<input> pytest opt`), the
   offset gradient and the alpha objective with aspect and iota penalties
   against re-solved central differences.
@@ -84,6 +98,8 @@ one structure the field-line iota is `p/q + (iota - iota_input)`
 (`pyrabe.spectrum_derivative.locate`), whereas a fresh structure resets it to
 `p/q`. The objective with the structure recomputed at every point therefore
 differs from the differentiated branch by a smooth term, 6e-4 of the
-directional derivative on LP QA (ns = 25) and 6e-7 on LP QH.
+directional derivative on LP QA (ns = 25) and 6e-7 on LP QH for the offsets;
+for the least-squares residuals on LP QH (ns = 25) it is 8e-4 (E1) and 2e-3
+(E2) of the largest entry of `J d`, against 3e-5 for the frozen structure.
 Derivatives are of the discretization (VMEC++ at the given `ns`, the libneo
 splines, rabe's Gauss-Legendre rule), not of the continuum.
