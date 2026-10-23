@@ -60,6 +60,13 @@ a1f7bfc or later), then run the scripts from this directory.
   structure.
 - `ns_scan.py`: values, gradients and cost per gradient against `ns`.
 - `smoke_descent.py`: a few steepest-descent steps with backtracking.
+- `alpha_optimize.py`: L-BFGS-B on the boundary for the experiments E1
+  (`nu*_crit`, `Lambda_A^2 + Lambda_B^2`) and E2 (`nu*_crit`, `Lambda_alpha^2`,
+  `Gamma_well`), with aspect, volume, iota-range and Boozer mirror-ratio
+  penalties (`iota_range_penalty`, `MirrorRatioPenalty`) around the start
+  point. It checkpoints every iteration, restarts from the checkpoint, stages
+  and submits SIMPLE alpha-loss runs of the start, every N-th and the final
+  iterate, and has an `ftol-check` mode that picks the VMEC++ force tolerance.
 - `test_rabe_boundary.py`: pytest (`RABE_OPT_INPUT=<input> pytest opt`), the
   offset gradient and the alpha objective with aspect and iota penalties
   against re-solved central differences.
