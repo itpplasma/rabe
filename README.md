@@ -256,7 +256,8 @@ effect of bootstrap resonances and is not yet fully validated.
 **Status: under active development.**
 
 `rabe_deriv.x` (opt-in, built next to `rabe.x`) returns `Lambda_A`, `Lambda_B`,
-`Lambda_S`, `nu_star_crit` and `eta_b` per surface together with their exact
+`Lambda_S`, `nu_star_crit`, `eta_b` and the alpha-particle criteria
+`Lambda_alpha` and `Gamma_well` per surface together with their exact
 Jacobian with respect to the Boozer spectrum (`bmnc`, `|grad s|` modes, `iota`,
 `G`, `I`, `psi_edge`, `R`) in `rabe_deriv.nc`. Method, surrogates for the
 non-smooth parts, input and output layout are described in

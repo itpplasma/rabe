@@ -117,7 +117,7 @@ program test_derivative_robustness
         settings%n_gauss = 128
         call evaluate(params, spec, settings, structure, values_2)
         rel_change = abs(values_2 - values)/abs(values)
-        print "(A,5ES10.2)", "  n_gauss 256 vs 128 ", rel_change
+        print "(A,7ES10.2)", "  n_gauss 256 vs 128 ", rel_change
         if (maxval(rel_change) > 1e-9_dp) n_failed = n_failed + 1
 
     case default
@@ -190,7 +190,7 @@ contains
             err(:, i) = abs((v_plus - v_minus)/(2.0_dp*steps(i)) - analytic)/ &
                         max(abs(analytic), 1e-6_dp*scale, 1e-300_dp)
         end do
-        print "(A,I2,A,5ES10.2)", "  direction ", dir, " best rel err ", &
+        print "(A,I2,A,7ES10.2)", "  direction ", dir, " best rel err ", &
             minval(err, dim=2)
         print "(A,6ES10.2)", "    nu_star_crit V-curve ", err(i_nu_star_crit, :)
         do o = 1, n_outputs

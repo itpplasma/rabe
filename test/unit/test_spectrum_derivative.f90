@@ -84,7 +84,7 @@ contains
 
         print "(A,A,I4,A,I4,A,I4)", name, ": lines ", structure%n_lines, &
             "  q ", structure%q, "  split lines ", structure%n_split_lines
-        print "(A,5ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b): ", values
+        print "(A,7ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b, L_alpha, G_well): ", values
         print "(A,ES10.2,A,ES10.2,A,2ES10.2)", "  newton shift ", diag%max_newton_shift, &
             "  eta_b gap ", diag%eta_b_gap, "  resonant weight A, B ", &
             diag%resonant_weight_A, diag%resonant_weight_B
@@ -264,7 +264,7 @@ contains
             end do
         end do
         best = minval(err, dim=2)
-        print "(2X,A,T26,A,5ES10.2)", label, " best rel err ", best
+        print "(2X,A,T26,A,7ES10.2)", label, " best rel err ", best
         do o = 1, n_outputs
             if (abs(analytic(o)) < 1e-14_dp*maxval(abs(jac(:, o)))*maxval(abs(u))) cycle
             if (best(o) > tol) then
