@@ -9,9 +9,27 @@ surfaces,
     J = sum_s w_s L_s,   L = Lambda_A / sqrt(nu_star) + Lambda_B / nu_star,
 
 as `pyrabe.simsopt.RabeOptimizable.Lambda_offset`, optionally squared
-(`squared=True`). Any smooth function of the `(S, 5)` outputs `(Lambda_A,
-Lambda_B, Lambda_S, nu_star_crit, eta_b)` can be passed as `reduce`, and
-`vjp(boundary, cotangent)` pulls back an arbitrary output cotangent.
+(`squared=True`). Any smooth function of the `(S, 7)` outputs `(Lambda_A,
+Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well)` can be
+passed as `reduce`, and `vjp(boundary, cotangent)` pulls back an arbitrary
+output cotangent.
+
+## Alpha objective
+
+`alpha_reduce(AlphaWeights(...))` is the composite objective of Kasilov's
+criteria (see [alpha_criteria.md](../src/derivative/alpha_criteria.md)),
+
+    F = sum_s w_s [ w1 nu*_crit + w2 (Lambda_A^2 + Lambda_B^2) + w2b Lambda_alpha^2 + w3 Gamma_well ],
+
+with every term divided by a reference (`AlphaWeights().normalized(values)`
+takes the values at the start boundary, so that the weights are relative).
+The offsets enter squared because their plain sum is unbounded below.
+`constraints=[...]` adds penalties `c(boundary, harm)`, JAX functions of the
+boundary and of the primary wout arrays whose gradient joins the same VMEC++
+adjoint: `aspect_penalty` and `volume_penalty` from the boundary geometry
+(`boundary_geometry`, equal to VMEC++'s `aspect` and `volume_p` to 1e-15 on LP
+QA and QH) and `iota_penalty` on `iotaf`. A QI mirror-ratio constraint needs
+the Boozer spectrum per surface and is not wired yet.
 
 ## Chain
 
@@ -42,7 +60,9 @@ a1f7bfc or later), then run the scripts from this directory.
   structure.
 - `ns_scan.py`: values, gradients and cost per gradient against `ns`.
 - `smoke_descent.py`: a few steepest-descent steps with backtracking.
-- `test_rabe_boundary.py`: pytest (`RABE_OPT_INPUT=<input> pytest opt`).
+- `test_rabe_boundary.py`: pytest (`RABE_OPT_INPUT=<input> pytest opt`), the
+  offset gradient and the alpha objective with aspect and iota penalties
+  against re-solved central differences.
 
 The force tolerance matters: at `ftol = 1e-14` the half-mesh `lmns` is
 converged only to about 1e-3, and the gradient moved by 3 % between

@@ -8,7 +8,9 @@ module spectrum_derivative
     !!     params = [bmnc(1:K), nabla_s_mnc(1:K), iota, G, I, psi_edge, R]
     !!
     !! with K modes. The outputs are `[Lambda_A, Lambda_B, Lambda_S, nu_star_crit,
-    !! eta_b]`, and `jacobian(i_param, i_output) = d output / d param`.
+    !! eta_b, Lambda_alpha, Gamma_well]`, and `jacobian(i_param, i_output) = d
+    !! output / d param`. `Lambda_alpha` and `Gamma_well` are the alpha-particle
+    !! criteria of `alpha_criteria.md`.
     !!
     !! The primal in derivative mode follows the standard rabe pipeline, with the
     !! changes that make it a smooth function of the parameters:
@@ -38,12 +40,14 @@ module spectrum_derivative
     implicit none
     private
 
-    integer, parameter, public :: n_outputs = 5
+    integer, parameter, public :: n_outputs = 7
     integer, parameter, public :: i_Lambda_A = 1, i_Lambda_B = 2, &
                                   i_Lambda_S = 3, i_nu_star_crit = 4, &
-                                  i_eta_b = 5
+                                  i_eta_b = 5, i_Lambda_alpha = 6, &
+                                  i_Gamma_well = 7
     character(len=*), parameter, public :: output_names = &
-                                           "Lambda_A Lambda_B Lambda_S nu_star_crit eta_b"
+                                           "Lambda_A Lambda_B Lambda_S nu_star_crit eta_b "// &
+                                           "Lambda_alpha Gamma_well"
     character(len=*), parameter, public :: parameter_layout = &
                                            "bmnc(1:K) nabla_s_mnc(1:K) iota G I psi_edge R"
 
@@ -70,6 +74,9 @@ module spectrum_derivative
     !! the Newton search for the continuum extremum. It must exceed the
     !! sampling deficit of the lattice, O(B''/B dxi^2).
     real(dp), parameter :: multistart_window = 1e-2_dp
+    !> Samples between the bounding maxima of a line that bracket its well
+    !! minimum and the turning points of the trapped levels (`Gamma_well`).
+    integer, parameter :: well_grid = 1025
         !! relative tolerance for ties of the discrete max (eta_b) and min
         !! (nu_star_crit) over field-line maxima
 
@@ -104,6 +111,10 @@ module spectrum_derivative
             !! eta_b and nu_star_crit from the global maximum and the ridge
             !! saddle of B (continuum limit of the discrete max and min over
             !! labels, smooth in iota) instead of the discrete selections
+        integer :: n_eta = 32
+            !! trapped levels per well for Gamma_well
+        integer :: n_gauss_well = 32
+            !! Gauss points per half bounce orbit for Gamma_well
     end type derivative_settings_t
 
     !> Discrete choices frozen for the derivative mode.
@@ -165,7 +176,7 @@ module spectrum_derivative
 
     public :: n_params, pack_parameters, unpack_parameters
     public :: find_structure, evaluate, spectrum_jvp, spectrum_vjp
-    public :: gauss_legendre_01, label_dft, lambda_off
+    public :: gauss_legendre_01, label_dft, lambda_off, well_levels
 
 contains
 
@@ -776,7 +787,7 @@ contains
         real(dp) :: M_pol, N_tor, nfp, iota, G, I_cov, psi_edge, R
         real(dp) :: theta_0, phi_0, phi, theta, B, B_t, B_p, B_tt, B_tp, B_pp
         real(dp) :: s_val, s_t, s_p, dg, L, u, h, wu, cA, cB, L2, lam
-        real(dp) :: f(4), acc(4), eta_b, B_glob, c0, dxi
+        real(dp) :: f(5), acc(5), eta_b, B_glob, c0, dxi
         real(dp) :: Gt, S_sum, I_ref, iota_p, diota_p
         real(dp) :: norm, B_sq, lam_b, nab, raw_A, raw_B, dev_A, dev_B, dr
         real(dp) :: Lambda_A, Lambda_B, Lambda_S, hf, I_hat, nu_crit, B1_min
@@ -801,6 +812,11 @@ contains
         real(dp), allocatable :: d_rawA(:), d_rawB(:), d_devA(:), d_devB(:), d_dr(:)
         real(dp), allocatable :: d_LA(:), d_LB(:), d_LS(:), d_nu(:), d_hf(:), d_Ihat(:)
         real(dp), allocatable :: d_delta_max(:), e_iota(:), d_Gt(:)
+        real(dp) :: J_ref, S_J, raw_al, dev_al, Lambda_alpha, Gamma_well
+        real(dp), allocatable :: J_b(:), dJ_b(:, :), dJ_ref(:), d_SJ(:)
+        real(dp), allocatable :: delta_J(:), d_delta_J(:, :), dJ_c(:), dJ_s(:)
+        real(dp), allocatable :: d_dJ_c(:, :), d_dJ_s(:, :), d_rawal(:), d_devAl(:)
+        real(dp), allocatable :: d_Lal(:), d_Gamma(:)
 
         K = size(template%xm)
         if (size(params) /= n_params(K)) error stop "evaluate: wrong params length"
@@ -941,8 +957,8 @@ contains
         L2_roundoff = L2_roundoff_factor*machine_eps*eta_b*sum(abs(spec%bmnc))
         allocate (xg(ng), wg(ng))
         call gauss_legendre_01(ng, xg, wg)
-        allocate (F_int(4, n), dF_int(np, 4, n), dacc(np, 4))
-        allocate (dphi(np), dB(np), dBt(np), ds(np), dlam(np), df(np, 4))
+        allocate (F_int(5, n), dF_int(np, 5, n), dacc(np, 5))
+        allocate (dphi(np), dB(np), dBt(np), ds(np), dlam(np), df(np, 5))
         diag%min_lambda_squared = huge(1.0_dp)
         do j = 1, n
             theta_0 = N_tor*structure%xi(j)/nfp
@@ -985,6 +1001,7 @@ contains
                     f(2) = lam/B**2
                     f(3) = 1.0_dp/B**2
                     f(4) = s_val/B**2
+                    f(5) = lam/B
                     wu = wg(i)*u
                     acc = acc + wu*f
                     if (np > 0) then
@@ -1003,13 +1020,14 @@ contains
                         df(:, 2) = dlam/B**2 - 2.0_dp*lam/B**3*dB
                         df(:, 3) = -2.0_dp/B**3*dB
                         df(:, 4) = ds/B**2 - 2.0_dp*s_val/B**3*dB
+                        df(:, 5) = dlam/B - lam/B**2*dB
                         dacc = dacc + wu*df
                     end if
                 end do
             end do
             F_int(:, j) = L*acc
             if (np > 0) then
-                do kk = 1, 4
+                do kk = 1, 5
                     dF_int(:, kk, j) = L*dacc(:, kk) + &
                                        acc(kk)*(dphi_m(:, 2, j) - dphi_m(:, 1, j))
                 end do
@@ -1050,6 +1068,28 @@ contains
             d_rd(:, j) = dF_int(:, 1, j)
         end do
 
+        ! ---- Lambda_alpha: J_j = (G + iota I) int dphi lambda_b/B at eta_b ----
+        ! the label variation of J of the barely trapped particles in the
+        ! offset machinery of Lambda_A (alpha_criteria.md)
+        allocate (J_b(n), dJ_b(np, n), dJ_ref(np), d_SJ(np))
+        allocate (delta_J(n), d_delta_J(np, n))
+        J_b = F_int(5, :)*Gt
+        do j = 1, n
+            dJ_b(:, j) = dF_int(:, 5, j)*Gt + F_int(5, j)*d_Gt
+        end do
+        S_J = sum(1.0_dp/sqrt(J_b))
+        J_ref = (real(n, dp)/S_J)**2
+        d_SJ = 0.0_dp
+        do j = 1, n
+            d_SJ = d_SJ - 0.5_dp*J_b(j)**(-1.5_dp)*dJ_b(:, j)
+        end do
+        dJ_ref = -2.0_dp*real(n, dp)**2/S_J**3*d_SJ
+        do j = 1, n
+            delta_J(j) = sqrt(J_ref/J_b(j)) - 1.0_dp
+            d_delta_J(:, j) = 0.5_dp*sqrt(J_ref/J_b(j))* &
+                              (dJ_ref/J_ref - dJ_b(:, j)/J_b(j))
+        end do
+
         ! ---- Fourier transform over labels ----
         iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
         diota_p = -sign(pi, iota*M_pol - N_tor)*nfp/(iota*M_pol - N_tor)**2
@@ -1063,16 +1103,21 @@ contains
         allocate (d_rd_c(np, n_modes_label), d_rd_s(np, n_modes_label), &
                   d_dA_c(np, n_modes_label), d_dA_s(np, n_modes_label), &
                   d_de_c(np, n_modes_label), d_de_s(np, n_modes_label))
+        allocate (dJ_c(n_modes_label), dJ_s(n_modes_label), &
+                  d_dJ_c(np, n_modes_label), d_dJ_s(np, n_modes_label))
         if (np > 0) then
             call label_dft(x_lab, rd, rd_c, rd_s, d_rd, df_cos=d_rd_c, df_sin=d_rd_s)
             call label_dft(x_lab, delta_A, dA_c, dA_s, d_delta_A, &
                            df_cos=d_dA_c, df_sin=d_dA_s)
             call label_dft(x_shift, delta_eta, de_c, de_s, d_delta_eta, d_shift, &
                            d_de_c, d_de_s)
+            call label_dft(x_lab, delta_J, dJ_c, dJ_s, d_delta_J, &
+                           df_cos=d_dJ_c, df_sin=d_dJ_s)
         else
             call label_dft(x_lab, rd, rd_c, rd_s)
             call label_dft(x_lab, delta_A, dA_c, dA_s)
             call label_dft(x_shift, delta_eta, de_c, de_s)
+            call label_dft(x_lab, delta_J, dJ_c, dJ_s)
         end if
 
         ! ---- surface averages ----
@@ -1088,7 +1133,9 @@ contains
         d_nab = sum(dF_int(:, 4, :), dim=2)*dxi/norm - nab*d_norm/norm
 
         ! ---- deviations with frozen-rational surrogate for S_A, S_B ----
-        allocate (d_rawA(np), d_rawB(np))
+        allocate (d_rawA(np), d_rawB(np), d_rawal(np))
+        raw_al = 0.0_dp
+        d_rawal = 0.0_dp
         raw_A = 0.0_dp
         raw_B = 0.0_dp
         d_rawA = 0.0_dp
@@ -1103,6 +1150,10 @@ contains
             d_rawA = d_rawA + (d_rd_s(:, kk)*dA_c(kk) + rd_s(kk)*d_dA_c(:, kk))* &
                      S_A(x_mode) + rd_s(kk)*dA_c(kk)*slope*real(kk - 1, dp)* &
                      diota_p*e_iota
+            raw_al = raw_al + rd_s(kk)*dJ_c(kk)*S_A(x_mode)
+            d_rawal = d_rawal + (d_rd_s(:, kk)*dJ_c(kk) + rd_s(kk)*d_dJ_c(:, kk))* &
+                      S_A(x_mode) + rd_s(kk)*dJ_c(kk)*slope*real(kk - 1, dp)* &
+                      diota_p*e_iota
             raw_B = raw_B + rd_s(kk)*de_c(kk)*S_B(x_mode)
             d_rawB = d_rawB + (d_rd_s(:, kk)*de_c(kk) + rd_s(kk)*d_de_c(:, kk))* &
                      S_B(x_mode)
@@ -1124,6 +1175,8 @@ contains
         raw_B = pi*raw_B
         d_rawA = pi*d_rawA
         d_rawB = pi*d_rawB
+        raw_al = pi*raw_al
+        d_rawal = pi*d_rawal
 
         allocate (d_devA(np), d_devB(np), d_dr(np))
         factor_A = B_sq/lam_b*sqrt(eta_b)*sqrt(I_ref)/norm
@@ -1131,6 +1184,11 @@ contains
         d_devA = d_rawA*factor_A + raw_A*factor_A* &
                  (d_Bsq/B_sq - d_lamb/lam_b + 0.5_dp*d_eta/eta_b &
                   + 0.5_dp*dI_ref/I_ref - d_norm/norm)
+        allocate (d_devAl(np))
+        dev_al = raw_al*factor_A
+        d_devAl = d_rawal*factor_A + raw_al*factor_A* &
+                  (d_Bsq/B_sq - d_lamb/lam_b + 0.5_dp*d_eta/eta_b &
+                   + 0.5_dp*dI_ref/I_ref - d_norm/norm)
         dev_B = raw_B*B_sq/lam_b*0.5_dp/norm
         d_devB = d_rawB*B_sq/lam_b*0.5_dp/norm + &
                  dev_B*(d_Bsq/B_sq - d_lamb/lam_b - d_norm/norm)
@@ -1145,6 +1203,10 @@ contains
         Lambda_A = dev_A*dr*sqrt(0.5_dp*R*pi)
         d_LA = (d_devA*dr + dev_A*d_dr)*sqrt(0.5_dp*R*pi)
         if (np > 0) d_LA(i_R) = d_LA(i_R) + 0.5_dp*Lambda_A/R
+        allocate (d_Lal(np))
+        Lambda_alpha = dev_al*dr*sqrt(0.5_dp*R*pi)
+        d_Lal = (d_devAl*dr + dev_al*d_dr)*sqrt(0.5_dp*R*pi)
+        if (np > 0) d_Lal(i_R) = d_Lal(i_R) + 0.5_dp*Lambda_alpha/R
         Lambda_B = dev_B*0.5_dp*R*pi*dr
         d_LB = (d_devB*dr + dev_B*d_dr)*0.5_dp*R*pi
         if (np > 0) d_LB(i_R) = d_LB(i_R) + Lambda_B/R
@@ -1236,20 +1298,286 @@ contains
         d_nu = 0.25_dp*delta_max/(eta_b**2*I_hat)*d_delta_max &
                - nu_crit*(2.0_dp*d_eta/eta_b + d_Ihat/I_hat)
 
+        ! ---- Gamma_well: <(dJ/dalpha)^2>/<J^2> over the trapped levels ----
+        allocate (d_Gamma(np))
+        call well_criterion(field, template, structure, settings, iota, e_iota, &
+                            phi_m, B_m, dB_m, Gamma_well, d_Gamma)
+
         values(i_Lambda_A) = Lambda_A
         values(i_Lambda_B) = Lambda_B
         values(i_Lambda_S) = Lambda_S
         values(i_nu_star_crit) = nu_crit
         values(i_eta_b) = eta_b
+        values(i_Lambda_alpha) = Lambda_alpha
+        values(i_Gamma_well) = Gamma_well
         if (np > 0) then
             jacobian(:, i_Lambda_A) = d_LA
             jacobian(:, i_Lambda_B) = d_LB
             jacobian(:, i_Lambda_S) = d_LS
             jacobian(:, i_nu_star_crit) = d_nu
             jacobian(:, i_eta_b) = d_eta
+            jacobian(:, i_Lambda_alpha) = d_Lal
+            jacobian(:, i_Gamma_well) = d_Gamma
         end if
         if (present(diagnostics)) diagnostics = diag
     end subroutine evaluate
+
+    !> Trapped levels of a well: nodes t_k = u_k^2 and weights 2 u_k w_k with
+    !! (u_k, w_k) Gauss-Legendre on [0, 1]. The level eta = eta_lo + (eta_hi -
+    !! eta_lo) t runs from the barely trapped eta_lo = 1/min(B_max) to the bottom
+    !! eta_hi = 1/B_min; the square clusters the nodes at the barely trapped
+    !! end, where dJ/dalpha diverges like log t.
+    subroutine well_levels(n, t, w)
+        integer, intent(in) :: n
+        real(dp), intent(out) :: t(n), w(n)
+
+        real(dp) :: u(n)
+
+        call gauss_legendre_01(n, u, w)
+        t = u*u
+        w = 2.0_dp*u*w
+    end subroutine well_levels
+
+    !> Newton polish of the minimum of B along a line (well bottom).
+    subroutine polish_minimum(field, theta_0, phi_0, iota, phi)
+        type(spectral_surface_t), intent(in) :: field
+        real(dp), intent(in) :: theta_0, phi_0, iota
+        real(dp), intent(inout) :: phi
+
+        integer, parameter :: max_iter = 50
+        integer :: iter
+        real(dp) :: B, B_t, B_p, B_tt, B_tp, B_pp, dg, step, phi_start
+        real(dp), allocatable :: cos_k(:), sin_k(:)
+
+        allocate (cos_k(size(field%xm)), sin_k(size(field%xm)))
+        phi_start = phi
+        step = huge(1.0_dp)
+        do iter = 1, max_iter
+            call field%basis(theta_0 + iota*(phi - phi_0), phi, cos_k, sin_k)
+            call field%B_derivatives(cos_k, sin_k, B, B_t, B_p, B_tt, B_tp, B_pp)
+            dg = B_pp + 2.0_dp*iota*B_tp + iota**2*B_tt
+            if (dg <= 0.0_dp) error stop "polish_minimum: non-positive curvature"
+            step = -(B_p + iota*B_t)/dg
+            phi = phi + step
+            if (abs(phi - phi_start) > 0.5_dp) error stop "polish_minimum: moved too far"
+            if (abs(step) <= 4.0_dp*machine_eps*(1.0_dp + abs(phi))) return
+        end do
+        if (abs(step) > 1e-10_dp*(1.0_dp + abs(phi))) &
+            error stop "polish_minimum: Newton did not converge"
+    end subroutine polish_minimum
+
+    !> Gamma_well = sum_jk W_jk (dJ/dalpha)_jk^2 / sum_jk W_jk J_jk^2 over the
+    !! wells j of the flock and their trapped levels k, with J = int dphi
+    !! lambda/B, dJ/dalpha = -int dphi B_t (1 + lambda^2)/(2 lambda B^2),
+    !! lambda^2 = 1 - eta B, between the turning points (the factor G + iota I
+    !! cancels) and W_jk = (eta_hi - eta_lo)_j w_k (alpha_criteria.md).
+    !!
+    !! Per line: the well minimum is the lowest of `well_grid` samples between
+    !! the polished bounding maxima, polished by Newton (envelope theorem for
+    !! B_min); each turning point is the first crossing of B = 1/eta outward
+    !! from the minimum, bracketed on the samples and found by safeguarded
+    !! Newton (implicit function theorem for its tangent). The integrals use
+    !! the substitution of the line integrals with `n_gauss_well` points per
+    !! half, which makes both integrands regular at the simple zeros of
+    !! lambda^2, and the tangent is the exact derivative of that rule. At a
+    !! node a + d, lambda^2 = -eta (B(a + d) - B(a)) takes the end a as an exact
+    !! turning point and sums the cosine differences as -2 sin(arg_a + c)
+    !! sin(c), c = (m iota - n) d/2; 1 - eta B would lose the digits of B next
+    !! to the end (noise of relative size eps/u_1^2 in dJ/dalpha).
+    subroutine well_criterion(field, template, structure, settings, iota, e_iota, &
+                              phi_m, B_m, dB_m, Gamma, dGamma)
+        type(spectral_surface_t), intent(in) :: field
+        type(surface_spectrum_t), intent(in) :: template
+        type(derivative_structure_t), intent(in) :: structure
+        type(derivative_settings_t), intent(in) :: settings
+        real(dp), intent(in) :: iota, e_iota(:), phi_m(:, :), B_m(:, :), dB_m(:, :, :)
+        real(dp), intent(out) :: Gamma, dGamma(:)
+
+        integer :: K, np, n, j, lev, side, i, half, ne, ng, i_min, ig, iter, lo_i
+        real(dp) :: M_pol, N_tor, nfp, theta_0, phi_0, phi, B, B_t, B_p, B_tt, B_tp, B_pp
+        real(dp) :: B_min, phi_min, eta_lo, eta_hi, eta, level, lo, hi, x, x_new, Bl
+        real(dp) :: L, u, h, cA, cB, wu, L2, lam, hq, accJ, accD, Jv, Dv, W
+        real(dp) :: num, den, tp(2)
+        real(dp), allocatable :: cos_k(:), sin_k(:), t_lev(:), w_lev(:), xg(:), wg(:)
+        real(dp), allocatable :: grid(:), B_grid(:), d_eta_lo(:), d_eta_hi(:), d_eta(:)
+        real(dp), allocatable :: dtp(:, :), dphi(:), dtheta(:), dB(:), dBt(:), dlam(:)
+        real(dp), allocatable :: daccJ(:), daccD(:), dJv(:), dDv(:), dW(:), dnum(:), dden(:)
+        real(dp), allocatable :: dBmin(:), arg_end(:, :), rate(:)
+        real(dp) :: d_end
+
+        K = size(template%xm)
+        np = size(dGamma)
+        n = structure%n_lines
+        M_pol = settings%M_pol
+        N_tor = settings%N_tor
+        nfp = template%nfp
+        ne = settings%n_eta
+        ng = settings%n_gauss_well
+        allocate (cos_k(K), sin_k(K), t_lev(ne), w_lev(ne), xg(ng), wg(ng))
+        allocate (grid(well_grid), B_grid(well_grid))
+        allocate (d_eta_lo(np), d_eta_hi(np), d_eta(np), dtp(np, 2), dphi(np))
+        allocate (dtheta(np), dB(np), dBt(np), dlam(np), daccJ(np), daccD(np))
+        allocate (dJv(np), dDv(np), dW(np), dnum(np), dden(np), dBmin(np))
+        allocate (arg_end(K, 2), rate(K))
+        rate = template%xm*iota - template%xn
+        call well_levels(ne, t_lev, w_lev)
+        call gauss_legendre_01(ng, xg, wg)
+        num = 0.0_dp
+        den = 0.0_dp
+        dnum = 0.0_dp
+        dden = 0.0_dp
+        do j = 1, n
+            theta_0 = N_tor*structure%xi(j)/nfp
+            phi_0 = M_pol*structure%xi(j)/nfp
+            do ig = 1, well_grid
+                grid(ig) = phi_m(1, j) + (phi_m(2, j) - phi_m(1, j))* &
+                           real(ig - 1, dp)/real(well_grid - 1, dp)
+                call field%basis(theta_0 + iota*(grid(ig) - phi_0), grid(ig), cos_k, sin_k)
+                call field%B_derivatives(cos_k, sin_k, B_grid(ig), B_t, B_p, B_tt, B_tp, B_pp)
+            end do
+            i_min = minloc(B_grid(2:well_grid - 1), dim=1) + 1
+            phi_min = grid(i_min)
+            call polish_minimum(field, theta_0, phi_0, iota, phi_min)
+            if (.not. (phi_m(1, j) < phi_min .and. phi_min < phi_m(2, j))) &
+                error stop "well_criterion: well minimum outside its maxima"
+            call field%basis(theta_0 + iota*(phi_min - phi_0), phi_min, cos_k, sin_k)
+            call field%B_derivatives(cos_k, sin_k, B_min, B_t, B_p, B_tt, B_tp, B_pp)
+            ! envelope theorem: B_p + iota B_t = 0 at the minimum
+            eta_hi = 1.0_dp/B_min
+            if (np > 0) then
+                dBmin = (phi_min - phi_0)*B_t*e_iota
+                dBmin(1:K) = dBmin(1:K) + cos_k
+                d_eta_hi = -dBmin/B_min**2
+            end if
+            side = 1
+            if (B_m(2, j) < B_m(1, j)) side = 2
+            eta_lo = 1.0_dp/B_m(side, j)
+            if (np > 0) d_eta_lo = -dB_m(:, side, j)/B_m(side, j)**2
+            do lev = 1, ne
+                eta = eta_lo + (eta_hi - eta_lo)*t_lev(lev)
+                level = 1.0_dp/eta
+                if (np > 0) d_eta = d_eta_lo + (d_eta_hi - d_eta_lo)*t_lev(lev)
+                do side = 1, 2
+                    ! bracket: last sample at or above the level going outward
+                    if (side == 1) then
+                        lo_i = 0
+                        do ig = i_min, 1, -1
+                            if (B_grid(ig) >= level) then
+                                lo_i = ig
+                                exit
+                            end if
+                        end do
+                        if (lo_i == 0) error stop "well_criterion: left turning point not bracketed"
+                        lo = grid(lo_i)
+                        hi = grid(lo_i + 1)
+                    else
+                        lo_i = 0
+                        do ig = i_min, well_grid
+                            if (B_grid(ig) >= level) then
+                                lo_i = ig
+                                exit
+                            end if
+                        end do
+                        if (lo_i == 0) error stop "well_criterion: right turning point not bracketed"
+                        lo = grid(lo_i)
+                        hi = grid(lo_i - 1)
+                    end if
+                    ! safeguarded Newton on 1 - eta B = 0, B(lo) >= level > B(hi)
+                    x = 0.5_dp*(lo + hi)
+                    do iter = 1, 200
+                        call field%basis(theta_0 + iota*(x - phi_0), x, cos_k, sin_k)
+                        call field%B_derivatives(cos_k, sin_k, Bl, B_t, B_p, B_tt, B_tp, B_pp)
+                        if (Bl >= level) then
+                            lo = x
+                        else
+                            hi = x
+                        end if
+                        x_new = x + (1.0_dp - eta*Bl)/(eta*(B_p + iota*B_t))
+                        if (.not. (x_new > min(lo, hi) .and. x_new < max(lo, hi))) &
+                            x_new = 0.5_dp*(lo + hi)
+                        if (abs(x_new - x) <= 4.0_dp*machine_eps*(1.0_dp + abs(x))) exit
+                        x = x_new
+                    end do
+                    x = x_new
+                    if (iter > 200) error stop "well_criterion: turning point not converged"
+                    call field%basis(theta_0 + iota*(x - phi_0), x, cos_k, sin_k)
+                    call field%B_derivatives(cos_k, sin_k, Bl, B_t, B_p, B_tt, B_tp, B_pp)
+                    tp(side) = x
+                    arg_end(:, side) = template%xm*(theta_0 + iota*(x - phi_0) &
+                                                    + field%theta_origin) &
+                                       - template%xn*(x + field%phi_origin)
+                    if (np > 0) then
+                        ! 1 - eta B(phi*) = 0: dphi* = -(B deta + eta dB|phi)/(eta B')
+                        dB = (x - phi_0)*B_t*e_iota
+                        dB(1:K) = dB(1:K) + cos_k
+                        dtp(:, side) = -(Bl*d_eta + eta*dB)/(eta*(B_p + iota*B_t))
+                    end if
+                end do
+                L = tp(2) - tp(1)
+                accJ = 0.0_dp
+                accD = 0.0_dp
+                if (np > 0) then
+                    daccJ = 0.0_dp
+                    daccD = 0.0_dp
+                end if
+                do half = 1, 2
+                    do i = 1, ng
+                        u = xg(i)
+                        h = 0.5_dp*L*u*u
+                        if (half == 1) then
+                            d_end = h
+                            phi = tp(1) + h
+                            cA = 1.0_dp - 0.5_dp*u*u
+                            cB = 0.5_dp*u*u
+                        else
+                            d_end = -h
+                            phi = tp(2) - h
+                            cA = 0.5_dp*u*u
+                            cB = 1.0_dp - 0.5_dp*u*u
+                        end if
+                        call field%basis(theta_0 + iota*(phi - phi_0), phi, cos_k, sin_k)
+                        call field%B_derivatives(cos_k, sin_k, B, B_t, B_p, B_tt, B_tp, B_pp)
+                        L2 = 2.0_dp*eta*sum(field%bmnc*sin(arg_end(:, half) &
+                                                           + 0.5_dp*rate*d_end)* &
+                                            sin(0.5_dp*rate*d_end))
+                        if (L2 <= 0.0_dp) error stop "well_criterion: 1 - eta B <= 0 at a node"
+                        lam = sqrt(L2)
+                        hq = (1.0_dp + L2)/(2.0_dp*lam)
+                        wu = wg(i)*u
+                        accJ = accJ + wu*lam/B
+                        accD = accD - wu*B_t*hq/B**2
+                        if (np > 0) then
+                            dphi = cA*dtp(:, 1) + cB*dtp(:, 2)
+                            dtheta = iota*dphi + (phi - phi_0)*e_iota
+                            dB = B_t*dtheta + B_p*dphi
+                            dB(1:K) = dB(1:K) + cos_k
+                            dBt = B_tt*dtheta + B_tp*dphi
+                            dBt(1:K) = dBt(1:K) - template%xm*sin_k
+                            dlam = -(eta*dB + B*d_eta)/(2.0_dp*lam)
+                            daccJ = daccJ + wu*(dlam/B - lam/B**2*dB)
+                            daccD = daccD - wu*(dBt*hq/B**2 &
+                                                + B_t*(L2 - 1.0_dp)/(2.0_dp*L2)*dlam/B**2 &
+                                                - 2.0_dp*B_t*hq/B**3*dB)
+                        end if
+                    end do
+                end do
+                Jv = L*accJ
+                Dv = L*accD
+                W = (eta_hi - eta_lo)*w_lev(lev)
+                num = num + W*Dv**2
+                den = den + W*Jv**2
+                if (np > 0) then
+                    dJv = L*daccJ + accJ*(dtp(:, 2) - dtp(:, 1))
+                    dDv = L*daccD + accD*(dtp(:, 2) - dtp(:, 1))
+                    dW = (d_eta_hi - d_eta_lo)*w_lev(lev)
+                    dnum = dnum + dW*Dv**2 + 2.0_dp*W*Dv*dDv
+                    dden = dden + dW*Jv**2 + 2.0_dp*W*Jv*dJv
+                end if
+            end do
+        end do
+        Gamma = num/den
+        if (np > 0) dGamma = (dnum - Gamma*dden)/den
+    end subroutine well_criterion
 
     pure real(dp) function safe_ratio(a, b)
         real(dp), intent(in) :: a, b

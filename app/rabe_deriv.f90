@@ -32,13 +32,14 @@ program rabe_deriv
     integer, parameter :: n_diag = 12
     integer, parameter :: grid_refinement = 6
 
-    integer :: mboz, nboz, n_gauss
+    integer :: mboz, nboz, n_gauss, n_eta, n_gauss_well
     logical :: continuum_extrema, wout_derivative
     real(dp) :: nu_star(max_nu)
     character(len=256) :: spectrum_file, output_file
     character(len=8) :: lambda_half_to_full
     namelist /rabe_derivative/ mboz, nboz, n_gauss, nu_star, spectrum_file, &
-        output_file, continuum_extrema, wout_derivative, lambda_half_to_full
+        output_file, continuum_extrema, wout_derivative, lambda_half_to_full, &
+        n_eta, n_gauss_well
 
     type(boozer_field_t) :: field
     type(surface_spectrum_t), allocatable :: spectra(:)
@@ -71,6 +72,8 @@ program rabe_deriv
     settings%N_tor = N_tor
     settings%max_n_fieldlines = max_n_fieldlines
     settings%n_gauss = n_gauss
+    settings%n_eta = n_eta
+    settings%n_gauss_well = n_gauss_well
     settings%sign_sqrtg = nint(sign_sqrtg)
     settings%continuum_extrema = continuum_extrema
 
@@ -162,8 +165,8 @@ program rabe_deriv
             call lambda_off(values(:, i), jac(:, :, i), nu_list(i_nu), &
                             lam_off(i_nu, i), lam_off_jac(:, i_nu, i))
         end do
-        print "(A,F8.5,A,5ES14.6)", " s_tor ", s_tor(i), &
-            "  L_A L_B L_S nu_crit eta_b ", values(:, i)
+        print "(A,F8.5,A,7ES14.6)", " s_tor ", s_tor(i), &
+            "  L_A L_B L_S nu_crit eta_b L_alpha G_well ", values(:, i)
         print "(A,I4,A,I4,A,ES9.2,A,2ES9.2,A,ES9.2)", "   q ", q(i), "  lines ", &
             n_lines(i), "  eta_b gap ", diag%eta_b_gap, &
             "  continuum shift eta_b, nu_crit ", diag%eta_b_shift, &
@@ -212,6 +215,8 @@ contains
         mboz = 16
         nboz = 16
         n_gauss = 64
+        n_eta = 32
+        n_gauss_well = 32
         continuum_extrema = .true.
         wout_derivative = .false.
         lambda_half_to_full = 'linear'

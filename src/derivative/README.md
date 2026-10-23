@@ -1,8 +1,10 @@
 # Derivative mode: exact Jacobians with respect to the Boozer spectrum
 
 The derivative mode computes, per flux surface, the offset coefficients
-`Lambda_A`, `Lambda_B`, `Lambda_S`, `nu_star_crit` and `eta_b` together with
-their exact Jacobian with respect to the Boozer spectrum of that surface. It is
+`Lambda_A`, `Lambda_B`, `Lambda_S`, `nu_star_crit` and `eta_b` and the
+alpha-particle criteria `Lambda_alpha` and `Gamma_well` (see
+[alpha_criteria.md](alpha_criteria.md)) together with their exact Jacobian
+with respect to the Boozer spectrum of that surface. It is
 opt-in and lives in its own library (`derivative_lib`) and executable
 (`rabe_deriv.x`), so `rabe.x` and its outputs are unchanged.
 
@@ -232,6 +234,8 @@ surfaces, `sign_sqrtg`, `max_n_fieldlines`) and the optional group
         n_gauss = 64,                ! Gauss points per half well
         nu_star = 1e-3, 1e-2,        ! optional lambda_off evaluations
         continuum_extrema = .true.,
+        n_eta = 32,                  ! trapped levels per well (Gamma_well)
+        n_gauss_well = 32,           ! Gauss points per half bounce orbit
         wout_derivative = .false.,   ! chain to the wout harmonics (VMEC input)
         lambda_half_to_full = 'linear', ! libneo lambda map: 'linear' or 'cubic'
         spectrum_file = "",          ! read the spectrum instead of a field
@@ -248,7 +252,7 @@ be read back as a spectrum file.
 
 | variable | shape | content |
 |---|---|---|
-| `values` | (surface, output) | `Lambda_A, Lambda_B, Lambda_S, nu_star_crit, eta_b` |
+| `values` | (surface, output) | `Lambda_A, Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well` |
 | `jacobian` | (surface, output, param) | `d values / d params` |
 | `bmnc`, `nabla_s_mnc` | (surface, mode) | spectrum used |
 | `xm`, `xn`, `nfp` | (mode), scalar | mode numbers, `xn` includes `nfp` |
