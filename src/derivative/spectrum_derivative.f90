@@ -118,6 +118,9 @@ module spectrum_derivative
         integer :: n_split_lines = 0
             !! lines on which more than two maxima were found
         real(dp) :: symmetry_violation = 0.0_dp
+        real(dp) :: theta_origin = 0.0_dp, phi_origin = 0.0_dp
+            !! angular origin of the field-line labels in the spectrum's
+            !! angles; half a period when the given origin is a maximum (QI)
     end type derivative_structure_t
 
     !> Margins and residuals that tell whether the frozen structure is valid.
@@ -212,12 +215,17 @@ contains
         spec%R = params(2*K + off_R)
     end subroutine unpack_parameters
 
-    subroutine make_field(spec, field)
+    subroutine make_field(spec, field, structure)
         type(surface_spectrum_t), intent(in) :: spec
         type(spectral_surface_t), intent(out) :: field
+        type(derivative_structure_t), intent(in), optional :: structure
 
         call spectral_surface_init(field, spec%xm, spec%xn, spec%bmnc, &
                                    spec%nabla_s_mnc, spec%I, spec%G)
+        if (present(structure)) then
+            field%theta_origin = structure%theta_origin
+            field%phi_origin = structure%phi_origin
+        end if
     end subroutine make_field
 
     !> Freeze the discrete structure (labels, p/q, bounding maxima) with the same
@@ -254,8 +262,29 @@ contains
         if (suspect_omnigenous_origin_not_minimum(field, N_tor=N_tor, &
                                                   M_pol=M_pol, &
                                                   retol=structure%symmetry_violation)) then
-            print *, "warning in find_structure: origin of the field is "// &
-                "suspected not to be a minimum"
+            ! rabe puts the well centre (a minimum of the ideal omnigenous
+            ! field) at the origin. A quasi-isodynamic spectrum in booz_xform
+            ! convention has its maximum there, so move the origin to the
+            ! other stellarator-symmetric point, half a period in the
+            ! helical angle (the half-period shift of the QI .bc files).
+            if (N_tor /= 0.0_dp) then
+                field%phi_origin = pi/nfp
+            else
+                field%theta_origin = pi
+            end if
+            if (suspect_omnigenous_origin_not_minimum(field, N_tor=N_tor, &
+                                                      M_pol=M_pol, &
+                                                      retol=structure%symmetry_violation)) then
+                print *, "warning in find_structure: origin of the field is "// &
+                    "suspected not to be a minimum, also half a period away"
+                field%phi_origin = 0.0_dp
+                field%theta_origin = 0.0_dp
+            else
+                print *, "find_structure: origin is not a minimum, labels "// &
+                    "measured from theta, phi = ", field%theta_origin, field%phi_origin
+            end if
+            structure%theta_origin = field%theta_origin
+            structure%phi_origin = field%phi_origin
         end if
 
         allocate (structure%phi_max(2, structure%n_lines))
@@ -788,7 +817,7 @@ contains
         i_R = 2*K + off_R
 
         call unpack_parameters(params, template, spec)
-        call make_field(spec, field)
+        call make_field(spec, field, structure)
         M_pol = settings%M_pol
         N_tor = settings%N_tor
         nfp = template%nfp
