@@ -4,11 +4,11 @@ include(FetchContent)
 set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fetch)")
 
 # -DLIBNEO_REF=<branch|tag|sha>: fetch this libneo revision instead of the pin.
-set(LIBNEO_REF "969bb378b2d8a53f0f3e3f1739c0c3fe0f22f259" CACHE STRING
+set(LIBNEO_REF "e2f39a76645bed0919bca9fc239a98114a930631" CACHE STRING
     "libneo git ref (branch, tag, or sha) to fetch")
 
-# rabe links only libneo's light targets (boozer, vmec_support, interpolate);
-# skip its numerics-heavy core so BLAS/LAPACK and fortnum are not required here.
+# rabe uses libneo's light targets without its numerics-heavy core or fortnum.
+# The Boozer target publishes its BLAS/LAPACK dependencies transitively.
 set(LIBNEO_BUILD_NUMERICS OFF CACHE BOOL "rabe needs only light libneo targets" FORCE)
 
 # libneo is built in-tree from its own CMakeLists (either a local checkout

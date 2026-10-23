@@ -8,7 +8,7 @@ program plot_fourier_field_timing
     implicit none
 
     character(len=*), parameter :: nc_filename = &
-                      "input/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+                      "input/wout_LandremanPaul2021_QH_reactorScale_ns101_reference.nc"
     type(boozer_field_t) :: bfield
     type(horner_fourier_field_t) :: hfield
     type(fourier_field_t) :: sfield
