@@ -40,6 +40,16 @@ add_subdirectory(integration)
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
+    add_test(NAME TestGitVersionIncremental
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_git_version.py
+            --source ${PROJECT_SOURCE_DIR}
+            --cmake ${CMAKE_COMMAND}
+            --git ${GIT_EXECUTABLE}
+            --compiler ${CMAKE_Fortran_COMPILER}
+            --generator ${CMAKE_GENERATOR}
+    )
+    set_tests_properties(TestGitVersionIncremental PROPERTIES LABELS "quick")
     add_subdirectory(plot)
 else()
     message(STATUS "Python3 not found - plot tests disabled")
