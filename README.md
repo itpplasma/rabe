@@ -345,3 +345,7 @@ stellarators and tokamaks”, Phys. Plasmas 18, 092505 [doi.org/10.1063/1.363394
 [5] M. Landreman et al., *Optimization of quasi-symmetric stellarators with self-consistent bootstrap current and energetic particle confinement*, Phys. Plasmas 29, [doi:10.1063/5.0098166](https://doi.org/10.1063/5.0098166) (2022)
 
 [6] John R. Cary & Svetlana G. Shasharina, *Omnigenity and quasihelicity in helical plasma confinement systems, Phys. Plasmas 4*, 3323–3333, [doi:10.1063/1.872473](https://doi.org/10.1063/1.872473) (1997)
+
+The experimental [SD2.2 strong-precession driver](docs/sqrt_nu.md) accepts
+tabulated coefficients or native QI field preprocessing on multiple flux
+surfaces and writes per-mode NetCDF results with explicit precession conventions and validity diagnostics.

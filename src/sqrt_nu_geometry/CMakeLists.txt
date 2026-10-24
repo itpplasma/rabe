@@ -1,0 +1,3 @@
+add_library(sqrt_nu_geometry_lib STATIC sqrt_nu_geometry.f90)
+target_link_libraries(sqrt_nu_geometry_lib PUBLIC sqrt_nu_lib fieldline_lib offset_lib utils_lib)
+target_include_directories(sqrt_nu_geometry_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
