@@ -42,6 +42,14 @@ add_executable(${PROJECT_NAME} app/main.f90)
 target_link_libraries(${PROJECT_NAME} rabe_lib)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "rabe.x")
 
+add_executable(sqrt_nu_rabe app/sqrt_nu_rabe.f90)
+target_link_libraries(sqrt_nu_rabe rabe_lib)
+set_target_properties(sqrt_nu_rabe PROPERTIES OUTPUT_NAME "sqrt_nu_rabe.x")
+
+add_executable(sqrt_nu_field app/sqrt_nu_field.f90)
+target_link_libraries(sqrt_nu_field rabe_lib sqrt_nu_geometry_lib)
+set_target_properties(sqrt_nu_field PROPERTIES OUTPUT_NAME "sqrt_nu_field.x")
+
 enable_testing()
 add_subdirectory(test)
 

@@ -103,6 +103,12 @@ No system NetCDF library is required.
 - **Input**: Namelist file `rabe.in` (namelist `rabe_config`)
 - **Field data**: VMEC `.nc` files
 - **Output**: `rabe.nc` (NetCDF)
+- **SD2.2 tabulated driver**: `sqrt_nu_rabe.x [input.in [output.nc]]` reads
+  `sqrt_nu_sizes` and `sqrt_nu_config`, evaluates per-mode WKB quadratures on
+  multiple surfaces, and writes indexed NetCDF cases. See `docs/sqrt_nu.md`
+  for physical units, the electric-precession sign and model limitations.
+  `sqrt_nu_field.x` preprocesses supported single-well QI fields into this
+  table format using the native field-line integrals and E77 normalization.
 
 ## Code Style
 
