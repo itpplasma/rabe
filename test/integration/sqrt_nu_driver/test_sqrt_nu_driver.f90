@@ -95,7 +95,7 @@ program test_sqrt_nu_driver
                         q = sqrt(real(im*is, dp)/(2.0_dp*nu_star(inu)))
                         decay = exp(-q*length)
                         expected = -dIv_deta(1, im, is)*(1.0_dp - decay* &
-                            (cos(q*length) - sin(q*length)))/(2.0_dp*q)
+                                             (cos(q*length) - sin(q*length)))/(2.0_dp*q)
                         if (zero_precession(icase) /= 0) error stop 'wrong zero branch'
                         if (valid(k) /= 1) &
                             error stop 'resolved strong action unlabelled'
@@ -111,15 +111,72 @@ program test_sqrt_nu_driver
         end do
     end do
 
+    call check_per_label_driver()
     magnetic_drift_included = .true.
     open (newunit=unit, file='magnetic.in', status='replace')
     write (unit, nml=sqrt_nu_sizes)
     write (unit, nml=sqrt_nu_config)
     close (unit)
     call execute_command_line('"'//trim(executable)// &
-        '" magnetic.in magnetic.nc > magnetic.log 2>&1', exitstat=exit_status)
+                  '" magnetic.in magnetic.nc > magnetic.log 2>&1', exitstat=exit_status)
     if (exit_status == 0) error stop 'magnetic precession was silently accepted'
 contains
+    ! B2 round trip: identical labels reproduce lambda_off, spread labels do not,
+    ! and B1 (lambda_off) is unchanged by the optional per-label groups.
+    subroutine check_per_label_driver()
+        integer, parameter :: nl = 3
+        integer :: n_line, st(ncase, nl), pass, ic, il
+        real(dp) :: tau_b_line(ne, nl, ns), tau_d_per_nu_line(nl, ns)
+        real(dp) :: per_label(ncase), line(ncase, nl), plain(ncase), c(nl)
+        character(len=32) :: coefficient_construction
+        character(len=256) :: attr
+        namelist /sqrt_nu_per_label_size/ n_line
+        namelist /sqrt_nu_per_label/ tau_b_line, tau_d_per_nu_line, &
+            coefficient_construction
+
+        n_line = nl
+        coefficient_construction = 'per_label'
+        plain = offset
+        do pass = 1, 2
+            c = merge(0.0_dp, [0.2_dp, -0.2_dp, 0.0_dp], pass == 1)
+            do il = 1, nl
+                tau_b_line(:, il, :) = tau_b_seconds*(1.0_dp + c(il))
+                tau_d_per_nu_line(il, :) = 1.0_dp
+            end do
+            open (newunit=unit, file='b2.in', status='replace')
+            write (unit, nml=sqrt_nu_sizes)
+            write (unit, nml=sqrt_nu_config)
+            write (unit, nml=sqrt_nu_per_label_size)
+            write (unit, nml=sqrt_nu_per_label)
+            close (unit)
+            call execute_command_line('"'//trim(executable)//'" b2.in b2.nc', &
+                                      exitstat=exit_status)
+            if (exit_status /= 0) error stop 'per-label driver run failed'
+            call nc%open('b2.nc')
+            call nc%read_real_1d('lambda_off', offset)
+            call nc%read_real_1d('lambda_off_per_label', per_label)
+            call nc%read_real_2d('lambda_off_line', line)
+            call nc%read_int_2d('status_line', st)
+            call nc%read_global_attribute('coefficient_construction', attr)
+            call nc%close()
+            if (trim(attr) /= 'per_label') error stop 'construction attribute missing'
+            if (any(st /= 0)) error stop 'per-label status'
+            if (maxval(abs(offset - plain)) > 1.e-14_dp*maxval(abs(plain))) &
+                error stop 'B1 lambda_off changed by per-label input'
+            do ic = 1, ncase
+                if (abs(per_label(ic) - sum(line(ic, :))/real(nl, dp)) > &
+                    1.e-14_dp*abs(per_label(ic))) error stop 'per-label mean'
+                if (pass == 1) then
+                  if (maxval(abs(line(ic, :) - plain(ic))) > 1.e-12_dp*abs(plain(ic))) &
+                        error stop 'identical labels must reproduce B1'
+                else if (zero_precession(ic) == 0 .and. &
+                         abs(per_label(ic) - plain(ic)) < 1.e-8_dp*abs(plain(ic))) then
+                    error stop 'spread labels did not change B2'
+                end if
+            end do
+        end do
+    end subroutine check_per_label_driver
+
     subroutine assert_close(actual, reference, relative_tolerance)
         real(dp), intent(in) :: actual, reference, relative_tolerance
         if (.not. ieee_is_finite(actual)) error stop 'non-finite driver result'

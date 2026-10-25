@@ -38,6 +38,12 @@ module netcdf_mod
         procedure :: add_attr => netcdf_add_attr
         procedure :: read_attr => netcdf_read_attr
         procedure :: add_int_1d => netcdf_add_int_1d
+        procedure :: add_real_2d => netcdf_add_real_2d
+        procedure :: add_int_2d => netcdf_add_int_2d
+        procedure :: write_real_2d => netcdf_write_real_2d
+        procedure :: write_int_2d => netcdf_write_int_2d
+        procedure :: read_real_2d => netcdf_read_real_2d
+        procedure :: read_int_2d => netcdf_read_int_2d
         procedure :: end_define => netcdf_end_define
         procedure :: write_real => netcdf_write_real
         procedure :: write_real_1d => netcdf_write_real_1d
@@ -372,6 +378,125 @@ contains
         call check_netcdf_status(status, &
                                  "writing integer array: "//var_name)
     end subroutine netcdf_write_int_1d
+
+    function netcdf_find_dim(this, dim_name) result(dim_id)
+        class(netcdf_t), intent(in) :: this
+        character(len=*), intent(in) :: dim_name
+        integer :: dim_id, j
+
+        dim_id = -1
+        do j = 1, this%n_dims
+            if (trim(this%dims(j)%name) == trim(dim_name)) then
+                dim_id = this%dims(j)%dim_id
+                exit
+            end if
+        end do
+        if (dim_id == -1) error stop "Dimension not found: "//dim_name
+    end function netcdf_find_dim
+
+    function netcdf_find_var(this, var_name) result(var_id)
+        class(netcdf_t), intent(in) :: this
+        character(len=*), intent(in) :: var_name
+        integer :: var_id, i
+
+        var_id = -1
+        do i = 1, this%n_vars
+            if (trim(this%vars(i)%name) == trim(var_name)) then
+                var_id = this%vars(i)%var_id
+                exit
+            end if
+        end do
+        if (var_id == -1) error stop "Variable not found: "//var_name
+    end function netcdf_find_var
+
+    subroutine netcdf_add_2d(this, var_name, dim1, dim2, xtype)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2
+        integer, intent(in) :: xtype
+        integer :: status, var_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open"
+        if (.not. this%in_define_mode) error stop "Not in define mode"
+        if (this%n_vars >= max_vars) error stop "Maximum number of variables exceeded"
+        status = nf90_def_var(this%ncid, var_name, xtype, &
+                              [netcdf_find_dim(this, dim1), &
+                               netcdf_find_dim(this, dim2)], var_id)
+        call check_netcdf_status(status, "defining variable: "//var_name)
+        this%n_vars = this%n_vars + 1
+        this%vars(this%n_vars)%name = var_name
+        this%vars(this%n_vars)%var_id = var_id
+    end subroutine netcdf_add_2d
+
+    subroutine netcdf_add_real_2d(this, var_name, dim1, dim2)
+        use netcdf, only: NF90_DOUBLE
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2
+        call netcdf_add_2d(this, var_name, dim1, dim2, NF90_DOUBLE)
+    end subroutine netcdf_add_real_2d
+
+    subroutine netcdf_add_int_2d(this, var_name, dim1, dim2)
+        use netcdf, only: NF90_INT
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name, dim1, dim2
+        call netcdf_add_2d(this, var_name, dim1, dim2, NF90_INT)
+    end subroutine netcdf_add_int_2d
+
+    subroutine netcdf_write_real_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :), intent(in) :: value
+        integer :: status
+
+        if (.not. this%is_open) error stop "NetCDF file not open for writing"
+        if (this%in_define_mode) call this%end_define()
+        status = nf90_put_var(this%ncid, netcdf_find_var(this, var_name), value)
+        call check_netcdf_status(status, "writing 2D array variable: "//var_name)
+    end subroutine netcdf_write_real_2d
+
+    subroutine netcdf_write_int_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        integer, dimension(:, :), intent(in) :: value
+        integer :: status
+
+        if (.not. this%is_open) error stop "NetCDF file not open for writing"
+        if (this%in_define_mode) call this%end_define()
+        status = nf90_put_var(this%ncid, netcdf_find_var(this, var_name), value)
+        call check_netcdf_status(status, "writing 2D integer array: "//var_name)
+    end subroutine netcdf_write_int_2d
+
+    subroutine netcdf_read_real_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        real(dp), dimension(:, :), intent(out) :: value
+        integer :: status, var_id
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+        status = nf90_get_var(this%ncid, var_id, value)
+        call check_netcdf_status(status, "reading 2D array: "//var_name)
+    end subroutine netcdf_read_real_2d
+
+    subroutine netcdf_read_int_2d(this, var_name, value)
+        use netcdf
+        class(netcdf_t), intent(inout) :: this
+        character(len=*), intent(in) :: var_name
+        integer, dimension(:, :), intent(out) :: value
+        integer :: status, var_id
+        integer :: buffer(size(value))
+
+        if (.not. this%is_open) error stop "NetCDF file not open for reading"
+        status = nf90_inq_varid(this%ncid, var_name, var_id)
+        call check_netcdf_status(status, "finding variable: "//var_name)
+        status = nf90_get_var(this%ncid, var_id, buffer)
+        value = reshape(buffer, shape(value))
+        call check_netcdf_status(status, "reading 2D integer array: "//var_name)
+    end subroutine netcdf_read_int_2d
 
     subroutine netcdf_close(this)
         use netcdf

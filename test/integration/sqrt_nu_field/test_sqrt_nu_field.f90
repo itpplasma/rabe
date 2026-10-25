@@ -60,7 +60,54 @@ program test_sqrt_nu_field
                 sum(most_lines%g_modes(:, 1)*most_lines%iv_eta_b)
     call check_refinement(abs(anchor_32 - anchor_16), abs(anchor_64 - anchor_32), &
                           abs(anchor_64), 'fieldlines16/32/64')
+    call check_label_independence()
 contains
+    ! B2 limiting case: for an exactly label-independent QI field every label has
+    ! the same tau_b and tau_d, so the per-label mean equals the B1 offset.
+    subroutine check_label_independence()
+        type(anti_sigma_field_t) :: qi
+        type(flock_of_fieldlines_t) :: qi_flock
+        type(sqrt_nu_geometry_t) :: geo
+        type(sqrt_nu_result_t) :: line_result
+        real(dp) :: b1, b2, omega(33), diffusion(33), dIv(33, 2), gsyn(2)
+        integer :: k, n
+
+        call qi%anti_sigma_field_init(0.0_dp, 1.0_dp, 1.0_dp, -0.2_dp, 0.0_dp)
+        call make_flock_of_fieldlines(qi_flock, 16, 0.5_dp, qi, 0.0_dp, 1.0_dp, 1.0_dp)
+        call compute_sqrt_nu_geometry(qi, qi_flock, 3.0_dp, 1.0_dp, 1, 1.0_dp, &
+                                      nu_star, 33, 2, 0.001_dp, geo)
+        n = size(geo%tau_d_per_nu_line)
+        if (any(shape(geo%tau_b_line) /= [33, n])) error stop 'tau_b_line shape'
+        if (maxval(abs(sum(geo%tau_b_line, dim=2)/real(n, dp) - geo%tau_b)) > &
+            1.e-14_dp*maxval(geo%tau_b)) error stop 'tau_b_line mean is not tau_b'
+        if (abs(sum(geo%tau_d_per_nu_line)/real(n, dp) - geo%tau_d_per_nu(1)) > &
+            1.e-14_dp*geo%tau_d_per_nu(1)) error stop 'tau_d_line mean is not tau_d'
+        omega = 0.05_dp
+        ! An exact QI field has zero true drift, so supply a nonzero synthetic dI_V/deta
+        ! to make the B1 and B2 offsets nonzero; only the tau tables come from the field.
+        dIv(:, 1) = 1.0_dp + geo%eta
+        dIv(:, 2) = -0.5_dp*geo%eta
+        gsyn = [2.0_dp, 3.0_dp]
+        call evaluate_sqrt_nu_modes(geo%eta, geo%tau_b, nu_star(1)*geo%tau_d_per_nu, &
+                                    omega, dIv, gsyn, &
+                                    0.5_dp, line_result)
+        if (line_result%status /= 0) error stop 'label-independent B1 failed'
+        b1 = line_result%lambda_off
+        b2 = 0.0_dp
+        do k = 1, n
+            diffusion = nu_star(1)*geo%tau_d_per_nu_line(k)
+            call evaluate_sqrt_nu_modes(geo%eta, geo%tau_b_line(:, k), &
+                                        diffusion, omega, dIv, gsyn, &
+                                        0.5_dp, line_result)
+            if (line_result%status /= 0) error stop 'label-independent B2 failed'
+            b2 = b2 + line_result%lambda_off/real(n, dp)
+        end do
+        if (abs(b1) < 1.e-8_dp) error stop 'label-independent offset is vacuously zero'
+        print *, 'label-independent B1, B2, rel diff: ', b1, b2, &
+            abs(b2 - b1)/max(abs(b1), 1.e-300_dp)
+        if (abs(b2 - b1) > 1.e-12_dp*abs(b1)) error stop 'B2 /= B1 for QI field'
+    end subroutine check_label_independence
+
     subroutine check_reference_origin()
         use constants, only: pi
         use field_checks, only: suspect_omnigenous_origin_not_minimum
