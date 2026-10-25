@@ -19,8 +19,11 @@ module sqrt_nu_geometry_mod
 
     type :: sqrt_nu_geometry_t
         real(dp), allocatable :: eta(:), tau_b(:), tau_d_per_nu(:)
+        ! Per-label coefficients for the B2 construction: tau_b_line(eta,line)
+        ! and tau_d_per_nu_line(line); their label means are tau_b, tau_d_per_nu.
+        real(dp), allocatable :: tau_b_line(:, :), tau_d_per_nu_line(:)
         real(dp), allocatable :: dIv_deta(:, :), iv_deep(:), &
-            iv_transition(:), iv_eta_b(:)
+                                 iv_transition(:), iv_eta_b(:)
         real(dp), allocatable :: g_modes(:, :)
         real(dp) :: normalization, eta_b, eta_c, eta_t, endpoint_cutoff
     end type sqrt_nu_geometry_t
@@ -69,7 +72,7 @@ contains
         data%eta_c = 1.0_dp/minval(flock%fieldlines%B_max(1))
         do iline = 1, nline
             call find_local_minima(b_along_line, &
-                flock%fieldlines(iline)%phi_max, minima)
+                                   flock%fieldlines(iline)%phi_max, minima)
             if (size(minima) /= 1) &
                 error stop 'sqrt_nu_geometry: exactly one minimum per well is required'
             allocate (values(size(minima)))
@@ -85,6 +88,7 @@ contains
         width = data%eta_t - data%eta_c
         data%endpoint_cutoff = cutoff*width
         allocate (data%eta(n_eta), data%tau_b(n_eta), data%tau_d_per_nu(n_eta))
+        allocate (data%tau_b_line(n_eta, nline), data%tau_d_per_nu_line(nline))
         allocate (data%dIv_deta(n_eta, n_mode), data%iv_deep(n_mode))
         allocate (data%iv_transition(n_mode), data%iv_eta_b(n_mode))
         allocate (data%g_modes(n_mode, size(nu_star)))
@@ -94,12 +98,15 @@ contains
         ! not assert the unconfirmed extrapolation 2*eta*I_j(eta)/l_c away from it.
         I_j = cov*sum(flock%fieldlines%integral_lambda_b_over_B_squared)/real(nline, dp)
         data%tau_d_per_nu = 4.0_dp*data%eta_b*I_j/(pi*R)
+        data%tau_d_per_nu_line = 4.0_dp*data%eta_b*cov* &
+                                flock%fieldlines%integral_lambda_b_over_B_squared/(pi*R)
         data%tau_b = 0.0_dp
         do j = 1, n_eta
             pitch = data%eta(j)
             do iline = 1, nline
                 call trapped_interval(lo, hi)
                 call integrate_1d_substituted(bounce_integrand, lo, hi, value)
+                data%tau_b_line(j, iline) = value
                 data%tau_b(j) = data%tau_b(j) + value/real(nline, dp)
                 call integrate_1d_substituted(iv_integrand, lo, hi, line_iv(iline))
             end do
@@ -120,16 +127,22 @@ contains
             l_c = pi*R/(2.0_dp*nu_star(inu))
             do m = 1, n_mode
                 call e77_boundary_pointwise(data%eta_b, flock%I_ref, l_c, &
-                    modes%delta_aspect_ratio%cos_coeffs(m + 1), &
-                    modes%delta_eta%cos_coeffs(m + 1), &
-                    S_A(flock%iota_p*real(m, dp)), &
-                    S_B(flock%iota_p*real(m, dp)), average%B_squared, &
-                    average%lambda_b, dr_dAtheta, average%normalization, &
-                    data%g_modes(m, inu), data%normalization, dg_dlc)
+                                           modes%delta_aspect_ratio%cos_coeffs(m + 1), &
+                                            modes%delta_eta%cos_coeffs(m + 1), &
+                                            S_A(flock%iota_p*real(m, dp)), &
+                                     S_B(flock%iota_p*real(m, dp)), average%B_squared, &
+                                  average%lambda_b, dr_dAtheta, average%normalization, &
+                                       data%g_modes(m, inu), data%normalization, dg_dlc)
             end do
         end do
         if (.not. all(ieee_is_finite(data%tau_b))) &
             error stop 'sqrt_nu_geometry: nonfinite bounce integral'
+        if (.not. all(ieee_is_finite(data%tau_b_line)) .or. &
+            .not. all(ieee_is_finite(data%tau_d_per_nu_line))) &
+            error stop 'sqrt_nu_geometry: nonfinite per-line coefficient'
+        if (any(data%tau_b_line <= 0.0_dp) .or. &
+            any(data%tau_d_per_nu_line <= 0.0_dp)) &
+            error stop 'sqrt_nu_geometry: nonpositive per-line coefficient'
     contains
         subroutine b_along_line(phi, b)
             real(dp), intent(in) :: phi(:)
@@ -161,8 +174,8 @@ contains
                 ! Move inside by a bounded roundoff guard. The coordinate
                 ! omission is explicit and much smaller than the pitch cutoff.
                 inside = inside + sign(1.e-12_dp* &
-                    (flock%fieldlines(iline)%phi_max(2) - &
-                     flock%fieldlines(iline)%phi_max(1)), phi_min(iline) - inside)
+                                       (flock%fieldlines(iline)%phi_max(2) - &
+                           flock%fieldlines(iline)%phi_max(1)), phi_min(iline) - inside)
                 if (side == 1) left = inside
                 if (side == 2) right = inside
             end do
@@ -181,7 +194,7 @@ contains
             real(dp), intent(in) :: phi
             real(dp) :: integrand
             integrand = local_radial_drift(field, &
-                flock%fieldlines(iline)%get_theta(phi), phi, pitch)
+                                     flock%fieldlines(iline)%get_theta(phi), phi, pitch)
         end function iv_integrand
     end subroutine compute_sqrt_nu_geometry
 end module sqrt_nu_geometry_mod

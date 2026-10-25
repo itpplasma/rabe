@@ -198,6 +198,20 @@ Following the boundary-frozen form of FEdef, the regular diffusion product is
 held at `tau_d/nu_star=4*eta_b*mean(I_j(eta_b))/(pi*R)`, with
 `I_j=(B_phi+iota*B_theta)*I_B` and the existing field-line `I_B` integrals.
 This avoids assuming an unconfirmed eta dependence away from the boundary.
+
+### Per-label coefficients (B2)
+
+The default `coefficient_construction='line_average'` (B1) solves the mode
+problem once with the label means above. Setting
+`coefficient_construction='per_label'` in `sqrt_nu_field_config` also writes
+`tau_b_line(eta,line)` and `tau_d_per_nu_line(line)` (namelist group
+`sqrt_nu_per_label`, with its size in `sqrt_nu_per_label_size`). `sqrt_nu_rabe.x`
+then solves the same problem for every label with its own coefficients and writes
+`lambda_off_per_label(case)` (the label mean), `lambda_off_line(case,line)` and
+`status_line(case,line)`. `lambda_off` stays the B1 value, and any nonzero line
+status makes the case status nonzero. Without the key, the input and output files
+are unchanged. The difference B2-B1 is second order in the label spread of the
+coefficients and serves as a construction-spread estimate, not a bound.
 It remains a model choice, distinct from the numerical pitch discretization.
 
 The pitch grid spans `eta_c+cutoff*(eta_t-eta_c)` to

@@ -67,3 +67,5 @@ add_subdirectory(sqrt_nu)
 add_subdirectory(sqrt_nu_driver)
 
 add_subdirectory(sqrt_nu_field)
+
+add_subdirectory(sd22_f1)

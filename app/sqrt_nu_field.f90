@@ -24,6 +24,9 @@ program sqrt_nu_field
     real(dp), allocatable :: normalization(:), iv_deep(:, :)
     real(dp), allocatable :: iv_transition(:, :), iv_eta_b(:, :)
     character(len=1024) :: geometry_source
+    character(len=32) :: coefficient_construction = 'line_average'
+    integer :: n_line = 0
+    real(dp), allocatable :: tau_b_line(:, :, :), tau_d_per_nu_line(:, :)
     character(len=128) :: normalization_convention = &
                           'native RABE effective-radius gradient'
     character(len=128) :: precession_radius_convention = &
@@ -38,7 +41,7 @@ program sqrt_nu_field
     namelist /sqrt_nu_field_config/ field_file, field_type, s_tor, nu_star, v_E_star, &
         radius_dkes, speed, M_pol, N_tor, max_n_fieldlines, sign_sqrtg, &
         endpoint_cutoff, reference_origin_theta, reference_origin_phi, &
-        magnetic_drift_included
+        magnetic_drift_included, coefficient_construction
     namelist /sqrt_nu_config/ s_tor, nu_star, v_E_star, eta, &
         tau_b_seconds, tau_d_per_nu, &
         omega_theta_per_vE, dIv_deta, g_modes, normalization, magnetic_drift_included, &
@@ -46,6 +49,11 @@ program sqrt_nu_field
         geometry_source, normalization_convention, precession_radius_convention, &
         particle_speed, radius_dkes, endpoint_cutoff_fraction, &
         reference_origin_theta, reference_origin_phi
+    ! Written only for coefficient_construction = 'per_label' (B2), so the
+    ! default (B1) input file stays byte-identical.
+    namelist /sqrt_nu_per_label_size/ n_line
+    namelist /sqrt_nu_per_label/ tau_b_line, tau_d_per_nu_line, &
+        coefficient_construction
 
     if (command_argument_count() > 0) call get_command_argument(1, input_file)
     if (command_argument_count() > 1) call get_command_argument(2, output_file)
@@ -65,6 +73,9 @@ program sqrt_nu_field
     close (unit)
     if (ios /= 0) error stop 'sqrt_nu_field: invalid field config'
     if (magnetic_drift_included) error stop 'sqrt_nu_field: magnetic drift unsupported'
+    if (trim(coefficient_construction) /= 'line_average' .and. &
+        trim(coefficient_construction) /= 'per_label') &
+        error stop 'sqrt_nu_field: unknown coefficient_construction'
     if (.not. all(ieee_is_finite(radius_dkes))) &
         error stop 'sqrt_nu_field: missing DKES radii'
     if (any(radius_dkes <= 0.0_dp)) &
@@ -100,6 +111,15 @@ program sqrt_nu_field
             error stop 'sqrt_nu_field: split maxima outside supported well'
         call compute_sqrt_nu_geometry(field, flock, field%R, field%psi_tor_edge, &
                        sign_sqrtg, speed, nu_star, n_eta, n_mode, endpoint_cutoff, data)
+        if (is == 1) then
+            n_line = size(data%tau_d_per_nu_line)
+            allocate (tau_b_line(n_eta, n_line, n_surface))
+            allocate (tau_d_per_nu_line(n_line, n_surface))
+        end if
+        if (size(data%tau_d_per_nu_line) /= n_line) &
+            error stop 'sqrt_nu_field: line count changes between surfaces'
+        tau_b_line(:, :, is) = data%tau_b_line
+        tau_d_per_nu_line(:, is) = data%tau_d_per_nu_line
         eta(:, is) = data%eta
         tau_b_seconds(:, is) = data%tau_b
         tau_d_per_nu(:, is) = data%tau_d_per_nu
@@ -119,5 +139,9 @@ program sqrt_nu_field
     open (newunit=unit, file=trim(output_file), status='replace', action='write')
     write (unit, nml=sqrt_nu_sizes)
     write (unit, nml=sqrt_nu_config)
+    if (trim(coefficient_construction) == 'per_label') then
+        write (unit, nml=sqrt_nu_per_label_size)
+        write (unit, nml=sqrt_nu_per_label)
+    end if
     close (unit)
 end program sqrt_nu_field

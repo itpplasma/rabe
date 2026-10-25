@@ -28,9 +28,21 @@ program sqrt_nu_rabe
     integer, allocatable :: zero_precession(:), case_index(:), mode_index(:), valid(:)
     integer :: unit, ios, is, inu, ie, im, icase, sample, ncase, nsample
     real(dp) :: nan_value
+    ! Optional B2 (per-label) coefficients; absent in B1 input.
+    integer :: n_line = 0, iline
+    logical :: per_label
+    character(len=32) :: coefficient_construction = 'line_average'
+    real(dp), allocatable :: tau_b_line(:, :, :), tau_d_per_nu_line(:, :)
+    real(dp), allocatable :: lambda_off_per_label(:), lambda_off_line(:, :)
+    integer, allocatable :: status_line(:, :)
+    type(sqrt_nu_result_t) :: line_result
+    real(dp), allocatable :: tau_d_line(:)
     type(sqrt_nu_result_t) :: result
     type(netcdf_t) :: nc
     namelist /sqrt_nu_sizes/ n_surface, n_eta, n_mode, n_nu, n_vE
+    namelist /sqrt_nu_per_label_size/ n_line
+    namelist /sqrt_nu_per_label/ tau_b_line, tau_d_per_nu_line, &
+        coefficient_construction
     namelist /sqrt_nu_config/ s_tor, nu_star, v_E_star, eta, tau_b_seconds, &
         tau_d_per_nu, omega_theta_per_vE, dIv_deta, g_modes, normalization, &
         magnetic_drift_included, eta_units, iv_units, iv_deep, &
@@ -72,8 +84,9 @@ program sqrt_nu_rabe
     particle_speed = nan_value
     endpoint_cutoff_fraction = nan_value
     read (unit, nml=sqrt_nu_config, iostat=ios)
-    close (unit)
     if (ios /= 0) error stop 'sqrt_nu_rabe: invalid sqrt_nu_config'
+    call read_per_label()
+    close (unit)
     if (magnetic_drift_included) &
         error stop 'sqrt_nu_rabe: magnetic precession is outside the SD2.2 model'
     if (.not. all(ieee_is_finite(s_tor))) error stop 'sqrt_nu_rabe: invalid s_tor'
@@ -88,6 +101,11 @@ program sqrt_nu_rabe
     allocate (flux(nsample), lambda_mode(nsample), fe(nsample), action(nsample))
     allocate (g_out(nsample), case_index(nsample), mode_index(nsample), valid(nsample))
     allocate (e77_anchor(ncase), transition_out(nsample), boundary_out(nsample))
+    if (per_label) then
+        allocate (tau_d_line(n_eta))
+        allocate (lambda_off_per_label(ncase), lambda_off_line(ncase, n_line))
+        allocate (status_line(ncase, n_line))
+    end if
     icase = 0
     sample = 0
     do is = 1, n_surface
@@ -110,6 +128,29 @@ program sqrt_nu_rabe
                 zero_precession(icase) = merge(1, 0, result%zero_precession)
                 lambda_off(icase) = nan_value
                 if (result%status == 0) lambda_off(icase) = result%lambda_off
+                if (per_label) then
+                    do iline = 1, n_line
+                        tau_d_line = nu_star(inu)*tau_d_per_nu_line(iline, is)
+                        call evaluate_sqrt_nu_modes(eta(:, is), &
+                                                    tau_b_line(:, iline, is), &
+                                                    tau_d_line, &
+                           v_E_star(ie)*omega_theta_per_vE(:, is), dIv_deta(:, :, is), &
+                                               g_modes(:, inu, is), normalization(is), &
+                                                    line_result, &
+                                                magnetic_drift_included, iv_deep(:, is))
+                        status_line(icase, iline) = line_result%status
+                        lambda_off_line(icase, iline) = nan_value
+                        if (line_result%status == 0) &
+                            lambda_off_line(icase, iline) = line_result%lambda_off
+                    end do
+                    lambda_off_per_label(icase) = nan_value
+                    if (all(status_line(icase, :) == 0)) &
+                        lambda_off_per_label(icase) = sum(lambda_off_line(icase, :))/ &
+                                                      real(n_line, dp)
+                    ! No line is dropped: any failing line fails the case.
+                    if (status(icase) == 0 .and. any(status_line(icase, :) /= 0)) &
+                        status(icase) = maxval(status_line(icase, :))
+                end if
                 do im = 1, n_mode
                     sample = sample + 1
                     case_index(sample) = icase
@@ -141,6 +182,8 @@ program sqrt_nu_rabe
     call nc%add_global_attribute('normalization_radius', trim(normalization_convention))
     call nc%add_global_attribute('precession_radius', &
                                  trim(precession_radius_convention))
+    if (per_label) call nc%add_global_attribute('coefficient_construction', &
+                                                trim(coefficient_construction))
     call nc%add_global_attribute('definition', &
                                  'lambda_off=sum_m '// &
                        'normalization*g_m*(gamma_s(deep)*Iv_deep-integral gamma_s*dIv)')
@@ -160,6 +203,7 @@ program sqrt_nu_rabe
     call nc%def_dim('electric_field', n_vE)
     call nc%def_dim('case', ncase)
     call nc%def_dim('mode_sample', nsample)
+    if (per_label) call nc%def_dim('line', n_line)
     call real_variable('s_tor', 'surface', '1', 'normalized toroidal flux')
     call real_variable('radius_dkes', 'surface', 'm', 'Supplied precession radius')
     call nc%add_real('particle_speed')
@@ -189,6 +233,18 @@ program sqrt_nu_rabe
                        'log-model A_m')
     call real_variable('g_mode', 'mode_sample', 'caller supplied', &
                        'E77 boundary-layer harmonic for this collisionality')
+    if (per_label) then
+        call real_variable('lambda_off_per_label', 'case', '1', &
+                           'B2: label mean of lambda_off with per-label tau_b,tau_d')
+        call nc%add_real_2d('lambda_off_line', 'case', 'line')
+        call nc%add_attr('lambda_off_line', 'units', '1')
+        call nc%add_attr('lambda_off_line', 'long_name', &
+                         'B2: lambda_off with the coefficients of one label')
+        call nc%add_int_2d('status_line', 'case', 'line')
+        call nc%add_attr('status_line', 'units', '1')
+        call nc%add_attr('status_line', 'long_name', &
+                         'status of the per-label solve; nonzero fails the case')
+    end if
     call integer_variable('surface_index', 'case', 'one-based index into s_tor')
     call integer_variable('nu_index', 'case', 'one-based index into nu_star')
     call integer_variable('vE_index', 'case', 'one-based index into v_E_star')
@@ -209,6 +265,11 @@ program sqrt_nu_rabe
     call nc%write_real_1d('nu_star', nu_star)
     call nc%write_real_1d('v_E_star', v_E_star)
     call nc%write_real_1d('lambda_off', lambda_off)
+    if (per_label) then
+        call nc%write_real_1d('lambda_off_per_label', lambda_off_per_label)
+        call nc%write_real_2d('lambda_off_line', lambda_off_line)
+        call nc%write_int_2d('status_line', status_line)
+    end if
     call nc%write_real_1d('lambda_E77_anchor', e77_anchor)
     call nc%write_real_1d('Iv_transition_mode', transition_out)
     call nc%write_real_1d('Iv_eta_b_mode', boundary_out)
@@ -228,6 +289,29 @@ program sqrt_nu_rabe
     call nc%close()
 
 contains
+
+    ! Reads the optional B2 groups; sets per_label. B1 input has neither group.
+    subroutine read_per_label()
+        integer :: ios_b2
+        per_label = .false.
+        n_line = 0
+        rewind (unit)
+        read (unit, nml=sqrt_nu_per_label_size, iostat=ios_b2)
+        if (ios_b2 /= 0 .or. n_line < 1) return
+        allocate (tau_b_line(n_eta, n_line, n_surface))
+        allocate (tau_d_per_nu_line(n_line, n_surface))
+        tau_b_line = nan_value
+        tau_d_per_nu_line = nan_value
+        rewind (unit)
+        read (unit, nml=sqrt_nu_per_label, iostat=ios_b2)
+        if (ios_b2 /= 0) error stop 'sqrt_nu_rabe: invalid sqrt_nu_per_label'
+        if (trim(coefficient_construction) /= 'per_label') &
+            error stop 'sqrt_nu_rabe: unexpected coefficient_construction'
+        if (.not. all(ieee_is_finite(tau_b_line)) .or. &
+            .not. all(ieee_is_finite(tau_d_per_nu_line))) &
+            error stop 'sqrt_nu_rabe: nonfinite per-label coefficients'
+        per_label = .true.
+    end subroutine read_per_label
 
     subroutine real_variable(name, dimension, units, description)
         character(len=*), intent(in) :: name, dimension, units, description

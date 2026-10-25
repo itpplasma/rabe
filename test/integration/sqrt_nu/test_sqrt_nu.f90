@@ -116,6 +116,7 @@ program test_sqrt_nu
                                shifted, ignored1, ignored2)
     if (abs((shifted - bounce)/1.0e-6_dp - dbounce_deta) > 1.0e-5_dp) &
         error stop 'bounce derivative in pitch'
+    call check_label_spread_slope()
     call get_command_argument(1, arg)
     if (trim(arg) == '--reference-output') then
         do j = 1, 3
@@ -134,4 +135,44 @@ program test_sqrt_nu
         end do
     end if
     print *, 'sqrt(nu) exact, E77, symmetry, convergence and domain checks passed'
+contains
+    ! B2 versus B1 (SD2.2 v3 section 5, test c). With per-label bounce times
+    ! tau_k = tau_bar*(1 + eps*c_k), sum c_k = 0, the label mean of the offset
+    ! minus the offset of the mean coefficient is second order in eps (Jensen),
+    ! so the log-log slope over eps = 1e-2, 1e-3 must be 2 +- 0.05.
+    subroutine check_label_spread_slope()
+        integer, parameter :: m = 2049, nl = 4
+        real(dp), parameter :: c(nl) = [1.0_dp, -0.6_dp, 0.25_dp, -0.65_dp]
+        real(dp) :: x(m), tbar(m), d(m), w(m), dv(m, 2), gm(2), spread(2)
+        real(dp) :: eps(2) = [1.0e-2_dp, 1.0e-3_dp], b1, b2, slope
+        type(sqrt_nu_result_t) :: r
+        integer :: i, k
+
+        do i = 1, m
+            x(i) = real(i - 1, dp)/real(m - 1, dp)
+        end do
+        tbar = 1.0_dp + 0.5_dp*x
+        d = 1.0_dp
+        w = 400.0_dp
+        dv(:, 1) = -1.0_dp
+        dv(:, 2) = -2.0_dp
+        gm = [2.0_dp, 3.0_dp]
+        if (abs(sum(c)) > 1.0e-15_dp) error stop 'label spread must have zero mean'
+        do i = 1, 2
+            call evaluate_sqrt_nu_modes(x, tbar, d, w, dv, gm, 0.5_dp, r)
+            if (r%status /= 0) error stop 'label spread B1 status'
+            b1 = r%lambda_off
+            b2 = 0.0_dp
+            do k = 1, nl
+                call evaluate_sqrt_nu_modes(x, tbar*(1.0_dp + eps(i)*c(k)), d, w, &
+                                            dv, gm, 0.5_dp, r)
+                if (r%status /= 0) error stop 'label spread B2 status'
+                b2 = b2 + r%lambda_off/real(nl, dp)
+            end do
+            spread(i) = abs(b2 - b1)
+        end do
+        slope = log(spread(1)/spread(2))/log(eps(1)/eps(2))
+        print *, 'B2-B1 spread at eps 1e-2, 1e-3 and slope: ', spread, slope
+        if (abs(slope - 2.0_dp) > 0.05_dp) error stop 'B2-B1 Jensen slope not 2'
+    end subroutine check_label_spread_slope
 end program test_sqrt_nu
