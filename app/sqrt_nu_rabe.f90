@@ -14,6 +14,7 @@ program sqrt_nu_rabe
     character(len=128) :: normalization_convention = 'caller supplied'
     character(len=128) :: precession_radius_convention = 'caller supplied'
     real(dp) :: particle_speed, endpoint_cutoff_fraction
+    real(dp) :: reference_origin_theta = 0.0_dp, reference_origin_phi = 0.0_dp
     real(dp), allocatable :: radius_dkes(:)
     real(dp), allocatable :: s_tor(:), nu_star(:), v_E_star(:), normalization(:)
     real(dp), allocatable :: eta(:, :), tau_b_seconds(:, :), tau_d_per_nu(:, :)
@@ -35,7 +36,8 @@ program sqrt_nu_rabe
         magnetic_drift_included, eta_units, iv_units, iv_deep, &
         iv_transition, iv_eta_b, &
         geometry_source, normalization_convention, precession_radius_convention, &
-        particle_speed, radius_dkes, endpoint_cutoff_fraction
+        particle_speed, radius_dkes, endpoint_cutoff_fraction, &
+        reference_origin_theta, reference_origin_phi
 
     if (command_argument_count() > 0) call get_command_argument(1, input_file)
     if (command_argument_count() > 1) call get_command_argument(2, output_file)
@@ -93,10 +95,10 @@ program sqrt_nu_rabe
             do ie = 1, n_vE
                 icase = icase + 1
                 call evaluate_sqrt_nu_modes(eta(:, is), tau_b_seconds(:, is), &
-                    nu_star(inu)*tau_d_per_nu(:, is), &
-                    v_E_star(ie)*omega_theta_per_vE(:, is), dIv_deta(:, :, is), &
-                    g_modes(:, inu, is), normalization(is), result, &
-                    magnetic_drift_included, iv_deep(:, is))
+                                            nu_star(inu)*tau_d_per_nu(:, is), &
+                           v_E_star(ie)*omega_theta_per_vE(:, is), dIv_deta(:, :, is), &
+                                       g_modes(:, inu, is), normalization(is), result, &
+                                            magnetic_drift_included, iv_deep(:, is))
                 surface_index(icase) = is
                 nu_index(icase) = inu
                 vE_index(icase) = ie
@@ -140,19 +142,19 @@ program sqrt_nu_rabe
     call nc%add_global_attribute('precession_radius', &
                                  trim(precession_radius_convention))
     call nc%add_global_attribute('definition', &
-        'lambda_off=sum_m '// &
-        'normalization*g_m*(gamma_s(deep)*Iv_deep-integral gamma_s*dIv)')
+                                 'lambda_off=sum_m '// &
+                       'normalization*g_m*(gamma_s(deep)*Iv_deep-integral gamma_s*dIv)')
     call nc%add_global_attribute('scope', &
-        'Tabulated geometry and normalization; no finite-Er benchmark claim')
+                   'Tabulated geometry and normalization; no finite-Er benchmark claim')
     call nc%add_global_attribute('precession', &
-        'Electric drift only; Omega_theta = v_E_star*omega_theta_per_vE [s-1]')
+                 'Electric drift only; Omega_theta = v_E_star*omega_theta_per_vE [s-1]')
     call nc%add_global_attribute('Omega_hat_convention', &
-        'Omega_hat=Omega_theta/v=-v_E_star/r for positive '// &
-        'v_E_star=c*Er/(v*Bref)')
+                                 'Omega_hat=Omega_theta/v=-v_E_star/r for positive '// &
+                                 'v_E_star=c*Er/(v*Bref)')
     call nc%add_global_attribute('magnetic_drift_included', 'false; true is rejected')
     call nc%add_global_attribute('validity', &
-        'valid_wkb tests numerical action and resolution, not the full '// &
-        'physics domain')
+                    'valid_wkb tests numerical action and resolution, not the full '// &
+                                 'physics domain')
     call nc%def_dim('surface', n_surface)
     call nc%def_dim('collisionality', n_nu)
     call nc%def_dim('electric_field', n_vE)
@@ -162,41 +164,47 @@ program sqrt_nu_rabe
     call real_variable('radius_dkes', 'surface', 'm', 'Supplied precession radius')
     call nc%add_real('particle_speed')
     call nc%add_attr('particle_speed', 'units', 'm s-1')
+    call nc%add_real('reference_origin_theta')
+    call nc%add_attr('reference_origin_theta', 'units', 'rad')
+    call nc%add_real('reference_origin_phi')
+    call nc%add_attr('reference_origin_phi', 'units', 'rad')
     call nc%add_real('endpoint_cutoff_fraction')
     call nc%add_attr('endpoint_cutoff_fraction', 'units', '1')
     call real_variable('nu_star', 'collisionality', '1', 'pi*R/(2*mean_free_path)')
     call real_variable('v_E_star', 'electric_field', '1', 'signed c*Er/(v*Bref)')
     call real_variable('lambda_off', 'case', '1', 'sum of lambda_mode over harmonics')
     call real_variable('lambda_E77_anchor', 'case', '1', &
-        'Independent E77 anchor from supplied I_V(eta_b), NaN if unavailable')
+                  'Independent E77 anchor from supplied I_V(eta_b), NaN if unavailable')
     call real_variable('Iv_transition_mode', 'mode_sample', trim(iv_units), &
                        'I_V at first pitch grid point, NaN if unavailable')
     call real_variable('Iv_eta_b_mode', 'mode_sample', trim(iv_units), &
-        'I_V at E77 eta_b; compare with Iv_transition_mode for truncation '// &
-        'sensitivity')
+                 'I_V at E77 eta_b; compare with Iv_transition_mode for truncation '// &
+                       'sensitivity')
     call real_variable('flux_mode', 'mode_sample', trim(iv_units), 'I_V^m-I_E^m')
     call real_variable('lambda_mode', 'mode_sample', '1', 'per-harmonic offset')
     call real_variable('F_E_mode', 'mode_sample', trim(eta_units), &
                        'negative integral of the WKB sine distribution')
     call real_variable('wkb_action', 'mode_sample', '1', &
-        'integral sqrt(abs(m*Omega_theta*tau_b/tau_d)) deta; not '// &
-        'log-model A_m')
+                       'integral sqrt(abs(m*Omega_theta*tau_b/tau_d)) deta; not '// &
+                       'log-model A_m')
     call real_variable('g_mode', 'mode_sample', 'caller supplied', &
                        'E77 boundary-layer harmonic for this collisionality')
     call integer_variable('surface_index', 'case', 'one-based index into s_tor')
     call integer_variable('nu_index', 'case', 'one-based index into nu_star')
     call integer_variable('vE_index', 'case', 'one-based index into v_E_star')
     call integer_variable('status', 'case', &
-        '0 success; 1 invalid input; 2 magnetic drift; 3 zero or '// &
-        'sign-changing Omega')
+                          '0 success; 1 invalid input; 2 magnetic drift; 3 zero or '// &
+                          'sign-changing Omega')
     call integer_variable('zero_precession', 'case', '1 exact E77 dispatch; 0 WKB')
     call integer_variable('case_index', 'mode_sample', 'one-based index into case')
     call integer_variable('mode_index', 'mode_sample', 'positive harmonic m')
     call integer_variable('valid_wkb', 'mode_sample', &
-        '1 action/resolution checks pass; 0 outside numerical diagnostic')
+                      '1 action/resolution checks pass; 0 outside numerical diagnostic')
     call nc%write_real_1d('s_tor', s_tor)
     call nc%write_real_1d('radius_dkes', radius_dkes)
     call nc%write_real('particle_speed', particle_speed)
+    call nc%write_real('reference_origin_theta', reference_origin_theta)
+    call nc%write_real('reference_origin_phi', reference_origin_phi)
     call nc%write_real('endpoint_cutoff_fraction', endpoint_cutoff_fraction)
     call nc%write_real_1d('nu_star', nu_star)
     call nc%write_real_1d('v_E_star', v_E_star)

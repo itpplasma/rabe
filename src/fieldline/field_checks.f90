@@ -9,7 +9,9 @@ module field_checks
 
 contains
 
-    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, retol)
+    function suspect_omnigenous_origin_not_minimum(field, N_tor, M_pol, retol, &
+                                                   reference_origin)
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
         use find_extrema, only: find_local_minima
         use find_extrema, only: find_global_extrema
         use field_base, only: field_t
@@ -19,10 +21,10 @@ contains
         use field_along_fieldline, only: B_mod_along_fieldline, dB_dphi_along_fieldline
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: N_tor, M_pol
-        real(dp), intent(in), optional :: retol
+        real(dp), intent(in), optional :: retol, reference_origin(2)
         logical :: suspect_omnigenous_origin_not_minimum
 
-        real(dp) :: iota
+        real(dp) :: iota, origin(2)
         real(dp), dimension(2) :: chi_interval, phi_interval
         type(fieldline_t) :: fieldline
         real(dp), dimension(:), allocatable :: phi, phi_error, B, dB_dphi
@@ -42,15 +44,19 @@ contains
             error stop
         end if
 
+        origin = 0.0_dp
+        if (present(reference_origin)) origin = reference_origin
+        if (.not. all(ieee_is_finite(origin))) &
+            error stop "field_checks: nonfinite reference origin"
         iota = pi
         fieldline%iota = iota
-        fieldline%phi_0 = 0.0_dp
-        fieldline%theta_0 = 0.0_dp
+        fieldline%phi_0 = origin(2)
+        fieldline%theta_0 = origin(1)
 
         suspect_omnigenous_origin_not_minimum = .false.
 
         chi_interval = [-pi, pi]
-        phi_interval = chi_interval/(M_pol*iota - N_tor)
+        phi_interval = origin(2) + chi_interval/(M_pol*iota - N_tor)
 
         call set_field_and_fieldline(field, fieldline)
 
@@ -91,7 +97,7 @@ contains
         ! compared to the B-range?
         B_range = B_max - B_min
         B_range_error = B_min_error + B_max_error
-        call field%compute_B_mod(0.0_dp, 0.0_dp, B_at_origin)
+        call field%compute_B_mod(origin(1), origin(2), B_at_origin)
         height = B_at_origin - B_min
         height_error = B_min_error
         if (present(retol)) height_error = height_error + retol*B_at_origin

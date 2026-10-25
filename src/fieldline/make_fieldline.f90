@@ -33,7 +33,7 @@ contains
     !! are not merely deformed, but also split. Results should be treated with caution.
     subroutine make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
                                         field, M_pol, N_tor, nfp, &
-                                        split_maxima)
+                                        split_maxima, reference_origin)
         use fieldline_labels, only: get_labels
         type(flock_of_fieldlines_t), intent(inout) :: flock
         integer, intent(in) :: max_n_fieldlines
@@ -48,6 +48,8 @@ contains
             !! toroidal helicity mode number; must equal nfp when nonzero
         real(dp), intent(in) :: nfp
             !! number of field periods; must be positive integer
+        real(dp), intent(in), optional :: reference_origin(2)
+            !! Physical (theta,phi) reference at the ideal well minimum.
         integer, intent(out), optional :: split_maxima
             !! 1 if a split of maxima contours was detected
 
@@ -57,25 +59,28 @@ contains
         call get_labels(max_n_fieldlines, iota, M_pol, N_tor, nfp, &
                         xi_0, approx_iota)
         call make_flock_from_labels(flock, xi_0, approx_iota, field, &
-                                    M_pol, N_tor, nfp, split_maxima)
+                                    M_pol, N_tor, nfp, split_maxima, reference_origin)
     end subroutine make_flock_of_fieldlines
 
     subroutine make_flock_from_labels(flock, xi_0, iota, &
                                       field, M_pol, N_tor, nfp, &
-                                      split_maxima)
+                                      split_maxima, reference_origin)
         use fieldline_integrals, only: calc_fieldline_integrals
         use fieldline_labels, only: calc_iota_p
         use field_checks, only: suspect_omnigenous_origin_not_minimum
         use constants, only: machine_eps
         use error_handling, only: failed_sanity_check
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
         type(flock_of_fieldlines_t), intent(inout) :: flock
         real(dp), dimension(:), intent(in) :: xi_0
         real(dp), intent(in) :: iota
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: M_pol, N_tor, nfp
+        real(dp), intent(in), optional :: reference_origin(2)
+            !! Physical (theta,phi) reference at the ideal well minimum.
         integer, intent(out), optional :: split_maxima
 
-        real(dp) :: interval(2)
+        real(dp) :: interval(2), origin(2)
         type(maxima_t) :: maxima
         logical :: more_than_two_maxima
         integer :: n_fieldlines
@@ -88,6 +93,10 @@ contains
             split_maxima = 0
         end if
 
+        origin = 0.0_dp
+        if (present(reference_origin)) origin = reference_origin
+        if (.not. all(ieee_is_finite(origin))) &
+            error stop "make_flock: nonfinite reference origin"
         call check_if_valid_input(M_pol, N_tor, nfp, iota)
 
         if (allocated(flock%fieldlines)) deallocate (flock%fieldlines)
@@ -101,25 +110,26 @@ contains
         flock%fieldlines%xi_0 = xi_0
         flock%fieldlines%iota = flock%iota
 
-        symmetry_violation = estimate_symmetry_violation(field, iota, nfp)
+        symmetry_violation = estimate_symmetry_violation(field, iota, nfp, origin)
         if (symmetry_violation > field%rel_accuracy_B()) then
             print *, "error: provided field violates stellarator symmetry too strongly!"
-            print *, "symmetry violation (max|B(theta, phi) - B(-theta, -phi)|/B): ", &
+            print *, "symmetry violation about the supplied reference (relative): ", &
                 symmetry_violation
             call failed_sanity_check()
         end if
 
-        if (suspect_omnigenous_origin_not_minimum(field, M_pol, N_tor, &
-                                                  symmetry_violation)) then
+        if (suspect_omnigenous_origin_not_minimum(field, N_tor=N_tor, &
+                   M_pol=M_pol, retol=symmetry_violation, reference_origin=origin)) then
             print *, "error: The origin of the IDEAL omnigenous configuration"
-            print *, "(theta=phi=0) must be a global and local minimum!"
+            print *, "Reference (theta,phi) must be a global and local minimum:", &
+                origin
             print *, "Origin of provided field suggests that this is not the case!"
             call failed_sanity_check()
         end if
         ! if the origin of the ideal omnigenous field is a minimum (above)
         ! we can put the labels along the chi = 0 line
-        flock%fieldlines%theta_0 = N_tor*flock%fieldlines%xi_0/nfp
-        flock%fieldlines%phi_0 = M_pol*flock%fieldlines%xi_0/nfp
+        flock%fieldlines%theta_0 = origin(1) + N_tor*flock%fieldlines%xi_0/nfp
+        flock%fieldlines%phi_0 = origin(2) + M_pol*flock%fieldlines%xi_0/nfp
 
         flock%iota_p = calc_iota_p(iota, M_pol, N_tor, nfp)
 
@@ -278,11 +288,12 @@ contains
         is_not_integer = abs(x - nint(x)) > tol
     end function is_not_integer
 
-    function estimate_symmetry_violation(field, iota, nfp) result(symmetry_violation)
+    function estimate_symmetry_violation(field, iota, nfp, origin) &
+        result(symmetry_violation)
         use utils, only: linspace
         class(field_t), intent(in) :: field
         real(dp), intent(in) :: iota
-        real(dp), intent(in) :: nfp
+        real(dp), intent(in) :: nfp, origin(2)
         real(dp) :: symmetry_violation
 
         integer, parameter :: n_points = 1000
@@ -290,12 +301,13 @@ contains
         real(dp), dimension(n_points) :: theta, phi, B_ref, B_sym
 
         call linspace(0.0_dp, 2.0_dp*pi/nfp, n_points, phi)
-        theta = iota*phi
+        theta = origin(1) + iota*phi
+        phi = origin(2) + phi
         do idx = 1, n_points
             call field%compute_B_mod(theta(idx), phi(idx), B_ref(idx))
         end do
-        phi = -phi
-        theta = -theta
+        phi = 2.0_dp*origin(2) - phi
+        theta = 2.0_dp*origin(1) - theta
         do idx = 1, n_points
             call field%compute_B_mod(theta(idx), phi(idx), B_sym(idx))
         end do

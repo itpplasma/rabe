@@ -18,6 +18,7 @@ program test_sqrt_nu_field
     real(dp) :: value_33, value_65, value_129, anchor_16, anchor_32, anchor_64
     integer :: nmode, inu
 
+    call check_reference_origin()
     call base%anti_sigma_field_init(0.0_dp, 1.0_dp, 1.0_dp, -0.2_dp, -0.002_dp)
     call field%mock_perturbed_field_init(base, 1.0_dp, 0.0_dp, 0.001_dp)
     call make_flock_of_fieldlines(flock, 16, 0.5_dp, field, 0.0_dp, 1.0_dp, 1.0_dp)
@@ -60,15 +61,72 @@ program test_sqrt_nu_field
     call check_refinement(abs(anchor_32 - anchor_16), abs(anchor_64 - anchor_32), &
                           abs(anchor_64), 'fieldlines16/32/64')
 contains
+    subroutine check_reference_origin()
+        use constants, only: pi
+        use field_checks, only: suspect_omnigenous_origin_not_minimum
+        type(anti_sigma_field_t) :: minimum_field, maximum_field, qa_field
+        type(flock_of_fieldlines_t) :: at_zero, at_reference
+        type(sqrt_nu_geometry_t) :: zero_geometry, reference_geometry
+        real(dp) :: theta, phi, first, second
+        integer :: j
+
+        ! These two analytic fields describe the same local well with opposite
+        ! signs of cos(4*phi). The physical maximum_field is never modified.
+        call minimum_field%anti_sigma_field_init(0.0_dp, 4.0_dp, &
+                                                 1.0_dp, -0.2_dp, 0.0_dp)
+        call maximum_field%anti_sigma_field_init(0.0_dp, 4.0_dp, &
+                                                 1.0_dp, 0.2_dp, 0.0_dp)
+        if (.not. suspect_omnigenous_origin_not_minimum(maximum_field, &
+                                                        N_tor=4.0_dp, M_pol=0.0_dp)) &
+            error stop 'the unchanged zero-origin check must reject a maximum'
+        if (suspect_omnigenous_origin_not_minimum(maximum_field, &
+                         N_tor=4.0_dp, M_pol=0.0_dp, reference_origin=[0.0_dp, pi/4])) &
+            error stop 'analytic QI reference minimum rejected'
+        call qa_field%anti_sigma_field_init(1.0_dp, 0.0_dp, &
+                                            1.0_dp, 0.2_dp, 0.0_dp)
+        if (suspect_omnigenous_origin_not_minimum(qa_field, &
+                           N_tor=0.0_dp, M_pol=1.0_dp, reference_origin=[pi, 0.0_dp])) &
+            error stop 'analytic QA reference minimum rejected'
+        do j = 0, 12
+            theta = real(j, dp)*0.17_dp
+            phi = real(j, dp)*0.03_dp
+            call minimum_field%compute_B_mod(theta, phi, first)
+            call maximum_field%compute_B_mod(theta, phi + pi/4, second)
+            if (abs(first - second) > 1.e-14_dp) &
+                error stop 'independent cosine well identity failed'
+        end do
+        call make_flock_of_fieldlines(at_zero, 16, 0.5_dp, minimum_field, &
+                                      0.0_dp, 4.0_dp, 4.0_dp)
+        call make_flock_of_fieldlines(at_reference, 16, 0.5_dp, maximum_field, &
+                                0.0_dp, 4.0_dp, 4.0_dp, reference_origin=[0.0_dp, pi/4])
+        if (maxval(abs(at_reference%fieldlines%theta_0 - &
+                       at_zero%fieldlines%theta_0)) > 1.e-14_dp) &
+            error stop 'QI fieldline label changed under explicit phi reference'
+        if (maxval(abs(at_reference%fieldlines%phi_0 - &
+                       at_zero%fieldlines%phi_0 - pi/4)) > 1.e-14_dp) &
+            error stop 'physical fieldline reference not retained'
+        call compute_sqrt_nu_geometry(minimum_field, at_zero, 3.0_dp, &
+                             1.0_dp, 1, 1.0_dp, nu_star, 33, 2, 0.001_dp, zero_geometry)
+        call compute_sqrt_nu_geometry(maximum_field, at_reference, 3.0_dp, &
+                        1.0_dp, 1, 1.0_dp, nu_star, 33, 2, 0.001_dp, reference_geometry)
+        if (maxval(abs(zero_geometry%eta - reference_geometry%eta)) > 1.e-12_dp) &
+            error stop 'pitch geometry changed under reference choice'
+        if (maxval(abs(zero_geometry%tau_b - reference_geometry%tau_b)) > &
+            1.e-9_dp*maxval(zero_geometry%tau_b)) &
+            error stop 'bounce integrals changed under reference choice'
+        if (abs(at_zero%I_ref - at_reference%I_ref) > 1.e-10_dp*at_zero%I_ref) &
+            error stop 'boundary diffusion changed under reference choice'
+    end subroutine check_reference_origin
+
     function evaluate_field(data) result(offset)
         type(sqrt_nu_geometry_t), intent(in) :: data
         real(dp) :: offset, omega(size(data%eta))
         type(sqrt_nu_result_t) :: result
         omega = 0.05_dp
         call evaluate_sqrt_nu_modes(data%eta, data%tau_b, &
-            nu_star(1)*data%tau_d_per_nu, omega, data%dIv_deta, &
-            data%g_modes(:, 1), data%normalization, result, &
-            iv_deep=data%iv_deep)
+                                   nu_star(1)*data%tau_d_per_nu, omega, data%dIv_deta, &
+                                    data%g_modes(:, 1), data%normalization, result, &
+                                    iv_deep=data%iv_deep)
         if (result%status /= 0) error stop 'synthetic geometry evaluation failed'
         offset = result%lambda_off
         if (.not. ieee_is_finite(offset)) error stop 'nonfinite synthetic field result'

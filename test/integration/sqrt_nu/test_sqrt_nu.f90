@@ -1,7 +1,7 @@
 program test_sqrt_nu
     use, intrinsic :: iso_fortran_env, only: dp => real64
     use sqrt_nu_mod, only: sqrt_nu_result_t, evaluate_sqrt_nu_modes, &
-        fe_log_model, compute_A_m
+                           fe_log_model, compute_A_m
     use sqrt_nu_kernel, only: bounce_time_pointwise
     implicit none
     integer, parameter :: n = 8193
@@ -33,11 +33,15 @@ program test_sqrt_nu
     end do
     exact = sum(0.5_dp*g*result%flux_modes)
     if (abs(result%lambda_off - exact) > 1.0e-14_dp) error stop 'mode normalization'
+    call evaluate_sqrt_nu_modes(eta, tau/100.0_dp, diffusion, &
+                                omega*100.0_dp, div, g, 0.5_dp, reverse)
+    if (maxval(abs(result%flux_modes - reverse%flux_modes)) > 1.0e-14_dp) &
+        error stop 'particle-speed normalization invariance'
     call evaluate_sqrt_nu_modes(eta, tau, diffusion, -omega, div, g, 0.5_dp, reverse)
     if (maxval(abs(result%flux_modes - reverse%flux_modes)) > 1.0e-14_dp) &
         error stop 'precession reversal symmetry'
-    call evaluate_sqrt_nu_modes(eta(::8), tau(::8), diffusion(::8), omega(::8), &
-                               div(::8, :), g, 0.5_dp, coarse)
+   call evaluate_sqrt_nu_modes(eta( :: 8), tau( :: 8), diffusion( :: 8), omega( :: 8), &
+                                div( :: 8, :), g, 0.5_dp, coarse)
     z = sqrt(cmplx(0.0_dp, omega(1), dp))
     exact = real((1.0_dp - exp(-z))/z, dp)
     error_coarse = abs(coarse%flux_modes(1) - exact)
@@ -51,7 +55,7 @@ program test_sqrt_nu
     if (maxval(abs(result%flux_modes - [1.0_dp, 2.0_dp])) > 1.0e-13_dp) &
         error stop 'E77 integrated drift'
     call evaluate_sqrt_nu_modes(eta, tau, diffusion, omega, div, g, 0.5_dp, &
-                               result, iv_deep=[0.25_dp, -0.5_dp])
+                                result, iv_deep=[0.25_dp, -0.5_dp])
     if (maxval(abs(result%flux_modes - [1.25_dp, 1.5_dp])) > 1.0e-13_dp) &
         error stop 'E77 nonzero deep endpoint'
     omega = 400.0_dp
@@ -60,11 +64,11 @@ program test_sqrt_nu
     if (result%status /= 3) error stop 'precession resonance rejected'
     omega = 400.0_dp
     call evaluate_sqrt_nu_modes(eta, tau, diffusion, omega, div, g, 0.5_dp, &
-                               result, magnetic_drift_included=.true.)
+                                result, magnetic_drift_included=.true.)
     if (result%status /= 2) error stop 'magnetic drift rejected'
     omega = 4.0_dp
     call evaluate_sqrt_nu_modes(eta, tau, diffusion, omega, div, g, 0.5_dp, &
-                               result, iv_deep=[0.25_dp, -0.5_dp])
+                                result, iv_deep=[0.25_dp, -0.5_dp])
     z = sqrt(cmplx(0.0_dp, omega(1), dp))
     exact = real((1.0_dp - exp(-z))/z + 0.25_dp*exp(-z), dp)
     if (abs(result%flux_modes(1) - exact) > 1.0e-8_dp) &
@@ -83,6 +87,20 @@ program test_sqrt_nu
     exact = compute_A_m(10.0_dp, 2, -0.01_dp, 0.5_dp, 1.0_dp, 0.004_dp, &
                         0.3_dp, -2.0_dp)
     if (abs(2.0_dp*exact - a) > 1.0e-13_dp*a) error stop 'A_m sign and nu scaling'
+    exact = compute_A_m(1000.0_dp, 2, 0.01_dp, 0.5_dp, &
+                        100.0_dp, 0.001_dp, 0.3_dp, -2.0_dp)
+    if (abs(exact - a) > 1.0e-13_dp*a) error stop 'A_m length-unit covariance'
+    exact = compute_A_m(10.0_dp, 2, 0.01_dp, 0.5e-4_dp, &
+                        1.0_dp, 0.001_dp, 0.3e-8_dp, -2.0e4_dp)
+    if (abs(exact - a) > 1.0e-13_dp*a) error stop 'A_m field-unit covariance'
+    ! For the same sinusoidal well rescaled phi -> N*phi, I_B scales as
+    ! 1/N and the field-line curvature scales as N**2. Explicit A_m is invariant.
+    do j = 1, 5
+        exact = compute_A_m(10.0_dp, 2, 0.01_dp, 0.5_dp, 1.0_dp, &
+                            0.001_dp, 0.3_dp/real(j, dp), -2.0_dp*j*j)
+        if (abs(exact - a) > 1.0e-13_dp*a) &
+            error stop 'A_m sinusoidal-well angular covariance'
+    end do
     exact = fe_log_model(100.0_dp, 1.0_dp, 8192)
     if (abs(fe_log_model(100.0_dp, 1.0_dp) - exact) > 1.0e-12_dp) &
         error stop 'log quadrature convergence'
@@ -102,7 +120,7 @@ program test_sqrt_nu
     if (trim(arg) == '--reference-output') then
         do j = 1, 3
             a = 10.0_dp**j
-            write(*, '(a,2es25.16)') 'LOG ', a, fe_log_model(a, 1.0_dp)
+            write (*, '(a,2es25.16)') 'LOG ', a, fe_log_model(a, 1.0_dp)
         end do
         do j = 1, 2
             a = 10.0_dp + real(j - 1, dp)*20.0_dp
@@ -111,8 +129,8 @@ program test_sqrt_nu
             diffusion = 1.0_dp - eta
             omega = a*a
             call evaluate_sqrt_nu_modes(eta, tau, diffusion, omega, div, g, &
-                                       0.5_dp, result)
-            write(*, '(a,2es25.16)') 'KELVIN ', a, result%flux_modes(1)
+                                        0.5_dp, result)
+            write (*, '(a,2es25.16)') 'KELVIN ', a, result%flux_modes(1)
         end do
     end if
     print *, 'sqrt(nu) exact, E77, symmetry, convergence and domain checks passed'

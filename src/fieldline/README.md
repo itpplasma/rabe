@@ -109,3 +109,13 @@ call make_flock_of_fieldlines(fieldlines, xi_0, approx_iota, field, &
                               M_pol, N_tor, nfp, phi_tol)
 ! Now fieldlines(:)%I_ref, %delta_eta, %radial_drift etc. are available
 ```
+
+### Explicit well reference
+
+`make_flock_of_fieldlines` and `make_flock_from_labels` accept optional
+`reference_origin(2)`, the physical `(theta, phi)` angles of the ideal well
+minimum. The default is zero. Labels are placed relative to this reference,
+while the field and its coordinates remain unchanged. Stellarator symmetry and
+the origin-minimum check use the same reference and unchanged tolerances. The
+origin checker accepts the same optional argument. The reference must be
+calibrated from input coordinates rather than selected to pass a validity test.

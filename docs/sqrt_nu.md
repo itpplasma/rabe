@@ -155,6 +155,19 @@ multiple minima and the existing native field-origin or symmetry sanity
 failures are rejected. The producer does not disable those checks or repair
 an input by an undocumented phase shift.
 
+An explicitly calibrated reference well can instead be selected with
+`reference_origin_theta` and `reference_origin_phi` (radians, both default zero)
+in `sqrt_nu_field_config`. These are physical Boozer coordinates, not a change
+to the field or input file. The producer places the label origin there and
+checks the same stellarator symmetry, minimum and split-well requirements
+about that reference. Its value must come from the input's angle convention,
+not a search for passing WKB diagnostics. The two reference coordinates are
+retained in the table and NetCDF output. An analytic cosine-well regression
+checks the local pitch geometry, label placement and bounce/diffusion integrals
+against an independent reference minimum while also retaining rejection of the
+unmodified maximum at the zero origin.
+
+
 The native `make_flock_of_fieldlines` calculation supplies the E77 boundary
 integrals and the Fourier coefficients of `delta_aspect_ratio` and
 `delta_eta`. With `l_c=pi*R/(2*nu_star)`, the generated assembly is

@@ -11,6 +11,7 @@ program sqrt_nu_field
     integer :: max_n_fieldlines = 32, sign_sqrtg = 1, split_maxima
     real(dp) :: M_pol = 0.0_dp, N_tor = -1.0_dp
     real(dp) :: speed = 1.0_dp, endpoint_cutoff = 1.e-4_dp
+    real(dp) :: reference_origin_theta = 0.0_dp, reference_origin_phi = 0.0_dp
     logical :: magnetic_drift_included = .false.
     character(len=1024) :: input_file = 'sqrt_nu_field.in', output_file = 'sqrt_nu.in'
     character(len=1024) :: field_file = ''
@@ -24,7 +25,7 @@ program sqrt_nu_field
     real(dp), allocatable :: iv_transition(:, :), iv_eta_b(:, :)
     character(len=1024) :: geometry_source
     character(len=128) :: normalization_convention = &
-        'native RABE effective-radius gradient'
+                          'native RABE effective-radius gradient'
     character(len=128) :: precession_radius_convention = &
                           'supplied DKES radius, not r_eff'
     real(dp) :: particle_speed, endpoint_cutoff_fraction
@@ -36,14 +37,15 @@ program sqrt_nu_field
     namelist /sqrt_nu_sizes/ n_surface, n_eta, n_mode, n_nu, n_vE
     namelist /sqrt_nu_field_config/ field_file, field_type, s_tor, nu_star, v_E_star, &
         radius_dkes, speed, M_pol, N_tor, max_n_fieldlines, sign_sqrtg, &
-        endpoint_cutoff, &
+        endpoint_cutoff, reference_origin_theta, reference_origin_phi, &
         magnetic_drift_included
     namelist /sqrt_nu_config/ s_tor, nu_star, v_E_star, eta, &
         tau_b_seconds, tau_d_per_nu, &
         omega_theta_per_vE, dIv_deta, g_modes, normalization, magnetic_drift_included, &
         eta_units, iv_units, iv_deep, iv_transition, iv_eta_b, &
         geometry_source, normalization_convention, precession_radius_convention, &
-        particle_speed, radius_dkes, endpoint_cutoff_fraction
+        particle_speed, radius_dkes, endpoint_cutoff_fraction, &
+        reference_origin_theta, reference_origin_phi
 
     if (command_argument_count() > 0) call get_command_argument(1, input_file)
     if (command_argument_count() > 1) call get_command_argument(2, output_file)
@@ -92,11 +94,12 @@ program sqrt_nu_field
         call field%fix_to_surface(s_tor(is))
         call field%get_iota(s_tor(is), iota)
         call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, field, &
-            M_pol, N_tor, field%nfp, split_maxima)
+                                      M_pol, N_tor, field%nfp, split_maxima, &
+                        reference_origin=[reference_origin_theta, reference_origin_phi])
         if (split_maxima /= 0) &
             error stop 'sqrt_nu_field: split maxima outside supported well'
         call compute_sqrt_nu_geometry(field, flock, field%R, field%psi_tor_edge, &
-            sign_sqrtg, speed, nu_star, n_eta, n_mode, endpoint_cutoff, data)
+                       sign_sqrtg, speed, nu_star, n_eta, n_mode, endpoint_cutoff, data)
         eta(:, is) = data%eta
         tau_b_seconds(:, is) = data%tau_b
         tau_d_per_nu(:, is) = data%tau_d_per_nu
