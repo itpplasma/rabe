@@ -33,7 +33,7 @@ contains
         integer, parameter :: limit = 500
         integer, parameter :: lenw = limit*4
         real(quadkind) :: a_quadkind, b_quadkind, result_quadkind
-        real(quadkind) :: abs_error, error_limit
+        real(quadkind) :: abs_error, error_limit, magnitude
         integer :: error_flag
 
         logical :: error_occurred
@@ -69,11 +69,24 @@ contains
                  last, &
                  iwork, &
                  work)
-        integrand => null()
 
         error_limit = abs(result_quadkind)*rel_error_tol_quadkind &
                       + abs_error_tol_quadkind
         error_occurred = .false.
+
+        ! dqag returns error_flag 2 when subdivision stops reducing its error
+        ! estimate (its roundoff test). For a partly cancelling integral,
+        ! |result| << integral(|f|), that stagnation level can exceed the
+        ! tolerance relative to |result|. Only in that case the same relative
+        ! tolerance is applied to the scale integral(|f|) instead of |result|.
+        if (error_flag == 2) then
+            magnitude = integral_of_magnitude(a_quadkind, b_quadkind)
+            if (abs_error <= rel_error_tol_quadkind*magnitude) then
+                error_limit = abs_error
+                error_flag = 0
+            end if
+        end if
+        integrand => null()
 
         if (abs_error > error_limit) then
             print *, "Integration warning: absolute error =", abs_error
@@ -97,6 +110,36 @@ contains
         if (error_occurred) error stop
 
     end subroutine integrate_1d
+
+    !> Integral of |f| over [a, b], the scale of a cancelling integral(f).
+    !> Returns a negative value if quadpack cannot resolve it, so that the
+    !> caller keeps its original failure.
+    function integral_of_magnitude(a_quadkind, b_quadkind) result(magnitude)
+        use quadpack_double, only: qag => dqag
+        real(quadkind), intent(in) :: a_quadkind, b_quadkind
+        real(quadkind) :: magnitude
+
+        real(quadkind), parameter :: rel_error_tol_magnitude = 1.0e-3
+        integer, parameter :: order_key = 6
+        integer, parameter :: limit = 500
+        integer, parameter :: lenw = limit*4
+        real(quadkind) :: abs_error
+        integer :: error_flag, neval_dummy, last
+        integer :: iwork(limit)
+        real(quadkind) :: work(lenw)
+
+        call qag(quadkind_magnitude, a_quadkind, b_quadkind, 0.0_quadkind, &
+                 rel_error_tol_magnitude, order_key, magnitude, abs_error, &
+                 neval_dummy, error_flag, limit, lenw, last, iwork, work)
+        if (error_flag /= 0) magnitude = -1.0_quadkind
+    end function integral_of_magnitude
+
+    function quadkind_magnitude(x_quadkind)
+        real(quadkind), intent(in) :: x_quadkind
+        real(quadkind) :: quadkind_magnitude
+
+        quadkind_magnitude = abs(quadkind_integrand(x_quadkind))
+    end function quadkind_magnitude
 
     !> The integrand for quadpack needs to be of the below signature.
     !> Note for developer: due to quadpack interface, functions with parameters
