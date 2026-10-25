@@ -18,6 +18,16 @@ target_link_libraries(test_integrate_1d_substituted.x utils_lib)
 add_test(TestIntegrate1dSubstituted test_integrate_1d_substituted.x)
 set_tests_properties(TestIntegrate1dSubstituted PROPERTIES LABELS "quick")
 
+add_executable(test_integrate_1d_cancellation.x test_integrate_1d_cancellation.f90)
+target_link_libraries(test_integrate_1d_cancellation.x utils_lib)
+add_test(TestIntegrate1dCancellation test_integrate_1d_cancellation.x)
+set_tests_properties(TestIntegrate1dCancellation PROPERTIES LABELS "quick")
+
+add_executable(test_integrate_1d_noisy.x test_integrate_1d_noisy.f90)
+target_link_libraries(test_integrate_1d_noisy.x utils_lib)
+add_test(TestIntegrate1dNoisy test_integrate_1d_noisy.x)
+set_tests_properties(TestIntegrate1dNoisy PROPERTIES LABELS "quick" WILL_FAIL TRUE)
+
 add_executable(test_sum_trapez_1d.x test_sum_trapez_1d.f90)
 target_link_libraries(test_sum_trapez_1d.x utils_lib)
 add_test(TestISumTrapez test_sum_trapez_1d.x)
