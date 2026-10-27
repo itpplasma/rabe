@@ -39,6 +39,26 @@ of local maxima, respectively (see Ref. [1,2]).
 
 Given a VMEC equilibrium file, `rabe` outputs those geometric coefficients
 needed to evaluate $\lambda_\mathrm{off}$ at any collisionality.
+The mean free path used in Ref. [2] is $l_c=v/(2\nu_\perp)$, so that
+$\nu_\ast=\pi R/(2l_c)$. Accordingly, `src/offset/coefficients.f90`
+multiplies the dimensional offset factors by $\sqrt{\pi R/2}$ and
+$\pi R/2$; these factors agree with the frequency definition above.
+Here the Lorentz operator is
+$C[f]=(\nu_\perp/2)\partial_\xi[(1-\xi^2)\partial_\xi f]$ with
+$\xi=v_\parallel/v$.
+
+Use the radius recorded in rabe's output when comparing collision parameters.
+For a VMEC input the field provider uses `Rmajor_p` (or its provider fallback),
+while a Boozer input carries its own radius. A second code may use another
+reference radius. In NEO-2's monoenergetic Lorentz model,
+$\kappa=2c/(\pi R_0)$ for positive `conl_over_mfp` $c$, so that
+$\nu_\ast=cR/R_0$; the two radii must use the same units.
+For negative input, $\kappa=-c$ in inverse centimetres and
+$\nu_\ast=\pi R\kappa/2$ with $R$ in centimetres.
+NEO-2's legacy Boozer provider takes $R_0$ from the innermost surface's
+zero Fourier mode of cylindrical radius, which need not equal VMEC's
+`Rmajor_p` or the Boozer header radius.
+
 Additionally, it can compute also the coefficients for the
 ''symmetric'' part
 
@@ -250,6 +270,15 @@ is extended by
 The `remainder` is a proxy of how much $\lambda_{bB}^\mathrm{LC}$ differs
 from the actual $\lambda_{bB}^\mathrm{SC}$, but it does not include the
 effect of bootstrap resonances and is not yet fully validated.
+It must not be treated as an independently computed actual-field
+Shaing–Callen coefficient. Conversely, replacing the omnigenous coefficient
+by an undamped zero-collision value from NEO is a separate approximation:
+bootstrap resonances are damped at finite collisionality in NEO-2
+(Ref. [1], p. 4). Record which choice was used in a comparison.
+The condition $\nu_\ast>\nu_\ast^{\mathrm{crit}}$ is only the lower
+boundary-layer limit; it does not establish the upper limit of the
+$1/\nu$ regime or remove a `split_maxima` warning.
+
 
 ## Adjoint Gradients
 
