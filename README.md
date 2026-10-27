@@ -49,8 +49,9 @@ $\xi=v_\parallel/v$.
 
 Use the radius recorded in rabe's output when comparing collision parameters.
 For a VMEC input the field provider uses `Rmajor_p`,
-while a Boozer input carries its own radius. A second code may use another
-reference radius. In NEO-2's monoenergetic Lorentz model,
+while the `boozmn` provider uses the outermost supplied $R_{00}$
+(`libneo/src/field/boozmn_reader.f90`). Spectrum-based callers supply $R$
+explicitly. A second code may use another reference radius. In NEO-2's monoenergetic Lorentz model,
 $\kappa=2c/(\pi R_0)$ for positive `conl_over_mfp` $c$, so that
 $\nu_\ast=cR/R_0$; the two radii must use the same units.
 For negative input, $\kappa=-c$ in inverse centimetres and
