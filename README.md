@@ -48,7 +48,7 @@ $C[f]=(\nu_\perp/2)\partial_\xi[(1-\xi^2)\partial_\xi f]$ with
 $\xi=v_\parallel/v$.
 
 Use the radius recorded in rabe's output when comparing collision parameters.
-For a VMEC input the field provider uses `Rmajor_p` (or its provider fallback),
+For a VMEC input the field provider uses `Rmajor_p`,
 while a Boozer input carries its own radius. A second code may use another
 reference radius. In NEO-2's monoenergetic Lorentz model,
 $\kappa=2c/(\pi R_0)$ for positive `conl_over_mfp` $c$, so that
