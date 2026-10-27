@@ -88,7 +88,7 @@ contains
         use surface_average_mod, only: surface_average_t, calc_surface_averages
         type(flock_of_fieldlines_t), intent(in) :: flock
         real(dp), intent(in) :: psi_tor_edge
-            !! total toroidal flux at the plasma edge in Weber
+            !! toroidal flux at the plasma edge divided by 2*pi, in Weber
         integer, intent(in) :: sign_sqrtg
             !! sign of the Boozer Jacobian: +1 or -1
         real(dp) :: dr_dAtheta

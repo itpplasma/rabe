@@ -59,6 +59,12 @@ NEO-2's legacy Boozer provider takes $R_0$ from the innermost surface's
 zero Fourier mode of cylindrical radius, which need not equal VMEC's
 `Rmajor_p` or the Boozer header radius.
 
+The radial label used for the coefficients satisfies
+$\langle |\nabla r|\rangle=1$. Its conversion factor is
+`sign_sqrtg / (average%nabla_s * psi_tor_edge)` in
+`calc_gradient_scaling_factor_r_eff`; `psi_tor_edge` is the edge toroidal
+flux divided by $2\pi$, in Weber, rather than the total toroidal flux.
+
 Additionally, it can compute also the coefficients for the
 ''symmetric'' part
 
