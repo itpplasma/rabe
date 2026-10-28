@@ -118,6 +118,8 @@ contains
         real(dp) :: nfp
         real(dp), allocatable :: xm(:), xn(:), bmnc(:, :), smnc(:, :)
         real(dp), allocatable :: iota(:), G(:), I_cov(:), psi(:), R(:)
+        real(dp), allocatable :: dbmnc(:, :), diota(:), dG(:), dI(:)
+        logical :: radial
 
         call nc%open(filename)
         call nc%read_dim("surface", n_surf)
@@ -136,6 +138,17 @@ contains
         call nc%read_real_1d("I", I_cov)
         call nc%read_real_1d("psi_edge", psi)
         call nc%read_real_1d("R", R)
+        ! optional radial derivatives for Gamma_s (alpha_criteria.md)
+        radial = nc%has_var("dbmnc_ds")
+        if (radial) then
+            allocate (dbmnc(n_mode, n_surf), diota(n_surf), dG(n_surf), dI(n_surf))
+            call nc%read_real_2d("dbmnc_ds", dbmnc)
+            call nc%read_real_1d("diota_ds", diota)
+            call nc%read_real_1d("dG_ds", dG)
+            call nc%read_real_1d("dI_ds", dI)
+        else
+            print *, "read_spectrum_file: no radial derivatives (dbmnc_ds), Gamma_s = 0"
+        end if
         call nc%close()
 
         allocate (spectra(n_surf))
@@ -150,6 +163,13 @@ contains
             spectra(i)%I = I_cov(i)
             spectra(i)%psi_edge = psi(i)
             spectra(i)%R = R(i)
+            spectra(i)%has_radial = radial
+            if (radial) then
+                spectra(i)%dbmnc_ds = dbmnc(:, i)
+                spectra(i)%diota_ds = diota(i)
+                spectra(i)%dG_ds = dG(i)
+                spectra(i)%dI_ds = dI(i)
+            end if
         end do
     end subroutine read_spectrum_file
 

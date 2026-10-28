@@ -10,7 +10,8 @@ program test_spectrum_derivative
                                    n_params, pack_parameters, find_structure, &
                                    evaluate, spectrum_vjp, spectrum_jvp, &
                                    gauss_legendre_01, off_iota, off_G, off_I, &
-                                   off_psi_edge, off_R
+                                   off_psi_edge, off_R, off_dbmnc_ds, &
+                                   off_diota_ds, off_dG_ds, off_dI_ds
     use synthetic_spectra, only: synthetic_qh, synthetic_qa, synthetic_qi, &
                                  shift_half_period
 
@@ -68,7 +69,7 @@ contains
         real(dp) :: values(n_outputs), vals_jvp(n_outputs), jvp(n_outputs)
         real(dp) :: cot(n_outputs)
         integer :: K, P, o, block
-        character(len=16) :: block_name(5)
+        character(len=16) :: block_name(7)
 
         K = size(spec%xm)
         P = n_params(K)
@@ -84,13 +85,14 @@ contains
 
         print "(A,A,I4,A,I4,A,I4)", name, ": lines ", structure%n_lines, &
             "  q ", structure%q, "  split lines ", structure%n_split_lines
-        print "(A,7ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b, L_alpha, G_well): ", values
+        print "(A,9ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b, L_alpha, G_well, "// &
+            "var_dJ, G_s): ", values
         print "(A,ES10.2,A,ES10.2,A,2ES10.2)", "  newton shift ", diag%max_newton_shift, &
             "  eta_b gap ", diag%eta_b_gap, "  resonant weight A, B ", &
             diag%resonant_weight_A, diag%resonant_weight_B
         print "(A,2ES10.2)", "  continuum shift eta_b, nu_crit ", diag%eta_b_shift, &
             diag%nu_crit_shift
-        if (any(values(1:4) == 0.0_dp)) then
+        if (any(values(1:4) == 0.0_dp) .or. any(values(6:9) == 0.0_dp)) then
             print *, name, ": an output vanishes, test spectrum not generic"
             n_failed = n_failed + 1
         end if
@@ -100,10 +102,11 @@ contains
         scale(1:K) = max(abs(spec%bmnc), 1e-3_dp)
         scale(K + 1:2*K) = max(abs(spec%nabla_s_mnc), 1e-2_dp)
         scale(2*K + 1:P) = abs(params(2*K + 1:P))
+        scale(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds) = max(abs(spec%dbmnc_ds), 1e-3_dp)
 
         block_name = [character(len=16) :: "bmnc", "nabla_s_mnc", "iota", "G,I", &
-                      "psi_edge,R"]
-        do block = 1, 6
+                      "psi_edge,R", "random", "radial"]
+        do block = 1, 7
             u = 0.0_dp
             select case (block)
             case (1)
@@ -120,15 +123,15 @@ contains
                 u(2*K + off_R) = 0.5_dp
             case (6)
                 call random_direction(u, 13)
+            case (7)
+                call random_direction(u(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds), 15)
+                u(3*K + off_diota_ds) = 1.0_dp
+                u(3*K + off_dG_ds) = -0.8_dp
+                u(3*K + off_dI_ds) = 0.6_dp
             end select
             u = u*scale
-            if (block <= 5) then
-                call fd_check(name//" "//trim(block_name(block)), params, spec, &
-                              settings, structure, jac, u, n_failed)
-            else
-                call fd_check(name//" random", params, spec, settings, &
-                              structure, jac, u, n_failed)
-            end if
+            call fd_check(name//" "//trim(block_name(block)), params, spec, &
+                          settings, structure, jac, u, n_failed)
         end do
 
         ! Discrete-selection mode (opt-out of continuum extrema): smooth in the
@@ -218,7 +221,9 @@ contains
                       values_shifted, jac_shifted)
         jac_shifted(1:K, :) = spread(sign_k, 2, n_outputs)*jac_shifted(1:K, :)
         jac_shifted(K + 1:2*K, :) = spread(sign_k, 2, n_outputs)*jac_shifted(K + 1:2*K, :)
-        print "(A,5ES14.6)", "QI origin: values ", values
+        jac_shifted(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds, :) = &
+            spread(sign_k, 2, n_outputs)*jac_shifted(2*K + off_dbmnc_ds + 1:3*K + off_dbmnc_ds, :)
+        print "(A,9ES14.6)", "QI origin: values ", values
         do o = 1, n_outputs
             err = abs(values(o) - values_shifted(o))/abs(values_shifted(o))
             if (err > tol) then
@@ -264,7 +269,7 @@ contains
             end do
         end do
         best = minval(err, dim=2)
-        print "(2X,A,T26,A,7ES10.2)", label, " best rel err ", best
+        print "(2X,A,T26,A,9ES10.2)", label, " best rel err ", best
         do o = 1, n_outputs
             if (abs(analytic(o)) < 1e-14_dp*maxval(abs(jac(:, o)))*maxval(abs(u))) cycle
             if (best(o) > tol) then

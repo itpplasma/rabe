@@ -2,7 +2,7 @@
 
 The derivative mode computes, per flux surface, the offset coefficients
 `Lambda_A`, `Lambda_B`, `Lambda_S`, `nu_star_crit` and `eta_b` and the
-alpha-particle criteria `Lambda_alpha` and `Gamma_well` (see
+alpha-particle criteria `Lambda_alpha`, `Gamma_well`, `var_dJ` and `Gamma_s` (see
 [alpha_criteria.md](alpha_criteria.md)) together with their exact Jacobian
 with respect to the Boozer spectrum of that surface. It is
 opt-in and lives in its own library (`derivative_lib`) and executable
@@ -13,13 +13,17 @@ opt-in and lives in its own library (`derivative_lib`) and executable
 A surface is described by `surface_spectrum_t`, and all differentiated inputs
 are packed into one vector with `K` modes,
 
-    params = [bmnc(1:K), nabla_s_mnc(1:K), iota, G, I, psi_edge, R]
+    params = [bmnc(1:K), nabla_s_mnc(1:K), iota, G, I, psi_edge, R,
+              dbmnc_ds(1:K), diota_ds, dG_ds, dI_ds]
 
 where `B = sum_k bmnc(k) cos(xm(k) theta - xn(k) phi)` and likewise for
 `|grad s|`, with `xn` including the number of field periods (booz_xform
 convention). `G` and `I` are the covariant components `B_phi` and `B_theta` in
 T m (booz_xform `Boozer_G`, `Boozer_I`), `psi_edge` is the toroidal edge flux
-in Wb as used by rabe, and `R` is the major radius in m. The Jacobian has the
+in Wb as used by rabe, and `R` is the major radius in m. The radial block
+`dbmnc_ds, diota_ds, dG_ds, dI_ds` (derivatives with respect to `s` at fixed
+Boozer angles) enters only `Gamma_s` and is zero without radial data
+(`has_radial`). The Jacobian has the
 shape `jacobian(n_params, n_outputs)` with `jacobian(p, o) = d output_o / d
 param_p`, so the JVP is `matmul(u, jacobian)` and the VJP with respect to the
 spectrum is `matmul(jacobian, v)` (`spectrum_jvp`, `spectrum_vjp`). The
@@ -236,6 +240,7 @@ surfaces, `sign_sqrtg`, `max_n_fieldlines`) and the optional group
         continuum_extrema = .true.,
         n_eta = 32,                  ! trapped levels per well (Gamma_well)
         n_gauss_well = 32,           ! Gauss points per half bounce orbit
+        ds_radial = 0.01,            ! s +- ds_radial for the radial block (Gamma_s)
         wout_derivative = .false.,   ! chain to the wout harmonics (VMEC input)
         lambda_half_to_full = 'linear', ! libneo lambda map: 'linear' or 'cubic'
         spectrum_file = "",          ! read the spectrum instead of a field
@@ -245,19 +250,21 @@ surfaces, `sign_sqrtg`, `max_n_fieldlines`) and the optional group
 The spectrum file has the same variables as the output spectrum: dimensions
 `surface` and `mode`, `nfp`, `xm(mode)`, `xn(mode)`, `s_tor(surface)`,
 `bmnc(surface, mode)`, `nabla_s_mnc(surface, mode)` and `iota`, `G`, `I`,
-`psi_edge`, `R` over `surface` (C order as seen from Python). An output file can
-be read back as a spectrum file.
+`psi_edge`, `R` over `surface` (C order as seen from Python), and optionally the
+radial block `dbmnc_ds(surface, mode)`, `diota_ds`, `dG_ds`, `dI_ds` (without it
+`Gamma_s` is zero). An output file can be read back as a spectrum file.
 
 ## Output layout (`rabe_deriv.nc`, dimensions in C order)
 
 | variable | shape | content |
 |---|---|---|
-| `values` | (surface, output) | `Lambda_A, Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well` |
+| `values` | (surface, output) | `Lambda_A, Lambda_B, Lambda_S, nu_star_crit, eta_b, Lambda_alpha, Gamma_well, var_dJ, Gamma_s` |
 | `jacobian` | (surface, output, param) | `d values / d params` |
 | `bmnc`, `nabla_s_mnc` | (surface, mode) | spectrum used |
 | `xm`, `xn`, `nfp` | (mode), scalar | mode numbers, `xn` includes `nfp` |
 | `iota`, `iota_input` | (surface) | rational field-line iota, input iota |
 | `G`, `I`, `psi_edge`, `R` | (surface) | scalar parameters |
+| `dbmnc_ds`, `diota_ds`, `dG_ds`, `dI_ds`, `ds_radial` | (surface, mode), (surface) | radial block and its difference step (0: from the file or none) |
 | `q`, `p`, `n_lines`, `n_split_lines` | (surface) | frozen structure |
 | `diagnostics` | (surface, diagnostic) | gaps, Newton shift, `min lambda^2`, resonant weights, continuum shifts, iota kinks, mode flag, `nu_crit_crossing` |
 | `spectral_residual`, `spectral_asymmetry` | (surface) | projection quality (0 with `spectrum_file` or `wout_derivative`) |

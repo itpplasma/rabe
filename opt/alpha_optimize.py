@@ -1,10 +1,13 @@
 """Gradient-based boundary optimization with rabe's criteria, checkpointed, with SIMPLE checks.
 
-Two experiments share the constraints and differ only in the objective
+The experiments share the constraints and differ only in the objective
 (:func:`rabe_boundary.alpha_reduce`, each term divided by its value at the start):
 
 - ``E1`` (bootstrap): ``w1 nu*_crit + w2 (Lambda_A^2 + Lambda_B^2)``,
-- ``E2`` (alpha): ``w1 nu*_crit + w2b Lambda_alpha^2 + w3 Gamma_well``.
+- ``E2`` (alpha): ``w1 nu*_crit + w2b Lambda_alpha^2 + w3 Gamma_well``,
+- ``E3`` (alpha, direct): ``w1 nu*_crit + var_dJ + Gamma_s``, the label variance of
+  ``J`` of the transitioning particles and the drift in the wells normalized by
+  ``dJ/ds`` (needs ``ds_radial > 0``, rabe ``src/derivative/alpha_criteria.md``).
 
 Constraints are quadratic penalties around the start point: the aspect ratio
 and the volume (two-sided), ``iotaf`` inside ``[min iota0 - margin, max iota0 +
@@ -57,12 +60,14 @@ from rabe_boundary import (AlphaWeights, BoundaryObjective, MirrorRatioPenalty, 
 EXPERIMENTS = {
     "E1": dict(nu_star_crit=1.0, offset=1.0, Lambda_alpha=0.0, Gamma_well=0.0),
     "E2": dict(nu_star_crit=1.0, offset=0.0, Lambda_alpha=1.0, Gamma_well=1.0),
+    "E3": dict(nu_star_crit=1.0, offset=0.0, Lambda_alpha=0.0, Gamma_well=0.0, var_dJ=1.0,
+               Gamma_s=1.0),
 }
 
 DEFAULTS = dict(
     ns=75, ftol=1e-18, niter=200000, ns_coarse=13, niter_coarse=6000,
     s_list=[0.25, 0.4, 0.55, 0.7], M_pol=0.0, N_tor=None, mboz=17, nboz=16,
-    lines=100, n_gauss=64, n_eta=32, n_gauss_well=32,
+    lines=100, n_gauss=64, n_eta=32, n_gauss_well=32, ds_radial=0.0,
     free_m=4, free_n=4, step_scale=1e-3, bound=50.0, maxiter=60, threads=8,
     w_aspect=1e3, w_volume=1e3, iota_margin=0.02, w_iota=1e3,
     mirror_band=0.1, w_mirror=1e3,
@@ -163,7 +168,8 @@ class Run:
         work = os.path.join(cfg["outdir"], "work")
         os.makedirs(work, exist_ok=True)
         self.obj = BoundaryObjective(self.inp, cfg["s_list"], self.st, cfg["mboz"], cfg["nboz"],
-                                     workdir=work, max_threads=int(cfg["threads"]))
+                                     workdir=work, max_threads=int(cfg["threads"]),
+                                     ds_radial=float(cfg["ds_radial"]))
         self.b0 = self.obj.x0
         vol, asp = (float(v) for v in boundary_geometry(self.b0, self.nfp, self.ntor))
         rmaj = float(self.b0[0, 0, self.ntor])
@@ -189,6 +195,10 @@ class Run:
                       mirror=d0.tolist(), a_minor=self.a_minor, solver=self.obj.solver_info)
             json.dump(st, open(path, "w"), indent=1)
         c = self.cfg
+        if EXPERIMENTS[experiment].get("Gamma_s", 0.0) > 0.0 and not c["ds_radial"] > 0.0:
+            raise ValueError(f"{experiment} uses Gamma_s and needs ds_radial > 0")
+        if np.asarray(st["values"]).shape[1] != len(sd.OUTPUT_NAMES):
+            raise ValueError("start.json was written by an older rabe/pyrabe (other outputs)")
         w = AlphaWeights(**EXPERIMENTS[experiment]).normalized(np.asarray(st["values"]))
         d0 = np.asarray(st["mirror"])
         self.mirror.lower, self.mirror.upper = d0 * (1 - c["mirror_band"]), d0 * (1 + c["mirror_band"])
