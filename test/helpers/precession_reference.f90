@@ -28,10 +28,13 @@ contains
         integer, parameter :: ndim = 1
         real(dp) :: t_start, t_end
         real(dp), parameter :: relerr = 1e-8_dp
+        real(dp), parameter :: rel_start_up = 1.0e-4_dp
         real(dp), dimension(ndim) :: y
 
+        ! skip the same start-up interval as get_flux_mode in splines_instance
         t_start = grid%t(1)
         t_end = grid%t(size(grid%t))
+        t_start = t_start + rel_start_up*(t_end - t_start)
 
         call initialize_grid_instance(grid)
         y(1) = 0.0_dp
