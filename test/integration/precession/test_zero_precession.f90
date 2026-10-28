@@ -39,7 +39,8 @@ program test_zero_precession
 
     real(dp), parameter :: l_c = 1e-4, s_tor = 0.25_dp
     real(dp), parameter :: Omega_hat_zero = 0.0_dp
-    real(dp), parameter :: tol = 1e-6
+    real(dp), parameter :: odetol = 1e-8
+    real(dp) :: tol
     real(dp) :: correction
     real(dp), dimension(:), allocatable :: flux_modes
     integer :: n_modes, idx
@@ -107,6 +108,10 @@ program test_zero_precession
     call real_ft(xi_0, radial_drift_integrals, &
                  numerical_cos, numerical_sin)
 
+    ! assuming odeint completes each integration with
+    ! a single step i.e. lower limit of worst case error
+    ! -> a failing test might be due to too strict tolerances
+    tol = odetol*grid%n
     do idx = 2, n_modes
         expected = numerical_sin(idx)
         found = flux_modes(idx)
