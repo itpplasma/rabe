@@ -4,6 +4,7 @@ module precession_reference
     use fieldline_mod, only: fieldline_t
     use grid_mod, only: integration_grid_t
     use grid_mod, only: fieldline_for_precession_t
+    use interpolate, only: SplineData1D
     use interpolate, only: evaluate_splines_1d, evaluate_splines_1d_many
 
     implicit none
@@ -13,6 +14,7 @@ module precession_reference
     logical :: grid_initialized = .false.
 
     public :: integrate_radial_drift
+    public :: integrate_spline_1d
     public :: get_fieldline_at_global_maximum
     public :: find_turning_points
     public :: evaluate_grid_splines
@@ -20,38 +22,48 @@ module precession_reference
 contains
 
     subroutine integrate_radial_drift(grid, fieldline, integral)
-        use odeint_allroutines_sub, only: odeint_allroutines
         type(integration_grid_t), intent(in) :: grid
         type(fieldline_t), intent(in) :: fieldline
         real(dp), intent(out) :: integral
 
-        integer, parameter :: ndim = 1
         real(dp) :: t_start, t_end
-        real(dp), parameter :: relerr = 1e-8_dp
         real(dp), parameter :: rel_start_up = 1.0e-4_dp
-        real(dp), dimension(ndim) :: y
 
         ! skip the same start-up interval as get_flux_mode in splines_instance
         t_start = grid%t(1)
         t_end = grid%t(size(grid%t))
         t_start = t_start + rel_start_up*(t_end - t_start)
 
-        call initialize_grid_instance(grid)
-        y(1) = 0.0_dp
-        call odeint_allroutines(y, ndim, t_start, t_end, relerr, rhs)
-
-        integral = y(1)
+        integral = integrate_spline_1d(grid%radial_drift_weighted_spline, &
+                                       t_start, t_end)
     end subroutine integrate_radial_drift
 
-    subroutine rhs(t, y, dydt)
-        real(dp), intent(in) :: t
-        real(dp), dimension(:), intent(in) :: y
-        real(dp), dimension(:), intent(out) :: dydt
+    !> Exact integral of a non-periodic 1D spline from a to b (within its range).
+    !> Segment i holds sum_k coeff(k, i)*x_local**k, x_local in [0, h_step].
+    function integrate_spline_1d(spl, a, b) result(integral)
+        type(SplineData1D), intent(in) :: spl
+        real(dp), intent(in) :: a, b
+        real(dp) :: integral
 
-        real(dp) :: radial_drift
-        call get_radial_drift(t, dydt(1))
+        real(dp) :: a_norm, b_norm, lo, hi
+        integer :: i, k
 
-    end subroutine rhs
+        if (spl%periodic) then
+            error stop "integrate_spline_1d: periodic splines not supported."
+        end if
+        a_norm = (a - spl%x_min)/spl%h_step
+        b_norm = (b - spl%x_min)/spl%h_step
+        integral = 0.0_dp
+        do i = 1, spl%num_points - 1
+            ! part of [a, b] inside segment i, in local coordinates
+            lo = min(max(a_norm - real(i - 1, dp), 0.0_dp), 1.0_dp)*spl%h_step
+            hi = min(max(b_norm - real(i - 1, dp), 0.0_dp), 1.0_dp)*spl%h_step
+            do k = 0, spl%order
+                integral = integral + spl%coeff(k, i)*(hi**(k + 1) - lo**(k + 1)) &
+                           /real(k + 1, dp)
+            end do
+        end do
+    end function integrate_spline_1d
 
     subroutine initialize_grid_instance(grid_in)
         class(integration_grid_t), intent(in) :: grid_in
