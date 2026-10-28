@@ -8,6 +8,7 @@ module mock_field_3d
     type, extends(field_3D_t) :: mock_field_3d_t
         class(field_t), allocatable :: field_2D
         real(dp) :: psi_tor_edge = 1.0_dp
+        real(dp) :: iota = 1.0_dp
     contains
         procedure :: mock_field_3d_init
         procedure :: compute_B_sqrtg_dB_dx
@@ -102,12 +103,17 @@ contains
         bmod = B_mod
         bder = dB_dx/B_mod
         hcovar = 0.0_dp
-        hcovar(3) = 1.0_dp
+        call self%field_2D%get_covariant_components(hcovar(2), hcovar(3))
+        hcovar(2) = hcovar(2)/B_mod
+        hcovar(3) = hcovar(3)/B_mod
         hctrvr = 0.0_dp
-        hctrvr(2) = 1.0_dp
-        hctrvr(3) = 1.0_dp
+        hctrvr(3) = 1.0_dp/(hcovar(3) + self%iota*hcovar(2))
+        hctrvr(2) = self%iota*hctrvr(3)
+        sqrtg = self%psi_tor_edge/(B_mod*hctrvr(3))
+        ! assume no radial dependance of B field, single surface field
         hcurl = 0.0_dp
-        sqrtg = self%psi_tor_edge/(B_mod*hcovar(3))
+        hcurl(1) = -(hcovar(3)*bder(2) - hcovar(2)*bder(3))
+        hcurl = hcurl/sqrtg
 
         if (ieee_is_nan(bmod)) then
             print *, "bmod is NaN!"
