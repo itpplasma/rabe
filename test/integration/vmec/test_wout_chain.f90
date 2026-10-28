@@ -82,7 +82,7 @@ program test_wout_chain
     K = size(spec%xm)
     allocate (jac(n_params(K), n_outputs, 1))
     call evaluate(params, spec, settings, structure, values, jac(:, :, 1))
-    print "(A,5ES13.5)", "    values ", values
+    print "(A,7ES13.5)", "    values ", values
 
     ! Geometry direction (rmnc, zmns, lmns), iotaf fixed: the full chain.
     call wout_tangent_alloc(chain%ctx, t)
@@ -118,7 +118,7 @@ program test_wout_chain
         n_failed = n_failed + 1
     end if
     call fd_check("phiedge", t, dv(:, 1), scale_phi, .false., &
-                  absolute=[.true., .true., .true., .true., .false.])
+                  absolute=[.true., .true., .true., .true., .false., .true., .true.])
     ! Rmajor_p, read from the file and passed through to R.
     call wout_tangent_alloc(chain%ctx, t)
     t%rmajor = 1e-2_dp*chain%ctx%rmajor
@@ -132,7 +132,7 @@ program test_wout_chain
     t%phiedge = 3e-3_dp*chain%ctx%phiedge
     t%rmajor = -2e-3_dp*chain%ctx%rmajor
     call wout_chain_jvp(chain, [s_tor], jac, t, dv)
-    cot(:, 1) = [0.7_dp, -1.3_dp, 2.1_dp, 0.4_dp, -0.9_dp]
+    cot(:, 1) = [0.7_dp, -1.3_dp, 2.1_dp, 0.4_dp, -0.9_dp, 1.1_dp, -0.6_dp]
     call wout_chain_vjp(chain, [s_tor], jac, cot, tb)
     lhs = sum(cot*dv)
     rhs = sum(tb%rmnc*t%rmnc) + sum(tb%zmns*t%zmns) + sum(tb%lmns*t%lmns) &
@@ -257,9 +257,9 @@ contains
                 where (absolute) err(:, i) = abs(fd - analytic)/max(scale, 1e-300_dp)
             end if
         end do
-        print "(A,A30,A,5ES10.2)", "  ", label, " best rel err ", minval(err, dim=2)
+        print "(A,A30,A,7ES10.2)", "  ", label, " best rel err ", minval(err, dim=2)
         do i = 1, n_steps
-            print "(A,ES8.1,A,5ES10.2)", "    step ", steps(i), " rel err ", err(:, i)
+            print "(A,ES8.1,A,7ES10.2)", "    step ", steps(i), " rel err ", err(:, i)
         end do
         do o = 1, n_outputs
             if (scale(o) == 0.0_dp) cycle

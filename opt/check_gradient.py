@@ -59,7 +59,7 @@ def main(argv):
     rows = {"objective": g}
     for o in (0, 1):
         for i in range(S):
-            cot = np.zeros((S, 5))
+            cot = np.zeros((S, len(sd.OUTPUT_NAMES)))
             cot[i, o] = 1.0
             rows[f"{sd.OUTPUT_NAMES[o]}@{s_list[i]}"] = obj.vjp(x0, cot)
     d = smooth_direction(x0, int(inp.ntor), seed)
@@ -75,7 +75,7 @@ def main(argv):
             vm = obj.frozen_values(x0 - h * d, ev)
         except RuntimeError as err:
             print(f"h={h:.0e} frozen: {err}")
-            vp = vm = np.full((S, 5), np.nan)
+            vp = vm = np.full((S, len(sd.OUTPUT_NAMES)), np.nan)
         dv = (vp - vm) / (2 * h)
         fd_frozen["objective"].append(float((obj.reduce(vp) - obj.reduce(vm)) / (2 * h)))
         for o in (0, 1):

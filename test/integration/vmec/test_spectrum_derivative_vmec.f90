@@ -69,7 +69,7 @@ program test_spectrum_derivative_vmec
     call evaluate(params, spec, settings, structure, values, jac, diag)
     print "(A,A,I5,A,ES9.2,A,ES9.2)", trim(case_name), ": modes ", K, &
         "  spectral residual ", residual, "  eta_b gap ", diag%eta_b_gap
-    print "(A,5ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b): ", values
+    print "(A,7ES14.6)", "  values (L_A, L_B, L_S, nu_crit, eta_b, L_alpha, G_well): ", values
     print "(A,2I4,A,2ES10.2)", "  ties eta_b, nu_crit ", diag%eta_b_ties, &
         diag%nu_crit_ties, "  iota kinks ", diag%eta_b_iota_kink, &
         diag%nu_crit_iota_kink
@@ -127,7 +127,7 @@ contains
             err(:, i) = abs((v_plus - v_minus)/(2.0_dp*steps(i)) - analytic)/ &
                         max(abs(analytic), 1e-6_dp*scale, 1e-300_dp)
         end do
-        print "(A,I2,A,5ES10.2)", "  direction ", dir, " best rel err ", &
+        print "(A,I2,A,7ES10.2)", "  direction ", dir, " best rel err ", &
             minval(err, dim=2)
         do o = 1, n_outputs
             if (scale(o) == 0.0_dp) cycle
