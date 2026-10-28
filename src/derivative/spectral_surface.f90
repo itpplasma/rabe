@@ -8,6 +8,15 @@ module spectral_surface
     !! is an exact (linear) function of its coefficients. This is the field used
     !! by the derivative mode in `spectrum_derivative`, and it can also be fed to
     !! the standard rabe pipeline, because it extends `field_t`.
+    !!
+    !! The angles passed to the field may be measured from a shifted origin
+    !! (`theta_origin`, `phi_origin`): the series is evaluated at
+    !! `(theta + theta_origin, phi + phi_origin)`. rabe needs a minimum of the
+    !! ideal omnigenous field at the angular origin, and a quasi-isodynamic
+    !! spectrum in booz_xform convention has a maximum there, so the derivative
+    !! mode moves the origin by half a field period. The coefficients stay
+    !! those of the given spectrum, so derivatives with respect to them do not
+    !! change.
     use constants, only: dp
     use field_base, only: field_t
 
@@ -23,6 +32,8 @@ module spectral_surface
         real(dp), allocatable :: bmnc(:), nabla_s_mnc(:)
         real(dp) :: B_theta_covariant = 0.0_dp
         real(dp) :: B_phi_covariant = 0.0_dp
+        real(dp) :: theta_origin = 0.0_dp
+        real(dp) :: phi_origin = 0.0_dp
     contains
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
@@ -77,7 +88,8 @@ contains
         real(dp) :: arg
 
         do k = 1, self%n_modes
-            arg = self%xm(k)*theta - self%xn(k)*phi
+            arg = self%xm(k)*(theta + self%theta_origin) &
+                  - self%xn(k)*(phi + self%phi_origin)
             cos_k(k) = cos(arg)
             sin_k(k) = sin(arg)
         end do
@@ -147,7 +159,8 @@ contains
             error stop "compute_B_mod: spectral_surface_t not initialized"
         B_mod = 0.0_dp
         do k = 1, self%n_modes
-            B_mod = B_mod + self%bmnc(k)*cos(self%xm(k)*theta - self%xn(k)*phi)
+            B_mod = B_mod + self%bmnc(k)*cos(self%xm(k)*(theta + self%theta_origin) &
+                                             - self%xn(k)*(phi + self%phi_origin))
         end do
     end subroutine compute_B_mod
 
@@ -163,7 +176,8 @@ contains
         nabla_s = 0.0_dp
         do k = 1, self%n_modes
             nabla_s = nabla_s + &
-                      self%nabla_s_mnc(k)*cos(self%xm(k)*theta - self%xn(k)*phi)
+                      self%nabla_s_mnc(k)*cos(self%xm(k)*(theta + self%theta_origin) &
+                                              - self%xn(k)*(phi + self%phi_origin))
         end do
     end subroutine compute_nabla_s
 

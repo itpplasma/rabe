@@ -1,6 +1,6 @@
 program test_spectrum_derivative
     !! Finite-difference and adjoint checks of the derivative mode on synthetic
-    !! QH and QA spectra. The primal in derivative mode is smooth at frozen
+    !! QH, QA and QI spectra. The primal in derivative mode is smooth at frozen
     !! structure, so central differences converge as h^2 until roundoff, and the
     !! best step of a sweep (V curve) must agree with the analytic Jacobian.
     use constants, only: dp
@@ -11,7 +11,8 @@ program test_spectrum_derivative
                                    evaluate, spectrum_vjp, spectrum_jvp, &
                                    gauss_legendre_01, off_iota, off_G, off_I, &
                                    off_psi_edge, off_R
-    use synthetic_spectra, only: synthetic_qh, synthetic_qa
+    use synthetic_spectra, only: synthetic_qh, synthetic_qa, synthetic_qi, &
+                                 shift_half_period
 
     implicit none
 
@@ -26,6 +27,9 @@ program test_spectrum_derivative
     call check_case("QH", spec, settings, n_failed)
     call synthetic_qa(spec, settings)
     call check_case("QA", spec, settings, n_failed)
+    call synthetic_qi(spec, settings)
+    call check_case("QI", spec, settings, n_failed)
+    call check_qi_origin(n_failed)
 
     if (n_failed > 0) then
         print *, "FAILED checks: ", n_failed
@@ -167,6 +171,67 @@ contains
             end if
         end do
     end subroutine check_case
+
+    !> A QI spectrum with its maximum at the origin (booz_xform convention)
+    !! used to stop find_structure ("fewer than two maxima"). The derivative
+    !! mode now measures the labels from half a period away, so it must give
+    !! the same outputs as the explicitly half-period-shifted spectrum, and
+    !! its Jacobian must be that of the shifted spectrum with the mode rows
+    !! multiplied by the sign of the shift.
+    subroutine check_qi_origin(n_failed)
+        use constants, only: pi
+        integer, intent(inout) :: n_failed
+
+        real(dp), parameter :: tol = 1e-10_dp
+        type(surface_spectrum_t) :: spec, shifted
+        type(derivative_settings_t) :: settings
+        type(derivative_structure_t) :: structure, structure_shifted
+        real(dp), allocatable :: params(:), params_shifted(:), sign_k(:)
+        real(dp), allocatable :: jac(:, :), jac_shifted(:, :)
+        real(dp) :: values(n_outputs), values_shifted(n_outputs), err
+        integer :: K, P, o
+
+        call synthetic_qi(spec, settings)
+        shifted = spec
+        call shift_half_period(shifted, sign_k)
+        K = size(spec%xm)
+        P = n_params(K)
+
+        call find_structure(spec, settings, structure)
+        call find_structure(shifted, settings, structure_shifted)
+        if (abs(structure%phi_origin - pi/spec%nfp) > 0.0_dp .or. &
+            structure%theta_origin /= 0.0_dp) then
+            print *, "QI origin: expected phi_origin = pi/nfp, got ", &
+                structure%theta_origin, structure%phi_origin
+            n_failed = n_failed + 1
+        end if
+        if (structure_shifted%phi_origin /= 0.0_dp) then
+            print *, "QI origin: shifted spectrum moved its origin"
+            n_failed = n_failed + 1
+        end if
+
+        call pack_parameters(spec, params)
+        call pack_parameters(shifted, params_shifted)
+        allocate (jac(P, n_outputs), jac_shifted(P, n_outputs))
+        call evaluate(params, spec, settings, structure, values, jac)
+        call evaluate(params_shifted, shifted, settings, structure_shifted, &
+                      values_shifted, jac_shifted)
+        jac_shifted(1:K, :) = spread(sign_k, 2, n_outputs)*jac_shifted(1:K, :)
+        jac_shifted(K + 1:2*K, :) = spread(sign_k, 2, n_outputs)*jac_shifted(K + 1:2*K, :)
+        print "(A,5ES14.6)", "QI origin: values ", values
+        do o = 1, n_outputs
+            err = abs(values(o) - values_shifted(o))/abs(values_shifted(o))
+            if (err > tol) then
+                print *, "QI origin: output ", o, " differs from shifted spectrum ", err
+                n_failed = n_failed + 1
+            end if
+            err = maxval(abs(jac(:, o) - jac_shifted(:, o)))/maxval(abs(jac_shifted(:, o)))
+            if (err > tol) then
+                print *, "QI origin: Jacobian column ", o, " differs ", err
+                n_failed = n_failed + 1
+            end if
+        end do
+    end subroutine check_qi_origin
 
     !> Central differences over a step sweep; the best step must agree with
     !! the analytic directional derivative for every output.
