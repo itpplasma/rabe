@@ -4,7 +4,7 @@ include(FetchContent)
 set(LIBNEO_PATH "" CACHE PATH "Local libneo source directory (leave empty to fetch)")
 
 # -DLIBNEO_REF=<branch|tag|sha>: fetch this libneo revision instead of the pin.
-set(LIBNEO_REF "7262c32bf0406594a8ef27e84654d249aef2cb86" CACHE STRING
+set(LIBNEO_REF "ca49926c784b1f4dece35b8252b9cbdf602c45cb" CACHE STRING
     "libneo git ref (branch, tag, or sha) to fetch")
 
 # rabe links only libneo's light targets (boozer, vmec_support, interpolate);
