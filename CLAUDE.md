@@ -52,7 +52,7 @@ rabe_lib (main static library)
 │   netcdf.f90 - NetCDF output via type netcdf_t
 ├── precession_lib (src/precession/)
 │   grid.f90 - Integration grid type and bounce/spline routines
-│   precession.f90 - Magnetic well and turning-point helpers
+│   precession.f90 - Precession correction and magnetic-well helpers
 ├── error_handling_lib (src/error_handling/)
 │   error_handling.f90 - Sanity-check helpers: failed_sanity_check(),
 │                        reset_failed_check_counter(), did_fail_any_sanity_check(),
@@ -85,7 +85,8 @@ External dependencies: NetCDF-Fortran, libneo, quadpack.
 - `test/integration/vmec/` - VMEC field comparison tests
 - `test/plot/` - Visualization tests; see `test/plot/README.md` for API and patterns
 - `test/golden/` - Golden record regression test (label: `golden`)
-- `test/helpers/` - Shared test utilities (analytical fields, mock fields, readers, plot helpers)
+- `test/helpers/` - Shared test utilities (analytical fields, mock fields, readers, plot helpers,
+  `precession_reference` with test-only precession routines)
 - `test/internal/` - Private tests with legacy NEO-2 comparisons (git submodule, not in public repo)
 
 ## Key Development Patterns

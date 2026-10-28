@@ -9,7 +9,7 @@ program test_precession_analytic
     use precession, only: get_smallest_maximum
     use precession, only: get_biggest_minimum
     use precession, only: set_fieldline_minima
-    use precession, only: integrate_radial_drift
+    use precession_reference, only: integrate_radial_drift
     use grid_mod, only: integration_grid_t
     use grid_mod, only: fieldline_for_precession_t
     use grid_mod, only: set_integration_grids
