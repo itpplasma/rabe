@@ -255,9 +255,12 @@ effect of bootstrap resonances and is not yet fully validated.
 
 **Status: under active development.**
 
-Adjoint-based gradients of the off-set coefficients with respect
-to e.g. Boozer modes $B_{mn}$ and $\iota$ are being implemented internally currently.
-A usage guide will be added here once the feature lands.
+`rabe_deriv.x` (opt-in, built next to `rabe.x`) returns `Lambda_A`, `Lambda_B`,
+`Lambda_S`, `nu_star_crit` and `eta_b` per surface together with their exact
+Jacobian with respect to the Boozer spectrum (`bmnc`, `|grad s|` modes, `iota`,
+`G`, `I`, `psi_edge`, `R`) in `rabe_deriv.nc`. Method, surrogates for the
+non-smooth parts, input and output layout are described in
+[src/derivative/README.md](src/derivative/README.md).
 
 ## Build and Tests
 
