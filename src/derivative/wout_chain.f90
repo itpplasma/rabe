@@ -114,8 +114,8 @@ contains
         end do
     end subroutine wout_chain_jvp
 
-    !> Adjoint: wout cotangent `t` (overwritten) of the output cotangent
-    !! `cotangent(output, surface)`, summed over all surfaces.
+    !> Adjoint of the chain, the wout cotangent `t` (overwritten) of the
+    !! output cotangent `cotangent(output, surface)`, summed over all surfaces.
     subroutine wout_chain_vjp(chain, s_list, jacobians, cotangent, t)
         type(wout_chain_t), intent(in) :: chain
         real(dp), intent(in) :: s_list(:)
