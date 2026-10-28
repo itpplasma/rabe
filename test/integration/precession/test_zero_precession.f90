@@ -45,10 +45,7 @@ program test_zero_precession
     integer :: n_modes, idx
     logical :: test_failed
 
-    real(dp) :: B_covariant_phi, B_covariant_theta
-    real(dp) :: conversion_factor
     real(dp) :: expected, found
-    real(dp) :: dummy(11), hcovar(3), hctrvr(3)
 
     ! numerical check variables
     type(fieldline_for_precession_t), dimension(:), allocatable :: &
@@ -116,7 +113,7 @@ program test_zero_precession
         if (not_same(found, expected, reltol_in=tol, &
                      abstol_in=0.0_dp)) then
             print *, "---------------------------------------------------"
-            print *, "test_precession_analytic failed: numerical", idx
+            print *, "test_zero_precession failed: mode", idx
             print *, "found: ", found
             print *, "expected: ", expected
             print *, "relative error: ", abs(found - expected)/abs(expected)

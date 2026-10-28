@@ -1,4 +1,4 @@
-program test_zero_precession
+program test_g_zero_precession
     use constants, only: dp, pi
     use anti_sigma_field, only: anti_sigma_field_t
     use mock_perturbed_field, only: mock_perturbed_field_t
@@ -6,18 +6,8 @@ program test_zero_precession
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_from_labels
     use precession, only: compute_precession_correction
-    use precession, only: get_smallest_maximum
-    use precession, only: get_biggest_minimum
-    use precession, only: set_fieldline_minima
-    use precession_reference, only: integrate_radial_drift
-    use grid_mod, only: integration_grid_t
-    use grid_mod, only: fieldline_for_precession_t
-    use grid_mod, only: set_integration_grids
-    use grid_mod, only: compute_bounce_integrals
-    use grid_mod, only: set_splines
     use fieldline_labels, only: fourier_transform_over_label
     use fieldline_labels, only: fieldline_modes_t
-    use fourier, only: real_ft
     use utils, only: not_same, linspace
 
     implicit none
@@ -52,15 +42,6 @@ program test_zero_precession
     real(dp) :: conversion_factor
     real(dp) :: expected, found
     real(dp) :: dummy(11), hcovar(3), hctrvr(3)
-
-    ! numerical check variables
-    type(fieldline_for_precession_t), dimension(:), allocatable :: &
-        prec_fieldlines
-    type(integration_grid_t) :: grid
-    real(dp) :: eta_t, eta_c
-    real(dp), dimension(n_fieldlines) :: radial_drift_integrals
-    integer, parameter :: n_modes_ft = n_fieldlines/2 + 1
-    real(dp), dimension(n_modes_ft) :: numerical_cos, numerical_sin
 
     test_failed = .false.
 
@@ -97,7 +78,7 @@ program test_zero_precession
 
     n_modes = n_fieldlines/2 + 1
 
-    ! --- Test 1: compare flux_modes with fieldline integral modes ---
+    ! compare flux_modes with fieldline integral modes
     do idx = 2, n_modes
         expected = fieldline_modes%radial_drift%sin_coeffs(idx) &
                    *conversion_factor
@@ -105,7 +86,7 @@ program test_zero_precession
         if (not_same(found, expected, reltol_in=tol, &
                      abstol_in=0.0_dp)) then
             print *, "---------------------------------------------------"
-            print *, "test_precession_analytic failed: flux_mode", idx
+            print *, "test_g_zero_precession failed: mode", idx
             print *, "found: ", found
             print *, "expected: ", expected
             test_failed = .true.
@@ -114,4 +95,4 @@ program test_zero_precession
 
     if (test_failed) error stop
 
-end program test_zero_precession
+end program test_g_zero_precession
