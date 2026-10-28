@@ -74,13 +74,19 @@ a1f7bfc or later), then run the scripts from this directory.
 - `lsq_opt.py`: E1, E2 and E3 (`nu*_crit`, `var_dJ`, `Gamma_s`, needs a pyrabe
   with those outputs) as a residual vector with the constraints as penalty or
   augmented-Lagrangian residuals, the exact Jacobian, Levenberg-Marquardt with
-  a step cap and an augmented Lagrangian.
+  a step cap and an augmented Lagrangian. LM trial residuals retain the accepted
+  point's structure and iota reference. After acceptance it re-finds the
+  structure, records the residual jump in `info.structure_jump`, and rebuilds
+  the Jacobian. A material jump requires another iteration before convergence
+  can be declared. Checkpoints contain only re-found accepted points.
 - `run_opt.py`: the checkpointed campaign entry point
   (`--engine vmecpp --objective E1|E2|E3 --solver lm|trf|lbfgs|al`) with
   continuation in the free modes and in `ns`, multi-start and SIMPLE staging.
 - `check_jacobian.py`: FD V-curve of the residual Jacobian, with the rabe
   structure re-found and frozen; `test_lsq_opt.py`: the batched adjoint
   against vmecpp's own VJP and the Jacobian against a frozen-structure FD.
+- `test_lm.py`: solver branch selection, structure jumps, resume and forward
+  cache checks with synthetic residuals, without equilibrium solves.
 - `test_rabe_boundary.py`: pytest (`RABE_OPT_INPUT=<input> pytest opt`), the
   offset gradient and the alpha objective with aspect and iota penalties
   against re-solved central differences.
