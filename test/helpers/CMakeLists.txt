@@ -3,6 +3,7 @@ add_library(helpers_lib STATIC
   mock_field_3d.f90
   mock_perturbed_field.f90
   anti_sigma_field.f90
+  shaped_well_field.f90
   horner_fourier_field.f90
   plot_quantities.f90
   readers.f90
