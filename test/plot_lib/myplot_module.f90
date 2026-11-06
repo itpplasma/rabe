@@ -206,13 +206,15 @@ contains
     end subroutine add_contour
 
     !> Saves the figure as <graphs_dir>/<program>_<nn>_<content>.png, numbered in
-    !> the order of the save calls of this program.
+    !> the order of the save calls of this program, and next to it the .py
+    !> script that recreates it (contains the plotted data).
     subroutine save(self, content)
         class(myplot), intent(inout) :: self
         character(len=*), intent(in) :: content
 
         character(len=4096) :: program_path
         character(len=2) :: number
+        character(len=:), allocatable :: name
         integer :: first, last
 
         call get_command_argument(0, program_path)
@@ -222,8 +224,8 @@ contains
 
         n_saved = n_saved + 1
         write (number, '(I2.2)') n_saved
-        call self%plt%savefig(graphs_dir//"/"//program_path(first:last)//"_" &
-                              //number//"_"//content//".png")
+        name = graphs_dir//"/"//program_path(first:last)//"_"//number//"_"//content
+        call self%plt%savefig(name//".png", pyfile=name//".py")
     end subroutine save
 
 end module myplot_module
