@@ -57,8 +57,8 @@ call plt%add_contour(x, y, f, levels, colorbar, filled, cmap)
 ! Add a line colored by a third variable
 call plt%add_colored_line(x, y, color, cmap, clabel, linewidth)
 
-! Show the figure
-call plt%show()
+! Save the figure as test/graphs/<program>_<nn>_<content>.png
+call plt%save(content)
 ```
 
 ## Minimal contour example
@@ -86,6 +86,6 @@ program my_plot
 
     call plt%initialize(xlabel="x", ylabel="y", title="Example")
     call plt%add_contour(x, y, f, levels=20, colorbar=.true., filled=.true.)
-    call plt%show()
+    call plt%save("contour")
 end program my_plot
 ```
