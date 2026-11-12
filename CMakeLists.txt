@@ -5,6 +5,7 @@ project(rabe)
 enable_language(Fortran)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/ItpDeps.cmake)
 include(compiler)
 
 # required for fetching dependencies
