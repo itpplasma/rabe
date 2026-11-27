@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781116605873,
+  "lastUpdate": 1795805115218,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -384,6 +384,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 71470,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "94d849409e5927afc13f94c483aa294f30901b99",
+          "message": "ci: run checks in the merge queue, Benchmark history on main again (#149)\n\n* ci: run checks in the merge queue, Benchmark history on main again\n\ntest, Golden Record and Benchmark run on merge_group. Benchmark runs in\nthe queue and on push to main (stores the history again, lost when the\npush trigger was removed); on PRs its job is skipped.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: Benchmark runs on PRs again\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* Require the maintainer's review via CODEOWNERS\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-27T18:32:46Z",
+          "tree_id": "b5e23345ac2b336b1049d67e7f61022eced90d66",
+          "url": "https://github.com/itpplasma/rabe/commit/94d849409e5927afc13f94c483aa294f30901b99"
+        },
+        "date": 1795805114175,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9968,
+            "unit": "ratio",
+            "extra": "current: 31060 ms, baseline: 31160 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 31060,
             "unit": "ms"
           }
         ]
