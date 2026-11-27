@@ -1,7 +1,6 @@
 name: Benchmark
 
 on:
-  # job skipped on PRs: reported only so they can enter the merge queue
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
@@ -17,7 +16,7 @@ permissions:
 
 jobs:
   benchmark:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-22.04
     env:
       CTEST_LAST_TEST: build/test/Testing/Temporary/LastTest.log
@@ -43,7 +42,9 @@ jobs:
     - name: Determine baseline ref
       id: baseline
       run: |
-        if [ "${{ github.event_name }}" = "merge_group" ]; then
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+        elif [ "${{ github.event_name }}" = "merge_group" ]; then
           echo "sha=${{ github.event.merge_group.base_sha }}" >> "$GITHUB_OUTPUT"
         elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
           echo "sha=$(git rev-parse HEAD^)" >> "$GITHUB_OUTPUT"
