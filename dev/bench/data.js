@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795805115218,
+  "lastUpdate": 1795889525006,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -419,6 +419,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 31060,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "2f375d0c5d812005e84b1242ec7cac4798146363",
+          "message": "feat: boozmn spline grid as input; electric_rabe loader by field_type (#155)\n\n* feat: boozmn spline grid as input (n_rho, n_theta, n_zeta)\n\nThe boozmn loader used libneo's fixed 30 x 48 x 96 grid. For CIEMAT QI,\nderivatives of |B| change by 0.6 % when n_theta goes from 48 to 96.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 5ea10066a0b97c8f22302a7a3d8353e41332ea3f)\n\n* feat: electric_rabe selects the field loader by field_type\n\nSame selection as rabe.x, so electric_rabe can read boozmn files.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit a10d4a0ee73e2e7b3197aabbcd3383ea3b0bd508)\n\n* update: Readme\n\n---------\n\nCo-authored-by: Bot <bot@nt-b070.wlcli.tugraz.at>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: GeorgGrassler <100583655+GeorgGrassler@users.noreply.github.com>",
+          "timestamp": "2026-11-28T18:00:12Z",
+          "tree_id": "0fcfcbe767962de1f19cf30203eee646da1aa2f7",
+          "url": "https://github.com/itpplasma/rabe/commit/2f375d0c5d812005e84b1242ec7cac4798146363"
+        },
+        "date": 1795889524067,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.998,
+            "unit": "ratio",
+            "extra": "current: 25460 ms, baseline: 25510 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 25460,
             "unit": "ms"
           }
         ]
