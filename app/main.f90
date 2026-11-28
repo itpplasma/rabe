@@ -63,7 +63,7 @@ program main
 
     call read_namelist(input_file)
     call set_unsafe_mode(unsafe_mode)
-    if (len_trim(flocks_dir) > 0) call check_flocks_dir_exists()
+    if (len_trim(flocks_dir) > 0) call check_exists(flocks_dir)
     nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
     n_stor = size(s_tor)
@@ -96,7 +96,7 @@ program main
         call make_flock_of_fieldlines(flock, max_n_fieldlines, iota, &
                                       field, M_pol, N_tor, nfp, &
                                       split_maxima(this))
-        if (len_trim(flocks_dir) > 0) call write_flock(flock, this)
+        if (len_trim(flocks_dir) > 0) call write_flock(flock, this, flocks_dir)
 
         dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
                                                         nint(sign_sqrtg))
@@ -220,7 +220,9 @@ program main
 
 contains
 
-    subroutine check_flocks_dir_exists()
+    subroutine check_exists(flocks_dir)
+        character(len=*) :: flocks_dir
+
         integer :: unit, ios
         character(len=:), allocatable :: probe
 
@@ -232,12 +234,13 @@ contains
             error stop
         end if
         close (unit, status="delete")
-    end subroutine check_flocks_dir_exists
+    end subroutine check_exists
 
     !> Field line diagnostic of surface k: flocks_dir/flock_<k>.nc
-    subroutine write_flock(flock, k)
+    subroutine write_flock(flock, k, flocks_dir)
         type(flock_of_fieldlines_t), intent(in) :: flock
         integer, intent(in) :: k
+        character(len=*) :: flocks_dir
 
         type(netcdf_t) :: nc
         character(len=16) :: name
