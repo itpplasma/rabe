@@ -119,12 +119,13 @@ contains
             test_failed = .true.
         end if
 
+        ! semiconvergent 140/99 is closer than the convergent 99/70
         call rational_approx(sqrt(2.0_dp), 100, p, q)
-        if (p /= 99 .or. q /= 70) then
+        if (p /= 140 .or. q /= 99) then
             print *, "-------------------------------------------------------------"
             print *, "test_diophantine failed: rational_approx(sqrt(2), 100)"
             print *, "found: ", p, "/", q
-            print *, "expected: 99 / 70"
+            print *, "expected: 140 / 99"
             test_failed = .true.
         end if
     end subroutine test_rational_approx
