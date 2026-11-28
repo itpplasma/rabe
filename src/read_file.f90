@@ -19,6 +19,9 @@ module read_file
     integer, public, protected :: n_eta
     logical, public, protected :: unsafe_mode
     character(len=256), public, protected :: flocks_dir
+    integer, public, protected :: n_rho
+    integer, public, protected :: n_theta
+    integer, public, protected :: n_zeta
 
     real(dp), public, protected :: s_tor_min
     real(dp), public, protected :: s_tor_max
@@ -39,6 +42,9 @@ module read_file
         n_eta, &
         unsafe_mode, &
         flocks_dir
+        n_rho, &
+        n_theta, &
+        n_zeta
 
 contains
 
@@ -75,6 +81,9 @@ contains
         flocks_dir = ''
         should_calc_shaing_callen = .false.
         n_eta = 100
+        n_rho = 30
+        n_theta = 48
+        n_zeta = 96
         s_tor_min = nan_value
         s_tor_max = nan_value
         n_s_tor = 0
