@@ -29,7 +29,6 @@ program electric_rabe
                          M_pol, &
                          N_tor, &
                          s_tor, &
-                         sign_sqrtg, &
                          max_n_fieldlines
     use read_precession, only: read_precession_namelist
     use read_precession, only: Omega_hat, &
