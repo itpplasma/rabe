@@ -96,7 +96,7 @@ No system NetCDF library is required.
    `init_from_vmec`, `booz_xform` -> `init_from_boozmn`, `chartmap` ->
    `init_from_chartmap`) and initialize from the `.nc` file named by `field_file`
 3. Per flux surface: fix field, compute field lines, deviation factors, surface averages, optionally Shaing-Callen trapped fraction; if `unsafe_mode = .true.` and a sanity check fails, NaN-fill that surface's outputs instead of halting
-4. Write results to `rabe.nc` (NetCDF)
+4. Write results to `rabe.nc` (NetCDF); with `flocks_dir` set, step 3 also writes each surface's field lines to `flocks_dir/flock_<k>.nc`
 
 ### Key derived types
 
@@ -129,7 +129,7 @@ No system NetCDF library is required.
 
 - **Input**: Namelist file `rabe.in` (namelist `rabe_config`)
 - **Field data**: VMEC `.nc` files
-- **Output**: `rabe.nc` (NetCDF)
+- **Output**: `rabe.nc` (NetCDF); optional `flocks_dir/flock_<k>.nc` field line diagnostic
 - **Radial label**: coefficients are per effective radius r if the field has
   `|grad s|` (`has_nabla_s`, VMEC input only), otherwise per s; both apps write
   the label as global attribute `radial_label`
