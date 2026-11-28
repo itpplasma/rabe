@@ -344,10 +344,9 @@ contains
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod
 
-    !> NaN if the field carries no metric (boozmn, chartmap input).
+    !> Only for fields with has_nabla_s (VMEC input).
     subroutine compute_nabla_s(self, theta, phi, nabla_s)
         use boozer_sub, only: splint_boozer_coord
-        use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
         class(boozer_field_t), intent(in) :: self
         real(dp), intent(in) :: theta, phi
         real(dp), intent(out) :: nabla_s
@@ -356,10 +355,8 @@ contains
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_nabla_s: call fix_to_surface first"
-        if (.not. self%has_nabla_s) then
-            nabla_s = ieee_value(nabla_s, ieee_quiet_nan)
-            return
-        end if
+        if (.not. self%has_nabla_s) &
+            error stop "compute_nabla_s: field has no |grad s|"
 
         call splint_boozer_coord(self%fixed_stor, theta, phi, 0, &
                                  dummy(1), dummy(2), dummy(3), &

@@ -1,6 +1,5 @@
 program electric_rabe
-    use constants, only: dp, pi, machine_eps
-    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+    use constants, only: dp, pi
     use boozer_field, only: boozer_field_t
     use fieldline_mod, only: flock_of_fieldlines_t
     use make_fieldline, only: make_flock_of_fieldlines
@@ -18,7 +17,7 @@ program electric_rabe
     use fieldline_labels, only: modes_t
 
     use surface_average_mod, only: surface_average_t, calc_surface_averages
-    use coefficients, only: calc_nu_star_crit
+    use coefficients, only: calc_nu_star_crit, calc_average_nabla_s
     use netcdf_mod, only: netcdf_t
     use fieldline_labels, only: fieldline_modes_t, fourier_transform_over_label
     use git_version, only: git_hash
@@ -29,8 +28,7 @@ program electric_rabe
                          N_tor, &
                          s_tor, &
                          sign_sqrtg, &
-                         max_n_fieldlines, &
-                         radial_label
+                         max_n_fieldlines
     use read_precession, only: read_precession_namelist
     use read_precession, only: Omega_hat, &
                                nu_star, &
@@ -49,6 +47,7 @@ program electric_rabe
 
     real(dp) :: R ![m]
     type(surface_average_t) :: average
+    real(dp) :: average_nabla_s
     real(dp) :: iota
     real(dp) :: B_theta_covariant, B_phi_covariant
     real(dp) :: nfp
@@ -173,11 +172,10 @@ program electric_rabe
         end do
         lambda_off = lambda_off*0.75_dp/covariant_factor*sign_sqrtg
         lambda_off_modes = lambda_off_modes*0.75_dp/covariant_factor*sign_sqrtg
-        if (radial_label == 'r') then
-            if (ieee_is_nan(average%nabla_s) .or. abs(average%nabla_s) < machine_eps) &
-                error stop "radial_label = 'r' needs <|grad s|>, which is NaN or zero"
-            lambda_off = lambda_off/average%nabla_s
-            lambda_off_modes = lambda_off_modes/average%nabla_s
+        if (field%has_nabla_s) then
+            average_nabla_s = calc_average_nabla_s(flock, field)
+            lambda_off = lambda_off/average_nabla_s
+            lambda_off_modes = lambda_off_modes/average_nabla_s
         end if
 
         deallocate (fieldlines_precession)
@@ -197,6 +195,13 @@ program electric_rabe
     call nc_output%add_global_attribute("definition", &
                                         "lambda^{off}_bB = ?")
     call nc_output%add_global_attribute("git_hash", git_hash)
+    if (field%has_nabla_s) then
+        call nc_output%add_global_attribute("radial_label", &
+                                            "coefficients are per gradient of the effective radius r, dV/dr = S (V: enclosed volume, S: flux surface area)")
+    else
+        call nc_output%add_global_attribute("radial_label", &
+                                            "coefficients are per gradient of the normalized toroidal flux s; the field provides no |grad s| for the effective radius")
+    end if
     call nc_output%def_dim(dim_name, n_stor)
     call nc_output%add_real_1d("s_tor", dim_name)
     call nc_output%add_attr("s_tor", "long_name", &
@@ -214,7 +219,6 @@ program electric_rabe
                             "geometrical factor")
     call nc_output%add_attr("lambda_off", "unit", &
                             "[1]")
-    call nc_output%add_attr("lambda_off", "radial_label", radial_label)
 
     call nc_output%def_dim("label_mode", n_modes)
     call nc_output%add_real_1d("mode_numbers", "label_mode")

@@ -13,7 +13,6 @@ module mock_perturbed_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
         procedure :: get_covariant_components
     end type mock_perturbed_field_t
@@ -68,15 +67,6 @@ contains
         call self%pert_field%compute_B_mod(theta, phi, B_pert_mod)
         B_mod = B_mod + B_pert_mod
     end subroutine compute_B_mod
-
-    subroutine compute_nabla_s(self, theta, phi, nabla_s)
-        class(mock_perturbed_field_t), intent(in) :: self
-        real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: nabla_s
-
-        nabla_s = 1.0_dp
-
-    end subroutine compute_nabla_s
 
     real(dp) function rel_accuracy_B(self)
         class(mock_perturbed_field_t), intent(in) :: self

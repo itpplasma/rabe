@@ -14,11 +14,8 @@ contains
 
     subroutine calc_fieldline_integrals(field, fieldline)
         use integrate_substituted, only: integrate_1d_substituted
-        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
         type(fieldline_t), intent(inout), target :: fieldline
         class(field_t), intent(in), target :: field
-
-        real(dp) :: nabla_s
 
         current_field => field
         current_fieldline => fieldline
@@ -37,17 +34,6 @@ contains
                                       fieldline%phi_max(1), &
                                       fieldline%phi_max(2), &
                                       fieldline%integral_one_over_B_squared)
-
-        call field%compute_nabla_s(fieldline%get_theta(fieldline%phi_max(1)), &
-                                   fieldline%phi_max(1), nabla_s)
-        if (ieee_is_nan(nabla_s)) then
-            fieldline%integral_nabla_s_over_B_squared = nabla_s
-        else
-            call integrate_1d_substituted(wrapper_nabla_s_over_B_squared, &
-                                          fieldline%phi_max(1), &
-                                          fieldline%phi_max(2), &
-                                          fieldline%integral_nabla_s_over_B_squared)
-        end if
 
         current_field => null()
         current_fieldline => null()
@@ -95,19 +81,5 @@ contains
         theta = current_fieldline%get_theta(phi)
         wrapper_one_over_B_squared = 1.0_dp/B_squared(current_field, theta, phi)
     end function wrapper_one_over_B_squared
-
-    function wrapper_nabla_s_over_B_squared(phi)
-        use fieldline_integrands, only: nabla_s_over_B_squared
-
-        real(dp), intent(in) :: phi
-        real(dp) :: wrapper_nabla_s_over_B_squared
-
-        real(dp) :: theta
-
-        theta = current_fieldline%get_theta(phi)
-        wrapper_nabla_s_over_B_squared = nabla_s_over_B_squared(current_field, &
-                                                                theta, &
-                                                                phi)
-    end function wrapper_nabla_s_over_B_squared
 
 end module fieldline_integrals

@@ -34,7 +34,6 @@ module fieldline_mod
         real(dp) :: delta_aspect_ratio
         real(dp) :: integral_one_over_B_squared
         real(dp) :: radial_drift
-        real(dp) :: integral_nabla_s_over_B_squared
     contains
         generic :: get_theta => get_theta_scalar, get_theta_array
         procedure, private :: get_theta_scalar
