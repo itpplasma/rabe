@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795898299011,
+  "lastUpdate": 1795898806004,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -559,6 +559,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 16000,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "b2a8f8b71bc4b464f0d3f3da641f7a6b9b9784c4",
+          "message": "rational_approx: best approximation instead of last convergent (#153)\n\n* fix: rational_approx returns the best approximation, not the last convergent\n\nWhen the next convergent does not fit, the largest semiconvergent that does\ncan be closer. For QI with iota_p/2pi = iota/8 = 0.109 and 8 field lines the\nlast convergent was 0/1, i.e. iota ~ 0; the best approximation is 1/8.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* test: drop the 0.1094 case of rational_approx\n\nIt takes the same branch as the sqrt(2) case.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Bot <bot@nt-b070.wlcli.tugraz.at>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>\nCo-authored-by: GeorgGrassler <100583655+GeorgGrassler@users.noreply.github.com>",
+          "timestamp": "2026-11-28T20:35:14Z",
+          "tree_id": "46ff39b6a2a948540d70a880bcf78469ce84efdc",
+          "url": "https://github.com/itpplasma/rabe/commit/b2a8f8b71bc4b464f0d3f3da641f7a6b9b9784c4"
+        },
+        "date": 1795898805056,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.001,
+            "unit": "ratio",
+            "extra": "current: 31090 ms, baseline: 31060 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 31090,
             "unit": "ms"
           }
         ]
