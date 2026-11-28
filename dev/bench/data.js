@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795898806004,
+  "lastUpdate": 1795899694568,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -594,6 +594,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 31090,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "b8e214c2cb9f18974e7f2ccbfa6c5570d8cb93cc",
+          "message": "fix: electric_rabe lambda_off without the sign_sqrtg factor (#154)\n\n* fix: electric_rabe lambda_off without the sign_sqrtg factor\n\nlambda_off at Omega_hat = 0 had the opposite sign of rabe's Lambda_B; the\ngolden reference is flipped accordingly.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 12d30dbad9ec23b260e9873f1982edf5e5cbc592)\n\n* electric_rabe: drop unused sign_sqrtg import\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* golden: electric_rabe record from a clean build of 5c2cdac\n\nThe previous file came from a build of another branch (634ce2c) and carried\nits attributes; the data is unchanged.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* golden: electric_rabe record from a clean build of 4427a13\n\nSame as main's record (8 field lines) with lambda_off of opposite sign.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Bot <bot@nt-b070.wlcli.tugraz.at>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: GeorgGrassler <100583655+GeorgGrassler@users.noreply.github.com>\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>",
+          "timestamp": "2026-11-28T20:49:20Z",
+          "tree_id": "2f809fda02c91e52adebabd710632263f0dc3652",
+          "url": "https://github.com/itpplasma/rabe/commit/b8e214c2cb9f18974e7f2ccbfa6c5570d8cb93cc"
+        },
+        "date": 1795899693996,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9942,
+            "unit": "ratio",
+            "extra": "current: 31000 ms, baseline: 31180 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 31000,
             "unit": "ms"
           }
         ]
