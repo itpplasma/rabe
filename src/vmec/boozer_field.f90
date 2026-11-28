@@ -27,6 +27,7 @@ module boozer_field
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
         real(dp) :: R
+        logical :: has_nabla_s
     contains
         procedure :: init_from_vmec
         procedure :: init_from_boozmn
@@ -74,6 +75,7 @@ contains
                                     angular_spline_order, &
                                     grid_refinement)
         call finish_init(self)
+        self%has_nabla_s = .true.
 
     end subroutine init_from_vmec
 
@@ -90,6 +92,7 @@ contains
         call assert_no_active_field("init_from_boozmn")
         call load_boozer_from_boozmn(boozmn_file, n_rho, n_theta, n_zeta)
         call finish_init(self)
+        self%has_nabla_s = .false.
 
     end subroutine init_from_boozmn
 
@@ -104,6 +107,7 @@ contains
         call assert_no_active_field("init_from_chartmap")
         call load_boozer_from_chartmap(chartmap_file)
         call finish_init(self)
+        self%has_nabla_s = .false.
 
     end subroutine init_from_chartmap
 
@@ -342,6 +346,7 @@ contains
                            hcovar, hctrvr, hcurl)
     end subroutine compute_B_mod
 
+    !> Only for fields with has_nabla_s (VMEC input).
     subroutine compute_nabla_s(self, theta, phi, nabla_s)
         use boozer_sub, only: splint_boozer_coord
         class(boozer_field_t), intent(in) :: self
@@ -352,6 +357,8 @@ contains
 
         if (.not. self%fixed_to_surface) &
             error stop "compute_nabla_s: call fix_to_surface first"
+        if (.not. self%has_nabla_s) &
+            error stop "compute_nabla_s: field has no |grad s|"
 
         call splint_boozer_coord(self%fixed_stor, theta, phi, 0, &
                                  dummy(1), dummy(2), dummy(3), &

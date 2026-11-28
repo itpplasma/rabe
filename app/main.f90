@@ -20,6 +20,7 @@ program main
     use make_fieldline, only: make_flock_of_fieldlines
     use coefficients, only: calc_nu_star_crit, &
                             calc_finite_boundary_layer_correction, &
+                            calc_average_nabla_s, &
                             calc_gradient_scaling_factor_r_eff, &
                             calc_offset_coefficients
     use shaing_callen_mod, only: calc_lambda_LC, get_non_omnigenous_remainder
@@ -98,8 +99,13 @@ program main
                                       split_maxima(this))
         if (len_trim(flocks_dir) > 0) call write_flock(flock, this, flocks_dir)
 
-        dr_dAtheta = calc_gradient_scaling_factor_r_eff(flock, field%psi_tor_edge, &
-                                                        nint(sign_sqrtg))
+        if (field%has_nabla_s) then
+            dr_dAtheta = calc_gradient_scaling_factor_r_eff( &
+                         calc_average_nabla_s(flock, field), &
+                         field%psi_tor_edge, nint(sign_sqrtg))
+        else
+            dr_dAtheta = sign_sqrtg/field%psi_tor_edge
+        end if
         R = field%R
         call calc_offset_coefficients(flock, R, dr_dAtheta, &
                                       Lambda_A(this), Lambda_B(this))
@@ -141,6 +147,16 @@ program main
     call nc_output%add_global_attribute("definition", &
                           "lambda^{off}_bB = Lambda_A/sqrt(nu_star) + Lambda_B/nu_star")
     call nc_output%add_global_attribute("git_hash", git_hash)
+    if (field%has_nabla_s) then
+        call nc_output%add_global_attribute("radial_label", &
+            "coefficients are per gradient of the effective radius "// &
+            "r, dV/dr = S (V: enclosed volume, S: flux surface area)")
+    else
+        call nc_output%add_global_attribute("radial_label", &
+            "coefficients are per gradient of the normalized "// &
+            "toroidal flux s; the field provides no |grad s| for "// &
+            "the effective radius")
+    end if
     call nc_output%def_dim(dim_name, n_stor)
     call nc_output%add_real_1d("s_tor", dim_name)
     call nc_output%add_attr("s_tor", "long_name", &

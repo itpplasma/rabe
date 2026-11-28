@@ -13,7 +13,6 @@ module field_base
         procedure(compute_B_sqrtg_dB_dx), deferred :: compute_B_sqrtg_dB_dx
         procedure(compute_B_and_dB_dx), deferred :: compute_B_and_dB_dx
         procedure(compute_B_mod), deferred :: compute_B_mod
-        procedure(compute_nabla_s), deferred :: compute_nabla_s
         procedure(rel_accuracy_B), deferred :: rel_accuracy_B
         procedure(get_covariant_components), deferred :: get_covariant_components
     end type field_t
@@ -45,14 +44,6 @@ module field_base
         end subroutine
     end interface
 
-    interface
-        subroutine compute_nabla_s(self, theta, phi, nabla_s)
-            import :: field_t, dp
-            class(field_t), intent(in) :: self
-            real(dp), intent(in) :: theta, phi
-            real(dp), intent(out) :: nabla_s
-        end subroutine
-    end interface
 
     interface
         !> Relative accuracy of B_mod evaluations for this field representation.

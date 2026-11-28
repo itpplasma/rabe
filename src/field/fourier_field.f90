@@ -26,7 +26,6 @@ module fourier_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
         procedure :: get_covariant_components
     end type fourier_field_t
@@ -292,17 +291,6 @@ contains
         call self%compute_B_and_dB_dx(theta, phi, B_mod, dummy)
 
     end subroutine compute_B_mod
-
-    subroutine compute_nabla_s(self, theta, phi, nabla_s)
-        class(fourier_field_t), intent(in) :: self
-        real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: nabla_s
-
-        if (.not. self%initialized) &
-            error stop "compute_nabla_s: fourier_field_t not initialized"
-        nabla_s = 1.0_dp
-
-    end subroutine compute_nabla_s
 
     real(dp) function rel_accuracy_B(self)
         class(fourier_field_t), intent(in) :: self

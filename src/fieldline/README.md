@@ -28,7 +28,6 @@ Core type `fieldline_t` representing a single field line between two B maxima.
 | `delta_aspect_ratio` | sqrt(I_ref/I_j) - 1 |
 | `integral_one_over_B_squared` | Used for surface average normalization |
 | `radial_drift` | Integrated radial drift |
-| `integral_nabla_s_over_B_squared` | Integrated nabla_s/B^2 |
 | `M_pol`, `N_tor`, `nfp` | Mode numbers and field periods |
 
 **Methods:**
@@ -76,7 +75,6 @@ Computes per-fieldline integrals between B maxima:
 - `integral_lambda_b_over_B_squared` (boundary layer width)
 - `integral_one_over_B_squared` (normalization)
 - `radial_drift`
-- `integral_nabla_s_over_B_squared`
 
 ### `fieldline_integrands` (`fieldline_integrands.f90`)
 
@@ -84,11 +82,10 @@ Pure integrand functions used by `fieldline_integrals`:
 - `local_radial_drift(field, theta, phi, eta)`
 - `lambda_over_B_squared(field, theta, phi, eta)`
 - `B_squared(field, theta, phi)`
-- `nabla_s_over_B_squared(field, theta, phi)`
 
 ### `surface_average_mod` (`surface_average.f90`)
 
-Type `surface_average_t` with fields: `normalization`, `B_squared`, `lambda_b`, `nabla_s`.
+Type `surface_average_t` with fields: `normalization`, `B_squared`, `lambda_b`.
 
 ```fortran
 call calc_surface_averages(fieldlines, surface_average)

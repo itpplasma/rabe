@@ -16,7 +16,6 @@ module shaped_well_field
         procedure :: compute_B_sqrtg_dB_dx
         procedure :: compute_B_and_dB_dx
         procedure :: compute_B_mod
-        procedure :: compute_nabla_s
         procedure :: rel_accuracy_B
         procedure :: get_covariant_components
     end type shaped_well_field_t
@@ -76,15 +75,6 @@ contains
         u = chi + self%delta*cos(theta)*sin(chi)
         B_mod = self%B_0*(1.0_dp + self%eps*cos(u))
     end subroutine compute_B_mod
-
-    subroutine compute_nabla_s(self, theta, phi, nabla_s)
-        class(shaped_well_field_t), intent(in) :: self
-        real(dp), intent(in) :: theta, phi
-        real(dp), intent(out) :: nabla_s
-
-        nabla_s = 1.0_dp
-
-    end subroutine compute_nabla_s
 
     real(dp) function rel_accuracy_B(self)
         class(shaped_well_field_t), intent(in) :: self

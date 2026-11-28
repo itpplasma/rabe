@@ -1,13 +1,17 @@
 module coefficients
     use constants, only: dp, pi, machine_eps
-    use fieldline_mod, only: flock_of_fieldlines_t
+    use fieldline_mod, only: fieldline_t, flock_of_fieldlines_t
+    use boozer_field, only: boozer_field_t
     use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 
     implicit none
     private
 
+    type(boozer_field_t), pointer, save :: current_field => null()
+    type(fieldline_t), pointer, save :: current_fieldline => null()
+
     public :: calc_finite_boundary_layer_correction
-    public :: calc_gradient_scaling_factor_r_eff
+    public :: calc_average_nabla_s, calc_gradient_scaling_factor_r_eff
     public :: calc_offset_coefficients, calc_nu_star_crit
 
 contains
@@ -78,39 +82,77 @@ contains
         end if
     end function calc_finite_boundary_layer_correction
 
+    !> Surface average <|grad s|>, only for fields with has_nabla_s (VMEC input).
+    function calc_average_nabla_s(flock, field) result(average_nabla_s)
+        use integrate_substituted, only: integrate_1d_substituted
+        use surface_average_mod, only: surface_average_t, calc_surface_averages
+        type(flock_of_fieldlines_t), intent(in), target :: flock
+        type(boozer_field_t), intent(in), target :: field
+        real(dp) :: average_nabla_s
+
+        type(surface_average_t) :: average
+        real(dp) :: integrals(size(flock%fieldlines)), dxi_0
+        integer :: i, n
+
+        if (.not. field%has_nabla_s) error stop "the field provides no |grad s|"
+
+        current_field => field
+        do i = 1, size(flock%fieldlines)
+            current_fieldline => flock%fieldlines(i)
+            call integrate_1d_substituted(nabla_s_over_B_squared, &
+                                          current_fieldline%phi_max(1), &
+                                          current_fieldline%phi_max(2), &
+                                          integrals(i))
+        end do
+        current_field => null()
+        current_fieldline => null()
+
+        call calc_surface_averages(flock, average)
+        n = size(flock%fieldlines)
+        dxi_0 = (flock%fieldlines(n)%xi_0 - flock%fieldlines(1)%xi_0)/real(n - 1, dp)
+        average_nabla_s = sum(integrals)*dxi_0/average%normalization
+    end function calc_average_nabla_s
+
+    function nabla_s_over_B_squared(phi)
+        real(dp), intent(in) :: phi
+        real(dp) :: nabla_s_over_B_squared
+
+        real(dp) :: theta, B, nabla_s
+
+        theta = current_fieldline%get_theta(phi)
+        call current_field%compute_B_mod(theta, phi, B)
+        call current_field%compute_nabla_s(theta, phi, nabla_s)
+        nabla_s_over_B_squared = nabla_s/B**2.0_dp
+    end function nabla_s_over_B_squared
+
     !> Scaling factor dr/dA_theta for choice of effective radius
     !!
     !! Computes the factor to convert bootstrap coefficients so that
     !! they can be used with gradients of the "effective radius" r, defined by
     !! dV/dr = S, where V is the enclosed volume and S the flux surface area.
-    function calc_gradient_scaling_factor_r_eff(flock, psi_tor_edge, sign_sqrtg) &
-        result(dr_dAtheta)
-        use surface_average_mod, only: surface_average_t, calc_surface_averages
-        type(flock_of_fieldlines_t), intent(in) :: flock
+    function calc_gradient_scaling_factor_r_eff(average_nabla_s, psi_tor_edge, &
+                                                sign_sqrtg) result(dr_dAtheta)
+        real(dp), intent(in) :: average_nabla_s
+            !! from calc_average_nabla_s
         real(dp), intent(in) :: psi_tor_edge
             !! total toroidal flux at the plasma edge in Weber
         integer, intent(in) :: sign_sqrtg
             !! sign of the Boozer Jacobian: +1 or -1
         real(dp) :: dr_dAtheta
 
-        type(surface_average_t) :: average
-
         if (abs(sign_sqrtg) /= 1) then
             print *, "error: sign_sqrtg must be +1 or -1."
             print *, "sign_sqrtg =", sign_sqrtg
             error stop
         end if
-
-        call calc_surface_averages(flock, average)
-
-        if (abs(average%nabla_s*psi_tor_edge) < machine_eps) then
+        if (abs(average_nabla_s*psi_tor_edge) < machine_eps) then
             print *, "error: nabla_s * psi_tor_edge is zero."
-            print *, "nabla_s =", average%nabla_s
+            print *, "nabla_s =", average_nabla_s
             print *, "psi_tor_edge =", psi_tor_edge
             error stop
         end if
 
-        dr_dAtheta = real(sign_sqrtg, dp)/(average%nabla_s*psi_tor_edge)
+        dr_dAtheta = real(sign_sqrtg, dp)/(average_nabla_s*psi_tor_edge)
 
         if (ieee_is_nan(dr_dAtheta)) then
             print *, "error: dr_dAtheta is NaN."

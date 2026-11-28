@@ -6,7 +6,7 @@ module fieldline_integrands
     private
 
     public :: local_radial_drift, lambda_over_B_squared, B_squared
-    public :: calc_lambda_squared, nabla_s_over_B_squared
+    public :: calc_lambda_squared
 
 contains
 
@@ -63,17 +63,5 @@ contains
             error stop
         end if
     end function calc_lambda_squared
-
-    function nabla_s_over_B_squared(field, theta, phi)
-        class(field_t), intent(in) :: field
-        real(dp), intent(in) :: theta, phi
-        real(dp) :: nabla_s_over_B_squared
-
-        real(dp) :: B, nabla_s
-
-        call field%compute_B_mod(theta, phi, B)
-        call field%compute_nabla_s(theta, phi, nabla_s)
-        nabla_s_over_B_squared = nabla_s/B**2.0_dp
-    end function nabla_s_over_B_squared
 
 end module fieldline_integrands

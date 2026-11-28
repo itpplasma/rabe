@@ -8,7 +8,6 @@ module surface_average_mod
         real(dp) :: normalization
         real(dp) :: B_squared
         real(dp) :: lambda_b
-        real(dp) :: nabla_s
     end type surface_average_t
 
     public :: surface_average_t, calc_surface_averages
@@ -20,7 +19,6 @@ contains
     !! Requires at least two field lines in flock.
     subroutine calc_surface_averages(flock, surface_average)
         use fieldline_mod, only: flock_of_fieldlines_t
-        use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
         type(flock_of_fieldlines_t), intent(in) :: flock
         type(surface_average_t), intent(out) :: surface_average
 
@@ -51,9 +49,6 @@ contains
         surface_average%lambda_b = sum( &
                                    flock%fieldlines%integral_lambda_b_over_B_squared &
                                    )*dxi_0/surface_average%normalization
-        surface_average%nabla_s = sum( &
-                                  flock%fieldlines%integral_nabla_s_over_B_squared &
-                                  )*dxi_0/surface_average%normalization
 
         if (surface_average%lambda_b < machine_eps) then
             print *, "error: average lambda_b <= 0."
@@ -61,10 +56,6 @@ contains
         end if
         if (surface_average%B_squared < machine_eps) then
             print *, "error: average B_squared <= 0."
-            error stop
-        end if
-        if (ieee_is_nan(surface_average%nabla_s)) then
-            print *, "error: average sqrt_g11 is NaN."
             error stop
         end if
     end subroutine calc_surface_averages

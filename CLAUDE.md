@@ -58,7 +58,7 @@ rabe_lib (main static library)
 │   fourier.f90, integrate.f90
 ├── field_lib (src/field/)
 │   field_base.f90    - Abstract type field_t (deferred: compute_B_mod,
-│                       compute_nabla_s, compute_B_sqrtg_dB_dx, compute_B_and_dB_dx,
+│                       compute_B_sqrtg_dB_dx, compute_B_and_dB_dx,
 │                       get_covariant_components)
 ├── vmec_lib (src/vmec/)
 │   boozer_field.f90  - Concrete field_t type boozer_field_t with one loader
@@ -130,6 +130,9 @@ No system NetCDF library is required.
 - **Input**: Namelist file `rabe.in` (namelist `rabe_config`)
 - **Field data**: VMEC `.nc` files
 - **Output**: `rabe.nc` (NetCDF); optional `flocks_dir/flock_<k>.nc` field line diagnostic
+- **Radial label**: coefficients are per effective radius r if the field has
+  `|grad s|` (`has_nabla_s`, VMEC input only), otherwise per s; both apps write
+  the label as global attribute `radial_label`
 - **`electric_rabe`**: reads `rabe.in` (namelists `rabe_config` and
   `precession_config`, single surface only), writes `electric_rabe.nc` and the
   bounce integrals to `saved_bounce_integrals.dat`. That file is plain text: a
