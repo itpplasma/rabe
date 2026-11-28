@@ -41,7 +41,7 @@ module read_file
         should_calc_shaing_callen, &
         n_eta, &
         unsafe_mode, &
-        flocks_dir
+        flocks_dir, &
         n_rho, &
         n_theta, &
         n_zeta
