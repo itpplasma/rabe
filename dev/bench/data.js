@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795889525006,
+  "lastUpdate": 1795890956631,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -454,6 +454,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 25460,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "0f8812af9200b0b14acc545ad4f2f0b5aa5ef55c",
+          "message": "fix: electric_rabe applies the covariant factor twice in prefactor_A (on main) (#151)\n\n* fix: electric_rabe applies the covariant factor twice in prefactor_A\n\nflock%I_ref contains the covariant factor since 857dc93 (Handle covariant\ncomponents); get_g_modes_from_fieldlines multiplied by it again, so the\nboundary-layer term (1/sqrt(nu_star)) was too large by sqrt(B_phi + iota B_theta).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* remove: comment\n\n---------\n\nCo-authored-by: bot <bot@tugraz.at>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>\nCo-authored-by: GeorgGrassler <100583655+GeorgGrassler@users.noreply.github.com>",
+          "timestamp": "2026-11-28T18:25:05Z",
+          "tree_id": "8ec1a532a0939b3f0197846b78f099745de9bb64",
+          "url": "https://github.com/itpplasma/rabe/commit/0f8812af9200b0b14acc545ad4f2f0b5aa5ef55c"
+        },
+        "date": 1795890955817,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9916,
+            "unit": "ratio",
+            "extra": "current: 30840 ms, baseline: 31100 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 30840,
             "unit": "ms"
           }
         ]
