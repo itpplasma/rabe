@@ -27,8 +27,7 @@ module boozer_field
         real(dp) :: nfp
         real(dp) :: psi_tor_edge
         real(dp) :: R
-        logical :: has_nabla_s = .true.
-            !! false for boozmn and chartmap input, which carry no metric
+        logical :: has_nabla_s
     contains
         procedure :: init_from_vmec
         procedure :: init_from_boozmn
@@ -76,6 +75,7 @@ contains
                                     angular_spline_order, &
                                     grid_refinement)
         call finish_init(self)
+        self%has_nabla_s = .true.
 
     end subroutine init_from_vmec
 
