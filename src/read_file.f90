@@ -18,6 +18,7 @@ module read_file
     logical, public, protected :: should_calc_shaing_callen
     integer, public, protected :: n_eta
     logical, public, protected :: unsafe_mode
+    character(len=256), public, protected :: flocks_dir
     integer, public, protected :: n_rho
     integer, public, protected :: n_theta
     integer, public, protected :: n_zeta
@@ -40,6 +41,7 @@ module read_file
         should_calc_shaing_callen, &
         n_eta, &
         unsafe_mode, &
+        flocks_dir, &
         n_rho, &
         n_theta, &
         n_zeta
@@ -76,6 +78,7 @@ contains
         ! Default values
         field_type = 'vmec_nc'
         unsafe_mode = .false.
+        flocks_dir = ''
         should_calc_shaing_callen = .false.
         n_eta = 100
         n_rho = 30
