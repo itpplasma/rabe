@@ -196,6 +196,9 @@ nu_star_crit       = flock.calc_nu_star_crit(R)
 /
 ```
 
+`field_type` selects the input format of `field_file`: `vmec_nc` (default),
+`booz_xform` or `chartmap`, all imported from `libneo`.
+
 The type of omnigenity is set by the helicity
 
 | type of omnigenity | `M_pol` | `N_tor` |
