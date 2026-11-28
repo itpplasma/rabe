@@ -63,7 +63,7 @@ program main
 
     call read_namelist(input_file)
     call set_unsafe_mode(unsafe_mode)
-    if (len_trim(flocks_dir) > 0) call check_flocks_dir()
+    if (len_trim(flocks_dir) > 0) call check_flocks_dir_exists()
     nan_value = ieee_value(nan_value, ieee_quiet_nan)
 
     n_stor = size(s_tor)
@@ -220,8 +220,7 @@ program main
 
 contains
 
-    !> Stop before any computation if flocks_dir cannot be written to.
-    subroutine check_flocks_dir()
+    subroutine check_flocks_dir_exists()
         integer :: unit, ios
         character(len=:), allocatable :: probe
 
@@ -233,7 +232,7 @@ contains
             error stop
         end if
         close (unit, status="delete")
-    end subroutine check_flocks_dir
+    end subroutine check_flocks_dir_exists
 
     !> Field line diagnostic of surface k: flocks_dir/flock_<k>.nc
     subroutine write_flock(flock, k)
