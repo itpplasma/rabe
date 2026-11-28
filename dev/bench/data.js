@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795897879345,
+  "lastUpdate": 1795898299011,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -524,6 +524,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 15570,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "5a184bc59db1cca567a4ed68875336f50e78b130",
+          "message": "golden: electric_rabe with 8 field lines so prefactor_A enters lambda_off (#158)\n\n* golden: electric_rabe with 8 field lines so the 1/sqrt(nu_star) term contributes\n\nWith 4 field lines iota_p is approximated by -pi/2: S_A vanishes in mode 1\nand mode 2 is the Nyquist mode, so lambda_off did not depend on prefactor_A.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* golden: electric_rabe record with 8 field lines from a clean build of 75de2d6\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-28T20:27:28Z",
+          "tree_id": "1358414ab944a92ab087bd1164072a3b098c3536",
+          "url": "https://github.com/itpplasma/rabe/commit/5a184bc59db1cca567a4ed68875336f50e78b130"
+        },
+        "date": 1795898298341,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 1.0178,
+            "unit": "ratio",
+            "extra": "current: 16000 ms, baseline: 15720 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 16000,
             "unit": "ms"
           }
         ]
