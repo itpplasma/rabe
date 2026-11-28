@@ -197,10 +197,13 @@ program electric_rabe
     call nc_output%add_global_attribute("git_hash", git_hash)
     if (field%has_nabla_s) then
         call nc_output%add_global_attribute("radial_label", &
-                                            "coefficients are per gradient of the effective radius r, dV/dr = S (V: enclosed volume, S: flux surface area)")
+            "coefficients are per gradient of the effective radius "// &
+            "r, dV/dr = S (V: enclosed volume, S: flux surface area)")
     else
         call nc_output%add_global_attribute("radial_label", &
-                                            "coefficients are per gradient of the normalized toroidal flux s; the field provides no |grad s| for the effective radius")
+            "coefficients are per gradient of the normalized "// &
+            "toroidal flux s; the field provides no |grad s| for "// &
+            "the effective radius")
     end if
     call nc_output%def_dim(dim_name, n_stor)
     call nc_output%add_real_1d("s_tor", dim_name)
