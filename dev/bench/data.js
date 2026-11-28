@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795890956631,
+  "lastUpdate": 1795897879345,
   "repoUrl": "https://github.com/itpplasma/rabe",
   "entries": {
     "Benchmark": [
@@ -489,6 +489,41 @@ window.BENCHMARK_DATA = {
           {
             "name": "execution time (current, Release)",
             "value": 30840,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "georg.grassler+bot@student.tugraz.at",
+            "name": "gg-codebot",
+            "username": "gg-codebot"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "21434fc92d1a29429aab01fe2102f9c7258c7be3",
+          "message": "Optional field line diagnostic per surface: flocks_dir/flock_<k>.nc (#152)\n\n* feat: rabe writes the field lines per surface to fieldlines.nc\n\nLabels, maxima bounding the well and delta_eta of each field line, so the\nviolation of omnigenity at the maxima can be inspected.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* feat: field line diagnostic per surface into flocks_dir instead of fieldlines.nc\n\nIf flocks_dir is set, rabe checks at startup that it is writable and writes\neach flock to flocks_dir/flock_<k>.nc right after it is computed: the flock\nscalars and the field line components along their own dimension, no padding.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: missing continuation after flocks_dir in rabe_config from the main merge\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* udpate: docs\n\n* add: dir as input\n\n---------\n\nCo-authored-by: Bot <bot@nt-b240.wlcli.tugraz.at>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: Bot <bot@nt-f144.wlcli.tugraz.at>\nCo-authored-by: Bot <bot@Testers-MacBook-Pro.local>\nCo-authored-by: GeorgGrassler <100583655+GeorgGrassler@users.noreply.github.com>\nCo-authored-by: Georg Grassler <georg.grassler@tugraz.at>",
+          "timestamp": "2026-11-28T20:20:27Z",
+          "tree_id": "46ca5e349ee80a26aebe2578da79a95060c9fe99",
+          "url": "https://github.com/itpplasma/rabe/commit/21434fc92d1a29429aab01fe2102f9c7258c7be3"
+        },
+        "date": 1795897878548,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "execution time ratio (current/baseline)",
+            "value": 0.9892,
+            "unit": "ratio",
+            "extra": "current: 15570 ms, baseline: 15740 ms"
+          },
+          {
+            "name": "execution time (current, Release)",
+            "value": 15570,
             "unit": "ms"
           }
         ]
