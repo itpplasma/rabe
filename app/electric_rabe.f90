@@ -29,7 +29,6 @@ program electric_rabe
                          M_pol, &
                          N_tor, &
                          s_tor, &
-                         sign_sqrtg, &
                          max_n_fieldlines
     use read_precession, only: read_precession_namelist
     use read_precession, only: Omega_hat, &
@@ -180,8 +179,8 @@ program electric_rabe
 
             end do
         end do
-        lambda_off = lambda_off*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
- lambda_off_modes = lambda_off_modes*0.75_dp/covariant_factor*sign_sqrtg/average%nabla_s
+        lambda_off = lambda_off*0.75_dp/covariant_factor/average%nabla_s
+ lambda_off_modes = lambda_off_modes*0.75_dp/covariant_factor/average%nabla_s
 
         deallocate (fieldlines_precession)
         deallocate (is_complete)
